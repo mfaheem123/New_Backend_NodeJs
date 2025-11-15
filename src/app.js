@@ -34,8 +34,6 @@ const combinedZonesVehicleTypesRoutes = require("./routes/combinedPlotFareListRo
 const plotFareRoutes = require("./routes/plotFareRoutes");
 const fareByVehicleRoutes = require("./routes/fareByVehicleRoutes");
 
-
-
 const app = express();
 
 // ✅ CORS configuration
