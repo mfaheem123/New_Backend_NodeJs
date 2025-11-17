@@ -33,9 +33,7 @@ exports.create = async (data) => {
   const query = `
     INSERT INTO fare_increments (start_date, end_date, operator, amount, fix_fare, mileage)
     VALUES (
-    TO_DATE($1, 'DD-MM-YYYY'),
-    TO_DATE($2, 'DD-MM-YYYY'),
-     $3, $4, $5, $6)
+    $1,$2,$3, $4, $5, $6)
     RETURNING id,
               TO_CHAR(start_date, 'DD-MM-YYYY') AS start_date,
               TO_CHAR(end_date, 'DD-MM-YYYY') AS end_date,
