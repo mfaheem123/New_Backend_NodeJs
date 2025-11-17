@@ -33,6 +33,8 @@ const fixedFareRoutes = require("./routes/fixedFareRoutes");
 const combinedZonesVehicleTypesRoutes = require("./routes/combinedPlotFareListRoutes");
 const plotFareRoutes = require("./routes/plotFareRoutes");
 const fareByVehicleRoutes = require("./routes/fareByVehicleRoutes");
+const airportRoutes = require("./routes/airportRoutes");
+const fareIncrementRoutes = require("./routes/fareIncrementRoutes");
 
 const app = express();
 
@@ -107,6 +109,8 @@ app.use("/api/combined",combinedVehicleLocationTypesRoutes);
 app.use("/api/plotfares", plotFareRoutes);
 app.use("/api/combined",combinedZonesVehicleTypesRoutes);
 app.use("/api/farebyvehicle", fareByVehicleRoutes);
+app.use("/api/airports", airportRoutes);
+app.use("/api/fareincrement", fareIncrementRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

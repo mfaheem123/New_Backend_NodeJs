@@ -1,4 +1,6 @@
 const Driver = require("../models/driverModel");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.4:5000/uploads/";
 
 // 🔹 Helper: Recursively convert empty strings ("") to null
@@ -400,6 +402,14 @@ exports.create = async (req, res) => {
     // If company vehicle is used, remove private vehicle to avoid insertion
     if (req.body.use_company_vehicle && req.body.company_vehicle_id) {
       req.body.vehicle = null;
+    }
+    // STEP 1: Check if username exists
+    const usernameExists = await Driver.checkUsernameExists(req.body.username);
+
+    if (usernameExists) {
+      return res.status(400).json({
+        message: "Username Already Exists"
+      });
     }
 
     const driverData = cleanEmptyToNull(req.body);
@@ -832,3 +842,102 @@ exports.delete = async (req, res) => {
   }
 };
 
+// exports.driverLogin = async (req, res) => {
+//   const { username, password } = req.body;
+//  console.log("🚀 Incoming req.body:", JSON.stringify(req.body, null, 2));
+//   try {
+//     // STEP 1: Find driver by username
+//     const driver = await Driver.findDriverByUsername(username);
+
+//     if (!driver) {
+//       return res.status(404).json({ message: "Driver not found" });
+//     }
+
+//     // STEP 2: Check active status
+//     if (!driver.active) {
+//       return res.status(401).json({ message: "Your account is inactive" });
+//     }
+
+//     // STEP 3: Password check
+//     if (password !== driver.password) {
+//       return res.status(401).json({ message: "Invalid password" });
+//     }
+
+//     // STEP 4: Check session status
+//     if (driver.session_status === "logged_in") {
+//       return res.status(400).json({ message: "Driver is already logged in" });
+//     }
+
+//     // STEP 5: Generate JWT token
+//     const token = jwt.sign({ driverId: driver.id }, "secretKey", {
+//       expiresIn: "1d",
+//     });
+
+//     // STEP 6: Update driver login session
+//     await Driver.updateDriverLoginStatus(driver.id);
+
+//     // STEP 7: Return response
+//     res.status(200).json({
+//       message: "Login successful",
+//       driverInfo: {
+//         ...driver,
+//         session_status: "logged_in",
+//       },
+//       token: token,
+//     });
+//   } catch (error) {
+//     console.error("Login Error:", error);
+//     res.status(500).json({ message: "An error occurred during login" });
+//   }
+// };
+
+exports.driverLogin = async (req, res) => {
+  const { username, password } = req.body;
+  console.log("🚀 Incoming req.body:", JSON.stringify(req.body, null, 2));
+
+  try {
+    // STEP 1: Find driver by username
+    const driver = await Driver.findDriverByUsername(username);
+
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    // STEP 2: Check active status
+    if (!driver.active) {
+      return res.status(401).json({ message: "Your account is inactive" });
+    }
+
+    // STEP 3: Password check using bcrypt
+    const passwordMatch = await bcrypt.compare(password, driver.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    // STEP 4: Check session status
+    if (driver.session_status === "logged_in") {
+      return res.status(400).json({ message: "Driver is already logged in" });
+    }
+
+    // STEP 5: Generate JWT token
+    const token = jwt.sign({ driverId: driver.id }, "secretKey", {
+      expiresIn: "1d",
+    });
+
+    // STEP 6: Update driver login session
+    await Driver.updateDriverLoginStatus(driver.id);
+
+    // STEP 7: Return response
+    res.status(200).json({
+      message: "Login successful",
+      driverInfo: {
+        ...driver,
+        session_status: "logged_in",
+      },
+      token: token,
+    });
+  } catch (error) {
+    console.error("Login Error:", error);
+    res.status(500).json({ message: "An error occurred during login" });
+  }
+};

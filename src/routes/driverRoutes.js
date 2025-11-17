@@ -21,6 +21,8 @@ router.get("/get", driverController.getAll);
 router.get("/getbyid/:id", driverController.getById);
 router.post("/edit/:id", upload.any(), driverController.update);
 router.delete("/delete/:id", driverController.delete);
+router.post("/login", driverController.driverLogin);
+
 
 router.post("/test-upload", upload.any(), (req, res) => {
   console.log("Test uploaded files:", req.files);

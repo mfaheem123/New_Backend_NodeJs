@@ -136,15 +136,49 @@ function formatVehicle(v) {
     vehicle_type: v.vehicle_type,
   };
 }
+// Generate driveraccessToken NTG+2 digits
+function generateSecurityCode() {
+  let result = "NTG";
+  const digits = Math.floor(10 + Math.random() * 90).toString();
+  return result + digits;
+}
+
+async function generateUniqueDriverAccessToken(db) {
+  while (true) {
+    const token = generateSecurityCode(); // NTGxx
+
+    const { rows } = await db.query(
+      `SELECT id FROM drivers WHERE driver_access_token = $1 LIMIT 1`,
+      [token]
+    );
+
+    if (rows.length === 0) {
+      return token; // UNIQUE TOKEN FOUND
+    }
+
+    // If found → loop runs again to generate a new one
+  }
+}
 
 const Driver = {
+  // ✅ Check if username already exists
+  async checkUsernameExists(username) {
+    const query = `
+      SELECT id FROM drivers 
+      WHERE LOWER(username) = LOWER($1)
+      LIMIT 1
+    `;
+    const result = await db.query(query, [username]);
+    return result.rows.length > 0;
+  },
+
   async create(data) {
     try {
       await db.query("BEGIN");
 
       // Hash password
       const hashedPassword = await bcrypt.hash(data.password, 10);
-
+      const driverAccessToken = await generateUniqueDriverAccessToken(db);
       // Normalize empty fields
       Object.keys(data).forEach((key) => {
         if (data[key] === "" || data[key] === undefined) data[key] = null;
@@ -222,7 +256,7 @@ const Driver = {
         ni, image, company_vehicle_id, vehicle_id,
         licence_expiry_time, phc_driver_expiry_time, insurance_expiry_time, phc_vehicle_expiry_time,
         mot_expiry_time, mot2_expiry_time, v5_registration_expiry_time, road_tax_expiry_time,
-        rental_agreement_expiry_time
+        rental_agreement_expiry_time, driver_access_token
       )
       VALUES (
         $1,$2,$3,$4,$5,$6,$7,$8,$9,
@@ -234,7 +268,7 @@ const Driver = {
         $32,$33,$34,$35,$36,$37,
         $38,$39,$40,$41,
         $42,$43,$44,$45,$46,$47,
-        $48,$49,$50
+        $48,$49,$50,$51
       )
       RETURNING id
     `;
@@ -290,6 +324,7 @@ const Driver = {
         driver.v5_registration_expiry_time,
         driver.road_tax_expiry_time,
         driver.rental_agreement_expiry_time,
+        driverAccessToken,
       ]);
 
       const driverId = driverRes.rows[0].id;
@@ -1173,10 +1208,9 @@ const Driver = {
     try {
       await db.query("BEGIN");
       // 🔹 Check if driver exists
-      const { rows } = await db.query(
-        `SELECT id FROM drivers WHERE id = $1`,
-        [id]
-      );
+      const { rows } = await db.query(`SELECT id FROM drivers WHERE id = $1`, [
+        id,
+      ]);
       if (rows.length === 0) {
         await db.query("ROLLBACK");
         const error = new Error("Driver not found");
@@ -1203,6 +1237,30 @@ const Driver = {
       throw err;
     }
   },
+  // Find driver by username (case-insensitive)
+async findDriverByUsername(username) {
+  const query = `
+        SELECT * FROM drivers 
+        WHERE LOWER(username) = LOWER($1)
+        LIMIT 1
+    `;
+  const result = await db.query(query, [username]);
+  // console.log(result)
+  return result.rows[0];
+},
+
+// Update driver login session
+async updateDriverLoginStatus(driverId) {
+  const query = `
+        UPDATE drivers 
+        SET 
+          session_status = 'logged_in',
+          driver_status = 'Available',
+          booking_status = 'Available'
+        WHERE id = $1
+      `;
+  return db.query(query, [driverId]);
+},
 };
 
 module.exports = Driver;
