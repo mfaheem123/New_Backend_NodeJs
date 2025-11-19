@@ -566,3 +566,7 @@
 {"level":"info","message":"POST /api/drivers/login 400 150.743 ms","timestamp":"2025-11-18T18:10:31.950Z"}
 {"duration":104,"level":"info","message":"db-query","rows":0,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2025-11-18T18:10:47.270Z"}
 {"level":"info","message":"POST /api/drivers/login 404 105.786 ms","timestamp":"2025-11-18T18:10:47.271Z"}
+{"duration":9,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-18T18:14:44.008Z"}
+{"level":"info","message":"GET /api/location-types 200 17.899 ms","timestamp":"2025-11-18T18:14:44.017Z"}
+{"duration":59,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-18T18:14:44.061Z"}
+{"level":"info","message":"GET /api/location-types 200 60.355 ms","timestamp":"2025-11-18T18:14:44.062Z"}

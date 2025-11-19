@@ -1,6 +1,7 @@
 const Driver = require("../models/driverModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const pool = require("../db");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.4:5000/uploads/";
 
 // 🔹 Helper: Recursively convert empty strings ("") to null
@@ -229,8 +230,11 @@ function normalizeDateFields(obj) {
 // LOG BOOK DOCUMENT HANDLE IN THIS CREATE CODE
 exports.create = async (req, res) => {
   try {
-    console.log("🚀 Incoming req.body:", JSON.stringify(req.body, null, 2));
-    console.log("🚀 Incoming req.files:", req.files);
+    console.log(
+      "🚀 INCOMING DRIVER ADD BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
+    console.log("🚀 INCOMING DRIVER ADD FILES:", req.files);
 
     // Clean nulls & normalize dates
     req.body = cleanEmptyToNull(req.body);
@@ -408,7 +412,7 @@ exports.create = async (req, res) => {
 
     if (usernameExists) {
       return res.status(400).json({
-        message: "Username Already Exists"
+        message: "Username Already Exists",
       });
     }
 
@@ -628,8 +632,11 @@ exports.getById = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const driverId = req.params.id;
-    console.log("🚀 Incoming req.body:", JSON.stringify(req.body, null, 2));
-    console.log("🚀 Incoming req.files:", req.files);
+    console.log(
+      "🚀 INCOMING DRIVER UPDATE BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
+    console.log("🚀 INCOMING DRIVER UPDATE FILES:", req.files);
 
     // Clean nulls & normalize dates
     req.body = cleanEmptyToNull(req.body);
@@ -829,71 +836,26 @@ exports.update = async (req, res) => {
   }
 };
 
-
 exports.delete = async (req, res) => {
   try {
     await Driver.delete(req.params.id);
     res.json({ status: true, message: "Driver deleted" });
   } catch (err) {
     if (err.code === "NOT_FOUND") {
-      return res.status(404).json({ status: false, message: "Driver not found" });
+      return res
+        .status(404)
+        .json({ status: false, message: "Driver not found" });
     }
     res.status(500).json({ status: false, error: err.message });
   }
 };
 
-// exports.driverLogin = async (req, res) => {
-//   const { username, password } = req.body;
-//  console.log("🚀 Incoming req.body:", JSON.stringify(req.body, null, 2));
-//   try {
-//     // STEP 1: Find driver by username
-//     const driver = await Driver.findDriverByUsername(username);
-
-//     if (!driver) {
-//       return res.status(404).json({ message: "Driver not found" });
-//     }
-
-//     // STEP 2: Check active status
-//     if (!driver.active) {
-//       return res.status(401).json({ message: "Your account is inactive" });
-//     }
-
-//     // STEP 3: Password check
-//     if (password !== driver.password) {
-//       return res.status(401).json({ message: "Invalid password" });
-//     }
-
-//     // STEP 4: Check session status
-//     if (driver.session_status === "logged_in") {
-//       return res.status(400).json({ message: "Driver is already logged in" });
-//     }
-
-//     // STEP 5: Generate JWT token
-//     const token = jwt.sign({ driverId: driver.id }, "secretKey", {
-//       expiresIn: "1d",
-//     });
-
-//     // STEP 6: Update driver login session
-//     await Driver.updateDriverLoginStatus(driver.id);
-
-//     // STEP 7: Return response
-//     res.status(200).json({
-//       message: "Login successful",
-//       driverInfo: {
-//         ...driver,
-//         session_status: "logged_in",
-//       },
-//       token: token,
-//     });
-//   } catch (error) {
-//     console.error("Login Error:", error);
-//     res.status(500).json({ message: "An error occurred during login" });
-//   }
-// };
-
 exports.driverLogin = async (req, res) => {
   const { username, password } = req.body;
-  console.log("🚀 Incoming req.body:", JSON.stringify(req.body, null, 2));
+  console.log(
+    "🚀 INCOMING DRIVER LOGIN BODY:",
+    JSON.stringify(req.body, null, 2)
+  );
 
   try {
     // STEP 1: Find driver by username
@@ -939,5 +901,61 @@ exports.driverLogin = async (req, res) => {
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({ message: "An error occurred during login" });
+  }
+};
+
+exports.verifyDriverToken = async (req, res) => {
+  try {
+    const { id, driver_access_token } = req.body;
+    console.log(
+      "🚀 INCOMING DRIVER VERIFY TOKEN BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
+    if (!id || !driver_access_token) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver_ID and Driver_Access_Token Are Required",
+      });
+    }
+
+    // 1️⃣ Driver data fetch karna
+    const query = `SELECT driver_access_token FROM drivers WHERE id = $1`;
+    const result = await pool.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
+
+    const storedToken = result.rows[0].driver_access_token;
+
+    // 2️⃣ Null token check
+    if (!storedToken) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver has no access token stored",
+      });
+    }
+
+    // 3️⃣ Token comparison
+    if (storedToken === driver_access_token) {
+      return res.status(200).json({
+        status: true,
+        message: "Token verified successfully",
+      });
+    } else {
+      return res.status(401).json({
+        status: false,
+        message: "Invalid token",
+      });
+    }
+  } catch (error) {
+    console.error("Error verifying driver token:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
   }
 };

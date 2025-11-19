@@ -38,35 +38,39 @@ module.exports = {
     return result.rows[0];
   },
 
-  async update(id, data) {
+    async update(id, data) {
+    // Keys & Values extract karein
+    const fields = [];
+    const values = [];
+
+    let index = 1;
+
+    for (const key in data) {
+      fields.push(`${key} = $${index}`);
+      values.push(data[key]);
+      index++;
+    }
+
+    // agar koi field hi nahi ayi
+    if (fields.length === 0) {
+      throw new Error("No fields provided for update");
+    }
+
     const query = `
-      UPDATE surcharges SET
-        surcharges_type=$1, condition=$2, postcode=$3, operator=$4, fare=$5,
-        parking_charges=$6, extra_drop_charges=$7, congestion_charges=$8,
-        duration=$9, from_date=$10, from_time=$11, to_date=$12, to_time=$13,
-        active=$14, day=$15
-      WHERE id=$16
-      RETURNING *;
+      UPDATE surcharges
+      SET ${fields.join(", ")},
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $${index}
+      RETURNING 
+        id,
+        TO_CHAR(from_date, 'DD-MM-YYYY') AS from_date,
+        TO_CHAR(to_date, 'DD-MM-YYYY') AS to_date,
+        surcharges_type, condition, postcode, operator, fare, parking_charges,
+        extra_drop_charges, congestion_charges, duration, from_time, to_time,
+        active, day, created_at, updated_at;
     `;
 
-    const values = [
-      data.surcharges_type,
-      data.condition,
-      data.postcode,
-      data.operator,
-      data.fare,
-      data.parking_charges,
-      data.extra_drop_charges,
-      data.congestion_charges,
-      data.duration,
-      data.from_date,
-      data.from_time,
-      data.to_date,
-      data.to_time,
-      data.active,
-      data.day,
-      id,
-    ];
+    values.push(id);
 
     const result = await pool.query(query, values);
     return result.rows[0];
@@ -97,5 +101,25 @@ module.exports = {
     ]);
     return result.rows[0];
   },
+
+  async updateActive(id, active) {
+  const query = `
+    UPDATE surcharges
+    SET active = $1,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = $2
+    RETURNING 
+      id,
+        TO_CHAR(from_date, 'DD-MM-YYYY') AS from_date,
+        TO_CHAR(to_date, 'DD-MM-YYYY') AS to_date,
+        surcharges_type, condition, postcode, operator, fare, parking_charges,
+        extra_drop_charges, congestion_charges, duration, from_time, to_time,
+        active, day, created_at, updated_at;
+  `;
+
+  const result = await pool.query(query, [active, id]);
+  return result.rows[0];
+},
+
 };
 

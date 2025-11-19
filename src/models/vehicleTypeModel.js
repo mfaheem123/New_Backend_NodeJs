@@ -1,88 +1,3 @@
-// const pool = require('../db');
-
-// const VehicleType = {
-//   async getAll() {
-//     const result = await pool.query('SELECT * FROM vehicle_types ORDER BY id ASC');
-//     return result.rows;
-//   },
-
-//   async getById(id) {
-//     const result = await pool.query('SELECT * FROM vehicle_types WHERE id = $1', [id]);
-//     return result.rows[0];
-//   },
-
-//   async create(data) {
-//     const {
-//       name,
-//       passengers,
-//       luggages,
-//       hand_luggages,
-//       minimum_fares,
-//       minimum_miles,
-//       background_color,
-//       foreground_color,
-//       driver_waiting_charges,
-//       account_waiting_charges,
-//       waiting_time,
-//       waiting_time_duration,
-//       default_vehicle,
-//       vehicle_type_minimum_fares,
-//       image
-//     } = data;
-
-//     const result = await pool.query(
-//       `INSERT INTO vehicle_types (
-//         name, passengers, luggages, hand_luggages,
-//         minimum_fares, minimum_miles, background_color, foreground_color,
-//         driver_waiting_charges, account_waiting_charges,
-//         waiting_time, waiting_time_duration,
-//         default_vehicle, vehicle_type_minimum_fares, image
-//       )
-//       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
-//       RETURNING *`,
-//       [
-//         name, passengers, luggages, hand_luggages,
-//         minimum_fares, minimum_miles, background_color, foreground_color,
-//         driver_waiting_charges, account_waiting_charges,
-//         waiting_time, waiting_time_duration,
-//         default_vehicle, vehicle_type_minimum_fares, image
-//       ]
-//     );
-//     return result.rows[0];
-//   },
-
-//   async update(id, data) {
-//     const cols = Object.keys(data);
-//     if (cols.length === 0) return this.getById(id);
-
-//     const set = cols.map((col, i) => `${col} = $${i + 1}`).join(', ');
-//     const values = Object.values(data);
-//     values.push(id);
-
-//     const result = await pool.query(
-//       `UPDATE vehicle_types 
-//        SET ${set}, updated_at = now() 
-//        WHERE id = $${values.length} RETURNING *`,
-//       values
-//     );
-//     return result.rows[0];
-//   },
-
-//   async delete(id) {
-//     const result = await pool.query('DELETE FROM vehicle_types WHERE id = $1 RETURNING *', [id]);
-//     return result.rows[0];
-//   },
-
-//   async findByName(name) {
-//     const result = await pool.query('SELECT * FROM vehicle_types WHERE name = $1', [name]);
-//     return result.rows[0];
-//   },
-// };
-
-// module.exports = VehicleType;
-
-
-
 const pool = require('../db');
 
 const VehicleType = {  
@@ -185,6 +100,27 @@ async getAll ({ offset = 0, limit = 100, filters = {} }) {
         driver_waiting_charges, account_waiting_charges,
         waiting_time, waiting_time_duration,
         default_vehicle, vehicle_type_minimum_fares, image
+      ]
+    );
+     const vehicle = result.rows[0];
+    const vehicleTypeId = vehicle.id;
+    // 2️⃣ CREATE DEFAULT FARE METER FOR THIS VEHICLE
+    await pool.query(
+      `INSERT INTO fare_meters (
+        vehicle_type_id, has_meter, autostart_wait,
+        autostart_waiting_speed_limit, autostart_waiting_time,
+        autostop_waiting_speed_limit, waiting_charges, waiting_intervals
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [
+        vehicleTypeId,          // new vehicle ID
+        false,                  // has_meter
+        false,                  // autostart_wait
+        0,                      // autostart_waiting_speed_limit
+        0,                      // autostart_waiting_time
+        0,                      // autostop_waiting_speed_limit
+        JSON.stringify([]),     // waiting_charges
+        0                       // waiting_intervals
       ]
     );
     return result.rows[0];

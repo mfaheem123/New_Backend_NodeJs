@@ -82,4 +82,44 @@ module.exports = {
       return res.status(500).json({ status: false, message: "Server Error" });
     }
   },
+async updateActive (req, res) {
+  try {
+    const { id } = req.params;
+    let { active } = req.body;
+
+    // Convert "true"/"false" string → boolean
+    if (typeof active === "string") {
+      active = active.toLowerCase() === "true";
+    }
+
+    if (typeof active !== "boolean") {
+      return res.status(400).json({
+        status: false,
+        message: "active must be boolean (true/false)"
+      });
+    }
+
+    const result = await Surcharge.updateActive(id, active);
+
+    if (!result) {
+      return res.status(404).json({
+        status: false,
+        message: "Surcharge not found"
+      });
+    }
+
+    res.json({
+      status: true,
+      message: "Active status updated successfully",
+      surcharges: result
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      message: error.message
+    });
+  }
+},
+
 };

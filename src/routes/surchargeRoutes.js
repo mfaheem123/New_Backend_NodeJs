@@ -7,5 +7,6 @@ router.post("/edit/:id", Controller.update);
 router.delete("/delete/:id", Controller.delete);
 router.get("/get", Controller.getAll);
 router.get("/getbyid/:id", Controller.getOne);
+router.post("/active/:id", Controller.updateActive);
 
 module.exports = router;
