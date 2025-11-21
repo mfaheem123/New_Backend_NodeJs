@@ -1,0 +1,254 @@
+{"duration":62,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-19T19:02:49.233Z"}
+{"level":"info","message":"GET /api/location-types 200 65.420 ms","timestamp":"2025-11-19T19:02:49.237Z"}
+{"duration":24,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T10:46:15.224Z"}
+{"level":"info","message":"GET /api/location-types 200 31.450 ms","timestamp":"2025-11-20T10:46:15.231Z"}
+{"duration":65,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T10:46:15.266Z"}
+{"level":"info","message":"GET /api/location-types 200 68.929 ms","timestamp":"2025-11-20T10:46:15.270Z"}
+{"duration":79,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T11:46:14.437Z"}
+{"level":"info","message":"GET /api/location-types 200 80.796 ms","timestamp":"2025-11-20T11:46:14.439Z"}
+{"duration":86,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T12:46:14.447Z"}
+{"level":"info","message":"GET /api/location-types 200 87.412 ms","timestamp":"2025-11-20T12:46:14.448Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T13:44:57.932Z"}
+{"level":"info","message":"GET /api/location-types 200 21.858 ms","timestamp":"2025-11-20T13:44:57.948Z"}
+{"duration":71,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T13:44:57.998Z"}
+{"level":"info","message":"GET /api/location-types 200 72.453 ms","timestamp":"2025-11-20T13:44:57.999Z"}
+{"duration":53,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T13:45:05.004Z"}
+{"level":"info","message":"GET /api/faremeter/get 200 56.298 ms","timestamp":"2025-11-20T13:45:05.005Z"}
+{"duration":75,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T14:44:57.349Z"}
+{"level":"info","message":"GET /api/location-types 200 77.013 ms","timestamp":"2025-11-20T14:44:57.351Z"}
+{"duration":73,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T15:44:57.347Z"}
+{"level":"info","message":"GET /api/location-types 200 74.884 ms","timestamp":"2025-11-20T15:44:57.349Z"}
+{"duration":82,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:20:02.279Z"}
+{"duration":7,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:20:02.294Z"}
+{"level":"info","message":"GET /api/zones/get 200 100.342 ms","timestamp":"2025-11-20T16:20:02.296Z"}
+{"duration":89,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T16:20:02.305Z"}
+{"level":"info","message":"GET /api/location-types 200 90.519 ms","timestamp":"2025-11-20T16:20:02.307Z"}
+{"duration":92,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:20:02.311Z"}
+{"duration":3,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:20:02.314Z"}
+{"level":"info","message":"GET /api/zones/get 200 97.141 ms","timestamp":"2025-11-20T16:20:02.316Z"}
+{"level":"info","message":"GET /api/locationtype/zone 200 119.468 ms","timestamp":"2025-11-20T16:20:02.320Z"}
+{"duration":94,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:21:24.381Z"}
+{"duration":3,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:21:24.384Z"}
+{"level":"info","message":"GET /api/zones/get 304 98.769 ms","timestamp":"2025-11-20T16:21:24.385Z"}
+{"duration":87,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:21:24.391Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:21:24.393Z"}
+{"level":"info","message":"GET /api/zones/get 200 91.162 ms","timestamp":"2025-11-20T16:21:24.395Z"}
+{"duration":96,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T16:21:24.396Z"}
+{"level":"info","message":"GET /api/location-types 200 97.224 ms","timestamp":"2025-11-20T16:21:24.397Z"}
+{"level":"info","message":"GET /api/locationtype/zone 304 109.746 ms","timestamp":"2025-11-20T16:21:24.400Z"}
+{"duration":64,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:22:59.842Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:22:59.845Z"}
+{"level":"info","message":"GET /api/zones/get 200 67.446 ms","timestamp":"2025-11-20T16:22:59.846Z"}
+{"duration":65,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T16:22:59.850Z"}
+{"level":"info","message":"GET /api/location-types 200 66.052 ms","timestamp":"2025-11-20T16:22:59.851Z"}
+{"duration":67,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:22:59.852Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:22:59.854Z"}
+{"level":"info","message":"GET /api/zones/get 200 70.822 ms","timestamp":"2025-11-20T16:22:59.856Z"}
+{"level":"info","message":"GET /api/locationtype/zone 200 78.747 ms","timestamp":"2025-11-20T16:22:59.858Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T16:25:48.908Z"}
+{"level":"info","message":"GET /api/location-types 200 16.272 ms","timestamp":"2025-11-20T16:25:48.917Z"}
+{"duration":131,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T16:25:49.034Z"}
+{"level":"info","message":"GET /api/location-types 200 132.543 ms","timestamp":"2025-11-20T16:25:49.035Z"}
+{"duration":6,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T16:25:53.540Z"}
+{"level":"info","message":"GET /api/faremeter/get 200 17.189 ms","timestamp":"2025-11-20T16:25:53.551Z"}
+{"duration":5,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:25:58.384Z"}
+{"duration":3,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:25:58.388Z"}
+{"level":"info","message":"GET /api/zones/get 304 12.691 ms","timestamp":"2025-11-20T16:25:58.392Z"}
+{"duration":9,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T16:25:58.396Z"}
+{"level":"info","message":"GET /api/location-types 200 11.220 ms","timestamp":"2025-11-20T16:25:58.399Z"}
+{"duration":6,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:25:58.401Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:25:58.404Z"}
+{"level":"info","message":"GET /api/zones/get 200 13.400 ms","timestamp":"2025-11-20T16:25:58.408Z"}
+{"level":"info","message":"GET /api/locationtype/zone 304 31.846 ms","timestamp":"2025-11-20T16:25:58.413Z"}
+{"duration":97,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T16:26:22.203Z"}
+{"level":"info","message":"GET /api/faremeter/get 200 98.530 ms","timestamp":"2025-11-20T16:26:22.204Z"}
+{"duration":6,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:26:23.558Z"}
+{"duration":5,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:26:23.564Z"}
+{"level":"info","message":"GET /api/zones/get 304 14.903 ms","timestamp":"2025-11-20T16:26:23.567Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:26:23.570Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:26:23.573Z"}
+{"level":"info","message":"GET /api/zones/get 200 6.189 ms","timestamp":"2025-11-20T16:26:23.575Z"}
+{"duration":72,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T16:26:23.634Z"}
+{"level":"info","message":"GET /api/location-types 200 72.350 ms","timestamp":"2025-11-20T16:26:23.635Z"}
+{"level":"info","message":"GET /api/locationtype/zone 304 83.371 ms","timestamp":"2025-11-20T16:26:23.636Z"}
+{"duration":82,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T16:26:41.147Z"}
+{"level":"info","message":"GET /api/faremeter/get 200 83.466 ms","timestamp":"2025-11-20T16:26:41.148Z"}
+{"duration":100,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:27:02.908Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:27:02.910Z"}
+{"level":"info","message":"GET /api/zones/get 304 103.737 ms","timestamp":"2025-11-20T16:27:02.912Z"}
+{"duration":86,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:27:02.912Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:27:02.915Z"}
+{"level":"info","message":"GET /api/zones/get 200 90.119 ms","timestamp":"2025-11-20T16:27:02.916Z"}
+{"duration":98,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T16:27:02.919Z"}
+{"level":"info","message":"GET /api/location-types 200 98.289 ms","timestamp":"2025-11-20T16:27:02.920Z"}
+{"level":"info","message":"GET /api/locationtype/zone 304 111.335 ms","timestamp":"2025-11-20T16:27:02.922Z"}
+{"duration":78,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:27:27.679Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:27:27.681Z"}
+{"level":"info","message":"GET /api/zones/get 304 81.684 ms","timestamp":"2025-11-20T16:27:27.682Z"}
+{"duration":88,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T16:27:55.433Z"}
+{"level":"info","message":"GET /api/faremeter/get 200 89.165 ms","timestamp":"2025-11-20T16:27:55.435Z"}
+{"duration":49,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:29:34.941Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:29:34.944Z"}
+{"level":"info","message":"GET /api/zones/get 304 52.630 ms","timestamp":"2025-11-20T16:29:34.945Z"}
+{"duration":0,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:29:34.947Z"}
+{"duration":1,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:29:34.949Z"}
+{"level":"info","message":"GET /api/zones/get 304 3.195 ms","timestamp":"2025-11-20T16:29:34.950Z"}
+{"duration":85,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:29:48.383Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:29:48.386Z"}
+{"level":"info","message":"GET /api/zones/get 200 89.143 ms","timestamp":"2025-11-20T16:29:48.387Z"}
+{"duration":81,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T16:29:48.395Z"}
+{"level":"info","message":"GET /api/location-types 200 82.123 ms","timestamp":"2025-11-20T16:29:48.396Z"}
+{"duration":81,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:29:48.397Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:29:48.400Z"}
+{"level":"info","message":"GET /api/zones/get 200 85.663 ms","timestamp":"2025-11-20T16:29:48.402Z"}
+{"level":"info","message":"GET /api/locationtype/zone 200 103.753 ms","timestamp":"2025-11-20T16:29:48.404Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T16:29:56.451Z"}
+{"level":"info","message":"GET /api/faremeter/get 304 4.576 ms","timestamp":"2025-11-20T16:29:56.452Z"}
+{"duration":86,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T16:30:55.418Z"}
+{"level":"info","message":"GET /api/faremeter/get 200 87.557 ms","timestamp":"2025-11-20T16:30:55.419Z"}
+{"duration":58,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:35:26.178Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:35:26.180Z"}
+{"level":"info","message":"GET /api/zones/get 200 61.475 ms","timestamp":"2025-11-20T16:35:26.181Z"}
+{"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T16:35:26.190Z"}
+{"level":"info","message":"GET /api/location-types 200 64.085 ms","timestamp":"2025-11-20T16:35:26.191Z"}
+{"duration":69,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:35:26.196Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:35:26.199Z"}
+{"level":"info","message":"GET /api/zones/get 200 71.915 ms","timestamp":"2025-11-20T16:35:26.200Z"}
+{"level":"info","message":"GET /api/locationtype/zone 200 78.013 ms","timestamp":"2025-11-20T16:35:26.201Z"}
+{"duration":10,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T16:35:34.339Z"}
+{"level":"info","message":"GET /api/faremeter/get 200 12.320 ms","timestamp":"2025-11-20T16:35:34.342Z"}
+{"duration":54,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:55:27.396Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:55:27.398Z"}
+{"level":"info","message":"GET /api/zones/get 304 56.973 ms","timestamp":"2025-11-20T16:55:27.399Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T16:55:27.402Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T16:55:27.404Z"}
+{"level":"info","message":"GET /api/zones/get 304 3.480 ms","timestamp":"2025-11-20T16:55:27.405Z"}
+{"duration":77,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:10:12.199Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:10:12.202Z"}
+{"level":"info","message":"GET /api/zones/get 304 80.691 ms","timestamp":"2025-11-20T17:10:12.203Z"}
+{"duration":80,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T17:10:12.212Z"}
+{"level":"info","message":"GET /api/location-types 200 81.193 ms","timestamp":"2025-11-20T17:10:12.213Z"}
+{"duration":86,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:10:12.219Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:10:12.221Z"}
+{"level":"info","message":"GET /api/zones/get 200 89.038 ms","timestamp":"2025-11-20T17:10:12.222Z"}
+{"level":"info","message":"GET /api/locationtype/zone 304 100.130 ms","timestamp":"2025-11-20T17:10:12.224Z"}
+{"duration":55,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:13:49.164Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:13:49.166Z"}
+{"level":"info","message":"GET /api/zones/get 304 58.291 ms","timestamp":"2025-11-20T17:13:49.167Z"}
+{"duration":9,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T17:13:50.971Z"}
+{"level":"info","message":"GET /api/faremeter/get 304 10.177 ms","timestamp":"2025-11-20T17:13:50.973Z"}
+{"duration":82,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T17:19:19.144Z"}
+{"level":"info","message":"GET /api/location-types 200 83.290 ms","timestamp":"2025-11-20T17:19:19.146Z"}
+{"duration":93,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:19:19.146Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:19:19.149Z"}
+{"level":"info","message":"GET /api/zones/get 200 97.140 ms","timestamp":"2025-11-20T17:19:19.150Z"}
+{"duration":87,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:19:19.151Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:19:19.154Z"}
+{"level":"info","message":"GET /api/zones/get 200 91.406 ms","timestamp":"2025-11-20T17:19:19.155Z"}
+{"level":"info","message":"GET /api/locationtype/zone 200 102.954 ms","timestamp":"2025-11-20T17:19:19.157Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:19:22.973Z"}
+{"duration":3,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:19:22.977Z"}
+{"level":"info","message":"GET /api/zones/get 304 8.067 ms","timestamp":"2025-11-20T17:19:22.980Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:19:23.077Z"}
+{"duration":3,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:19:23.081Z"}
+{"level":"info","message":"GET /api/zones/get 304 8.001 ms","timestamp":"2025-11-20T17:19:23.084Z"}
+{"duration":10,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T17:19:29.275Z"}
+{"level":"info","message":"GET /api/faremeter/get 200 12.127 ms","timestamp":"2025-11-20T17:19:29.278Z"}
+{"duration":91,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:22:54.621Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:22:54.623Z"}
+{"level":"info","message":"GET /api/zones/get 304 94.458 ms","timestamp":"2025-11-20T17:22:54.624Z"}
+{"duration":92,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:22:54.633Z"}
+{"duration":94,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T17:22:54.634Z"}
+{"level":"info","message":"GET /api/location-types 200 95.359 ms","timestamp":"2025-11-20T17:22:54.635Z"}
+{"duration":3,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:22:54.636Z"}
+{"level":"info","message":"GET /api/zones/get 200 95.520 ms","timestamp":"2025-11-20T17:22:54.637Z"}
+{"level":"info","message":"GET /api/locationtype/zone 304 107.286 ms","timestamp":"2025-11-20T17:22:54.638Z"}
+{"duration":86,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:23:12.529Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:23:12.531Z"}
+{"level":"info","message":"GET /api/zones/get 304 89.448 ms","timestamp":"2025-11-20T17:23:12.532Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:23:12.584Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:23:12.586Z"}
+{"level":"info","message":"GET /api/zones/get 304 3.644 ms","timestamp":"2025-11-20T17:23:12.587Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T17:23:12.595Z"}
+{"level":"info","message":"GET /api/faremeter/get 304 5.327 ms","timestamp":"2025-11-20T17:23:12.596Z"}
+{"duration":90,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T17:25:48.332Z"}
+{"level":"info","message":"GET /api/location-types 200 91.492 ms","timestamp":"2025-11-20T17:25:48.333Z"}
+{"duration":79,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:30:18.022Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:30:18.025Z"}
+{"level":"info","message":"GET /api/zones/get 304 83.142 ms","timestamp":"2025-11-20T17:30:18.026Z"}
+{"duration":75,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T17:30:18.027Z"}
+{"level":"info","message":"GET /api/location-types 200 76.471 ms","timestamp":"2025-11-20T17:30:18.029Z"}
+{"duration":80,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:30:18.033Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:30:18.035Z"}
+{"level":"info","message":"GET /api/zones/get 200 83.144 ms","timestamp":"2025-11-20T17:30:18.037Z"}
+{"level":"info","message":"GET /api/locationtype/zone 304 93.801 ms","timestamp":"2025-11-20T17:30:18.038Z"}
+{"duration":81,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:30:43.298Z"}
+{"duration":1,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:30:43.300Z"}
+{"level":"info","message":"GET /api/zones/get 304 84.982 ms","timestamp":"2025-11-20T17:30:43.302Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:30:43.304Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:30:43.306Z"}
+{"level":"info","message":"GET /api/zones/get 304 3.146 ms","timestamp":"2025-11-20T17:30:43.307Z"}
+{"duration":166,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T17:30:57.799Z"}
+{"level":"info","message":"GET /api/faremeter/get 304 166.751 ms","timestamp":"2025-11-20T17:30:57.800Z"}
+{"duration":79,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:31:17.685Z"}
+{"duration":1,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:31:17.687Z"}
+{"level":"info","message":"GET /api/zones/get 304 82.136 ms","timestamp":"2025-11-20T17:31:17.688Z"}
+{"duration":84,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T17:31:17.699Z"}
+{"level":"info","message":"GET /api/location-types 200 85.022 ms","timestamp":"2025-11-20T17:31:17.700Z"}
+{"duration":85,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:31:17.701Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:31:17.704Z"}
+{"level":"info","message":"GET /api/zones/get 200 88.605 ms","timestamp":"2025-11-20T17:31:17.705Z"}
+{"level":"info","message":"GET /api/locationtype/zone 304 99.366 ms","timestamp":"2025-11-20T17:31:17.707Z"}
+{"duration":82,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:32:23.162Z"}
+{"duration":1,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:32:23.164Z"}
+{"level":"info","message":"GET /api/zones/get 304 85.272 ms","timestamp":"2025-11-20T17:32:23.166Z"}
+{"duration":10,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T17:32:25.736Z"}
+{"level":"info","message":"GET /api/faremeter/get 304 12.158 ms","timestamp":"2025-11-20T17:32:25.739Z"}
+{"duration":82,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T17:39:59.516Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:39:59.518Z"}
+{"level":"info","message":"GET /api/zones/get 304 85.822 ms","timestamp":"2025-11-20T17:39:59.519Z"}
+{"duration":64,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2025-11-20T17:56:40.449Z"}
+{"duration":5,"level":"info","message":"db-query","rows":2,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2025-11-20T17:56:40.454Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 69.309 ms","timestamp":"2025-11-20T17:56:40.455Z"}
+{"duration":68,"level":"info","message":"db-query","rows":1,"text":"SELECT COUNT(*) AS total FROM subsidiaries s ","timestamp":"2025-11-20T17:56:40.456Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT *\n    FROM subsidiaries s\n    \n    ORDER BY s.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T17:56:40.458Z"}
+{"level":"info","message":"GET /api/subsidiaries/get 200 72.152 ms","timestamp":"2025-11-20T17:56:40.459Z"}
+{"duration":73,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM company_vehicles cv\n    LEFT JOIN vehicle_types vt ON cv.vehicle_type_id = vt.id\n    ;\n  ","timestamp":"2025-11-20T17:56:40.460Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT cv.*, vt.id AS vehicle_type_id, vt.name AS vehicle_type_name\n    FROM company_vehicles cv\n    LEFT JOIN vehicle_types vt ON cv.vehicle_type_id = vt.id\n    \n    ORDER BY cv.id DESC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2025-11-20T17:56:40.463Z"}
+{"level":"info","message":"GET /api/company-vehicles/get 200 77.748 ms","timestamp":"2025-11-20T17:56:40.464Z"}
+{"level":"info","message":"GET /api/driver-combine/get 200 83.930 ms","timestamp":"2025-11-20T17:56:40.466Z"}
+{"duration":64,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T17:57:38.878Z"}
+{"level":"info","message":"GET /api/faremeter/get 304 64.940 ms","timestamp":"2025-11-20T17:57:38.880Z"}
+{"duration":87,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T18:25:48.342Z"}
+{"level":"info","message":"GET /api/location-types 200 88.017 ms","timestamp":"2025-11-20T18:25:48.343Z"}
+{"duration":86,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T18:28:20.710Z"}
+{"duration":1,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T18:28:20.712Z"}
+{"level":"info","message":"GET /api/zones/get 304 89.772 ms","timestamp":"2025-11-20T18:28:20.713Z"}
+{"duration":86,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T18:28:20.722Z"}
+{"level":"info","message":"GET /api/location-types 200 87.080 ms","timestamp":"2025-11-20T18:28:20.723Z"}
+{"duration":86,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T18:28:20.723Z"}
+{"duration":1,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T18:28:20.725Z"}
+{"level":"info","message":"GET /api/zones/get 200 89.463 ms","timestamp":"2025-11-20T18:28:20.727Z"}
+{"level":"info","message":"GET /api/locationtype/zone 304 104.046 ms","timestamp":"2025-11-20T18:28:20.729Z"}
+{"duration":84,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T18:29:09.046Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T18:29:09.048Z"}
+{"level":"info","message":"GET /api/zones/get 304 87.287 ms","timestamp":"2025-11-20T18:29:09.049Z"}
+{"duration":10,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T18:29:12.108Z"}
+{"level":"info","message":"GET /api/faremeter/get 304 12.387 ms","timestamp":"2025-11-20T18:29:12.111Z"}
+{"duration":88,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T18:39:46.364Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T18:39:46.367Z"}
+{"level":"info","message":"GET /api/zones/get 304 92.407 ms","timestamp":"2025-11-20T18:39:46.369Z"}
+{"duration":93,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2025-11-20T18:39:46.378Z"}
+{"level":"info","message":"GET /api/location-types 200 93.202 ms","timestamp":"2025-11-20T18:39:46.379Z"}
+{"duration":97,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T18:39:46.384Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T18:39:46.387Z"}
+{"level":"info","message":"GET /api/zones/get 200 100.874 ms","timestamp":"2025-11-20T18:39:46.388Z"}
+{"level":"info","message":"GET /api/locationtype/zone 304 111.459 ms","timestamp":"2025-11-20T18:39:46.389Z"}
+{"duration":82,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T18:40:20.436Z"}
+{"duration":2,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T18:40:20.438Z"}
+{"level":"info","message":"GET /api/zones/get 304 85.056 ms","timestamp":"2025-11-20T18:40:20.439Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM zones z\n    ;\n  ","timestamp":"2025-11-20T18:40:28.790Z"}
+{"duration":3,"level":"info","message":"db-query","rows":8,"text":"\n    SELECT \n      z.id,\n      z.name,\n      z.secondary_name,\n      z.type,\n      z.category,\n      z.vertices,\n      z.base,\n      z.overlay,\n      z.created_at,\n      z.updated_at\n    FROM zones z\n    \n    ORDER BY z.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2025-11-20T18:40:28.794Z"}
+{"level":"info","message":"GET /api/zones/get 304 7.824 ms","timestamp":"2025-11-20T18:40:28.797Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT fm.*, vt.name AS vehicle_type\n      FROM fare_meters fm\n      LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id\n      ORDER BY fm.id ASC;\n    ","timestamp":"2025-11-20T18:40:30.115Z"}
+{"level":"info","message":"GET /api/faremeter/get 304 4.483 ms","timestamp":"2025-11-20T18:40:30.116Z"}

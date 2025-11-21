@@ -37,7 +37,7 @@ const airportRoutes = require("./routes/airportRoutes");
 const fareIncrementRoutes = require("./routes/fareIncrementRoutes");
 const surchargeRoutes = require("./routes/surchargeRoutes");
 const fareMeterRoutes = require("./routes/fareMeterRoutes");
-
+const enumerationsRoutes = require("./routes/enumerationsRoutes");
 
 const app = express();
 
@@ -116,7 +116,7 @@ app.use("/api/airports", airportRoutes);
 app.use("/api/fareincrement", fareIncrementRoutes);
 app.use("/api/surcharges", surchargeRoutes);
 app.use("/api/faremeter",fareMeterRoutes);
-
+app.use("/api/enumerations", enumerationsRoutes);
 
   
 
