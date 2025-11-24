@@ -1,63 +1,12 @@
 const Customer = require("../models/customerModel");
 
 module.exports = {
-  // POST /api/customer
-  //   createCustomer: async (req, res) => {
-  //   try {
-  //     const customerId = await Customer.create(req.body);
-
-  //     let restrictedDrivers = [];
-  //     if (req.body.restricted_drivers) {
-  //       // If it's already an array, keep it as is, else parse
-  //       if (typeof req.body.restricted_drivers === "string") {
-  //         restrictedDrivers = JSON.parse(req.body.restricted_drivers);
-  //       } else {
-  //         restrictedDrivers = req.body.restricted_drivers;
-  //       }
-
-  //       const driverIds = restrictedDrivers.map(d => d.id);
-  //       await Customer.setRestrictedDrivers(customerId, driverIds);
-  //     }
-
-  //     // Response same as frontend payload
-  //     const customer = {
-  //       id: customerId,
-  //       name: req.body.name || null,
-  //       email: req.body.email || null,
-  //       mobile: req.body.mobile || null,
-  //       telephone: req.body.telephone || null,
-  //       fax: req.body.fax || null,
-  //       door_number: req.body.door_number || null,
-  //       address1: req.body.address1 || null,
-  //       address2: req.body.address2 || null,
-  //       blacklist: req.body.blacklist || null,
-  //       blacklist_reason: req.body.blacklist_reason || null,
-  //       notes: req.body.notes || null,
-  //       username: req.body.username || null,
-  //       password: req.body.password || null,
-  //       web_device_id: req.body.web_device_id || null,
-  //       mobile_device_id: req.body.mobile_device_id || null,
-  //       email_verification_code: req.body.email_verification_code || null,
-  //       mobile_verification_code: req.body.mobile_verification_code || null,
-  //       email_verified: req.body.email_verified || null,
-  //       mobile_verified: req.body.mobile_verified || null,
-  //       email_verified_at: req.body.email_verified_at || null,
-  //       mobile_verified_at: req.body.mobile_verified_at || null,
-  //       restricted_drivers: restrictedDrivers, // ✅ Return as array, not string
-  //       sms_flag: req.body.sms_flag ?? true
-  //     };
-
-  //     res.json({ status: true, customer });
-  //   } catch (err) {
-  //     console.error(err);
-  //     res.status(500).json({ status: false, error: err.message });
-  //   }
-  // },
-
   createCustomer: async (req, res) => {
     try {
-      console.log("📥 Incoming Payload:");
-      console.log(JSON.stringify(req.body, null, 2)); // 🔍 Full payload from frontend / Postman
+      console.log(
+        "🚀 INCOMING CUSTOMER ADD BODY:",
+        JSON.stringify(req.body, null, 2)
+      );
 
       const customerId = await Customer.create(req.body);
 
@@ -151,7 +100,12 @@ module.exports = {
   // GET /api/customers
   getAllCustomers: async (req, res) => {
     try {
-      const { page = 1, limit = 100, blacklist = false, ...filters } = req.query;
+      const {
+        page = 1,
+        limit = 100,
+        blacklist = false,
+        ...filters
+      } = req.query;
 
       const pageInt = parseInt(page);
       const limitInt = parseInt(limit);
@@ -202,7 +156,10 @@ module.exports = {
       const id = req.params.id;
       const data = req.body;
 
-      console.log("📥 Incoming update payload:", data);
+      console.log(
+      "🚀 INCOMING CUSTOMER UPDATE BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
 
       // Step 1: Update normal fields dynamically
       await Customer.update(id, data);

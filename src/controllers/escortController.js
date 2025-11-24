@@ -4,7 +4,7 @@ const BASE_URL = process.env.BASE_URL || "http://192.168.110.4:5000/uploads/";
 const create = async (req, res) => {
   try {
     // Clean empty strings
-    Object.keys(req.body).forEach(k => {
+    Object.keys(req.body).forEach((k) => {
       if (req.body[k] === "") req.body[k] = null;
     });
 
@@ -14,11 +14,11 @@ const create = async (req, res) => {
       "safeguarding_document",
       "pat_document",
       "firstaid_document",
-      "dbs_document"
+      "dbs_document",
     ];
 
     if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
+      req.files.forEach((file) => {
         const key = file.fieldname;
         if (fields.includes(key)) {
           req.body[key] = `${BASE_URL}${file.filename}`;
@@ -28,7 +28,10 @@ const create = async (req, res) => {
 
     // Convert booleans if any
     req.body.active = req.body.active === "true" || req.body.active === true;
-
+    console.log(
+      "🚀 INCOMING ESCORT ADD BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
     const escort = await Escort.create(req.body);
     res.status(200).json({ status: true, escort });
   } catch (err) {
@@ -46,7 +49,7 @@ const getAll = async (req, res) => {
       safeguarding_expiry,
       pat_expiry,
       firstaid_expiry,
-      dbs_expiry
+      dbs_expiry,
     } = req.query;
 
     const { escorts, total } = await Escort.findAll({
@@ -56,7 +59,7 @@ const getAll = async (req, res) => {
       safeguarding_expiry,
       pat_expiry,
       firstaid_expiry,
-      dbs_expiry
+      dbs_expiry,
     });
 
     res.json({
@@ -65,7 +68,7 @@ const getAll = async (req, res) => {
       total,
       total_pages: Math.ceil(total / limit),
       count: escorts.length,
-      escorts
+      escorts,
     });
   } catch (err) {
     console.error("Error fetching escorts:", err);
@@ -73,12 +76,13 @@ const getAll = async (req, res) => {
   }
 };
 
-
 const getById = async (req, res) => {
   try {
     const escort = await Escort.findById(req.params.id);
     if (!escort)
-      return res.status(404).json({ status: false, message: "Escort not found" });
+      return res
+        .status(404)
+        .json({ status: false, message: "Escort not found" });
     res.json({ status: true, escort });
   } catch (err) {
     console.error("Error fetching escort by id:", err);
@@ -89,19 +93,24 @@ const getById = async (req, res) => {
 const update = async (req, res) => {
   try {
     const id = req.params.id;
-    Object.keys(req.body).forEach(k => {
+    Object.keys(req.body).forEach((k) => {
       if (req.body[k] === "") req.body[k] = null;
     });
 
     if (req.files && req.files.length > 0) {
-      req.files.forEach(file => {
+      req.files.forEach((file) => {
         req.body[file.fieldname] = `${BASE_URL}${file.filename}`;
       });
     }
-
+    console.log(
+      "🚀 INCOMING ESCORT UPDATE BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
     const updated = await Escort.update(id, req.body);
     if (!updated)
-      return res.status(404).json({ status: false, message: "Escort not found" });
+      return res
+        .status(404)
+        .json({ status: false, message: "Escort not found" });
 
     res.json({ status: true, escort: updated });
   } catch (err) {

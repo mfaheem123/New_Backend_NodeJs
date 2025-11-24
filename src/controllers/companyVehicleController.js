@@ -33,7 +33,10 @@ const create = async (req, res) => {
         });
       }
     }
-
+    console.log(
+      "🚀 INCOMING COMPANY VEHICLE ADD BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
     // ✅ Create new vehicle
     const vehicle = await CompanyVehicle.create(req.body);
     res.status(200).json({ status: true, vehicle });
@@ -101,8 +104,6 @@ const getAll = async (req, res) => {
   }
 };
 
-
-
 const getById = async (req, res) => {
   try {
     const vehicle = await CompanyVehicle.findById(req.params.id);
@@ -127,7 +128,10 @@ const update = async (req, res) => {
         req.body[f] = `${BASE_URL}${req.files[f][0].filename}`;
       });
     }
-
+    console.log(
+      "🚀 INCOMING COMPANY VEHICLE UPDATE BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
     const updated = await CompanyVehicle.update(id, req.body);
     res.json({ status: true, vehicle: updated });
   } catch (err) {
@@ -140,8 +144,12 @@ const remove = async (req, res) => {
   try {
     const deleted = await CompanyVehicle.remove(req.params.id);
     if (!deleted)
-      return res.status(404).json({ status: false, message: 'Company Vehicle not found' });
-    res.status(200).json({ status: true, message: "Company Vehicle Deleted Successfully" });
+      return res
+        .status(404)
+        .json({ status: false, message: "Company Vehicle not found" });
+    res
+      .status(200)
+      .json({ status: true, message: "Company Vehicle Deleted Successfully" });
   } catch (err) {
     res.status(500).json({ status: false, message: "Server Error" });
   }
