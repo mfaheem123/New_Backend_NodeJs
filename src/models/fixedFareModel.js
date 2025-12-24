@@ -17,7 +17,7 @@ const FixedFare = {
         fare.area2.toLowerCase(),
         fare.fares,
         fare.from_location_id,
-        fare.to_location_id
+        fare.to_location_id,
       ];
       const { rows } = await pool.query(query, values);
       createdFares.push(rows[0]);
@@ -51,55 +51,58 @@ const FixedFare = {
   },
 
   // ✅ UPDATE
-async update(id, data) {
-  const allowedFields = [
-    "vehicle_type_id",
-    "fares",
-    "area1",
-    "area2",
-    "from_location_id",
-    "to_location_id"
-  ];
+  async update(id, data) {
+    const allowedFields = [
+      "vehicle_type_id",
+      "fares",
+      "area1",
+      "area2",
+      "from_location_id",
+      "to_location_id",
+    ];
 
-  const setClauses = [];
-  const values = [];
-  let index = 1;
+    const setClauses = [];
+    const values = [];
+    let index = 1;
 
-  for (const key of allowedFields) {
-    if (data[key] !== undefined) {
-      if (key === "area1" || key === "area2") {
-        data[key] = data[key].toLowerCase();
+    for (const key of allowedFields) {
+      if (data[key] !== undefined) {
+        if (key === "area1" || key === "area2") {
+          data[key] = data[key].toLowerCase();
+        }
+        setClauses.push(`${key} = $${index++}`);
+        values.push(data[key]);
       }
-      setClauses.push(`${key} = $${index++}`);
-      values.push(data[key]);
     }
-  }
 
-  // no fields to update
-  if (setClauses.length === 0) {
-    throw new Error("No valid fields provided to update");
-  }
+    // no fields to update
+    if (setClauses.length === 0) {
+      throw new Error("No valid fields provided to update");
+    }
 
-  // add updated_at
-  setClauses.push(`updated_at = CURRENT_TIMESTAMP`);
+    // add updated_at
+    setClauses.push(`updated_at = CURRENT_TIMESTAMP`);
 
-  const query = `
+    const query = `
     UPDATE fixed_fares
     SET ${setClauses.join(", ")}
     WHERE id = $${index}
     RETURNING *;
   `;
-  values.push(id);
+    values.push(id);
 
-  const { rows } = await pool.query(query, values);
-  return rows[0];
-},
+    const { rows } = await pool.query(query, values);
+    return rows[0];
+  },
 
   // ✅ DELETE
   async delete(id) {
-    const { rows } = await pool.query(`DELETE FROM fixed_fares WHERE id = $1 RETURNING *`, [id]);
+    const { rows } = await pool.query(
+      `DELETE FROM fixed_fares WHERE id = $1 RETURNING *`,
+      [id]
+    );
     return rows[0];
-  }
+  },
 };
 
 module.exports = FixedFare;
