@@ -337,7 +337,7 @@ const getBookingsByTab = async ({
   const dataSql = `
     ${ENRICHED_SELECT}
     ${whereClause}
-    ORDER BY b.id DESC
+    ORDER BY b.id ASC
     OFFSET $${idx++} LIMIT $${idx++}
   `;
 

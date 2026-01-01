@@ -15,5 +15,4 @@ router.delete("/delete/:id", AirportController.deleteAirport);
 // Clear Airport Charges
 router.post("/clear/:id", AirportController.clearCharges);
 
-
 module.exports = router;

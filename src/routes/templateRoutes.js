@@ -18,7 +18,7 @@ router.get("/templates", TemplateController.getAllTemplates);
 router.post("/templates", TemplateController.createTemplate);
 
 // Update template
-router.post("/templates/:id", TemplateController.updateTemplate);
+router.post("/edit_templates/:id", TemplateController.updateTemplate);
 
 // Delete template
 router.delete("/templates/:id", TemplateController.deleteTemplate);

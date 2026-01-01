@@ -65,7 +65,7 @@ const TemplateController = {
 
       return res.json({
         status: true,
-        template: {
+        templates: {
           id: template.id,
           template_type_id: template.template_type_id,
           name: template.name,
@@ -120,10 +120,10 @@ const TemplateController = {
         body,
       });
 
-      return res.status(201).json({
+      return res.status(200).json({
         status: true,
-        template,
         message: "Template created successfully",
+        template,
       });
     } catch (error) {
       return res.status(500).json({
@@ -163,8 +163,8 @@ const TemplateController = {
 
       return res.json({
         status: true,
-        template,
         message: "Template updated successfully",
+        template,
       });
     } catch (error) {
       return res.status(500).json({

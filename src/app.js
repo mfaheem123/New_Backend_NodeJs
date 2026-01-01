@@ -42,6 +42,7 @@ const employeeExtensionRoutes = require("./routes/employeeExtensionsRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const callEventRoutes = require("./routes/callEventRoutes");
 const templateRoutes = require("./routes/templateRoutes");
+const fareRoutes = require("./routes/fareRoutes");
 
 
 const app = express();
@@ -129,6 +130,7 @@ app.use("/api/employeeextension", employeeExtensionRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/calls", callEventRoutes);
 app.use("/api/templates", templateRoutes);
+app.use("/api/fares", fareRoutes);
 
 
 
