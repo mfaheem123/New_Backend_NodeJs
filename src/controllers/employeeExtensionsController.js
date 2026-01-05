@@ -49,30 +49,30 @@ module.exports = {
   },
 
   // ➤ Update Extension
- update: async (req, res) => {
-  try {
-    const { id } = req.params;
+  update: async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    console.log(
-      "🚀 INCOMING EMPLOYEE EXTENSION UPDATE BODY:",
-      JSON.stringify(req.body, null, 2)
-    );
+      console.log(
+        "🚀 INCOMING EMPLOYEE EXTENSION UPDATE BODY:",
+        JSON.stringify(req.body, null, 2)
+      );
 
-    const updated = await EmployeeExtModel.updateEmployeeExtension(
-      id,
-      req.body // pass req.body directly
-    );
+      const updated = await EmployeeExtModel.updateEmployeeExtension(
+        id,
+        req.body // pass req.body directly
+      );
 
-    if (!updated)
-      return res.status(400).json({ status: false, message: "No fields provided to update" });
+      if (!updated)
+        return res
+          .status(400)
+          .json({ status: false, message: "No fields provided to update" });
 
-    res.json({ status: true, employee_extension: updated });
-
-  } catch (error) {
-    res.status(500).json({ status: false, error: error.message });
-  }
-},
-
+      res.json({ status: true, employee_extension: updated });
+    } catch (error) {
+      res.status(500).json({ status: false, error: error.message });
+    }
+  },
 
   // ➤ Delete Extension
   delete: async (req, res) => {
@@ -86,12 +86,14 @@ module.exports = {
       res.status(500).json({ status: false, error: error.message });
     }
   },
-   upsert: async (req, res) => {
+  upsert: async (req, res) => {
     try {
       const { employee_id, extension_number, permanent_flag } = req.body;
 
       // Check if extension exists for this employee
-      const existing = await EmployeeExtModel.getEmployeeExtensionById(employee_id);
+      const existing = await EmployeeExtModel.getEmployeeExtensionById(
+        employee_id
+      );
 
       let result;
       if (existing.length > 0) {
@@ -115,9 +117,8 @@ module.exports = {
 
       res.json({
         status: true,
-        employee_extensions: data
+        employee_extensions: data,
       });
-
     } catch (error) {
       res.status(500).json({ status: false, error: error.message });
     }

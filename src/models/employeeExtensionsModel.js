@@ -88,7 +88,6 @@ const deleteEmployeeExtension = async (id) => {
   return result.rows[0];
 };
 
-
 const getByEmployeeId = async (employee_id) => {
   const q = `
       SELECT ee.*, 

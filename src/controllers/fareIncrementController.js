@@ -17,9 +17,8 @@ exports.add = async (req, res) => {
 
     res.json({
       status: true,
-      fareIncrement: data
+      fareIncrement: data,
     });
-
   } catch (err) {
     res.status(500).json({ status: false, message: err.message });
   }
@@ -34,9 +33,8 @@ exports.update = async (req, res) => {
 
     res.json({
       status: true,
-      fareIncrement: updated
+      fareIncrement: updated,
     });
-
   } catch (err) {
     res.status(500).json({ status: false, message: err.message });
   }
@@ -49,7 +47,6 @@ exports.delete = async (req, res) => {
     await FareIncrement.delete(id);
 
     res.json({ status: true, message: "Fare increment deleted successfully" });
-
   } catch (err) {
     res.status(500).json({ status: false, message: err.message });
   }

@@ -67,7 +67,7 @@ const getById = async (req, res) => {
 const create = async (req, res) => {
   try {
     const toNumberOrZero = (value) => {
-      return value ? parseFloat(value) : 0.00;
+      return value ? parseFloat(value) : 0.0;
     };
 
     // Convert empty strings to null

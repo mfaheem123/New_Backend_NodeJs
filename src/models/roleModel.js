@@ -1,19 +1,19 @@
 // src/models/roleModel.js
-const pool = require('../db');
+const pool = require("../db");
 
 const getAll = async () => {
-  const { rows } = await pool.query('SELECT * FROM roles ORDER BY id');
+  const { rows } = await pool.query("SELECT * FROM roles ORDER BY id");
   return rows;
 };
 
 const getById = async (id) => {
-  const { rows } = await pool.query('SELECT * FROM roles WHERE id = $1', [id]);
+  const { rows } = await pool.query("SELECT * FROM roles WHERE id = $1", [id]);
   return rows[0] || null;
 };
 
 const create = async (data) => {
   const { name } = data;
-  const q = 'INSERT INTO roles (name) VALUES ($1) RETURNING *';
+  const q = "INSERT INTO roles (name) VALUES ($1) RETURNING *";
   const { rows } = await pool.query(q, [name]);
   return rows[0];
 };

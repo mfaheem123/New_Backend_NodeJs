@@ -1,10 +1,31 @@
-const pool = require('../db');
+const pool = require("../db");
 
 const COLUMNS = [
-  'logo','background_color','foreground_color','name','telephone_number','emergency_contact_number',
-  'email','fax','website','address','sort_code','account_number','account_title','bank',
-  'company_number','vat_number','iban','balance','currency','web_access_token','mobile_access_token',
-  'maximum_drivers','active_drivers','address_latitude','address_longitude'
+  "logo",
+  "background_color",
+  "foreground_color",
+  "name",
+  "telephone_number",
+  "emergency_contact_number",
+  "email",
+  "fax",
+  "website",
+  "address",
+  "sort_code",
+  "account_number",
+  "account_title",
+  "bank",
+  "company_number",
+  "vat_number",
+  "iban",
+  "balance",
+  "currency",
+  "web_access_token",
+  "mobile_access_token",
+  "maximum_drivers",
+  "active_drivers",
+  "address_latitude",
+  "address_longitude",
 ];
 
 const getAll = async ({
@@ -14,7 +35,7 @@ const getAll = async ({
   email,
   telephone_number,
   fax,
-  address
+  address,
 } = {}) => {
   const offset = (page - 1) * limit;
 
@@ -43,7 +64,9 @@ const getAll = async ({
     params.push(`%${address}%`);
   }
 
-  const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const whereClause = conditions.length
+    ? `WHERE ${conditions.join(" AND ")}`
+    : "";
 
   // --- Count query ---
   const countQuery = `SELECT COUNT(*) AS total FROM subsidiaries s ${whereClause}`;
@@ -64,7 +87,6 @@ const getAll = async ({
   return { subsidiaries: rows, total };
 };
 
-
 const getById = async (id) => {
   const q = `SELECT * FROM subsidiaries WHERE id = $1`;
   const { rows } = await pool.query(q, [id]);
@@ -72,19 +94,21 @@ const getById = async (id) => {
 };
 
 const create = async (data) => {
-  const cols = COLUMNS.filter(c => (data[c] !== undefined));
-  const values = cols.map(c => data[c]);
-  const params = values.map((_, i) => `$${i+1}`).join(',');
-  const q = `INSERT INTO subsidiaries (${cols.join(',')}) VALUES (${params}) RETURNING *`;
+  const cols = COLUMNS.filter((c) => data[c] !== undefined);
+  const values = cols.map((c) => data[c]);
+  const params = values.map((_, i) => `$${i + 1}`).join(",");
+  const q = `INSERT INTO subsidiaries (${cols.join(
+    ","
+  )}) VALUES (${params}) RETURNING *`;
   const { rows } = await pool.query(q, values);
   return rows[0];
 };
 
 const update = async (id, data) => {
-  const cols = COLUMNS.filter(c => (data[c] !== undefined));
+  const cols = COLUMNS.filter((c) => data[c] !== undefined);
   if (cols.length === 0) return await getById(id); // nothing to update
-  const set = cols.map((c, i) => `${c} = $${i+1}`).join(', ');
-  const values = cols.map(c => data[c]);
+  const set = cols.map((c, i) => `${c} = $${i + 1}`).join(", ");
+  const values = cols.map((c) => data[c]);
   values.push(id);
   const q = `UPDATE subsidiaries SET ${set}, updated_at = now() WHERE id = $${values.length} RETURNING *`;
   const { rows } = await pool.query(q, values);
@@ -129,5 +153,5 @@ module.exports = {
   create,
   update,
   remove,
-  getAllWithBankDetails
+  getAllWithBankDetails,
 };

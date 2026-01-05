@@ -5,7 +5,9 @@ const searchController = async (req, res) => {
     const query = (req.query.search || "").trim().toLowerCase();
 
     if (!query) {
-      return res.status(400).json({ status: false, message: "search query required" });
+      return res
+        .status(400)
+        .json({ status: false, message: "search query required" });
     }
 
     const result = await searchAddressOrShortcut(query);

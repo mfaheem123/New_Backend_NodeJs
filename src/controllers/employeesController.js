@@ -77,7 +77,7 @@ const create = async (req, res) => {
       role_id,
       username,
       password,
-      confirmpassword, 
+      confirmpassword,
       email,
       phone,
       fax,
@@ -90,9 +90,9 @@ const create = async (req, res) => {
       allbookings,
       allaccounts,
       callreceiver,
-      allowtransferbookings
+      allowtransferbookings,
     } = req.body;
- // 🖼️ Image handling
+    // 🖼️ Image handling
     const imageUrl = req.file ? `${BASE_URL}${req.file.filename}` : null;
     req.body.image = imageUrl;
     console.log(
@@ -123,7 +123,7 @@ const create = async (req, res) => {
       role_id,
       username: username.toLowerCase(),
       password: hashed,
-      confirmpassword: confirmhashed, 
+      confirmpassword: confirmhashed,
       email,
       phone,
       fax,

@@ -40,9 +40,10 @@ exports.getById = async (req, res) => {
       location_types: result,
     });
   } catch (err) {
-    res.status(500).json({ 
-      status: false, 
-      error: err.message });
+    res.status(500).json({
+      status: false,
+      error: err.message,
+    });
   }
 };
 

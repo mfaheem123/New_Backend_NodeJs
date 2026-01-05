@@ -1,6 +1,5 @@
 const FareConfiguration = require("../models/fareConfigurationModel");
 
-
 exports.createFareConfiguration = async (req, res) => {
   try {
     console.log("🟢 Received body in /add =>", req.body);
@@ -20,7 +19,6 @@ exports.createFareConfiguration = async (req, res) => {
     res.status(500).json({ status: false, error: err.message });
   }
 };
-
 
 exports.getAllFareConfigurations = async (req, res) => {
   try {
@@ -67,19 +65,17 @@ exports.updateFareConfiguration = async (req, res) => {
     console.error(err);
     res.status(500).json({ status: false, error: err.message });
   }
-};  
+};
 
 exports.deleteFareConfiguration = async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await FareConfiguration.delete(id);
     if (!deleted) {
-      return res
-        .status(404)
-        .json({
-          status: false,
-          message: "Fare Configuration Setting Not found",
-        });
+      return res.status(404).json({
+        status: false,
+        message: "Fare Configuration Setting Not found",
+      });
     }
 
     res.json({ status: deleted, message: "Deleted successfully" });

@@ -49,7 +49,6 @@ exports.create = async (data) => {
   return fullResult.rows[0];
 };
 
-
 // UPDATE FARE BY VEHICLE
 exports.update = async (id, data) => {
   // If no fields provided
@@ -95,7 +94,6 @@ exports.update = async (id, data) => {
   return fullResult.rows[0];
 };
 
-
 // DELETE FARE BY VEHICLE
 exports.remove = async (id) => {
   const query = `DELETE FROM fare_by_vehicles WHERE id = $1 RETURNING *;`;
@@ -104,8 +102,7 @@ exports.remove = async (id) => {
 };
 
 // GET SINGLE FARE BY ID
-exports.
-getById = async (id) => {
+exports.getById = async (id) => {
   const query = `
     SELECT fbv.*, row_to_json(vt) as vehicle_type
     FROM fare_by_vehicles fbv

@@ -1,4 +1,3 @@
-
 const axios = require("axios");
 
 const BASE_URL = "http://192.168.110.3:5000/api";
@@ -12,5 +11,5 @@ module.exports = {
   async fetchLocationTypes() {
     const response = await axios.get(`${BASE_URL}/location-types`);
     return response.data?.location_types || [];
-  }
+  },
 };

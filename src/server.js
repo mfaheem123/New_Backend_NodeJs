@@ -42,6 +42,7 @@ app.get("/metrics", async (req, res) => {
   }
 });
 
+// Server Listening on Local Server
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server listening on port ${PORT}`);
 });

@@ -12,5 +12,5 @@ module.exports = {
   async fetchAccounts() {
     const response = await axios.get(`${BASE_URL}/accounts/get`);
     return response.data?.accounts || [];
-  }
+  },
 };

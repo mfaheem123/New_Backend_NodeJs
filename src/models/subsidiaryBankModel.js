@@ -1,4 +1,4 @@
-const pool = require('../db');
+const pool = require("../db");
 
 const create = async (subsidiary_id, data) => {
   const q = `
@@ -14,7 +14,7 @@ const create = async (subsidiary_id, data) => {
     data.account_number,
     data.iban,
     data.sort_code,
-    data.vat_number
+    data.vat_number,
   ];
   const { rows } = await pool.query(q, values);
   return rows[0];

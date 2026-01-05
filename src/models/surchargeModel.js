@@ -38,7 +38,7 @@ module.exports = {
     return result.rows[0];
   },
 
-    async update(id, data) {
+  async update(id, data) {
     // Keys & Values extract karein
     const fields = [];
     const values = [];
@@ -103,7 +103,7 @@ module.exports = {
   },
 
   async updateActive(id, active) {
-  const query = `
+    const query = `
     UPDATE surcharges
     SET active = $1,
         updated_at = CURRENT_TIMESTAMP
@@ -117,9 +117,7 @@ module.exports = {
         active, day, created_at, updated_at;
   `;
 
-  const result = await pool.query(query, [active, id]);
-  return result.rows[0];
-},
-
+    const result = await pool.query(query, [active, id]);
+    return result.rows[0];
+  },
 };
-

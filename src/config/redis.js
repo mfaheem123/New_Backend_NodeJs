@@ -8,7 +8,9 @@ const redis = new Redis({
 });
 
 redis.on("connect", () => {
-  console.log(`✅ Redis connected successfully at ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`);
+  console.log(
+    `✅ Redis connected successfully at ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
+  );
 });
 
 redis.on("error", (err) => {

@@ -1,13 +1,18 @@
-const pool = require('../db');
+const pool = require("../db");
 
 const Localization = {
   getAll: async () => {
-    const result = await pool.query('SELECT * FROM localizations ORDER BY id DESC');
+    const result = await pool.query(
+      "SELECT * FROM localizations ORDER BY id DESC"
+    );
     return result.rows;
   },
 
   getById: async (id) => {
-    const result = await pool.query('SELECT * FROM localizations WHERE id = $1', [id]);
+    const result = await pool.query(
+      "SELECT * FROM localizations WHERE id = $1",
+      [id]
+    );
     return result.rows[0];
   },
 
@@ -41,7 +46,7 @@ const Localization = {
 
     const query = `
       UPDATE localizations
-      SET ${fields.join(', ')}
+      SET ${fields.join(", ")}
       WHERE id = $${i}
       RETURNING *;
     `;
@@ -51,9 +56,9 @@ const Localization = {
   },
 
   delete: async (id) => {
-    await pool.query('DELETE FROM localizations WHERE id = $1', [id]);
+    await pool.query("DELETE FROM localizations WHERE id = $1", [id]);
     return true;
-  }
+  },
 };
 
 module.exports = Localization;

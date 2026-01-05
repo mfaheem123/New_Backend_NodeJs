@@ -236,7 +236,6 @@ const getBookingsByTab = async ({
   limit = 20,
   filters = {},
 }) => {
-
   const conditions = [];
   const params = [];
   let idx = 1;
@@ -371,5 +370,5 @@ module.exports = {
   getQuotedBookings,
   getWebBookings,
   getBookingsByTab,
-  getBookingByIdEnriched
+  getBookingByIdEnriched,
 };

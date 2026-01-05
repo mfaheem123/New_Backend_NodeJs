@@ -143,62 +143,64 @@ const CompanyVehicle = {
 
   // 🔹 Get all vehicles
   async findAll({
-  page = 1,
-  limit = 10,
-  owner,
-  vehicle_number,
-  vehicle_type,
-  make,
-  model,
-  color,
-}) {
-  const offset = (page - 1) * limit;
+    page = 1,
+    limit = 10,
+    owner,
+    vehicle_number,
+    vehicle_type,
+    make,
+    model,
+    color,
+  }) {
+    const offset = (page - 1) * limit;
 
-  const conditions = [];
-  const values = [];
-  let idx = 1;
+    const conditions = [];
+    const values = [];
+    let idx = 1;
 
-  // --- Filtering conditions dynamically ---
-  if (owner) {
-    conditions.push(`cv.owner = $${idx++}`);
-    values.push(owner);
-  }
-  if (vehicle_number) {
-    conditions.push(`cv.vehicle_number ILIKE $${idx++}`);
-    values.push(`%${vehicle_number}%`);
-  }
-  if (vehicle_type) {
-    conditions.push(`vt.name ILIKE $${idx++}`);
-    values.push(`%${vehicle_type}%`);
-  }
-  if (make) {
-    conditions.push(`cv.make ILIKE $${idx++}`);
-    values.push(`%${make}%`);
-  }
-  if (model) {
-    conditions.push(`cv.model ILIKE $${idx++}`);
-    values.push(`%${model}%`);
-  }
-  if (color) {
-    conditions.push(`cv.color ILIKE $${idx++}`);
-    values.push(`%${color}%`);
-  }
+    // --- Filtering conditions dynamically ---
+    if (owner) {
+      conditions.push(`cv.owner = $${idx++}`);
+      values.push(owner);
+    }
+    if (vehicle_number) {
+      conditions.push(`cv.vehicle_number ILIKE $${idx++}`);
+      values.push(`%${vehicle_number}%`);
+    }
+    if (vehicle_type) {
+      conditions.push(`vt.name ILIKE $${idx++}`);
+      values.push(`%${vehicle_type}%`);
+    }
+    if (make) {
+      conditions.push(`cv.make ILIKE $${idx++}`);
+      values.push(`%${make}%`);
+    }
+    if (model) {
+      conditions.push(`cv.model ILIKE $${idx++}`);
+      values.push(`%${model}%`);
+    }
+    if (color) {
+      conditions.push(`cv.color ILIKE $${idx++}`);
+      values.push(`%${color}%`);
+    }
 
-  const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+    const whereClause = conditions.length
+      ? `WHERE ${conditions.join(" AND ")}`
+      : "";
 
-  // --- Count query ---
-  const countQuery = `
+    // --- Count query ---
+    const countQuery = `
     SELECT COUNT(*) AS total
     FROM company_vehicles cv
     LEFT JOIN vehicle_types vt ON cv.vehicle_type_id = vt.id
     ${whereClause};
   `;
-  const countResult = await db.query(countQuery, values);
-  const total = Number(countResult.rows[0].total);
+    const countResult = await db.query(countQuery, values);
+    const total = Number(countResult.rows[0].total);
 
-  // --- Data query ---
-  values.push(offset, limit);
-  const query = `
+    // --- Data query ---
+    values.push(offset, limit);
+    const query = `
     SELECT cv.*, vt.id AS vehicle_type_id, vt.name AS vehicle_type_name
     FROM company_vehicles cv
     LEFT JOIN vehicle_types vt ON cv.vehicle_type_id = vt.id
@@ -206,18 +208,18 @@ const CompanyVehicle = {
     ORDER BY cv.id DESC
     OFFSET $${values.length - 1} LIMIT $${values.length};
   `;
-  const { rows } = await db.query(query, values);
+    const { rows } = await db.query(query, values);
 
-  const vehicles = rows.map((r) => ({
-    ...r,
-    vehicle_type: {
-      id: r.vehicle_type_id,
-      name: r.vehicle_type_name,
-    },
-  }));
+    const vehicles = rows.map((r) => ({
+      ...r,
+      vehicle_type: {
+        id: r.vehicle_type_id,
+        name: r.vehicle_type_name,
+      },
+    }));
 
-  return { vehicles, total };
-},
+    return { vehicles, total };
+  },
 
   // 🔹 Find by ID
   async findById(id) {
@@ -257,9 +259,12 @@ const CompanyVehicle = {
 
   // 🔹 Delete vehicle
   async remove(id) {
-  const result = await db.query(`DELETE FROM company_vehicles WHERE id = $1 RETURNING *`, [id]);
-  return result.rowCount > 0; // agar koi row delete hui to true, warna false
-},
+    const result = await db.query(
+      `DELETE FROM company_vehicles WHERE id = $1 RETURNING *`,
+      [id]
+    );
+    return result.rowCount > 0; // agar koi row delete hui to true, warna false
+  },
 };
 
 module.exports = CompanyVehicle;

@@ -44,7 +44,6 @@ const callEventRoutes = require("./routes/callEventRoutes");
 const templateRoutes = require("./routes/templateRoutes");
 const fareRoutes = require("./routes/fareRoutes");
 
-
 const app = express();
 
 // ✅ CORS configuration
@@ -131,10 +130,6 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/calls", callEventRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/fares", fareRoutes);
-
-
-
-
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

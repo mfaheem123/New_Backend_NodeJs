@@ -1,4 +1,4 @@
-const Localization = require('../models/localizationModel');
+const Localization = require("../models/localizationModel");
 
 exports.getAll = async (req, res) => {
   try {
@@ -6,7 +6,7 @@ exports.getAll = async (req, res) => {
     res.json({
       status: true,
       count: localizations.length,
-      localizationdetail: localizations
+      localizationdetail: localizations,
     });
   } catch (err) {
     res.status(500).json({ status: false, message: err.message });
@@ -17,7 +17,9 @@ exports.getById = async (req, res) => {
   try {
     const localization = await Localization.getById(req.params.id);
     if (!localization) {
-      return res.status(404).json({ status: false, message: 'Localization not found' });
+      return res
+        .status(404)
+        .json({ status: false, message: "Localization not found" });
     }
     res.json({ status: true, localization });
   } catch (err) {
@@ -46,7 +48,7 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     await Localization.delete(req.params.id);
-    res.json({ status: true, message: 'Localization deleted successfully' });
+    res.json({ status: true, message: "Localization deleted successfully" });
   } catch (err) {
     res.status(500).json({ status: false, message: err.message });
   }

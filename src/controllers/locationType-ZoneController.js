@@ -7,7 +7,7 @@ exports.getCombinedData = async (req, res) => {
     // Parallel requests for better performance 🚀
     const [locationTypesRes, zonesRes] = await Promise.all([
       axios.get(`${BASE_URL}/location-types`),
-      axios.get(`${BASE_URL}/zones/get`)
+      axios.get(`${BASE_URL}/zones/get`),
     ]);
 
     const locationTypes = locationTypesRes.data.location_types || [];
@@ -20,7 +20,7 @@ exports.getCombinedData = async (req, res) => {
       location_types_count: locationTypes.length,
       zones_count: zones.length,
       location_types: locationTypes,
-      zones: zones
+      zones: zones,
     };
 
     res.status(200).json(combined);
@@ -29,11 +29,10 @@ exports.getCombinedData = async (req, res) => {
     res.status(500).json({
       status: false,
       message: "Error fetching combined data",
-      error: error.message
+      error: error.message,
     });
   }
 };
-
 
 // REDIS CODE CHECK IN DOCKER
 

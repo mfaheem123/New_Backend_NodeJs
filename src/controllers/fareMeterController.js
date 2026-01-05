@@ -117,7 +117,7 @@ module.exports = {
           waiting_charges: waitingCharges,
           waiting_intervals: row.waiting_intervals,
           vehicle_type_id: row.vehicle_type_id,
-           vehicle_type: { name: vehicleName }
+          vehicle_type: { name: vehicleName },
         },
       });
     } catch (err) {

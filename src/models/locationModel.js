@@ -1,10 +1,20 @@
-const pool = require('../db');
+const pool = require("../db");
 
 const COLUMNS = [
-  'name', 'location_type_id', 'address', 'postcode', 'zone_id',
-  'shortcut', 'background_color', 'foreground_color',
-  'extra_charges', 'pickup_charges', 'dropoff_charges',
-  'blacklist', 'latitude', 'longitude'
+  "name",
+  "location_type_id",
+  "address",
+  "postcode",
+  "zone_id",
+  "shortcut",
+  "background_color",
+  "foreground_color",
+  "extra_charges",
+  "pickup_charges",
+  "dropoff_charges",
+  "blacklist",
+  "latitude",
+  "longitude",
 ];
 
 // Get all locations with location_type + zone details
@@ -16,7 +26,7 @@ const getAll = async ({
   shortcut,
   address,
   location_type,
-  zone
+  zone,
 }) => {
   const offset = (page - 1) * limit;
 
@@ -50,7 +60,9 @@ const getAll = async ({
     params.push(`%${zone}%`);
   }
 
-  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+  const whereClause = conditions.length
+    ? `WHERE ${conditions.join(" AND ")}`
+    : "";
 
   // --- Count Query (for pagination) ---
   const countQuery = `
@@ -134,20 +146,22 @@ const getById = async (id) => {
 
 // Create location
 const create = async (data) => {
-  const cols = COLUMNS.filter(c => data[c] !== undefined);
-  const values = cols.map(c => data[c]);
-  const params = values.map((_, i) => `$${i + 1}`).join(',');
-  const q = `INSERT INTO locations (${cols.join(',')}) VALUES (${params}) RETURNING *`;
+  const cols = COLUMNS.filter((c) => data[c] !== undefined);
+  const values = cols.map((c) => data[c]);
+  const params = values.map((_, i) => `$${i + 1}`).join(",");
+  const q = `INSERT INTO locations (${cols.join(
+    ","
+  )}) VALUES (${params}) RETURNING *`;
   const { rows } = await pool.query(q, values);
   return rows[0];
 };
 
 // Update location
 const update = async (id, data) => {
-  const cols = COLUMNS.filter(c => data[c] !== undefined);
+  const cols = COLUMNS.filter((c) => data[c] !== undefined);
   if (cols.length === 0) return await getById(id);
-  const set = cols.map((c, i) => `${c} = $${i + 1}`).join(', ');
-  const values = cols.map(c => data[c]);
+  const set = cols.map((c, i) => `${c} = $${i + 1}`).join(", ");
+  const values = cols.map((c) => data[c]);
   values.push(id);
   const q = `UPDATE locations SET ${set} WHERE id = $${values.length} RETURNING *`;
   const { rows } = await pool.query(q, values);
