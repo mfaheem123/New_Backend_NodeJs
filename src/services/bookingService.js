@@ -699,7 +699,7 @@ async function create(payload) {
 
   // Two-way
   if (payload.journey_type_id === 2 || payload.journey_type_id == "2") {
-    return createTwoWayBooking(payload);
+    return createSimpleBooking(payload);
   }
 
   // Simple

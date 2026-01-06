@@ -41,7 +41,7 @@ function parseJSONFields(row) {
 exports.createBooking = async (req, res) => {
   try {
     console.log(
-      "🚀 INCOMING DRIVER ADD BODY:",
+      "🚀 INCOMING ADD BOOKING BODY:",
       JSON.stringify(req.body, null, 2)
     );
 

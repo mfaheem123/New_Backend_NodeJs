@@ -12,6 +12,23 @@ const days = [
   "Saturday",
 ];
 
+const sumExtraCharges = (payload) => {
+  const fields = [
+    "parking_charges",
+    "congestion_charges",
+    "meet_and_greet",
+    "waiting_charges",
+    "extra_drop_charges",
+    "credit_card_charges",
+    "company_price",
+  ];
+
+  return fields.reduce((sum, key) => {
+    const val = Number(payload[key] || 0);
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
+};
+
 const getDayName = (date) =>
   new Date(date).toLocaleDateString("en-US", { weekday: "long" });
 
@@ -49,12 +66,12 @@ const normalize = (str = "") => str.toLowerCase().replace(/\s+/g, " ").trim();
 
 const calculateSingleFare = async (payload) => {
   let {
-    miles,
+    miles = 0,
     pickup_date,
     pickup_time,
     day,
     vehicle_type_id,
-    journey_type_id,
+    journey_type_id = 1,
     pickup_plot_id,
     dropoff_plot_id,
     pickup,
@@ -63,12 +80,13 @@ const calculateSingleFare = async (payload) => {
 
   pickup_time = normalizeTime(pickup_time);
   const resolvedDay = day || getDayName(pickup_date);
-  journey_type_id = Number(journey_type_id || 1);
+  journey_type_id = Number(journey_type_id);
 
+  // 🔁 only for FIXED / PLOT / AIRPORT
   const multiplier = journey_type_id === 2 ? 2 : 1;
 
   let baseFare = 0;
-  let fareType = "NORMAL";
+  let fareType = "NO_FARE";
 
   /* -------- FIXED -------- */
   if (pickup && dropoff) {
@@ -109,7 +127,7 @@ const calculateSingleFare = async (payload) => {
     }
   }
 
-  /* -------- NORMAL / SPECIAL -------- */
+  /* -------- NORMAL / SPECIAL (NO MULTIPLIER) -------- */
   if (!baseFare) {
     const { rows } = await db.query(
       `SELECT * FROM fare_configurations
@@ -129,16 +147,16 @@ const calculateSingleFare = async (payload) => {
           isTimeInRange(pickup_time, r.from_time, r.to_time)
       );
 
-    if (!rule) return null;
+    if (rule) {
+      const minMiles = Number(rule.minimum_miles);
+      const minFare = Number(rule.minimum_fares);
 
-    const minMiles = Number(rule.minimum_miles);
-    const minFare = Number(rule.minimum_fares);
+      let extraMiles = miles - minMiles;
+      if (extraMiles < 0) extraMiles = 0;
 
-    let extraMiles = miles - minMiles;
-    if (extraMiles < 0) extraMiles = 0;
-
-    baseFare = minFare + extraMiles * 2;
-    fareType = rule.from_date ? "SPECIAL" : "NORMAL";
+      baseFare = minFare + extraMiles * 2; // 👈 miles already doubled
+      fareType = rule.from_date ? "SPECIAL" : "NORMAL";
+    }
   }
 
   /* -------- AIRPORT -------- */
@@ -153,30 +171,23 @@ const calculateSingleFare = async (payload) => {
     const a = airports.find((x) =>
       normalize(pickup).includes(normalize(x.address))
     );
-    if (a) airportPickup = Number(a.pickup_charges || 0);
+    if (a) airportPickup = Number(a.pickup_charges || 0) * multiplier;
   }
 
   if (dropoff) {
     const a = airports.find((x) =>
       normalize(dropoff).includes(normalize(x.address))
     );
-    if (a) airportDropoff = Number(a.dropoff_charges || 0);
+    if (a) airportDropoff = Number(a.dropoff_charges || 0) * multiplier;
   }
 
-  airportPickup *= multiplier;
-  airportDropoff *= multiplier;
+  /* -------- EXTRA CHARGES (ALWAYS ADD) -------- */
+  const extraChargesTotal = sumExtraCharges(payload);
 
-  const totalFare = baseFare + airportPickup + airportDropoff;
+  const totalFare =
+    baseFare + airportPickup + airportDropoff + extraChargesTotal;
 
   return {
-    fare_type: fareType,
-    journey_type_id,
-    base_fare: Number(baseFare.toFixed(2)),
-    airport_charges: {
-      pickup: airportPickup,
-      dropoff: airportDropoff,
-    },
-    // multiplier,
     total_fare: Number(totalFare.toFixed(2)),
   };
 };
@@ -186,10 +197,12 @@ const calculateSingleFare = async (payload) => {
 exports.calculateFare = async (req, res) => {
   try {
     let { multi_reservation } = req.body;
+
     console.log(
       "🚀 INCOMING FARE CALCULATION BODY:",
       JSON.stringify(req.body, null, 2)
     );
+
     if (typeof multi_reservation === "string") {
       multi_reservation = JSON.parse(multi_reservation);
     }
@@ -200,7 +213,15 @@ exports.calculateFare = async (req, res) => {
       let grand_total = 0;
 
       for (const r of multi_reservation) {
-        if (r.exclude) continue;
+        if (r.exclude) {
+          reservations.push({
+            pickup_date: r.pickup_date,
+            pickup_time: r.pickup_time,
+            excluded: true,
+            fare: null,
+          });
+          continue;
+        }
 
         const fare = await calculateSingleFare({
           ...req.body,
@@ -209,15 +230,13 @@ exports.calculateFare = async (req, res) => {
           day: r.day,
         });
 
-        if (fare) {
-          reservations.push({
-            pickup_date: r.pickup_date,
-            pickup_time: r.pickup_time,
-            ...fare,
-          });
+        reservations.push({
+          pickup_date: r.pickup_date,
+          pickup_time: r.pickup_time,
+          ...fare,
+        });
 
-          grand_total += fare.total_fare;
-        }
+        grand_total += fare.total_fare;
       }
 
       return res.json({
