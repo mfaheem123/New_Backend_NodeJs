@@ -69,7 +69,6 @@ const calculateSingleFare = async (payload) => {
     miles = 0,
     pickup_date,
     pickup_time,
-    day,
     vehicle_type_id,
     journey_type_id = 1,
     pickup_plot_id,
@@ -79,7 +78,7 @@ const calculateSingleFare = async (payload) => {
   } = payload;
 
   pickup_time = normalizeTime(pickup_time);
-  const resolvedDay = day || getDayName(pickup_date);
+  const resolvedDay = getDayName(pickup_date);
   journey_type_id = Number(journey_type_id);
 
   // 🔁 only for FIXED / PLOT / AIRPORT
