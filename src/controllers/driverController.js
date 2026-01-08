@@ -1,4 +1,5 @@
 const Driver = require("../models/driverModel");
+const { broadcastDriverLogin } = require("../sockets/driverWebSocket");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const pool = require("../db");
@@ -578,6 +579,17 @@ exports.driverLogin = async (req, res) => {
     // STEP 6: Update driver login session
     await Driver.updateDriverLoginStatus(driver.id);
 
+    // WEB SOCKET EVENT FIRE
+    broadcastDriverLogin({
+      id: driver.id,
+      name: driver.name,
+      mobile: driver.mobile,
+      vehicle_id: driver.vehicle_id,
+      company_vehicle_id: driver.company_vehicle_id,
+      status: "logged_in",
+      login_time: new Date(),
+    });
+
     // STEP 7: Return response
     res.status(200).json({
       message: "Login successful",
@@ -665,7 +677,8 @@ exports.driverLogout = async (req, res) => {
 
     // STEP 2: Update session status to logged_out
     await Driver.updateDriverLogoutStatus(id);
-
+    // 🔥 WS EVENT
+    // notifyDriverLogout(id);
     return res.status(200).json({
       message: "Logout successful",
       driverId: id,

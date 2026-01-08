@@ -1,23 +1,35 @@
-const logger = require('../utils/logger');
+const WebSocket = require("ws");
+const logger = require("../utils/logger");
+const { v4: uuidv4 } = require("uuid");
 
-function initSockets(io) {
-  io.on('connection', (socket) => {
-    logger.info('socket:connected', { id: socket.id });
+const {
+  handleDriverLoginSocket,
+} = require("./driverWebSocket");
 
-    socket.on('join', (room) => {
-      socket.join(room);
-      logger.info('socket:join', { id: socket.id, room });
-    });
+function initWebSockets(server) {
+  const wss = new WebSocket.Server({ noServer: true });
 
-    socket.on('message', (msg) => {
-      logger.info('socket:message', { id: socket.id, msg });
-      io.emit('message', msg);
-    });
+  server.on("upgrade", (req, socket, head) => {
+    const { url } = req;
 
-    socket.on('disconnect', () =>
-      logger.info('socket:disconnect', { id: socket.id })
-    );
+    logger.info("ws:upgrade", { url });
+
+    if (url === "/websocket/driver-login") {
+      wss.handleUpgrade(req, socket, head, (ws) => {
+        ws.id = uuidv4(); // socket.id equivalent
+
+        logger.info("ws:connected", {
+          id: ws.id,
+          path: url,
+        });
+
+        handleDriverLoginSocket(ws, req);
+      });
+    } else {
+      logger.warn("ws:rejected", { url });
+      socket.destroy();
+    }
   });
 }
 
-module.exports = initSockets;
+module.exports = initWebSockets;
