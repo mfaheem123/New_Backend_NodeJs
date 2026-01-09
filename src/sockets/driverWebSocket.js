@@ -1,54 +1,83 @@
 const WebSocket = require("ws");
 const logger = require("../utils/logger");
 
-const clients = new Set();
+// 🟢 Sirf dashboard sockets
+const dashboardClients = new Set();
+
+// 🟢 Logged-in drivers list (memory)
+const loggedInDrivers = new Map();
 
 function handleDriverLoginSocket(ws) {
-  clients.add(ws);
+  dashboardClients.add(ws);
 
-  ws.on("message", (data) => {
-    logger.info("ws:message", {
-      id: ws.id,
-      message: data.toString(),
-    });
+  logger.info("ws:dashboard-connected", {
+    socketId: ws.id,
   });
 
-  ws.on("close", () => {
-    clients.delete(ws);
+  // 🔁 Jab dashboard connect ho to current state bhejo
+  ws.send(
+    JSON.stringify({
+      event: "DRIVER_LIST",
+      data: Array.from(loggedInDrivers.values()),
+    })
+  );
 
-    logger.info("ws:disconnect", {
-      id: ws.id,
+  ws.on("close", () => {
+    dashboardClients.delete(ws);
+
+    logger.info("ws:dashboard-disconnect", {
+      socketId: ws.id,
     });
   });
 
   ws.on("error", (err) => {
     logger.error("ws:error", {
-      id: ws.id,
+      socketId: ws.id,
       error: err.message,
     });
   });
 }
 
-function broadcastDriverLogin(driver) {
+function notifyDriverLogin(driver) {
+  loggedInDrivers.set(driver.id, driver);
+
   const payload = JSON.stringify({
     event: "DRIVER_LOGIN",
     data: driver,
   });
 
-  clients.forEach((client) => {
+  dashboardClients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
       client.send(payload);
-
-      logger.info("ws:emit", {
-        to: "driver-login",
-        socketId: client.id,
-        event: "DRIVER_LOGIN",
-      });
     }
+  });
+
+  logger.info("ws:driver-login", {
+    driverId: driver.id,
+  });
+}
+
+function notifyDriverLogout(driverId) {
+  loggedInDrivers.delete(driverId);
+
+  const payload = JSON.stringify({
+    event: "DRIVER_LOGOUT",
+    data: { driverId },
+  });
+
+  dashboardClients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(payload);
+    }
+  });
+
+  logger.info("ws:driver-logout", {
+    driverId,
   });
 }
 
 module.exports = {
   handleDriverLoginSocket,
-  broadcastDriverLogin,
+  notifyDriverLogin,
+  notifyDriverLogout,
 };

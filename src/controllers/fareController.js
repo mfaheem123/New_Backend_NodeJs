@@ -216,8 +216,8 @@ exports.calculateFare = async (req, res) => {
           reservations.push({
             pickup_date: r.pickup_date,
             pickup_time: r.pickup_time,
-            excluded: true,
-            fare: null,
+            exclude: true,
+            total_fare: 0,
           });
           continue;
         }
@@ -232,6 +232,7 @@ exports.calculateFare = async (req, res) => {
         reservations.push({
           pickup_date: r.pickup_date,
           pickup_time: r.pickup_time,
+          exclude: false,
           ...fare,
         });
 
@@ -243,8 +244,8 @@ exports.calculateFare = async (req, res) => {
         message: "Multi reservation fares calculated",
         data: {
           total_reservations: reservations.length,
-          grand_total: Number(grand_total.toFixed(2)),
-          reservations,
+          total_fare: Number(grand_total.toFixed(2)),
+          multi_reservation: reservations,
         },
       });
     }

@@ -587,6 +587,10 @@ async function createMultiReservationBooking(payload) {
       clone.pickup_date = mr.pickup_date;
       clone.pickup_time = mr.pickup_time;
 
+      //Fare For Every Booking
+      clone.fares = mr.total_fare;
+      clone.total_charges = mr.total_fare;
+      
       // Remove non-DB fields
       delete clone.multi_reservation;
       delete clone.multi_vehicle;

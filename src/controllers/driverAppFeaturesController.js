@@ -3,7 +3,7 @@ const Features = require("../models/driverAppFeaturesModel");
 exports.updateDriverAppFeatures = async (req, res) => {
   try {
     const { driver_id, ...features } = req.body;
-
+    console.log(req.body);
     if (!driver_id) {
       return res.status(400).json({
         status: false,
@@ -22,11 +22,13 @@ exports.updateDriverAppFeatures = async (req, res) => {
 
     return res.json({
       status: true,
-      appFeatures: {
-        id: updated.id,
-        driver_id: updated.driver_id,
-        features,
-      },
+      appFeatures: [
+        {
+          id: updated.id,
+          driver_id: updated.driver_id,
+          features: updated,
+        },
+      ],
     });
   } catch (error) {
     console.error(error);

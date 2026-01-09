@@ -1,5 +1,8 @@
 const Driver = require("../models/driverModel");
-const { broadcastDriverLogin } = require("../sockets/driverWebSocket");
+const {
+  notifyDriverLogin,
+  notifyDriverLogout,
+} = require("../sockets/driverWebSocket");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const pool = require("../db");
@@ -580,7 +583,7 @@ exports.driverLogin = async (req, res) => {
     await Driver.updateDriverLoginStatus(driver.id);
 
     // WEB SOCKET EVENT FIRE
-    broadcastDriverLogin({
+    notifyDriverLogin({
       id: driver.id,
       name: driver.name,
       mobile: driver.mobile,
@@ -669,24 +672,29 @@ exports.driverLogout = async (req, res) => {
   }
 
   try {
-    // STEP 1: Check if driver exists
     const driver = await Driver.getById(id);
     if (!driver) {
       return res.status(404).json({ message: "Driver not found" });
     }
 
-    // STEP 2: Update session status to logged_out
+    // DB update
     await Driver.updateDriverLogoutStatus(id);
-    // 🔥 WS EVENT
-    // notifyDriverLogout(id);
+
+    // 🔥🔥🔥 REMOVE FROM WS LOGIN SOCKET
+    notifyDriverLogout(Number(id));
+
     return res.status(200).json({
+      status: true,
       message: "Logout successful",
       driverId: id,
       session_status: "logged_out",
     });
   } catch (error) {
     console.error("Logout Error:", error);
-    res.status(500).json({ message: "An error occurred during logout" });
+    res.status(500).json({
+      status: false,
+      message: "An error occurred during logout",
+    });
   }
 };
 
