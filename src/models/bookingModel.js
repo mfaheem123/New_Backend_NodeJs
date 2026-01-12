@@ -118,9 +118,7 @@ LEFT JOIN customers c ON b.customer_id = c.id
 LEFT JOIN employees e ON b.employee_id = e.id
 `;
 
-// ---------------------------------------------------------
 // TODAY BOOKINGS (STATUS = WAITING)
-// ---------------------------------------------------------.filter(item => item)
 const getTodayBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -132,9 +130,7 @@ const getTodayBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// ---------------------------------------------------------
 // ALL BOOKINGS
-// ---------------------------------------------------------
 const getAllBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -143,9 +139,7 @@ const getAllBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// ---------------------------------------------------------
 // PRE BOOKINGS (DATE > TODAY)
-// ---------------------------------------------------------
 const getPreBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -155,9 +149,7 @@ const getPreBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// ---------------------------------------------------------
 // RECENT BOOKINGS (NOT COMPLETED)
-// ---------------------------------------------------------
 const getRecentBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -167,9 +159,7 @@ const getRecentBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// ---------------------------------------------------------
 // COMPLETED BOOKINGS
-// ---------------------------------------------------------
 const getCompletedBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -179,9 +169,7 @@ const getCompletedBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// ---------------------------------------------------------
 // WEB BOOKINGS
-// ---------------------------------------------------------
 const getWebBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -191,9 +179,7 @@ const getWebBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// ---------------------------------------------------------
 // APP BOOKINGS
-// ---------------------------------------------------------
 const getAppBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -203,9 +189,7 @@ const getAppBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// ---------------------------------------------------------
 // IVR BOOKINGS
-// ---------------------------------------------------------
 const getIvrBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -215,9 +199,7 @@ const getIvrBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// ---------------------------------------------------------
 // QUOTED BOOKINGS
-// ---------------------------------------------------------
 const getQuotedBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -227,9 +209,7 @@ const getQuotedBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// ---------------------------------------------------------
 // GET BOOKINGS BY TABS (PAGINATION + SEARCHING)
-// ---------------------------------------------------------
 const getBookingsByTab = async ({
   tabWhere,
   offset = 0,
@@ -347,6 +327,7 @@ const getBookingsByTab = async ({
   return { rows: result.rows, total };
 };
 
+// GET BOOKINGS BY ID
 const getBookingByIdEnriched = async (id) => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -355,6 +336,7 @@ const getBookingByIdEnriched = async (id) => {
   const res = await pool.query(sql, [id]);
   return res.rows[0];
 };
+
 module.exports = {
   pool,
   insertBookingRow,

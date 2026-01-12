@@ -34,9 +34,7 @@ const parseJSONFields = (row) => {
   return parsed;
 };
 
-// --------------------------------------------------
 // UNIQUE REFERENCE GENERATOR
-// --------------------------------------------------
 async function genRef() {
   let ref;
   let exists = true;
@@ -59,9 +57,7 @@ function strOrNull(v) {
   return JSON.stringify(v);
 }
 
-// --------------------------------------------------
 // NORMALIZER
-// --------------------------------------------------
 async function normalizeBookingPayload(src) {
   const b = { ...src };
 
@@ -101,9 +97,8 @@ async function normalizeBookingPayload(src) {
   return b;
 }
 
-// --------------------------------------------------
 // INSERT BOOKING ROW
-// --------------------------------------------------
+
 async function createBookingRow(pool, bookingObj) {
   // List of allowed DB columns
   const allowed = [
@@ -221,9 +216,8 @@ async function createBookingRow(pool, bookingObj) {
   return inserted;
 }
 
-// --------------------------------------------------
 // CREATE SIMPLE BOOKING
-// --------------------------------------------------
+
 async function createSimpleBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -273,9 +267,8 @@ async function createSimpleBooking(payload) {
   }
 }
 
-// --------------------------------------------------
 // CREATE TWO-WAY BOOKING
-// --------------------------------------------------
+
 async function createTwoWayBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -343,9 +336,8 @@ async function createTwoWayBooking(payload) {
   }
 }
 
-// --------------------------------------------------
-// ⭐⭐ RETURN WAY BOOKING (Journey Type = 3) ⭐⭐
-// --------------------------------------------------
+// RETURN WAY BOOKING (Journey Type = 3)
+
 async function createReturnWayBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -447,9 +439,8 @@ async function createReturnWayBooking(payload) {
   }
 }
 
-// --------------------------------------------------
 // MULTI VEHICLE booking
-// --------------------------------------------------
+
 async function createMultiVehicleBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -535,9 +526,8 @@ async function createMultiBookings(payload) {
   return createMultiVehicleBooking(payload);
 }
 
-// --------------------------------------------------
-// ⭐⭐ NEW: MULTI RESERVATION BOOKING ⭐⭐
-// --------------------------------------------------
+// NEW: MULTI RESERVATION BOOKING
+
 async function createMultiReservationBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -590,7 +580,7 @@ async function createMultiReservationBooking(payload) {
       //Fare For Every Booking
       clone.fares = mr.total_fare;
       clone.total_charges = mr.total_fare;
-      
+
       // Remove non-DB fields
       delete clone.multi_reservation;
       delete clone.multi_vehicle;
@@ -629,9 +619,7 @@ async function createMultiReservationBooking(payload) {
   }
 }
 
-// --------------------------------------------------
 // MAIN CONTROLLER
-// --------------------------------------------------
 
 async function create(payload) {
   // Force parse multi_reservation if string

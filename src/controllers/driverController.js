@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const pool = require("../db");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.4:5000/uploads/";
 
-// 🔹 Helper: Recursively convert empty strings ("") to null
+// Helper: Recursively convert empty strings ("") to null
 function cleanEmptyToNull(obj) {
   if (Array.isArray(obj)) return obj.map(cleanEmptyToNull);
   if (obj && typeof obj === "object") {
@@ -253,6 +253,7 @@ exports.create = async (req, res) => {
   }
 };
 
+// Get All Drivers
 exports.getAll = async (req, res) => {
   try {
     const {
@@ -307,6 +308,7 @@ exports.getAll = async (req, res) => {
   }
 };
 
+// Get Drivers by Driver ID
 exports.getById = async (req, res) => {
   try {
     const driver = await Driver.getById(req.params.id);
@@ -322,6 +324,7 @@ exports.getById = async (req, res) => {
   }
 };
 
+// Update Driver By ID
 exports.update = async (req, res) => {
   try {
     const driverId = req.params.id;
@@ -529,6 +532,7 @@ exports.update = async (req, res) => {
   }
 };
 
+//Delete Driver By ID
 exports.delete = async (req, res) => {
   try {
     await Driver.delete(req.params.id);
@@ -543,6 +547,7 @@ exports.delete = async (req, res) => {
   }
 };
 
+//Driver Login
 exports.driverLogin = async (req, res) => {
   const { username, password } = req.body;
   console.log(
@@ -608,6 +613,7 @@ exports.driverLogin = async (req, res) => {
   }
 };
 
+// Verify Driver NTG
 exports.verifyDriverToken = async (req, res) => {
   try {
     const { id, driver_access_token } = req.body;
@@ -664,6 +670,7 @@ exports.verifyDriverToken = async (req, res) => {
   }
 };
 
+//Driver Logout
 exports.driverLogout = async (req, res) => {
   const { id } = req.params;
 

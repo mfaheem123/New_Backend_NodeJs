@@ -49,17 +49,13 @@ exports.getByDriverId = async (driver_id) => {
 
 /* UPDATE (SAFE) */
 exports.updateFeatures = async (driver_id, payload) => {
-  const keys = Object.keys(payload).filter((k) =>
-    ALLOWED_FIELDS.includes(k)
-  );
+  const keys = Object.keys(payload).filter((k) => ALLOWED_FIELDS.includes(k));
 
   if (!keys.length) return null;
 
   const values = keys.map((k) => payload[k]);
 
-  const setClause = keys
-    .map((k, i) => `${k} = $${i + 1}`)
-    .join(", ");
+  const setClause = keys.map((k, i) => `${k} = $${i + 1}`).join(", ");
 
   const query = `
     UPDATE driver_app_features

@@ -1,5 +1,6 @@
 const EnumerationsModel = require("../models/enumerationsModel");
 
+// Get All Enumerations
 exports.getAllEnumerations = async (req, res) => {
   try {
     const data = await EnumerationsModel.getAll();
@@ -9,7 +10,7 @@ exports.getAllEnumerations = async (req, res) => {
       ...data,
     });
   } catch (error) {
-    console.log("Error getting enumerations:", error);
+    console.log("Error Getting Enumerations:", error);
     return res.status(500).json({
       status: false,
       message: "Internal server error",

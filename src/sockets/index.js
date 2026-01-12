@@ -2,9 +2,7 @@ const WebSocket = require("ws");
 const logger = require("../utils/logger");
 const { v4: uuidv4 } = require("uuid");
 
-const {
-  handleDriverLoginSocket,
-} = require("./driverWebSocket");
+const { handleDriverLoginSocket } = require("./driverWebSocket");
 
 function initWebSockets(server) {
   const wss = new WebSocket.Server({ noServer: true });

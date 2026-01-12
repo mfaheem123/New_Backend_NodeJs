@@ -1,6 +1,6 @@
 const Account = require("../models/accountModel");
 
-// CREATE
+// CREATE ACCOUNT
 exports.createAccount = async (req, res) => {
   try {
     const account = await Account.createAccountWithRelations(req.body);
@@ -8,7 +8,10 @@ exports.createAccount = async (req, res) => {
       "🚀 INCOMING ACCOUNT ADD BODY:",
       JSON.stringify(req.body, null, 2)
     );
-    res.status(200).json({ status: true, account });
+    res.status(200).json({
+      status: true,
+      account,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ status: false, error: err.message });

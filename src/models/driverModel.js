@@ -1274,7 +1274,10 @@ const Driver = {
   async updateDriverLogoutStatus(id) {
     const query = `
     UPDATE drivers
-    SET session_status = 'logged_out'
+    SET 
+      session_status = 'logged_out',
+      driver_status = 'Unavailable',
+      booking_status = 'Unavailable'
     WHERE id = $1
   `;
     await db.query(query, [id]);

@@ -135,6 +135,7 @@ const EnumerationsModel = {
     ORDER BY fbv.id ASC`
     );
 
+    //AIRPORT CHARGES
     const airport_charges = await db.query(
       ` SELECT l.*,
                    to_json(lt) AS location_type

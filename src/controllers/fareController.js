@@ -239,7 +239,7 @@ exports.calculateFare = async (req, res) => {
         grand_total += fare.total_fare;
       }
 
-      return res.json({
+      return res.status(200).json({
         status: true,
         message: "Multi reservation fares calculated",
         data: {
@@ -253,7 +253,7 @@ exports.calculateFare = async (req, res) => {
     /* -------- SINGLE -------- */
     const fare = await calculateSingleFare(req.body);
 
-    return res.json({
+    return res.status(200).json({
       status: true,
       message: "Fare calculated successfully",
       data: fare,

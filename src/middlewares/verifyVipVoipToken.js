@@ -15,5 +15,5 @@ module.exports = (req, res, next) => {
     });
   }
 
-  next(); // ✅ token verified
+  next();
 };

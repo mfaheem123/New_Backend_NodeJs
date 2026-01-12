@@ -56,7 +56,7 @@ exports.createBooking = async (req, res) => {
       result.return_booking = result.return_booking.map(parseJSONFields);
     }
 
-    return res.json({ status: true, ...result });
+    return res.status(200).json({ status: true, ...result });
   } catch (err) {
     console.error("createBooking error", err);
     res
@@ -120,7 +120,7 @@ exports.getBookingSections = async (req, res) => {
         });
     }
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       tab_id: tabId,
       tab_name: tabName,

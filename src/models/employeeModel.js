@@ -98,8 +98,6 @@ const getAll = async ({
   };
 };
 
-module.exports = { getAll };
-
 // Get employee by ID with role + subsidiary
 const getById = async (id) => {
   const q = `
@@ -164,4 +162,11 @@ const remove = async (id) => {
   return rows[0] || null;
 };
 
-module.exports = { getAll, getById, getByUsername, create, update, remove };
+module.exports = {
+  getAll,
+  getById,
+  getByUsername,
+  create,
+  update,
+  remove,
+};

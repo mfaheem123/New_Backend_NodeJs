@@ -1,12 +1,13 @@
 const WebSocket = require("ws");
 const logger = require("../utils/logger");
 
-// 🟢 Sirf dashboard sockets
+// Sirf dashboard sockets
 const dashboardClients = new Set();
 
-// 🟢 Logged-in drivers list (memory)
+// Logged-in drivers list (memory)
 const loggedInDrivers = new Map();
 
+//Driver Login Socket
 function handleDriverLoginSocket(ws) {
   dashboardClients.add(ws);
 
@@ -38,6 +39,7 @@ function handleDriverLoginSocket(ws) {
   });
 }
 
+// Driver Login Notify At Web
 function notifyDriverLogin(driver) {
   loggedInDrivers.set(driver.id, driver);
 
@@ -57,6 +59,7 @@ function notifyDriverLogin(driver) {
   });
 }
 
+// Driver Logout Notify At Web
 function notifyDriverLogout(driverId) {
   loggedInDrivers.delete(driverId);
 

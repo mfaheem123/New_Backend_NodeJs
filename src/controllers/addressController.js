@@ -1,6 +1,6 @@
 const client = require("../../elasticsearchClient");
 
-// Get All
+// Get All Addresses
 const getAllAddresses = async (req, res) => {
   try {
     const response = await client.search({
@@ -142,4 +142,8 @@ const getLatLon = async (req, res) => {
   }
 };
 
-module.exports = { getAllAddresses, searchAddresses, getLatLon };
+module.exports = {
+  getAllAddresses,
+  searchAddresses,
+  getLatLon,
+};
