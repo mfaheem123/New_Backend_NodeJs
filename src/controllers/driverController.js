@@ -549,7 +549,7 @@ exports.delete = async (req, res) => {
 
 //Driver Login
 exports.driverLogin = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, fcm_token } = req.body;
   console.log(
     "🚀 INCOMING DRIVER LOGIN BODY:",
     JSON.stringify(req.body, null, 2)
@@ -587,6 +587,11 @@ exports.driverLogin = async (req, res) => {
     // STEP 6: Update driver login session
     await Driver.updateDriverLoginStatus(driver.id);
 
+    // STEP 7: Save FCM token
+    if (fcm_token) {
+      await Driver.updateDriverFcmToken(driver.id, fcm_token);
+    }
+
     // WEB SOCKET EVENT FIRE
     notifyDriverLogin({
       id: driver.id,
@@ -598,7 +603,7 @@ exports.driverLogin = async (req, res) => {
       login_time: new Date(),
     });
 
-    // STEP 7: Return response
+    // STEP 8: Return response
     res.status(200).json({
       message: "Login successful",
       driverInfo: {
@@ -686,6 +691,7 @@ exports.driverLogout = async (req, res) => {
 
     // DB update
     await Driver.updateDriverLogoutStatus(id);
+    await Driver.clearDriverFcmToken(id);
 
     // 🔥🔥🔥 REMOVE FROM WS LOGIN SOCKET
     notifyDriverLogout(Number(id));

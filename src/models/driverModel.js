@@ -1317,6 +1317,24 @@ const Driver = {
     const result = await db.query(query, [company_id]);
     return result.rows;
   },
+
+  async updateDriverFcmToken(driverId, fcmToken) {
+    const query = `
+    UPDATE drivers
+    SET 
+      fcm_token = $1,
+      fcm_updated_at = NOW()
+    WHERE id = $2
+  `;
+    await db.query(query, [fcmToken, driverId]);
+    return true;
+  },
+
+  async clearDriverFcmToken(driverId) {
+    await db.query(`UPDATE drivers SET fcm_token = NULL WHERE id = $1`, [
+      driverId,
+    ]);
+  },
 };
 
 module.exports = Driver;
