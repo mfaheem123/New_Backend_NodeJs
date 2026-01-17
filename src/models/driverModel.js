@@ -1335,6 +1335,15 @@ const Driver = {
       driverId,
     ]);
   },
+
+  async getLoginDriverById(id) {
+    const { rows } = await db.query(
+      `SELECT * FROM drivers WHERE id = $1 LIMIT 1`,
+      [id]
+    );
+
+    return rows[0] || null;
+  },
 };
 
 module.exports = Driver;

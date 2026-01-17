@@ -60,12 +60,29 @@ exports.updateFareConfiguration = async (req, res) => {
   try {
     const { id } = req.params;
     const data = await FareConfiguration.update(id, req.body);
-    res.json({ status: true, fare_configuration: data });
+
+    res.json({
+      status: true,
+      fare_configuration: data
+    });
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: false, error: err.message });
+
+    if (err.message === "Fare configuration not found") {
+      return res.status(404).json({
+        status: false,
+        error: err.message
+      });
+    }
+
+    res.status(500).json({
+      status: false,
+      error: err.message
+    });
   }
 };
+
 
 exports.deleteFareConfiguration = async (req, res) => {
   try {

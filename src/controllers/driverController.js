@@ -548,75 +548,141 @@ exports.delete = async (req, res) => {
 };
 
 //Driver Login
+// exports.driverLogin = async (req, res) => {
+//   const { username, password, fcm_token } = req.body;
+//   console.log(
+//     "🚀 INCOMING DRIVER LOGIN BODY:",
+//     JSON.stringify(req.body, null, 2)
+//   );
+
+//   try {
+//     // STEP 1: Find driver by username
+//     const driver = await Driver.findDriverByUsername(username);
+
+//     if (!driver) {
+//       return res.status(404).json({ message: "Driver not found" });
+//     }
+
+//     // STEP 2: Check active status
+//     if (!driver.active) {
+//       return res.status(401).json({ message: "Your account is inactive" });
+//     }
+
+//     // STEP 3: Password check using bcrypt
+//     const passwordMatch = await bcrypt.compare(password, driver.password);
+//     if (!passwordMatch) {
+//       return res.status(401).json({ message: "Invalid password" });
+//     }
+
+//     // STEP 4: Check session status
+//     if (driver.session_status === "logged_in") {
+//       return res.status(400).json({ message: "Driver is already logged in" });
+//     }
+
+//     // STEP 5: Generate JWT token
+//     const token = jwt.sign({ driverId: driver.id }, "secretKey", {
+//       expiresIn: "1d",
+//     });
+
+//     // STEP 6: Update driver login session
+//     await Driver.updateDriverLoginStatus(driver.id);
+
+//     // STEP 7: Save FCM token
+//     if (fcm_token) {
+//       await Driver.updateDriverFcmToken(driver.id, fcm_token);
+//     }
+
+//     // WEB SOCKET EVENT FIRE
+//     notifyDriverLogin({
+//       id: driver.id,
+//       name: driver.name,
+//       mobile: driver.mobile,
+//       vehicle_id: driver.vehicle_id,
+//       company_vehicle_id: driver.company_vehicle_id,
+//       status: "logged_in",
+//       login_time: new Date(),
+//     });
+
+//     // STEP 8: Return response
+//     res.status(200).json({
+//       message: "Login successful",
+//       driverInfo: {
+//         ...driver,
+//         session_status: "logged_in",
+//       },
+//       token: token,
+//     });
+//   } catch (error) {
+//     console.error("Login Error:", error);
+//     res.status(500).json({ message: "An error occurred during login" });
+//   }
+// };
+
+//Driver Login
 exports.driverLogin = async (req, res) => {
   const { username, password, fcm_token } = req.body;
-  console.log(
-    "🚀 INCOMING DRIVER LOGIN BODY:",
-    JSON.stringify(req.body, null, 2)
-  );
 
   try {
-    // STEP 1: Find driver by username
     const driver = await Driver.findDriverByUsername(username);
-
     if (!driver) {
       return res.status(404).json({ message: "Driver not found" });
     }
 
-    // STEP 2: Check active status
     if (!driver.active) {
       return res.status(401).json({ message: "Your account is inactive" });
     }
 
-    // STEP 3: Password check using bcrypt
     const passwordMatch = await bcrypt.compare(password, driver.password);
     if (!passwordMatch) {
       return res.status(401).json({ message: "Invalid password" });
     }
 
-    // STEP 4: Check session status
     if (driver.session_status === "logged_in") {
       return res.status(400).json({ message: "Driver is already logged in" });
     }
 
-    // STEP 5: Generate JWT token
-    const token = jwt.sign({ driverId: driver.id }, "secretKey", {
-      expiresIn: "1d",
-    });
+    const token = jwt.sign(
+      { driverId: driver.id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
 
-    // STEP 6: Update driver login session
     await Driver.updateDriverLoginStatus(driver.id);
 
-    // STEP 7: Save FCM token
     if (fcm_token) {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
     }
 
-    // WEB SOCKET EVENT FIRE
+    // 🔥🔥🔥 ONLY IMPORTANT FIX 🔥🔥🔥
+    const updatedDriver = await Driver.getLoginDriverById(driver.id);
+
+    // (OPTIONAL but SAFE – key remains, value masked)
+    // updatedDriver.password = null;
+
     notifyDriverLogin({
-      id: driver.id,
-      name: driver.name,
-      mobile: driver.mobile,
-      vehicle_id: driver.vehicle_id,
-      company_vehicle_id: driver.company_vehicle_id,
+      id: updatedDriver.id,
+      name: updatedDriver.name,
+      mobile: updatedDriver.mobile,
+      vehicle_id: updatedDriver.vehicle_id,
+      company_vehicle_id: updatedDriver.company_vehicle_id,
       status: "logged_in",
       login_time: new Date(),
     });
 
-    // STEP 8: Return response
-    res.status(200).json({
+    // ✅ RESPONSE STRUCTURE 100% SAME
+    return res.status(200).json({
       message: "Login successful",
-      driverInfo: {
-        ...driver,
-        session_status: "logged_in",
-      },
+      driverInfo: updatedDriver,
       token: token,
     });
   } catch (error) {
     console.error("Login Error:", error);
-    res.status(500).json({ message: "An error occurred during login" });
+    return res
+      .status(500)
+      .json({ message: "An error occurred during login" });
   }
 };
+
 
 // Verify Driver NTG
 exports.verifyDriverToken = async (req, res) => {

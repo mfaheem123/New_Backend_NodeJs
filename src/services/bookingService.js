@@ -5,6 +5,7 @@ const {
   findBookingById,
   getBookingByIdEnriched,
 } = require("../models/bookingModel");
+const { sendBookingNotification } = require("./notificationService");
 
 const DEFAULT_EMPLOYEE_ID = 2;
 
@@ -255,8 +256,15 @@ async function createSimpleBooking(payload) {
     if (customerId) normalized.customer_id = customerId;
 
     const inserted = await createBookingRow(pool, normalized);
+
     const enriched = await getBookingByIdEnriched(inserted.id);
     const clean = parseJSONFields(enriched);
+
+    // SEND NOTIFICATION
+    if (clean.driver_id) {
+      await sendBookingNotification(clean.driver_id, clean);
+    }
+
     await pool.query("COMMIT");
 
     // return { booking: [inserted] };

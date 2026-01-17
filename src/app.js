@@ -85,6 +85,7 @@ const skipFileUploadRoutes = [
   "/api/employees",
   "/api/drivers-app",
 ];
+
 app.use((req, res, next) => {
   if (skipFileUploadRoutes.some((r) => req.originalUrl.startsWith(r))) {
     return next(); // let multer handle it later
@@ -176,3 +177,4 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
+  

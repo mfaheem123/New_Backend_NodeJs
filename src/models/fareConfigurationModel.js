@@ -156,38 +156,41 @@ const FareConfiguration = {
   },
 
   // ✅ UPDATE
-  async update(id, data) {
-    const fields = [];
-    const values = [];
-    let index = 1;
+ async update(id, data) {
+  const fields = [];
+  const values = [];
+  let index = 1;
 
-    for (const [key, value] of Object.entries(data)) {
-      // Skip undefined fields
-      if (value !== undefined) {
-        fields.push(`${key} = $${index}`);
-        values.push(value);
-        index++;
-      }
+  for (const [key, value] of Object.entries(data)) {
+    if (value !== undefined) {
+      fields.push(`${key} = $${index}`);
+      values.push(value);
+      index++;
     }
+  }
 
-    // No valid fields
-    if (fields.length === 0) {
-      throw new Error("No valid fields provided for update");
-    }
+  if (fields.length === 0) {
+    throw new Error("No valid fields provided for update");
+  }
 
-    // Add id at end
-    values.push(id);
+  values.push(id);
 
-    const query = `
+  const query = `
     UPDATE fare_configurations
     SET ${fields.join(", ")}
     WHERE id = $${index}
     RETURNING *;
   `;
 
-    const { rows } = await db.query(query, values);
-    return rows[0];
-  },
+  const { rows } = await db.query(query, values);
+
+  // 🔴 IMPORTANT CHECK
+  if (rows.length === 0) {
+    throw new Error("Fare configuration not found");
+  }
+
+  return rows[0];
+},
 
   // ✅ DELETE
   async delete(id) {
