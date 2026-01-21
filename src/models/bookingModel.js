@@ -14,15 +14,19 @@ const insertBookingRow = async (client, bookingRow) => {
 const updateBooking = async (id, updates) => {
   const cols = Object.keys(updates);
   const vals = Object.values(updates);
-  if (!cols.length) return null;
-  const set = cols.map((c, i) => `${c} = $${i + 2}`).join(", ");
-  const sql = `UPDATE bookings SET ${set}, updated_at = now() WHERE id = $1 RETURNING *`;
-  const res = await pool.query(sql, [id, ...vals]);
-  return res.rows[0];
-};
 
-const findBookingById = async (id) => {
-  const res = await pool.query("SELECT * FROM bookings WHERE id = $1", [id]);
+  if (!cols.length) return null;
+
+  const set = cols.map((c, i) => `${c} = $${i + 2}`).join(", ");
+
+  const sql = `
+    UPDATE bookings
+    SET ${set}, updated_at = now()
+    WHERE id = $1
+    RETURNING *
+  `;
+
+  const res = await pool.query(sql, [id, ...vals]);
   return res.rows[0];
 };
 
@@ -122,10 +126,11 @@ LEFT JOIN employees e ON b.employee_id = e.id
 const getTodayBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
-    WHERE DATE(b.pickup_date) = CURRENT_DATE
-    AND b.booking_status_id = 1
+    WHERE 
+      DATE(b.pickup_date) = CURRENT_DATE
+      AND b.booking_status_id = 1
     ORDER BY 
-      b.pickup_time::time ASC
+      TRIM(b.pickup_time)::time ASC
   `;
   return (await pool.query(sql)).rows;
 };
@@ -215,6 +220,7 @@ const getBookingsByTab = async ({
   offset = 0,
   limit = 20,
   filters = {},
+  orderBy = "b.id ASC", // default
 }) => {
   const conditions = [];
   const params = [];
@@ -314,11 +320,11 @@ const getBookingsByTab = async ({
 
   // 📦 DATA QUERY
   const dataSql = `
-    ${ENRICHED_SELECT}
-    ${whereClause}
-    ORDER BY b.id ASC
-    OFFSET $${idx++} LIMIT $${idx++}
-  `;
+  ${ENRICHED_SELECT}
+  ${whereClause}
+  ORDER BY ${orderBy}
+  OFFSET $${idx++} LIMIT $${idx++}
+`;
 
   params.push(offset, limit);
 
@@ -337,11 +343,23 @@ const getBookingByIdEnriched = async (id) => {
   return res.rows[0];
 };
 
+const findBookingById = async (id) => {
+  const query = `SELECT id FROM bookings WHERE id = $1`;
+  return pool.query(query, [id]);
+};
+const trashBooking = async (id) => {
+  const query = `
+    UPDATE bookings
+    SET trash = true
+    WHERE id = $1
+  `;
+  return pool.query(query, [id]);
+};
+
 module.exports = {
   pool,
   insertBookingRow,
   updateBooking,
-  findBookingById,
   getTodayBookings,
   getPreBookings,
   getAllBookings,
@@ -353,4 +371,6 @@ module.exports = {
   getWebBookings,
   getBookingsByTab,
   getBookingByIdEnriched,
+  findBookingById,
+  trashBooking,
 };

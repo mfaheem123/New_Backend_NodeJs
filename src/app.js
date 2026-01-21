@@ -53,7 +53,7 @@ app.use(
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 // ✅ Ensure uploads folder exists
@@ -95,7 +95,7 @@ app.use((req, res, next) => {
 
 // ✅ Logging
 app.use(
-  morgan(":method :url :status :response-time ms", { stream: logger.stream })
+  morgan(":method :url :status :response-time ms", { stream: logger.stream }),
 );
 
 // ✅ API Routes
@@ -144,7 +144,8 @@ function printRoutes(stack, prefix = "") {
     } else if (r.name === "router" && r.handle.stack) {
       printRoutes(
         r.handle.stack,
-        prefix + r.regexp.source.replace("^\\", "").replace("\\/?(?=\\/|$)", "")
+        prefix +
+          r.regexp.source.replace("^\\", "").replace("\\/?(?=\\/|$)", ""),
       );
     }
   });
@@ -177,4 +178,3 @@ app.use((err, req, res, next) => {
 });
 
 module.exports = app;
-  

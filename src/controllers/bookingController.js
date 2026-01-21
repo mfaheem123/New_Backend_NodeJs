@@ -10,6 +10,9 @@ const {
   getAppBookings,
   getPreBookings,
   getBookingsByTab,
+  getBookingByIdEnriched,
+  findBookingById,
+  trashBooking,
 } = require("../models/bookingModel");
 
 function parseJSONFields(row) {
@@ -42,7 +45,7 @@ exports.createBooking = async (req, res) => {
   try {
     console.log(
       "🚀 INCOMING ADD BOOKING BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
 
     const payload = req.body;
@@ -143,6 +146,11 @@ exports.getBookingSections = async (req, res) => {
 exports.getBookingByTabs = async (req, res) => {
   try {
     const tabId = parseInt(req.params.id);
+    const jobDue =
+      Number.isInteger(parseInt(req.query.job_due)) &&
+      parseInt(req.query.job_due) > 0
+        ? parseInt(req.query.job_due)
+        : null;
 
     let {
       page = 1,
@@ -170,55 +178,93 @@ exports.getBookingByTabs = async (req, res) => {
     let tabWhere = "";
     let tabName = "";
 
+    let orderBy = "b.id ASC";
+
     switch (tabId) {
       case 1:
         tabName = "TODAY BOOKINGS";
-        tabWhere = `DATE(b.pickup_date) = CURRENT_DATE AND b.booking_status_id = 1`;
+        tabWhere = `
+          DATE(b.pickup_date) = CURRENT_DATE
+          AND b.booking_status_id = 1 AND b.trash = false
+        `;
+        orderBy = `
+          TRIM(b.pickup_time)::time ASC,
+          b.id ASC
+        `;
         break;
-
       case 2:
         tabName = "PRE BOOKINGS";
-        tabWhere = `DATE(b.pickup_date) > CURRENT_DATE`;
+        tabWhere = `DATE(b.pickup_date) > CURRENT_DATE AND b.trash = false`;
         break;
 
       case 3:
         tabName = "RECENT BOOKINGS";
-        tabWhere = `b.booking_status_id NOT IN (1, 11)`;
+        tabWhere = `b.booking_status_id NOT IN (1, 11) AND b.trash = false`;
         break;
 
       case 4:
         tabName = "COMPLETED BOOKINGS";
-        tabWhere = `b.booking_status_id = 11`;
+        tabWhere = `b.booking_status_id = 11 AND b.trash = false`;
         break;
 
       case 5:
         tabName = "QUOTED BOOKINGS";
-        tabWhere = `b.quoted = true`;
+        tabWhere = `b.quoted = true AND b.trash = false`;
         break;
 
       case 6:
         tabName = "IVR BOOKINGS";
-        tabWhere = `b.booking_source = 'ivr'`;
+        tabWhere = `b.booking_source = 'ivr' AND b.trash = false`;
         break;
 
       case 7:
         tabName = "WEB BOOKINGS";
-        tabWhere = `b.booking_source = 'web'`;
+        tabWhere = `b.booking_source = 'web' AND b.trash = false`;
         break;
 
       case 8:
         tabName = "APP BOOKINGS";
-        tabWhere = `b.booking_source = 'app'`;
+        tabWhere = `b.booking_source = 'app'AND b.trash = false`;
+        break;
+
+      case 9:
+        tabName = "MULTI BOOKINGS";
+        tabWhere = `b.booking_type_id = 2 AND b.trash = false`;
+        break;
+
+      case 10:
+        tabName = "PENDING BOOKINGS";
+        tabWhere = `b.booking_status_id != 11`;
+        break;
+
+      case 11:
+        tabName = "TRASH BOOKINGS";
+        tabWhere = `b.trash = true`;
         break;
 
       default:
         return res.status(400).json({ success: false, message: "Invalid tab" });
     }
 
+    if (jobDue && tabId === 1) {
+      tabName = `DUE IN ${jobDue} MIN`;
+
+      tabWhere += `
+    AND (
+      b.pickup_date::date + TRIM(b.pickup_time)::time
+    ) BETWEEN NOW() AND NOW() + INTERVAL '${jobDue} minutes'
+  `;
+
+      orderBy = `
+    (b.pickup_date::date + TRIM(b.pickup_time)::time) ASC
+  `;
+    }
+
     const { rows, total } = await getBookingsByTab({
       tabWhere,
       offset,
       limit,
+      orderBy,
       filters: {
         reference_number,
         pickup_date,
@@ -253,5 +299,91 @@ exports.getBookingByTabs = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getBookingById = async (req, res) => {
+  const booking_id = parseInt(req.params.id);
+
+  const booking = await getBookingByIdEnriched(booking_id);
+
+  if (!booking) {
+    return res.status(404).json({
+      success: false,
+      message: "Booking not found",
+    });
+  }
+
+  const data = parseJSONFields(booking);
+
+  res.status(200).json({
+    success: true,
+    booking: data,
+  });
+};
+
+// Update Booking
+exports.updateBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    if (!bookingId) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid booking id",
+      });
+    }
+
+    const updated = await bookingService.updateBookingService(
+      bookingId,
+      req.body,
+    );
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      booking: updated,
+    });
+  } catch (err) {
+    console.error("updateBooking error:", err);
+    res.status(500).json({
+      success: false,
+      message: err.message || "Internal server error",
+    });
+  }
+};
+
+// Delete Booking To Trash
+exports.deleteBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const booking = await findBookingById(bookingId);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    await trashBooking(bookingId);
+
+    return res.status(200).json({
+      status: true,
+      message: "Booking Deleted Successfully",
+    });
+  } catch (error) {
+    console.error("Delete Booking Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
   }
 };

@@ -238,7 +238,7 @@ async function createSimpleBooking(payload) {
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
           c.blacklist || null,
-        ]
+        ],
       );
       customerId = res.rows[0].id;
     } else if (!customerId && payload.email) {
@@ -247,7 +247,7 @@ async function createSimpleBooking(payload) {
          VALUES ($1,$2,$3,$4)
          ON CONFLICT (email) DO UPDATE SET mobile=EXCLUDED.mobile
          RETURNING id`,
-        [payload.name, payload.email, payload.mobile, payload.telephone]
+        [payload.name, payload.email, payload.mobile, payload.telephone],
       );
       customerId = res.rows[0].id;
     }
@@ -294,7 +294,7 @@ async function createTwoWayBooking(payload) {
           c.email || payload.email,
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
-        ]
+        ],
       );
       customerId = res.rows[0].id;
     }
@@ -367,7 +367,7 @@ async function createReturnWayBooking(payload) {
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
           c.blacklist || false,
-        ]
+        ],
       );
       customerId = res.rows[0].id;
     }
@@ -432,10 +432,10 @@ async function createReturnWayBooking(payload) {
 
     /* ---------------- ENRICHED ---------------- */
     const outboundEnriched = parseJSONFields(
-      await getBookingByIdEnriched(outboundInserted.id)
+      await getBookingByIdEnriched(outboundInserted.id),
     );
     const returnEnriched = parseJSONFields(
-      await getBookingByIdEnriched(returnInserted.id)
+      await getBookingByIdEnriched(returnInserted.id),
     );
 
     await pool.query("COMMIT");
@@ -476,7 +476,7 @@ async function createMultiVehicleBooking(payload) {
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
           c.blacklist || false,
-        ]
+        ],
       );
 
       customerId = res.rows[0].id;
@@ -654,7 +654,7 @@ async function createMultiReservationBooking(payload) {
           customerPayload.mobile || payload.mobile,
           customerPayload.telephone || payload.telephone,
           customerPayload.blacklist || false,
-        ]
+        ],
       );
       customerId = res.rows[0].id;
     }
@@ -663,7 +663,7 @@ async function createMultiReservationBooking(payload) {
      * GENERATE MULTI BOOKING ID
      * ----------------------------- */
     const multiBookingIdRes = await pool.query(
-      "SELECT nextval('bookings_id_seq') AS nextid"
+      "SELECT nextval('bookings_id_seq') AS nextid",
     );
     const multiBookingId = parseInt(multiBookingIdRes.rows[0].nextid, 10);
 
@@ -706,7 +706,7 @@ async function createMultiReservationBooking(payload) {
       if (shouldCreateReturn) {
         if (!payload.return_pickup || !payload.return_dropoff) {
           throw new Error(
-            "return_pickup and return_dropoff are required for return journey"
+            "return_pickup and return_dropoff are required for return journey",
           );
         }
 
@@ -784,7 +784,7 @@ async function create(payload) {
     payload.multi_reservation.length > 0
   ) {
     payload.multi_reservation = payload.multi_reservation.filter(
-      (b) => !b.exclude
+      (b) => !b.exclude,
     );
 
     if (payload.multi_reservation.length === 0)
@@ -834,9 +834,76 @@ async function create(payload) {
   return createSimpleBooking(payload);
 }
 
+async function updateBookingService(bookingId, payload) {
+  // 1️⃣ Allowed columns
+  const allowed = [
+    "booking_status_id",
+    "driver_id",
+    "vehicle_id",
+    "pickup",
+    "dropoff",
+    "pickup_date",
+    "pickup_time",
+    "dropoff_date",
+    "dropoff_time",
+    "notes",
+    "viapoints",
+    "restricted_drivers",
+    "child_seat",
+    "fares",
+    "total_charges",
+    "waiting_charges",
+    "parking_charges",
+    "extra_drop_charges",
+    "payment_type_id",
+    "account_id",
+    "on_route",
+    "arrived",
+    "passenger_on_board",
+    "completed",
+    "cancelled_reason",
+    "dispatch",
+    "dispatch_as",
+  ];
+
+  // 2️⃣ Filter only allowed fields
+  const updates = {};
+  for (const key of allowed) {
+    if (payload[key] !== undefined) {
+      updates[key] = payload[key];
+    }
+  }
+
+  // 3️⃣ JSON fields stringify
+  const jsonFields = ["viapoints", "restricted_drivers", "child_seat", "notes"];
+
+  for (const f of jsonFields) {
+    if (updates[f] !== undefined) {
+      updates[f] =
+        typeof updates[f] === "string"
+          ? updates[f]
+          : JSON.stringify(updates[f]);
+    }
+  }
+
+  // 4️⃣ No fields?
+  if (Object.keys(updates).length === 0) {
+    throw new Error("No valid fields provided for update");
+  }
+
+  // 5️⃣ Update
+  const updated = await updateBooking(bookingId, updates);
+  if (!updated) return null;
+
+  // 6️⃣ Return enriched booking
+  const enriched = await getBookingByIdEnriched(updated.id);
+  return parseJSONFields(enriched);
+}
+
 // EXPORTS
 module.exports = {
   create,
   genRef,
   normalizeBookingPayload,
+  updateBookingService,
 };

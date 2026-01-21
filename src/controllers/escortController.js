@@ -1,5 +1,5 @@
 const Escort = require("../models/escortModel");
-const BASE_URL = process.env.BASE_URL || "http://192.168.110.4:5000/uploads/";
+const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 
 const create = async (req, res) => {
   try {

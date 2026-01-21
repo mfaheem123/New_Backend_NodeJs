@@ -3,10 +3,9 @@ const pool = require("../db");
 
 async function sendBookingNotification(driverId, booking) {
   // 1️⃣ Driver ka FCM token lao
-  const res = await pool.query(
-    `SELECT fcm_token FROM drivers WHERE id = $1`,
-    [driverId]
-  );
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
 
   const fcmToken = res.rows[0]?.fcm_token;
   if (!fcmToken) {
@@ -14,7 +13,7 @@ async function sendBookingNotification(driverId, booking) {
     return;
   }
 
-   const bookingPayload = { ...booking };
+  const bookingPayload = { ...booking };
 
   // 2️⃣ Notification payload
   const message = {
@@ -25,6 +24,7 @@ async function sendBookingNotification(driverId, booking) {
     },
     data: {
       booking: JSON.stringify(bookingPayload),
+      booking_id: booking.id,
       type: "NEW_BOOKING",
     },
   };
