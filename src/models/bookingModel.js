@@ -343,10 +343,22 @@ const getBookingByIdEnriched = async (id) => {
   return res.rows[0];
 };
 
+// FIND ID OF BOOKING BY ID (FOR DELETE)
 const findBookingById = async (id) => {
   const query = `SELECT id FROM bookings WHERE id = $1`;
   return pool.query(query, [id]);
 };
+
+// FIND ALL DATA OF BOOKING BY ID (FOR UPDATE)
+const findBookingsById = async (id) => {
+  const res = await pool.query(
+    `SELECT * FROM bookings WHERE id = $1`,
+    [id]
+  );
+  return res.rows[0];
+};
+
+
 const trashBooking = async (id) => {
   const query = `
     UPDATE bookings
@@ -354,6 +366,32 @@ const trashBooking = async (id) => {
     WHERE id = $1
   `;
   return pool.query(query, [id]);
+};
+
+const findExistingBookings = async (ids) => {
+  const query = `
+    SELECT id FROM bookings
+    WHERE id = ANY($1::int[])
+  `;
+  return pool.query(query, [ids]);
+};
+
+const trashMultipleBookings = async (ids) => {
+  const query = `
+    UPDATE bookings
+    SET trash = true
+    WHERE id = ANY($1::int[])
+  `;
+  return pool.query(query, [ids]);
+};
+
+const updateBookingStatus = async (id, statusId) => {
+  const query = `
+    UPDATE bookings
+    SET booking_status_id = $1
+    WHERE id = $2
+  `;
+  return pool.query(query, [statusId, id]);
 };
 
 module.exports = {
@@ -372,5 +410,9 @@ module.exports = {
   getBookingsByTab,
   getBookingByIdEnriched,
   findBookingById,
+  findBookingsById,
   trashBooking,
+  findExistingBookings,
+  trashMultipleBookings,
+  updateBookingStatus,
 };

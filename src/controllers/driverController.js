@@ -669,8 +669,8 @@ exports.driverLogin = async (req, res) => {
       login_time: new Date(),
     });
 
-    // ✅ RESPONSE STRUCTURE 100% SAME
-    return res.status(200).json({
+    // API Response
+    return res.status(200).json({                                                               
       message: "Login successful",
       driverInfo: updatedDriver,
       token: token,

@@ -3,6 +3,7 @@ const {
   insertBookingRow,
   updateBooking,
   findBookingById,
+  findBookingsById,
   getBookingByIdEnriched,
 } = require("../models/bookingModel");
 const { sendBookingNotification } = require("./notificationService");
@@ -835,7 +836,17 @@ async function create(payload) {
 }
 
 async function updateBookingService(bookingId, payload) {
-  // 1️⃣ Allowed columns
+  // 🔴 COMPLETED STATUS
+  const COMPLETED_STATUS_ID = 11;
+
+  // 0️⃣ Existing booking fetch
+  const existing = await findBookingsById(bookingId);
+  if (!existing) return null;
+
+  const isCompleted =
+    Number(existing.booking_status_id) === COMPLETED_STATUS_ID;
+
+  // 1️⃣ Allowed columns (UPDATE ke liye)
   const allowed = [
     "booking_status_id",
     "driver_id",
@@ -866,7 +877,7 @@ async function updateBookingService(bookingId, payload) {
     "dispatch_as",
   ];
 
-  // 2️⃣ Filter only allowed fields
+  // 2️⃣ Filter payload
   const updates = {};
   for (const key of allowed) {
     if (payload[key] !== undefined) {
@@ -874,9 +885,8 @@ async function updateBookingService(bookingId, payload) {
     }
   }
 
-  // 3️⃣ JSON fields stringify
+  // 3️⃣ JSON stringify
   const jsonFields = ["viapoints", "restricted_drivers", "child_seat", "notes"];
-
   for (const f of jsonFields) {
     if (updates[f] !== undefined) {
       updates[f] =
@@ -886,17 +896,45 @@ async function updateBookingService(bookingId, payload) {
     }
   }
 
-  // 4️⃣ No fields?
   if (Object.keys(updates).length === 0) {
     throw new Error("No valid fields provided for update");
   }
 
-  // 5️⃣ Update
-  const updated = await updateBooking(bookingId, updates);
-  if (!updated) return null;
+  // =====================================================
+  // 🟢 CASE 1: BOOKING NOT COMPLETED → NORMAL UPDATE
+  // =====================================================
+  if (!isCompleted) {
+    const updated = await updateBooking(bookingId, updates);
+    if (!updated) return null;
 
-  // 6️⃣ Return enriched booking
-  const enriched = await getBookingByIdEnriched(updated.id);
+    const enriched = await getBookingByIdEnriched(updated.id);
+    return parseJSONFields(enriched);
+  }
+
+  // =====================================================
+  // 🔴 CASE 2: BOOKING COMPLETED → CREATE NEW BOOKING
+  // =====================================================
+  const newBookingPayload = {
+    ...existing,
+    ...updates,
+
+    id: undefined,
+    booking_status_id: payload.booking_status_id || 1, // Saved / Pending
+    completed: false,
+    reference_number: await genRef(),
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  // ❌ Remove non-insertable fields
+  delete newBookingPayload.id;
+
+  // Normalize JSON fields again
+  const normalized = await normalizeBookingPayload(newBookingPayload);
+
+  const inserted = await createBookingRow(pool, normalized);
+
+  const enriched = await getBookingByIdEnriched(inserted.id);
   return parseJSONFields(enriched);
 }
 

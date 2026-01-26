@@ -13,6 +13,9 @@ const {
   getBookingByIdEnriched,
   findBookingById,
   trashBooking,
+  findExistingBookings,
+  trashMultipleBookings,
+  updateBookingStatus,
 } = require("../models/bookingModel");
 
 function parseJSONFields(row) {
@@ -326,7 +329,10 @@ exports.getBookingById = async (req, res) => {
 exports.updateBooking = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
-
+    console.log(
+      "🚀 INCOMING UPDATE BOOKING BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     if (!bookingId) {
       return res.status(400).json({
         success: false,
@@ -381,6 +387,93 @@ exports.deleteBooking = async (req, res) => {
     });
   } catch (error) {
     console.error("Delete Booking Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// Bulk Delete
+exports.deleteMultipleBookings = async (req, res) => {
+  try {
+    let { id } = req.body;
+
+    // parse stringified array
+    if (typeof id === "string") {
+      id = JSON.parse(id);
+    }
+
+    // force numbers
+    id = id.map(Number);
+
+    if (!Array.isArray(id) || id.length === 0) {
+      return res.status(400).json({
+        status: false,
+        message: "id must be a non-empty array",
+      });
+    }
+
+    const existing = await findExistingBookings(id);
+
+    // convert DB ids to numbers
+    const existingIds = existing.rows.map((row) => Number(row.id));
+
+    const missingIds = id.filter((item) => !existingIds.includes(item));
+
+    await trashMultipleBookings(existingIds);
+
+    if (missingIds.length > 0) {
+      return res.status(207).json({
+        status: false,
+        message: "Some bookings not found",
+        deleted_ids: existingIds,
+        missing_ids: missingIds,
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Bookings Deleted Successfully",
+    });
+  } catch (error) {
+    console.error("Multiple Delete Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.updateBookingStatus = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+    const { booking_status_id } = req.body;
+
+    if (!booking_status_id) {
+      return res.status(400).json({
+        status: false,
+        message: "booking_status_id is required",
+      });
+    }
+
+    const booking = await findBookingById(bookingId);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    await updateBookingStatus(bookingId, booking_status_id);
+
+    return res.status(200).json({
+      status: true,
+      message: "Booking status updated successfully",
+    });
+  } catch (error) {
+    console.error("Update Booking Status Error:", error);
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",

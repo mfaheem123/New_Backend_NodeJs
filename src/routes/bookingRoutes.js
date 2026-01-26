@@ -8,6 +8,8 @@ router.get("/get/:id", ctrl.getBookingSections);
 router.get("/getbytabs/:id", ctrl.getBookingByTabs);
 router.get("/getbyid/:id", ctrl.getBookingById);
 router.post("/update/:id", ctrl.updateBooking);
+router.post("/status/:id", ctrl.updateBookingStatus);
 router.delete("/delete/:id", ctrl.deleteBooking);
+router.delete("/bulkdelete", ctrl.deleteMultipleBookings);
 
 module.exports = router;
