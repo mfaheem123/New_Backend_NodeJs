@@ -6,7 +6,7 @@ exports.createAccount = async (req, res) => {
     const account = await Account.createAccountWithRelations(req.body);
     console.log(
       "🚀 INCOMING ACCOUNT ADD BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
     res.status(200).json({
       status: true,
@@ -96,7 +96,7 @@ exports.updateAccount = async (req, res) => {
     }
     console.log(
       "🚀 INCOMING ACCOUNT UPDATE BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
     const account = await Account.updateAccountWithRelations(id, req.body);
     if (!account) {

@@ -225,7 +225,7 @@ const CompanyVehicle = {
   async findById(id) {
     const { rows } = await db.query(
       `SELECT * FROM company_vehicles WHERE id = $1`,
-      [id]
+      [id],
     );
     return rows[0];
   },
@@ -234,7 +234,7 @@ const CompanyVehicle = {
   async findByVehicleNumber(vehicle_number) {
     const { rows } = await db.query(
       `SELECT * FROM company_vehicles WHERE vehicle_number = $1 LIMIT 1`,
-      [vehicle_number]
+      [vehicle_number],
     );
     return rows[0];
   },
@@ -261,7 +261,7 @@ const CompanyVehicle = {
   async remove(id) {
     const result = await db.query(
       `DELETE FROM company_vehicles WHERE id = $1 RETURNING *`,
-      [id]
+      [id],
     );
     return result.rowCount > 0; // agar koi row delete hui to true, warna false
   },

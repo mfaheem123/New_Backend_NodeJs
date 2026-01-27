@@ -106,7 +106,61 @@ SELECT
   json_build_object(
     'username', e.username,
     'role_id', e.role_id
-  ) AS employee
+  ) AS employee,
+
+  json_build_object(
+  'pickup',
+  CASE
+    WHEN lp.id IS NOT NULL THEN json_build_object(
+      'id', lp.id,
+      'name', lp.name,
+      'location_type', json_build_object(
+            'id', ltp.id,
+            'name', ltp.name,
+            'background_color', ltp.background_color,
+            'foreground_color', ltp.foreground_color
+          )
+    )
+    ELSE 
+    json_build_object(
+      'id', null,
+      'name', null,
+      'location_type', json_build_object(
+        'id', null,
+        'name', null,
+        'background_color', null,
+        'foreground_color', null
+      )
+    )
+  END,
+  'dropoff',
+  CASE
+    WHEN ld.id IS NOT NULL THEN json_build_object(
+      'id', ld.id,
+      'name', ld.name,
+      'location_type', json_build_object(
+            'id', ltp.id,
+            'name', ltp.name,
+            'background_color', ltp.background_color,
+            'foreground_color', ltp.foreground_color
+          )
+
+    )
+    ELSE 
+    json_build_object(
+      'id', null,
+      'name', null,
+      'location_type', json_build_object(
+  'id', null,
+  'name', null,
+  'background_color', null,
+  'foreground_color', null
+)
+
+    )
+  END
+) AS airport
+
 
 FROM bookings b
 LEFT JOIN booking_statuses bs ON b.booking_status_id = bs.id
@@ -120,6 +174,17 @@ LEFT JOIN drivers d ON b.driver_id = d.id
 LEFT JOIN vehicles v ON d.vehicle_id = v.id
 LEFT JOIN customers c ON b.customer_id = c.id
 LEFT JOIN employees e ON b.employee_id = e.id
+LEFT JOIN locations lp
+  ON lp.location_type_id = 2
+ AND b.pickup ILIKE '%' || lp.name || '%'
+
+LEFT JOIN locations ld
+  ON ld.location_type_id = 2
+ AND b.dropoff ILIKE '%' || ld.name || '%'
+LEFT JOIN location_types ltp ON lp.location_type_id = ltp.id
+LEFT JOIN location_types ltd ON ld.location_type_id = ltd.id
+
+
 `;
 
 // TODAY BOOKINGS (STATUS = WAITING)
@@ -351,13 +416,9 @@ const findBookingById = async (id) => {
 
 // FIND ALL DATA OF BOOKING BY ID (FOR UPDATE)
 const findBookingsById = async (id) => {
-  const res = await pool.query(
-    `SELECT * FROM bookings WHERE id = $1`,
-    [id]
-  );
+  const res = await pool.query(`SELECT * FROM bookings WHERE id = $1`, [id]);
   return res.rows[0];
 };
-
 
 const trashBooking = async (id) => {
   const query = `

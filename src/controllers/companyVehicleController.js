@@ -24,7 +24,7 @@ const create = async (req, res) => {
     // 🚫 Check duplicate vehicle_number
     if (req.body.vehicle_number) {
       const existing = await CompanyVehicle.findByVehicleNumber(
-        req.body.vehicle_number
+        req.body.vehicle_number,
       );
       if (existing) {
         return res.status(400).json({
@@ -35,7 +35,7 @@ const create = async (req, res) => {
     }
     console.log(
       "🚀 INCOMING COMPANY VEHICLE ADD BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
     // ✅ Create new vehicle
     const vehicle = await CompanyVehicle.create(req.body);
@@ -130,7 +130,7 @@ const update = async (req, res) => {
     }
     console.log(
       "🚀 INCOMING COMPANY VEHICLE UPDATE BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
     const updated = await CompanyVehicle.update(id, req.body);
     res.json({ status: true, vehicle: updated });

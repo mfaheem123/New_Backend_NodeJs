@@ -3,6 +3,7 @@ const logger = require("../utils/logger");
 const { v4: uuidv4 } = require("uuid");
 
 const { handleDriverLoginSocket } = require("./driverWebSocket");
+const { handleCLISocket } = require("./cliWebSocket"); // 👈 NEW
 
 function initWebSockets(server) {
   const wss = new WebSocket.Server({ noServer: true });
@@ -12,18 +13,21 @@ function initWebSockets(server) {
 
     logger.info("ws:upgrade", { url });
 
-    if (url === "/websocket/driver-login") {
+    if (url.startsWith("/websocket/driver-login")) {
       wss.handleUpgrade(req, socket, head, (ws) => {
-        ws.id = uuidv4(); // socket.id equivalent
-
-        logger.info("ws:connected", {
-          id: ws.id,
-          path: url,
-        });
-
+        ws.id = uuidv4();
         handleDriverLoginSocket(ws, req);
       });
-    } else {
+    }
+
+    else if (url.startsWith("/websocket/cli")) {
+      wss.handleUpgrade(req, socket, head, (ws) => {
+        ws.id = uuidv4();
+        handleCLISocket(ws, req);
+      });
+    }
+
+    else {
       logger.warn("ws:rejected", { url });
       socket.destroy();
     }

@@ -1,8 +1,29 @@
 const CallEventModel = require("../models/callEventModel");
+const { notifyCLIOpen } = require("../sockets/cliWebSocket");
+
+function normalizeStatus(status) {
+  if (!status) return null;
+
+  switch (status.toUpperCase()) {
+    case "RINGING":
+      return "Ringing";
+    case "IN_USE":
+    case "IN USE":
+      return "In use";
+    case "IDLE":
+      return "Idle";
+    default:
+      return null;
+  }
+}
 
 exports.receiveCallEvents = async (req, res) => {
   try {
     const { token, events } = req.body;
+    console.log(
+      "🚀 INCOMING CALL EVENT BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
 
     if (!token || !Array.isArray(events)) {
       return res.status(400).json({
@@ -10,16 +31,43 @@ exports.receiveCallEvents = async (req, res) => {
       });
     }
 
+    // 1️⃣ Create batch
     const batchId = await CallEventModel.createBatch(token);
-    await CallEventModel.insertEvents(batchId, events);
+
+    // 2️⃣ Process events one by one
+    for (const event of events) {
+      const normalizedStatus = normalizeStatus(event.status);
+
+      if (!normalizedStatus) {
+        console.warn("❌ Invalid status received:", event.status);
+        continue; // skip invalid event
+      }
+
+      // 🔹 Save event and get saved record
+      const savedEvent = await CallEventModel.insertSingleEvent(batchId, {
+        ...event,
+        status: normalizedStatus,
+      });
+
+      // 🔥 CLI ONLY ON FIRST IN_USE
+      if (normalizedStatus === "In use" && savedEvent.cli_triggered === false) {
+        notifyCLIOpen(event.extension, {
+          callId: event.callId,
+          callerId: event.callerId,
+          extension: event.extension,
+        });
+
+        // 3️⃣ Mark as triggered
+        await CallEventModel.markCliTriggered(savedEvent.id);
+      }
+    }
 
     res.status(200).json({
       message: "Call Events Saved Successfully.",
       batchId,
-      events,
     });
   } catch (error) {
-    console.error(error);
+    console.error("receiveCallEvents error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -45,7 +93,7 @@ exports.getCallEvents = async (req, res) => {
       data: events,
     });
   } catch (error) {
-    console.error(error);
+    console.error("getCallEvents error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -70,7 +118,7 @@ exports.deleteCallEvents = async (req, res) => {
       message: "Call Events Deleted Successfully.",
     });
   } catch (error) {
-    console.error(error);
+    console.error("deleteCallEvents error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

@@ -8,10 +8,10 @@ const PORT = process.env.PORT || 5000;
 
 const server = http.createServer(app);
 
-// 🔥 PURE WebSocket attach
+// PURE WebSocket attach
 initWebSocket(server);
 
-// ===== Prometheus (same as before) =====
+// Prometheus (same as before)
 const httpRequestDurationMs = new client.Histogram({
   name: "http_request_duration_ms",
   help: "Duration of HTTP requests in ms",
@@ -37,6 +37,6 @@ app.get("/metrics", async (req, res) => {
 
 // 🚀 START SERVER
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ HTTP running on http://192.168.110.4:${PORT}`);
-  console.log(`🔌 WebSocket running on ws://192.168.110.4:${PORT}`);
+  console.log(`✅ HTTP running on http://192.168.110.5:${PORT}`);
+  console.log(`🔌 WebSocket running on ws://192.168.110.5:${PORT}`);
 });

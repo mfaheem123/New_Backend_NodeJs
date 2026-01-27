@@ -6,7 +6,7 @@ const verifyVipVoipToken = require("../middlewares/verifyVipVoipToken");
 router.post(
   "/receivecallevents",
   verifyVipVoipToken,
-  controller.receiveCallEvents
+  controller.receiveCallEvents,
 );
 
 router.get("/getcallevents", controller.getCallEvents);

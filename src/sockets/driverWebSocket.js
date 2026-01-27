@@ -20,7 +20,7 @@ function handleDriverLoginSocket(ws) {
     JSON.stringify({
       event: "DRIVER_LIST",
       data: Array.from(loggedInDrivers.values()),
-    })
+    }),
   );
 
   ws.on("close", () => {
