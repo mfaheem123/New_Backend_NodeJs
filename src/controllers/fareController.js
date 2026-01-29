@@ -305,6 +305,7 @@ exports.calculateFare = async (req, res) => {
         dropoff_plot_id: req.body.return_dropoff_plot_id,
         pickup_date: req.body.return_pickup_date,
         pickup_time: req.body.return_pickup_time,
+        vehicle_type_id: req.body.return_vehicle_type_id,
         journey_type_id: 1,
 
         // outbound extra charges

@@ -27,9 +27,8 @@ const TemplateController = {
         });
       }
 
-      const templates = await TemplateModel.getTemplatesByTypeId(
-        template_type_id
-      );
+      const templates =
+        await TemplateModel.getTemplatesByTypeId(template_type_id);
 
       return res.json({
         status: true,

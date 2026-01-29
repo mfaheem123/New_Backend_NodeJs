@@ -82,7 +82,7 @@ async function normalizeBookingPayload(src) {
   b.quotation = b.quotation || false;
   b.quoted = b.quoted || false;
   b.commission = b.commission === undefined ? true : !!b.commission;
-
+  b.on_route = false;
   b.employee_id = b.employee_id || DEFAULT_EMPLOYEE_ID;
 
   b.reference_number = b.reference_number || (await genRef());
@@ -327,6 +327,7 @@ async function createTwoWayBooking(payload) {
     returnBooking.associated_booking = primary.id;
     returnBooking.reference_number = await genRef();
     returnBooking.driver_id = returnBooking.driver_id || null;
+    returnBooking.on_route = false;
 
     const retInserted = await createBookingRow(pool, returnBooking);
 
@@ -420,7 +421,6 @@ async function createReturnWayBooking(payload) {
 
       vehicle_type_id: payload.return_vehicle_type_id,
       driver_id: payload.return_driver_id,
-
       associated_booking: outboundInserted.id,
       journey_type_id: 3,
     };

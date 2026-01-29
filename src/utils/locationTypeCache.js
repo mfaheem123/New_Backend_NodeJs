@@ -20,7 +20,7 @@ const loadLocationTypes = async () => {
 loadLocationTypes();
 
 // Auto refresh every hour
-setInterval(loadLocationTypes, 60 * 60 * 1000);
+setInterval(loadLocationTypes, 80 * 60 * 1000);
 
 const getLocationTypes = () => locationTypes;
 

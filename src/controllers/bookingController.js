@@ -16,6 +16,9 @@ const {
   findExistingBookings,
   trashMultipleBookings,
   updateBookingStatus,
+  updateBookingFares,
+  getBookingByDriverId,
+  updateBookingonRoute,
 } = require("../models/bookingModel");
 
 function parseJSONFields(row) {
@@ -305,6 +308,7 @@ exports.getBookingByTabs = async (req, res) => {
   }
 };
 
+// Get Booking By ID
 exports.getBookingById = async (req, res) => {
   const booking_id = parseInt(req.params.id);
 
@@ -466,6 +470,12 @@ exports.updateBookingStatus = async (req, res) => {
       });
     }
 
+    if (booking_status_id == 3) {
+      await updateBookingonRoute(bookingId, true);
+    }
+    if (booking_status_id == 11) {
+      await updateBookingonRoute(bookingId, false);
+    }
     await updateBookingStatus(bookingId, booking_status_id);
 
     return res.status(200).json({
@@ -479,4 +489,62 @@ exports.updateBookingStatus = async (req, res) => {
       message: "Internal Server Error",
     });
   }
+};
+
+exports.updateBookingFares = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+    const { fares } = req.body;
+
+    if (!fares) {
+      return res.status(400).json({
+        status: false,
+        message: "fares is required",
+      });
+    }
+
+    const booking = await findBookingById(bookingId);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    await updateBookingFares(bookingId, fares);
+
+    return res.status(200).json({
+      status: true,
+      message: "Booking Fares updated successfully",
+      fares: fares,
+    });
+  } catch (error) {
+    console.error("Update Booking Fares Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.getBookingByDriverId = async (req, res) => {
+  const driver_id = parseInt(req.params.id);
+  const lastdays = req.query.lastdays ? parseInt(req.query.lastdays) : null;
+
+  const bookings = await getBookingByDriverId(driver_id, lastdays);
+
+  if (!bookings || bookings.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "No bookings found for this driver",
+    });
+  }
+
+  const data = bookings.map((b) => parseJSONFields(b));
+
+  res.status(200).json({
+    success: true,
+    bookings: data,
+  });
 };

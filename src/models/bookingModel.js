@@ -408,7 +408,7 @@ const getBookingByIdEnriched = async (id) => {
   return res.rows[0];
 };
 
-// FIND ID OF BOOKING BY ID (FOR DELETE)
+// CHECKING ID IS PRESENT OR NOT (FOR UPDATE STATUS AND FARES)
 const findBookingById = async (id) => {
   const query = `SELECT id FROM bookings WHERE id = $1`;
   return pool.query(query, [id]);
@@ -455,6 +455,49 @@ const updateBookingStatus = async (id, statusId) => {
   return pool.query(query, [statusId, id]);
 };
 
+const updateBookingonRoute = async (id, on_route) => {
+  const query = `
+    UPDATE bookings
+    SET on_route = $1
+    WHERE id = $2
+  `;
+  return pool.query(query, [on_route, id]);
+};
+
+const updateBookingFares = async (id, fares) => {
+  const query = `
+    UPDATE bookings
+    SET fares = $1
+    WHERE id = $2
+  `;
+  return pool.query(query, [fares, id]);
+};
+
+// GET BOOKINGS BY ID
+const getBookingByDriverId = async (driver_id, lastdays) => {
+  let whereClause = `WHERE b.driver_id = $1 AND b.booking_status_id = 11`;
+  const values = [driver_id];
+
+  if (lastdays) {
+  whereClause += `
+    AND b.pickup_date::date >= CURRENT_DATE - INTERVAL '${lastdays} days'
+  `;
+}
+
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    ${whereClause}
+    ORDER BY 
+      b.pickup_date DESC,
+      b.pickup_time DESC
+  `;
+
+  const res = await pool.query(sql, values);
+  return res.rows;
+};
+
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -476,4 +519,7 @@ module.exports = {
   findExistingBookings,
   trashMultipleBookings,
   updateBookingStatus,
+  updateBookingFares,
+  getBookingByDriverId,
+  updateBookingonRoute
 };

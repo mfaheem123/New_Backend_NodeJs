@@ -103,7 +103,7 @@ exports.createAccountWithRelations = async (data) => {
             webLoginPassword,
             login.mobile,
             login.telephone,
-          ]
+          ],
         );
       }
     }
@@ -113,7 +113,7 @@ exports.createAccountWithRelations = async (data) => {
       for (const dept of data.departments) {
         await db.query(
           `INSERT INTO departments (account_id, name) VALUES ($1,$2)`,
-          [accountId, dept.name]
+          [accountId, dept.name],
         );
       }
     }
@@ -135,7 +135,7 @@ exports.createAccountWithRelations = async (data) => {
             contactPassword,
             contact.mobile,
             contact.telephone,
-          ]
+          ],
         );
       }
     }
@@ -146,7 +146,7 @@ exports.createAccountWithRelations = async (data) => {
         await db.query(
           `INSERT INTO order_numbers (account_id, order_number)
             VALUES ($1,$2)`,
-          [accountId, order.order_number]
+          [accountId, order.order_number],
         );
       }
     }
@@ -157,7 +157,7 @@ exports.createAccountWithRelations = async (data) => {
         await db.query(
           `INSERT INTO company_addresses (account_id, address)
             VALUES ($1,$2)`,
-          [accountId, addr.address]
+          [accountId, addr.address],
         );
       }
     }
@@ -237,23 +237,88 @@ exports.getAccounts = async ({ offset = 0, limit = 100, filters = {} }) => {
 
   // --- Data query ---
   const dataQuery = `
-    SELECT
-      a.*,
-      json_agg(DISTINCT jsonb_build_object('id', d.id, 'name', d.name)) AS departments,
-      jsonb_build_object(
-        'id', s.id,
-        'name', s.name,
-        'telephone_number', s.telephone_number,
-        'email', s.email
-      ) AS subsidiary
-    FROM accounts a
-    LEFT JOIN departments d ON a.id = d.account_id
-    LEFT JOIN subsidiaries s ON a.subsidiary_id = s.id
-    ${whereClause}
-    GROUP BY a.id, s.id
-    ORDER BY a.id ASC
-    OFFSET $${idx++} LIMIT $${idx++};
-  `;
+SELECT
+  a.*,
+
+  -- departments
+  COALESCE(
+    json_agg(DISTINCT jsonb_build_object(
+      'id', d.id,
+      'account_id', d.account_id,
+      'name', d.name
+    )) FILTER (WHERE d.id IS NOT NULL),
+    '[]'
+  ) AS departments,
+
+  -- contacts
+  COALESCE(
+    json_agg(DISTINCT jsonb_build_object(
+      'id', c.id,
+      'account_id', c.account_id,
+      'name', c.name,
+      'email', c.email,
+      'password', c.password,
+      'mobile', c.mobile,
+      'telephone', c.telephone
+    )) FILTER (WHERE c.id IS NOT NULL),
+    '[]'
+  ) AS contacts,
+
+  -- order numbers
+  COALESCE(
+    json_agg(DISTINCT jsonb_build_object(
+      'id', o.id,
+      'account_id', o.account_id,
+      'order_number', o.order_number
+    )) FILTER (WHERE o.id IS NOT NULL),
+    '[]'
+  ) AS order_numbers,
+
+  -- company addresses
+  COALESCE(
+    json_agg(DISTINCT jsonb_build_object(
+      'id', ca.id,
+      'account_id', ca.account_id,
+      'address', ca.address
+    )) FILTER (WHERE ca.id IS NOT NULL),
+    '[]'
+  ) AS company_addresses,
+
+  -- web logins
+  COALESCE(
+    json_agg(DISTINCT jsonb_build_object(
+      'id', wl.id,
+      'account_id', wl.account_id,
+      'account_number', wl.account_number,
+      'username', wl.username,
+      'password', wl.password,
+      'mobile', wl.mobile,
+      'telephone', wl.telephone
+    )) FILTER (WHERE wl.id IS NOT NULL),
+    '[]'
+  ) AS web_logins,
+
+  -- subsidiary
+  jsonb_build_object(
+    'id', s.id,
+    'name', s.name,
+    'telephone_number', s.telephone_number,
+    'email', s.email
+  ) AS subsidiary
+
+FROM accounts a
+LEFT JOIN departments d ON d.account_id = a.id
+LEFT JOIN contacts c ON c.account_id = a.id
+LEFT JOIN order_numbers o ON o.account_id = a.id
+LEFT JOIN company_addresses ca ON ca.account_id = a.id
+LEFT JOIN web_logins wl ON wl.account_id = a.id
+LEFT JOIN subsidiaries s ON s.id = a.subsidiary_id
+
+${whereClause}
+GROUP BY a.id, s.id
+ORDER BY a.id ASC
+OFFSET $${idx++} LIMIT $${idx++};
+`;
 
   params.push(offset, limit);
   const result = await db.query(dataQuery, params);
@@ -281,7 +346,7 @@ exports.getAccountById = async (id) => {
     WHERE a.id = $1
     GROUP BY a.id;
   `,
-    [id]
+    [id],
   );
   return result.rows[0];
 };
@@ -331,7 +396,7 @@ exports.updateAccountWithRelations = async (id, data) => {
       values.push(id);
       await db.query(
         `UPDATE accounts SET ${fields.join(", ")} WHERE id = $${values.length}`,
-        values
+        values,
       );
     }
 
@@ -344,7 +409,7 @@ exports.updateAccountWithRelations = async (id, data) => {
         await db.query(
           `INSERT INTO web_logins (account_id, account_number, username, password, mobile, telephone)
            VALUES ($1,$2,$3,$4,$5,$6)`,
-          [id, w.account_number, w.username, pass, w.mobile, w.telephone]
+          [id, w.account_number, w.username, pass, w.mobile, w.telephone],
         );
       }
     }
@@ -355,7 +420,7 @@ exports.updateAccountWithRelations = async (id, data) => {
         await db.query(
           `INSERT INTO departments (account_id, name)
            VALUES ($1,$2)`,
-          [id, d.name]
+          [id, d.name],
         );
       }
     }
@@ -367,7 +432,7 @@ exports.updateAccountWithRelations = async (id, data) => {
         await db.query(
           `INSERT INTO contacts (account_id, name, email, password, mobile, telephone)
            VALUES ($1,$2,$3,$4,$5,$6)`,
-          [id, c.name, c.email, pass, c.mobile, c.telephone]
+          [id, c.name, c.email, pass, c.mobile, c.telephone],
         );
       }
     }
@@ -378,7 +443,7 @@ exports.updateAccountWithRelations = async (id, data) => {
         await db.query(
           `INSERT INTO order_numbers (account_id, order_number)
            VALUES ($1,$2)`,
-          [id, o.order_number]
+          [id, o.order_number],
         );
       }
     }
@@ -391,7 +456,7 @@ exports.updateAccountWithRelations = async (id, data) => {
         await db.query(
           `INSERT INTO company_addresses (account_id, address)
            VALUES ($1,$2)`,
-          [id, a.address]
+          [id, a.address],
         );
       }
     }
@@ -400,7 +465,7 @@ exports.updateAccountWithRelations = async (id, data) => {
 
     const updatedAccount = await db.query(
       "SELECT * FROM accounts WHERE id = $1",
-      [id]
+      [id],
     );
     return updatedAccount.rows[0];
   } catch (err) {
@@ -421,7 +486,7 @@ exports.deleteAccountWithRelations = async (id) => {
     await db.query("DELETE FROM company_addresses WHERE account_id = $1", [id]);
     const result = await db.query(
       "DELETE FROM accounts WHERE id = $1 RETURNING *",
-      [id]
+      [id],
     );
 
     await db.query("COMMIT");

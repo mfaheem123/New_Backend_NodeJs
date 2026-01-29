@@ -9,7 +9,7 @@ router.post("/edit/:id", accountController.updateAccount);
 router.delete("/delete/:id", accountController.deleteAccount);
 router.get(
   "/subsidiary/:subsidiary_id",
-  accountController.getAccountsBySubsidiary
+  accountController.getAccountsBySubsidiary,
 );
 
 module.exports = router;

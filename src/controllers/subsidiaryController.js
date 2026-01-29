@@ -5,7 +5,7 @@ const path = require("path");
 
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 
-// 🔍 Basic validation
+//  Basic validation
 const validateSubsidiaryPayload = (payload) => {
   if (!payload) return "Empty payload";
   if (payload.name && typeof payload.name !== "string") return "Invalid name";
@@ -14,7 +14,7 @@ const validateSubsidiaryPayload = (payload) => {
   return null;
 };
 
-// 📋 Get all subsidiaries
+//  Get all subsidiaries
 const getAll = async (req, res) => {
   try {
     const {
@@ -52,7 +52,7 @@ const getAll = async (req, res) => {
   }
 };
 
-// 📋 Get single subsidiary
+//  Get single subsidiary
 const getById = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
@@ -74,7 +74,7 @@ const create = async (req, res) => {
     const payload = req.body;
     console.log(
       "🚀 INCOMING SUBSIDIARY ADD BODY:",
-      JSON.stringify(payload, null, 2)
+      JSON.stringify(payload, null, 2),
     );
 
     Object.keys(payload).forEach((key) => {
@@ -106,7 +106,7 @@ const create = async (req, res) => {
   }
 };
 
-// ✏️ Update subsidiary
+//  Update subsidiary
 const update = async (req, res) => {
   try {
     const id = parseInt(req.params.id);

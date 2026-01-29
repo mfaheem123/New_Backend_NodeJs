@@ -1,15 +1,17 @@
 // routes/bookingRoutes.js
 const express = require("express");
 const router = express.Router();
-const ctrl = require("../controllers/bookingController");
+const bookingController = require("../controllers/bookingController");
 
-router.post("/add", ctrl.createBooking);
-router.get("/get/:id", ctrl.getBookingSections);
-router.get("/getbytabs/:id", ctrl.getBookingByTabs);
-router.get("/getbyid/:id", ctrl.getBookingById);
-router.post("/update/:id", ctrl.updateBooking);
-router.post("/status/:id", ctrl.updateBookingStatus);
-router.delete("/delete/:id", ctrl.deleteBooking);
-router.delete("/bulkdelete", ctrl.deleteMultipleBookings);
+router.post("/add", bookingController.createBooking);
+router.get("/get/:id", bookingController.getBookingSections);
+router.get("/getbytabs/:id", bookingController.getBookingByTabs);
+router.get("/getbyid/:id", bookingController.getBookingById);
+router.get("/getbydriverid/:id", bookingController.getBookingByDriverId);
+router.post("/update/:id", bookingController.updateBooking);
+router.post("/status/:id", bookingController.updateBookingStatus);
+router.post("/fares/:id", bookingController.updateBookingFares);
+router.delete("/delete/:id", bookingController.deleteBooking);
+router.delete("/bulkdelete", bookingController.deleteMultipleBookings);
 
 module.exports = router;
