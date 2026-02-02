@@ -97,7 +97,7 @@ const create = async (req, res) => {
     req.body.image = imageUrl;
     console.log(
       "🚀 INCOMING EMPLOYEE ADD BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
     if (!username || !password) {
       return res
@@ -143,11 +143,11 @@ const create = async (req, res) => {
     // Fetch role and subsidiary info
     const roleResult = await pool.query(
       "SELECT name FROM roles WHERE id = $1",
-      [newEmp.role_id]
+      [newEmp.role_id],
     );
     const subResult = await pool.query(
       "SELECT name FROM subsidiaries WHERE id = $1",
-      [newEmp.subsidiary_id]
+      [newEmp.subsidiary_id],
     );
 
     const employee = {
@@ -171,14 +171,21 @@ const update = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const data = req.body;
+    // Image handling
+    if (req.file) {
+      const imageUrl = `${BASE_URL}${req.file.filename}`;
+      req.body.image = imageUrl;
+    }
+
     console.log(
       "🚀 INCOMING EMPLOYEE UPDATE BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
+
     // Check username uniqueness
     if (data.username) {
       const existing = await Employee.getByUsername(
-        data.username.toLowerCase()
+        data.username.toLowerCase(),
       );
       if (existing && existing.id !== id) {
         return res
@@ -204,11 +211,11 @@ const update = async (req, res) => {
     // Fetch role and subsidiary info
     const roleResult = await pool.query(
       "SELECT name FROM roles WHERE id = $1",
-      [updated.role_id]
+      [updated.role_id],
     );
     const subResult = await pool.query(
       "SELECT name FROM subsidiaries WHERE id = $1",
-      [updated.subsidiary_id]
+      [updated.subsidiary_id],
     );
 
     const employee = {
@@ -241,11 +248,11 @@ const remove = async (req, res) => {
     // Fetch role and subsidiary info (if they existed before deletion)
     const roleResult = await pool.query(
       "SELECT name FROM roles WHERE id = $1",
-      [deleted.role_id]
+      [deleted.role_id],
     );
     const subResult = await pool.query(
       "SELECT name FROM subsidiaries WHERE id = $1",
-      [deleted.subsidiary_id]
+      [deleted.subsidiary_id],
     );
 
     const employee = {
@@ -256,8 +263,7 @@ const remove = async (req, res) => {
 
     res.status(200).json({
       status: true,
-      statusCode: 200,
-      employee,
+      message: "Employee Deleted Successfully",
     });
   } catch (err) {
     console.error("Error deleting employee:", err);
@@ -339,7 +345,7 @@ const login = async (req, res) => {
     const { username, password } = req.body;
     console.log(
       "🚀 INCOMING EMPLOYEE LOGIN BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
 
     if (!username || !password) {
@@ -368,12 +374,12 @@ const login = async (req, res) => {
     // Fetch role + subsidiary
     const roleResult = await pool.query(
       "SELECT name FROM roles WHERE id = $1",
-      [employee.role_id]
+      [employee.role_id],
     );
 
     const subResult = await pool.query(
       "SELECT name FROM subsidiaries WHERE id = $1",
-      [employee.subsidiary_id]
+      [employee.subsidiary_id],
     );
 
     // 🔥 Fetch extensions for this employee
@@ -404,7 +410,7 @@ const login = async (req, res) => {
         role_id: employee.role_id,
       },
       JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     res.status(200).json({

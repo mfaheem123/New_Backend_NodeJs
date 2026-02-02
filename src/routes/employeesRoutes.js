@@ -24,7 +24,7 @@ const upload = multer({ storage });
 router.get("/get", employeesController.getAll);
 router.get("/getbyid/:id", employeesController.getById);
 router.post("/add", upload.single("image"), employeesController.create);
-router.post("/edit/:id", upload.none(), employeesController.update);
+router.post("/update/:id", upload.single("image"), employeesController.update);
 router.delete("/delete/:id", employeesController.remove);
 router.post("/login", upload.none(), employeesController.login);
 module.exports = router;

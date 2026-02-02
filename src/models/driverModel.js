@@ -149,7 +149,7 @@ async function generateUniqueDriverAccessToken(db) {
 
     const { rows } = await db.query(
       `SELECT id FROM drivers WHERE driver_access_token = $1 LIMIT 1`,
-      [token]
+      [token],
     );
 
     if (rows.length === 0) {
@@ -203,7 +203,7 @@ const Driver = {
           insurance_number, insurance_expiry,
           phc_vehicle_number, phc_vehicle_expiry
          FROM company_vehicles WHERE id = $1 LIMIT 1`,
-          [companyVehicleId]
+          [companyVehicleId],
         );
 
         const companyVehicle = companyVehicleRows[0];
@@ -233,14 +233,14 @@ const Driver = {
         // 3️⃣ Mark company vehicle as assigned
         await db.query(
           `UPDATE company_vehicles SET assigned = true WHERE id = $1`,
-          [companyVehicleId]
+          [companyVehicleId],
         );
       }
 
       // 🚫 Prevent conflict: both private & company vehicle
       if (useCompanyVehicle && rawVehicle?.vehicle_type_id) {
         throw new Error(
-          "Driver cannot use both private and company vehicle at the same time."
+          "Driver cannot use both private and company vehicle at the same time.",
         );
       }
 
@@ -341,27 +341,27 @@ const Driver = {
             driver_id: driverId,
             licence_number: mergeValue(
               rawVehicle.licence_number,
-              driver.licence_number
+              driver.licence_number,
             ),
             licence_expiry: mergeValue(
               rawVehicle.licence_expiry,
-              driver.licence_expiry
+              driver.licence_expiry,
             ),
             licence_expiry_time: mergeValue(
               rawVehicle.licence_expiry_time,
-              driver.licence_expiry_time
+              driver.licence_expiry_time,
             ),
             phc_driver_number: mergeValue(
               rawVehicle.phc_driver_number,
-              driver.phc_driver_number
+              driver.phc_driver_number,
             ),
             phc_driver_expiry: mergeValue(
               rawVehicle.phc_driver_expiry,
-              driver.phc_driver_expiry
+              driver.phc_driver_expiry,
             ),
             phc_driver_expiry_time: mergeValue(
               rawVehicle.phc_driver_expiry_time,
-              driver.phc_driver_expiry_time
+              driver.phc_driver_expiry_time,
             ),
             mot_number: mergeValue(rawVehicle.mot_number, driver.mot_number),
             mot_expiry: mergeValue(rawVehicle.mot_expiry, driver.mot_expiry),
@@ -369,71 +369,71 @@ const Driver = {
             mot2_expiry: mergeValue(rawVehicle.mot2_expiry, driver.mot2_expiry),
             insurance_number: mergeValue(
               rawVehicle.insurance_number,
-              driver.insurance_number
+              driver.insurance_number,
             ),
             insurance_expiry: mergeValue(
               rawVehicle.insurance_expiry,
-              driver.insurance_expiry
+              driver.insurance_expiry,
             ),
             phc_vehicle_number: mergeValue(
               rawVehicle.phc_vehicle_number,
-              driver.phc_vehicle_number
+              driver.phc_vehicle_number,
             ),
             phc_vehicle_expiry: mergeValue(
               rawVehicle.phc_vehicle_expiry,
-              driver.phc_vehicle_expiry
+              driver.phc_vehicle_expiry,
             ),
             road_tax_number: mergeValue(
               rawVehicle.road_tax_number,
-              driver.road_tax_number
+              driver.road_tax_number,
             ),
             road_tax_expiry: mergeValue(
               rawVehicle.road_tax_expiry,
-              driver.road_tax_expiry
+              driver.road_tax_expiry,
             ),
             rental_agreement_number: mergeValue(
               rawVehicle.rental_agreement_number,
-              driver.rental_agreement_number
+              driver.rental_agreement_number,
             ),
             rental_agreement_expiry: mergeValue(
               rawVehicle.rental_agreement_expiry,
-              driver.rental_agreement_expiry
+              driver.rental_agreement_expiry,
             ),
             v5_registration_number: mergeValue(
               rawVehicle.v5_registration_number,
-              driver.v5_registration_number
+              driver.v5_registration_number,
             ),
             v5_registration_expiry: mergeValue(
               rawVehicle.v5_registration_expiry,
-              driver.v5_registration_expiry
+              driver.v5_registration_expiry,
             ),
             mot_expiry_time: mergeValue(
               rawVehicle.mot_expiry_time,
-              driver.mot_expiry_time
+              driver.mot_expiry_time,
             ),
             mot2_expiry_time: mergeValue(
               rawVehicle.mot2_expiry_time,
-              driver.mot2_expiry_time
+              driver.mot2_expiry_time,
             ),
             insurance_expiry_time: mergeValue(
               rawVehicle.insurance_expiry_time,
-              driver.insurance_expiry_time
+              driver.insurance_expiry_time,
             ),
             phc_vehicle_expiry_time: mergeValue(
               rawVehicle.phc_vehicle_expiry_time,
-              driver.phc_vehicle_expiry_time
+              driver.phc_vehicle_expiry_time,
             ),
             road_tax_expiry_time: mergeValue(
               rawVehicle.road_tax_expiry_time,
-              driver.road_tax_expiry_time
+              driver.road_tax_expiry_time,
             ),
             rental_agreement_expiry_time: mergeValue(
               rawVehicle.rental_agreement_expiry_time,
-              driver.rental_agreement_expiry_time
+              driver.rental_agreement_expiry_time,
             ),
             v5_registration_expiry_time: mergeValue(
               rawVehicle.v5_registration_expiry_time,
-              driver.v5_registration_expiry_time
+              driver.v5_registration_expiry_time,
             ),
           }
         : null;
@@ -523,7 +523,7 @@ const Driver = {
             vehicle.phc_driver_number,
             vehicle.phc_driver_expiry,
             vehicle.phc_driver_expiry_time,
-          ]
+          ],
         );
 
         vehicleId = vehicleInsertRes.rows[0].id;
@@ -544,7 +544,7 @@ const Driver = {
               note.note,
               note.created_at || new Date(),
               note.created_by || "system",
-            ]
+            ],
           );
         }
       }
@@ -554,7 +554,7 @@ const Driver = {
         VALUES ($1)
         ON CONFLICT (driver_id) DO NOTHING
         `,
-        [driverId]
+        [driverId],
       );
 
       // Insert driver shifts
@@ -563,7 +563,7 @@ const Driver = {
           await db.query(
             `INSERT INTO driver_shifts (driver_id, name, start_time, end_time)
            VALUES ($1, $2, $3, $4)`,
-            [driverId, shift.name, shift.start_time, shift.end_time]
+            [driverId, shift.name, shift.start_time, shift.end_time],
           );
         }
       }
@@ -576,7 +576,7 @@ const Driver = {
       throw new Error(
         err.message.includes("relation")
           ? "Database table missing (check driver_shifts, driver_notes, or vehicles table)"
-          : err.message
+          : err.message,
       );
     }
   },
@@ -648,7 +648,7 @@ const Driver = {
 
     if (vehicle_type) {
       conditions.push(
-        `(vt_v.name ILIKE $${idx++} OR vt_cv.name ILIKE $${idx++})`
+        `(vt_v.name ILIKE $${idx++} OR vt_cv.name ILIKE $${idx++})`,
       );
       params.push(`%${vehicle_type}%`, `%${vehicle_type}%`);
     }
@@ -746,7 +746,7 @@ const Driver = {
        FROM drivers d
        LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
        WHERE d.id = $1`,
-        [id]
+        [id],
       );
 
       if (driverRes.rows.length === 0) {
@@ -762,7 +762,7 @@ const Driver = {
        FROM driver_notes
        WHERE driver_id = $1
        ORDER BY created_at DESC`,
-        [id]
+        [id],
       );
 
       // ⏰ Shifts
@@ -771,7 +771,7 @@ const Driver = {
        FROM driver_shifts
        WHERE driver_id = $1
        ORDER BY id ASC`,
-        [id]
+        [id],
       );
 
       // 🚗 Vehicle (dynamic source)
@@ -791,7 +791,7 @@ const Driver = {
          LEFT JOIN vehicle_types vt ON vt.id = cv.vehicle_type_id
          WHERE cv.id = $1
          LIMIT 1`,
-          [driver.company_vehicle_id]
+          [driver.company_vehicle_id],
         );
       } else {
         vehicleRes = await db.query(
@@ -808,7 +808,7 @@ const Driver = {
          LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id
          WHERE v.id = $1
          LIMIT 1`,
-          [driver.vehicle_id]
+          [driver.vehicle_id],
         );
       }
 
@@ -1111,7 +1111,7 @@ const Driver = {
         values.push(driverId);
         await db.query(
           `UPDATE drivers SET ${updates.join(", ")} WHERE id = $${i}`,
-          values
+          values,
         );
       }
 
@@ -1123,7 +1123,7 @@ const Driver = {
       ) {
         const { rows: existingVeh } = await db.query(
           `SELECT id FROM vehicles WHERE driver_id = $1 LIMIT 1`,
-          [driverId]
+          [driverId],
         );
 
         let vehicleId;
@@ -1141,7 +1141,7 @@ const Driver = {
             `UPDATE vehicles SET ${setClause} WHERE id = $${
               keys.length + 1
             } RETURNING id`,
-            [...values, vehId]
+            [...values, vehId],
           );
           vehicleId = updatedVeh[0].id;
         } else {
@@ -1154,7 +1154,7 @@ const Driver = {
             `INSERT INTO vehicles (${keys.join(", ")}, driver_id)
            VALUES (${placeholders}, $${values.length + 1})
            RETURNING id`,
-            [...values, driverId]
+            [...values, driverId],
           );
           vehicleId = newVeh[0].id;
         }
@@ -1166,7 +1166,7 @@ const Driver = {
              company_vehicle_id = null, 
              use_company_vehicle = false
          WHERE id = $2`,
-          [vehicleId, driverId]
+          [vehicleId, driverId],
         );
       }
 
@@ -1184,7 +1184,7 @@ const Driver = {
               n.note,
               n.created_at || new Date(),
               n.created_by || "system",
-            ]
+            ],
           );
         }
       }
@@ -1198,7 +1198,7 @@ const Driver = {
           await db.query(
             `INSERT INTO driver_shifts (driver_id, name, start_time, end_time)
            VALUES ($1, $2, $3, $4)`,
-            [driverId, s.name, s.start_time, s.end_time]
+            [driverId, s.name, s.start_time, s.end_time],
           );
         }
       }
@@ -1339,7 +1339,7 @@ const Driver = {
   async getLoginDriverById(id) {
     const { rows } = await db.query(
       `SELECT * FROM drivers WHERE id = $1 LIMIT 1`,
-      [id]
+      [id],
     );
 
     return rows[0] || null;

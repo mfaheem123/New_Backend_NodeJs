@@ -8,7 +8,7 @@ const {
 } = require("../models/bookingModel");
 const { sendBookingNotification } = require("./notificationService");
 
-const DEFAULT_EMPLOYEE_ID = 2;
+const DEFAULT_EMPLOYEE_ID = 28;
 
 const parseJSONFields = (row) => {
   if (!row) return row;

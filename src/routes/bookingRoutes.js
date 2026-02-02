@@ -7,7 +7,7 @@ router.post("/add", bookingController.createBooking);
 router.get("/get/:id", bookingController.getBookingSections);
 router.get("/getbytabs/:id", bookingController.getBookingByTabs);
 router.get("/getbyid/:id", bookingController.getBookingById);
-router.get("/getbydriverid/:id", bookingController.getBookingByDriverId);
+router.post("/getbydriverid/:id", bookingController.getBookingByDriverId);
 router.post("/update/:id", bookingController.updateBooking);
 router.post("/status/:id", bookingController.updateBookingStatus);
 router.post("/fares/:id", bookingController.updateBookingFares);

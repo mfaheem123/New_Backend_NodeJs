@@ -131,8 +131,9 @@ const Escort = {
   },
 
   async remove(id) {
-    await db.query(`DELETE FROM escorts WHERE id = $1`, [id]);
-    return true;
+    const result = await db.query("DELETE FROM escorts WHERE id = $1", [id]);
+
+    return result;
   },
 };
 

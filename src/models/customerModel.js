@@ -112,7 +112,7 @@ module.exports = {
     // Step 1: Clean up old restricted drivers
     await db.query(
       `DELETE FROM customer_restricted_drivers WHERE customer_id = $1`,
-      [customerId]
+      [customerId],
     );
 
     // Step 2: Defensive check
@@ -158,7 +158,7 @@ module.exports = {
       }
 
       console.log(
-        `📤 Inserting -> customer_id: ${customerId}, driver_id: ${driverId}, username: ${driverUsername}, name: ${driverName}`
+        `📤 Inserting -> customer_id: ${customerId}, driver_id: ${driverId}, username: ${driverUsername}, name: ${driverName}`,
       );
 
       try {
@@ -307,7 +307,7 @@ module.exports = {
       `SELECT driver_id AS id, driver_username AS username, driver_name AS name
      FROM customer_restricted_drivers
      WHERE customer_id = $1`,
-      [customerId]
+      [customerId],
     );
     return rows;
   },
@@ -316,7 +316,7 @@ module.exports = {
       // Step 1: Delete all restricted drivers linked to this customer
       await db.query(
         `DELETE FROM customer_restricted_drivers WHERE customer_id = $1`,
-        [id]
+        [id],
       );
 
       // Step 2: Delete the customer itself

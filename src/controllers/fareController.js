@@ -320,11 +320,11 @@ exports.calculateFare = async (req, res) => {
 
       return res.status(200).json({
         status: true,
-        message: "Return way fares calculated",
+        message: "Return Way Fares Calculated Successfully",
         data: {
-          outbound: outboundFare,
-          return: returnFare,
-          grand_total: Number(
+          fare: outboundFare.total_fare,
+          return_fare: returnFare.total_fare,
+          total_fare: Number(
             (outboundFare.total_fare + returnFare.total_fare).toFixed(2),
           ),
         },

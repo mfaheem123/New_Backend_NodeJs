@@ -30,7 +30,7 @@ const create = async (req, res) => {
     req.body.active = req.body.active === "true" || req.body.active === true;
     console.log(
       "🚀 INCOMING ESCORT ADD BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
     const escort = await Escort.create(req.body);
     res.status(200).json({ status: true, escort });
@@ -104,7 +104,7 @@ const update = async (req, res) => {
     }
     console.log(
       "🚀 INCOMING ESCORT UPDATE BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
     const updated = await Escort.update(id, req.body);
     if (!updated)
@@ -121,11 +121,26 @@ const update = async (req, res) => {
 
 const remove = async (req, res) => {
   try {
-    await Escort.remove(req.params.id);
-    res.json({ status: true, message: "Escort deleted successfully" });
+    const result = await Escort.remove(req.params.id);
+
+    // agar koi row delete hi nahi hui
+    if (!result || result.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Escort not found",
+      });
+    }
+
+    res.json({
+      status: true,
+      message: "Escort deleted successfully",
+    });
   } catch (err) {
     console.error("Error deleting escort:", err);
-    res.status(500).json({ status: false, message: "Server Error" });
+    res.status(500).json({
+      status: false,
+      message: "Server Error",
+    });
   }
 };
 

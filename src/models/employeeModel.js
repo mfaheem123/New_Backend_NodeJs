@@ -1,18 +1,22 @@
 const pool = require("../db");
 
 const COLUMNS = [
-  "image",
   "subsidiary_id",
   "role_id",
   "username",
   "password",
+  "confirmpassword",
   "email",
   "phone",
   "fax",
-  "web_device_id",
-  "mobile_device_id",
-  "extension_number",
+  "image",
   "release_note_viewed",
+  "active",
+  "alldrivers",
+  "allbookings",
+  "allaccounts",
+  "callreceiver",
+  "allowtransferbookings"
 ];
 
 // Get all employees with role + subsidiary info
@@ -131,11 +135,11 @@ const getByUsername = async (username) => {
 const create = async (data) => {
   const cols = COLUMNS.filter((c) => data[c] !== undefined);
   const values = cols.map((c) =>
-    c === "username" ? data[c].toLowerCase() : data[c]
+    c === "username" ? data[c].toLowerCase() : data[c],
   );
   const params = values.map((_, i) => `$${i + 1}`).join(",");
   const q = `INSERT INTO employees (${cols.join(
-    ","
+    ",",
   )}) VALUES (${params}) RETURNING *`;
   const { rows } = await pool.query(q, values);
   return rows[0];
@@ -147,7 +151,7 @@ const update = async (id, data) => {
   if (cols.length === 0) return await getById(id);
   const set = cols.map((c, i) => `${c} = $${i + 1}`).join(", ");
   const values = cols.map((c) =>
-    c === "username" ? data[c].toLowerCase() : data[c]
+    c === "username" ? data[c].toLowerCase() : data[c],
   );
   values.push(id);
   const q = `UPDATE employees SET ${set}, updated_at = now() WHERE id = $${values.length} RETURNING *`;

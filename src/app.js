@@ -45,6 +45,7 @@ const templateRoutes = require("./routes/templateRoutes");
 const fareRoutes = require("./routes/fareRoutes");
 const driverAppFeaturesRoutes = require("./routes/driverAppFeaturesRoutes");
 const cliRoutes = require("./routes/cliRoutes");
+// const redis = require("./config/redis");
 
 const app = express();
 

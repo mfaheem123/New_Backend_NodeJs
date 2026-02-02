@@ -1,8 +1,5 @@
 const cliService = require("../services/cliService");
 
-/**
- * POST /api/cli/find-customer
- */
 exports.findCustomer = async (req, res) => {
   try {
     const { phone } = req.body;
