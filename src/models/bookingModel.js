@@ -479,11 +479,10 @@ const getBookingByDriverId = async (driver_id, lastdays) => {
   const values = [driver_id];
 
   if (lastdays) {
-  whereClause += `
+    whereClause += `
     AND b.pickup_date::date >= CURRENT_DATE - INTERVAL '${lastdays} days'
   `;
-}
-
+  }
 
   const sql = `
     ${ENRICHED_SELECT}
@@ -496,7 +495,6 @@ const getBookingByDriverId = async (driver_id, lastdays) => {
   const res = await pool.query(sql, values);
   return res.rows;
 };
-
 
 module.exports = {
   pool,
@@ -521,5 +519,5 @@ module.exports = {
   updateBookingStatus,
   updateBookingFares,
   getBookingByDriverId,
-  updateBookingonRoute
+  updateBookingonRoute,
 };

@@ -545,6 +545,7 @@ exports.getBookingByDriverId = async (req, res) => {
 
   res.status(200).json({
     success: true,
+    count: bookings.length,
     bookings: data,
   });
 };
