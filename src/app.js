@@ -45,6 +45,9 @@ const templateRoutes = require("./routes/templateRoutes");
 const fareRoutes = require("./routes/fareRoutes");
 const driverAppFeaturesRoutes = require("./routes/driverAppFeaturesRoutes");
 const cliRoutes = require("./routes/cliRoutes");
+const accountInvoiceBookingRoutes = require("./routes/accountInvoiceBookingRoutes");
+const accountInvoiceRoutes = require("./routes/accountInvoiceRoutes");
+
 
 const app = express();
 
@@ -136,6 +139,9 @@ app.use("/api/templates", templateRoutes);
 app.use("/api/fares", fareRoutes);
 app.use("/api/drivers-app", driverAppFeaturesRoutes);
 app.use("/api/cli", cliRoutes);
+app.use("/api/account_invoice", accountInvoiceBookingRoutes);
+app.use("/api/account_invoice", accountInvoiceRoutes);
+
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

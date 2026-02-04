@@ -3,7 +3,6 @@ const InvoiceModel = require("../models/accountInvoiceModel");
 const { generateInvoiceNumber } = require("../models/documentNumberHelper");
 
 exports.create = async (req, res) => {
-  const client = await pool.connect();
 
   try {
     const {
@@ -16,19 +15,16 @@ exports.create = async (req, res) => {
       invoice_type,
       department_id,
       order_number,
-      amount
+      amount,
     } = req.body;
 
-    await client.query("BEGIN");
+    await pool.query("BEGIN");
 
     // 🔐 generate invoice number
-    const invoice_number = await generateInvoiceNumber(
-      client,
-      subsidiary_id
-    );
+    const invoice_number = await generateInvoiceNumber(subsidiary_id);
 
     // 📄 create invoice
-    const invoice = await InvoiceModel.create(client, {
+    const invoice = await InvoiceModel.create({
       subsidiary_id,
       account_id,
       invoice_number,
@@ -39,23 +35,20 @@ exports.create = async (req, res) => {
       invoice_type,
       department_id,
       order_number,
-      amount
+      amount,
     });
 
-    await client.query("COMMIT");
+    await pool.query("COMMIT");
 
     res.json({
       status: true,
-      account_invoice: invoice
+      account_invoice: invoice,
     });
-
   } catch (err) {
-    await client.query("ROLLBACK");
+    await pool.query("ROLLBACK");
     res.status(500).json({
       status: false,
-      message: err.message
+      message: err.message,
     });
-  } finally {
-    client.release();
-  }
+  } 
 };

@@ -16,7 +16,7 @@ const COLUMNS = [
   "allbookings",
   "allaccounts",
   "callreceiver",
-  "allowtransferbookings"
+  "allowtransferbookings",
 ];
 
 // Get all employees with role + subsidiary info

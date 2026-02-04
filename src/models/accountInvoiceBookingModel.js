@@ -165,7 +165,7 @@ exports.getForAccountInvoice = async (filters) => {
     from_date,
     to_date,
     department,
-    order_number
+    order_number,
   } = filters;
 
   const conditions = [];
@@ -181,7 +181,7 @@ exports.getForAccountInvoice = async (filters) => {
   conditions.push(`b.booking_status_id = 11`);
   conditions.push(`b.invoice_number IS NULL`);
 
-  conditions.push(`b.pickup_date BETWEEN $${idx++} AND $${idx++}`);
+  conditions.push(`b.pickup_date::date BETWEEN $${idx++} AND $${idx++}`);
   values.push(from_date, to_date);
 
   if (department) {

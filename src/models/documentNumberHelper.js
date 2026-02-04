@@ -1,7 +1,7 @@
 const pool = require("../db");
 
-exports.generateInvoiceNumber = async (client, subsidiary_id) => {
-  const res = await client.query(`
+exports.generateInvoiceNumber = async (subsidiary_id) => {
+  const res = await pool.query(`
     SELECT *
     FROM document_numbers
     WHERE subsidiary_id = $1
@@ -18,7 +18,7 @@ exports.generateInvoiceNumber = async (client, subsidiary_id) => {
   const nextNumber = doc.end_number + doc.increment_value;
   const invoiceNumber = `${doc.prefix}${nextNumber}`;
 
-  await client.query(`
+  await pool.query(`
     UPDATE document_numbers
     SET end_number = $1, updated_at = now()
     WHERE id = $2

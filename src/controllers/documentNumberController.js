@@ -21,7 +21,7 @@ exports.getAll = async (req, res) => {
     res.json({
       status: true,
       count: result.count,
-      document_numbers: result.rows
+      document_numbers: result.rows,
     });
   } catch (err) {
     res.status(500).json({ status: false, message: err.message });
