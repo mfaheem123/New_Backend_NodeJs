@@ -3,7 +3,6 @@ const InvoiceModel = require("../models/accountInvoiceModel");
 const { generateInvoiceNumber } = require("../models/documentNumberHelper");
 
 exports.create = async (req, res) => {
-
   try {
     const {
       subsidiary_id,
@@ -50,5 +49,5 @@ exports.create = async (req, res) => {
       status: false,
       message: err.message,
     });
-  } 
+  }
 };

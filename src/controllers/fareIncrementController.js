@@ -28,7 +28,10 @@ exports.add = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const id = req.params.id;
-
+    console.log(
+      "🚀 INCOMING FARE INCREMENT BODY BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const updated = await FareIncrement.update(id, req.body);
 
     res.json({
@@ -43,11 +46,18 @@ exports.update = async (req, res) => {
 // DELETE
 exports.delete = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = parseInt(req.params.id);
+
     await FareIncrement.delete(id);
 
-    res.json({ status: true, message: "Fare increment deleted successfully" });
+    res.json({
+      status: true,
+      message: "Fare increment deleted successfully",
+    });
   } catch (err) {
-    res.status(500).json({ status: false, message: err.message });
+    res.status(404).json({
+      status: false,
+      message: err.message,
+    });
   }
 };

@@ -1,4 +1,4 @@
-const Features = require("../models/driverAppFeaturesModel");
+const driverFeatures = require("../models/driverAppFeaturesModel");
 
 exports.updateDriverAppFeatures = async (req, res) => {
   try {
@@ -11,7 +11,7 @@ exports.updateDriverAppFeatures = async (req, res) => {
       });
     }
 
-    const updated = await Features.updateFeatures(driver_id, features);
+    const updated = await driverFeatures.updateFeatures(driver_id, features);
 
     if (!updated) {
       return res.status(400).json({
@@ -50,7 +50,7 @@ exports.getDriverAppFeatures = async (req, res) => {
       });
     }
 
-    const f = await Features.getByDriverId(driver_id);
+    const f = await driverFeatures.getByDriverId(driver_id);
 
     if (!f) {
       return res.status(404).json({

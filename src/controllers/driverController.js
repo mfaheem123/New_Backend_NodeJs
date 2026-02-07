@@ -53,7 +53,7 @@ exports.create = async (req, res) => {
   try {
     console.log(
       "🚀 INCOMING DRIVER ADD BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
     console.log("🚀 INCOMING DRIVER ADD FILES:", req.files);
 
@@ -95,7 +95,7 @@ exports.create = async (req, res) => {
     if (req.files && req.files.length > 0) {
       req.files.forEach(
         (file) =>
-          (uploadedFiles[file.fieldname] = `${BASE_URL}${file.filename}`)
+          (uploadedFiles[file.fieldname] = `${BASE_URL}${file.filename}`),
       );
     }
     if (uploadedFiles.image) req.body.image = uploadedFiles.image;
@@ -216,7 +216,7 @@ exports.create = async (req, res) => {
     // ✅ Handle log book document separately
     if (req.files && req.files.length > 0) {
       const logBookFile = req.files.find(
-        (f) => f.fieldname === "log_book_document"
+        (f) => f.fieldname === "log_book_document",
       );
       if (logBookFile) {
         if (!req.body.vehicle) req.body.vehicle = {};
@@ -330,7 +330,7 @@ exports.update = async (req, res) => {
     const driverId = req.params.id;
     console.log(
       "🚀 INCOMING DRIVER UPDATE BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
     console.log("🚀 INCOMING DRIVER UPDATE FILES:", req.files);
 
@@ -372,7 +372,7 @@ exports.update = async (req, res) => {
     if (req.files && req.files.length > 0) {
       req.files.forEach(
         (file) =>
-          (uploadedFiles[file.fieldname] = `${BASE_URL}${file.filename}`)
+          (uploadedFiles[file.fieldname] = `${BASE_URL}${file.filename}`),
       );
     }
 
@@ -495,7 +495,7 @@ exports.update = async (req, res) => {
     // ✅ Handle log book document separately (if file uploaded directly)
     if (req.files && req.files.length > 0) {
       const logBookFile = req.files.find(
-        (f) => f.fieldname === "log_book_document"
+        (f) => f.fieldname === "log_book_document",
       );
       if (logBookFile) {
         if (!req.body.vehicle) req.body.vehicle = {};
@@ -548,77 +548,6 @@ exports.delete = async (req, res) => {
 };
 
 //Driver Login
-// exports.driverLogin = async (req, res) => {
-//   const { username, password, fcm_token } = req.body;
-//   console.log(
-//     "🚀 INCOMING DRIVER LOGIN BODY:",
-//     JSON.stringify(req.body, null, 2)
-//   );
-
-//   try {
-//     // STEP 1: Find driver by username
-//     const driver = await Driver.findDriverByUsername(username);
-
-//     if (!driver) {
-//       return res.status(404).json({ message: "Driver not found" });
-//     }
-
-//     // STEP 2: Check active status
-//     if (!driver.active) {
-//       return res.status(401).json({ message: "Your account is inactive" });
-//     }
-
-//     // STEP 3: Password check using bcrypt
-//     const passwordMatch = await bcrypt.compare(password, driver.password);
-//     if (!passwordMatch) {
-//       return res.status(401).json({ message: "Invalid password" });
-//     }
-
-//     // STEP 4: Check session status
-//     if (driver.session_status === "logged_in") {
-//       return res.status(400).json({ message: "Driver is already logged in" });
-//     }
-
-//     // STEP 5: Generate JWT token
-//     const token = jwt.sign({ driverId: driver.id }, "secretKey", {
-//       expiresIn: "1d",
-//     });
-
-//     // STEP 6: Update driver login session
-//     await Driver.updateDriverLoginStatus(driver.id);
-
-//     // STEP 7: Save FCM token
-//     if (fcm_token) {
-//       await Driver.updateDriverFcmToken(driver.id, fcm_token);
-//     }
-
-//     // WEB SOCKET EVENT FIRE
-//     notifyDriverLogin({
-//       id: driver.id,
-//       name: driver.name,
-//       mobile: driver.mobile,
-//       vehicle_id: driver.vehicle_id,
-//       company_vehicle_id: driver.company_vehicle_id,
-//       status: "logged_in",
-//       login_time: new Date(),
-//     });
-
-//     // STEP 8: Return response
-//     res.status(200).json({
-//       message: "Login successful",
-//       driverInfo: {
-//         ...driver,
-//         session_status: "logged_in",
-//       },
-//       token: token,
-//     });
-//   } catch (error) {
-//     console.error("Login Error:", error);
-//     res.status(500).json({ message: "An error occurred during login" });
-//   }
-// };
-
-//Driver Login
 exports.driverLogin = async (req, res) => {
   const { username, password, fcm_token } = req.body;
 
@@ -641,11 +570,9 @@ exports.driverLogin = async (req, res) => {
       return res.status(400).json({ message: "Driver is already logged in" });
     }
 
-    const token = jwt.sign(
-      { driverId: driver.id },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
     await Driver.updateDriverLoginStatus(driver.id);
 
@@ -653,11 +580,8 @@ exports.driverLogin = async (req, res) => {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
     }
 
-    // 🔥🔥🔥 ONLY IMPORTANT FIX 🔥🔥🔥
+    // ONLY IMPORTANT FIX
     const updatedDriver = await Driver.getLoginDriverById(driver.id);
-
-    // (OPTIONAL but SAFE – key remains, value masked)
-    // updatedDriver.password = null;
 
     notifyDriverLogin({
       id: updatedDriver.id,
@@ -670,19 +594,16 @@ exports.driverLogin = async (req, res) => {
     });
 
     // API Response
-    return res.status(200).json({                                                               
+    return res.status(200).json({
       message: "Login successful",
       driverInfo: updatedDriver,
       token: token,
     });
   } catch (error) {
     console.error("Login Error:", error);
-    return res
-      .status(500)
-      .json({ message: "An error occurred during login" });
+    return res.status(500).json({ message: "An error occurred during login" });
   }
 };
-
 
 // Verify Driver NTG
 exports.verifyDriverToken = async (req, res) => {
@@ -690,7 +611,7 @@ exports.verifyDriverToken = async (req, res) => {
     const { id, driver_access_token } = req.body;
     console.log(
       "🚀 INCOMING DRIVER VERIFY TOKEN BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
     if (!id || !driver_access_token) {
       return res.status(400).json({
@@ -759,7 +680,7 @@ exports.driverLogout = async (req, res) => {
     await Driver.updateDriverLogoutStatus(id);
     await Driver.clearDriverFcmToken(id);
 
-    // 🔥🔥🔥 REMOVE FROM WS LOGIN SOCKET
+    // REMOVE FROM WS LOGIN SOCKET
     notifyDriverLogout(Number(id));
 
     return res.status(200).json({
@@ -801,6 +722,29 @@ exports.getByCompany = async (req, res) => {
     return res.status(500).json({
       status: false,
       message: "Server error",
+    });
+  }
+};
+
+
+// GET ALL DRIVER BY DRIVER TYPE
+exports.getDriversByCommissionType = async (req, res) => {
+  try {
+    const { active, driver_type } = req.query;
+
+    const data = await Driver.getAllDriverByCommissionType(active, driver_type);
+
+    return res.status(200).json({
+      status: true,
+      message: "Drivers fetched successfully",
+      total: data.total,
+      drivers: data.drivers,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching commission drivers:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
     });
   }
 };

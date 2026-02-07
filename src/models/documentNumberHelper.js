@@ -1,14 +1,17 @@
 const pool = require("../db");
 
 exports.generateInvoiceNumber = async (subsidiary_id) => {
-  const res = await pool.query(`
+  const res = await pool.query(
+    `
     SELECT *
     FROM document_numbers
     WHERE subsidiary_id = $1
       AND document_table = 'account_invoice'
       AND auto_increment = true
     FOR UPDATE
-  `, [subsidiary_id]);
+  `,
+    [subsidiary_id],
+  );
 
   if (!res.rows.length) {
     throw new Error("Invoice document number config not found");
@@ -18,11 +21,14 @@ exports.generateInvoiceNumber = async (subsidiary_id) => {
   const nextNumber = doc.end_number + doc.increment_value;
   const invoiceNumber = `${doc.prefix}${nextNumber}`;
 
-  await pool.query(`
+  await pool.query(
+    `
     UPDATE document_numbers
     SET end_number = $1, updated_at = now()
     WHERE id = $2
-  `, [nextNumber, doc.id]);
+  `,
+    [nextNumber, doc.id],
+  );
 
   return invoiceNumber;
 };

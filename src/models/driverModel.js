@@ -831,181 +831,6 @@ const Driver = {
     }
   },
 
-  // async update(driverId, data) {
-  //   try {
-  //     await db.query("BEGIN");
-
-  //     // ✅ Fetch existing driver
-  //     const { rows } = await db.query(
-  //       `SELECT * FROM drivers WHERE id = $1`,
-  //       [driverId]
-  //     );
-  //     if (!rows.length) throw new Error("Driver not found");
-  //     const existingDriver = rows[0];
-
-  //     // ✅ Merge with existing data
-  //     const mergedDriver = { ...existingDriver, ...data };
-
-  //     // ✅ Handle password
-  //     if (data.password) {
-  //       const salt = await bcrypt.genSalt(10);
-  //       mergedDriver.password = await bcrypt.hash(data.password, salt);
-  //     }
-
-  //     // ✅ Handle image
-  //     if (data.image) {
-  //       mergedDriver.image = data.image;
-  //     }
-
-  //     // ✅ All updatable fields
-  //     const driverFields = [
-  //       "name",
-  //       "username",
-  //       "email",
-  //       "password",
-  //       "mobile",
-  //       "telephone",
-  //       "address",
-  //       "dob",
-  //       "driver_type",
-  //       "driver_commission",
-  //       "rent_limit",
-  //       "rent_paid",
-  //       "balance",
-  //       "has_pda",
-  //       "use_company_vehicle",
-  //       "active",
-  //       "start_date",
-  //       "end_date",
-  //       "licence_number",
-  //       "licence_expiry",
-  //       "phc_driver_number",
-  //       "phc_driver_expiry",
-  //       "insurance_number",
-  //       "insurance_expiry",
-  //       "rental_agreement_number",
-  //       "rental_agreement_expiry",
-  //       "road_tax_number",
-  //       "road_tax_expiry",
-  //       "v5_registration_number",
-  //       "v5_registration_expiry",
-  //       "mot_number",
-  //       "mot_expiry",
-  //       "mot2_number",
-  //       "mot2_expiry",
-  //       "phc_vehicle_number",
-  //       "phc_vehicle_expiry",
-  //       "ni",
-  //       "licence_expiry_time",
-  //       "phc_driver_expiry_time",
-  //       "insurance_expiry_time",
-  //       "phc_vehicle_expiry_time",
-  //       "mot_expiry_time",
-  //       "mot2_expiry_time",
-  //       "v5_registration_expiry_time",
-  //       "road_tax_expiry_time",
-  //       "rental_agreement_expiry_time",
-  //       "image",
-  //     ];
-
-  //     // ✅ Dynamic query builder
-  //     const updates = [];
-  //     const values = [];
-  //     let i = 1;
-  //     for (const field of driverFields) {
-  //       if (field in mergedDriver) {
-  //         updates.push(`${field} = $${i++}`);
-  //         values.push(mergedDriver[field]);
-  //       }
-  //     }
-
-  //     if (updates.length) {
-  //       values.push(driverId);
-  //       await db.query(
-  //         `UPDATE drivers SET ${updates.join(", ")} WHERE id = $${i}`,
-  //         values
-  //       );
-  //     }
-
-  //     // ✅ Vehicle Update or Insert
-  //     if (data.vehicle && Object.keys(data.vehicle).length) {
-  //       const { rows: veh } = await db.query(
-  //         `SELECT id FROM vehicles WHERE driver_id = $1 LIMIT 1`,
-  //         [driverId]
-  //       );
-
-  //       if (veh.length) {
-  //         const vehicleId = veh[0].id;
-  //         const vehicleUpdates = [];
-  //         const vehicleValues = [];
-  //         let j = 1;
-
-  //         for (const [k, v] of Object.entries(data.vehicle)) {
-  //           vehicleUpdates.push(`${k} = $${j++}`);
-  //           vehicleValues.push(v);
-  //         }
-
-  //         vehicleValues.push(vehicleId);
-  //         await db.query(
-  //           `UPDATE vehicles SET ${vehicleUpdates.join(", ")} WHERE id = $${j}`,
-  //           vehicleValues
-  //         );
-  //       } else {
-  //         const keys = Object.keys(data.vehicle);
-  //         const placeholders = keys.map((_, idx) => `$${idx + 1}`);
-  //         const values = Object.values(data.vehicle);
-  //         await db.query(
-  //           `INSERT INTO vehicles (${keys.join(", ")}, driver_id)
-  //            VALUES (${placeholders.join(", ")}, $${values.length + 1})`,
-  //           [...values, driverId]
-  //         );
-  //       }
-  //     }
-
-  //     // ✅ Replace Notes
-  //     if (Array.isArray(data.notes)) {
-  //       await db.query(`DELETE FROM driver_notes WHERE driver_id = $1`, [
-  //         driverId,
-  //       ]);
-  //       for (const n of data.notes) {
-  //         await db.query(
-  //           `INSERT INTO driver_notes (driver_id, note, created_at, created_by)
-  //            VALUES ($1, $2, $3, $4)`,
-  //           [
-  //             driverId,
-  //             n.note,
-  //             n.created_at || new Date(),
-  //             n.created_by || "system",
-  //           ]
-  //         );
-  //       }
-  //     }
-
-  //     // ✅ Replace Shifts
-  //     if (Array.isArray(data.shifts)) {
-  //       await db.query(`DELETE FROM driver_shifts WHERE driver_id = $1`, [
-  //         driverId,
-  //       ]);
-  //       for (const s of data.shifts) {
-  //         await db.query(
-  //           `INSERT INTO driver_shifts (driver_id, name, start_time, end_time)
-  //            VALUES ($1, $2, $3, $4)`,
-  //           [driverId, s.name, s.start_time, s.end_time]
-  //         );
-  //       }
-  //     }
-
-  //     await db.query("COMMIT");
-
-  //     // ✅ Return latest driver record
-  //     return await Driver.getById(driverId);
-  //   } catch (err) {
-  //     await db.query("ROLLBACK");
-  //     console.error("❌ Error updating driver:", err);
-  //     throw err;
-  //   }
-  // },
-
   async update(driverId, data) {
     try {
       await db.query("BEGIN");
@@ -1343,6 +1168,101 @@ const Driver = {
     );
 
     return rows[0] || null;
+  },
+
+  async getAllDriverByCommissionType(active, driver_type) {
+    const conditions = [];
+    const params = [];
+    let idx = 1;
+
+    // Active filter
+    if (active !== undefined) {
+      conditions.push(`d.active = $${idx++}`);
+      params.push(active === "false" ? false : true);
+    }
+
+    // Driver type (commission / salary etc)
+    if (driver_type) {
+      conditions.push(`d.driver_type = $${idx++}`);
+      params.push(driver_type);
+    }
+
+    const whereClause = conditions.length
+      ? `WHERE ${conditions.join(" AND ")}`
+      : "";
+
+    // 🔢 Count query
+    const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM drivers d
+    LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
+    LEFT JOIN vehicles v ON v.id = d.vehicle_id
+    LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
+    LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
+    LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
+    ${whereClause};
+  `;
+
+    const countResult = await db.query(countQuery, params);
+    const total = Number(countResult.rows[0].total) || 0;
+
+    // 📦 Data query (NO LIMIT / OFFSET)
+    const dataQuery = `
+    SELECT 
+      d.*,
+      s.name AS subsidiary_name,
+      CASE 
+        WHEN d.use_company_vehicle = true THEN
+          json_build_object(
+            'vehicle_number', cv.vehicle_number,
+            'make', cv.make,
+            'model', cv.model,
+            'color', cv.color,
+            'end_date', cv.end_date,
+            'vehicle_type', json_build_object(
+              'id', vt_cv.id,
+              'name', vt_cv.name,
+              'passengers', vt_cv.passengers,
+              'luggages', vt_cv.luggages,
+              'driver_waiting_charges', vt_cv.driver_waiting_charges
+            )
+          )
+        ELSE
+          json_build_object(
+            'vehicle_number', v.vehicle_number,
+            'make', v.make,
+            'model', v.model,
+            'color', v.color,
+            'end_date', v.end_date,
+            'vehicle_type', json_build_object(
+              'id', vt_v.id,
+              'name', vt_v.name,
+              'passengers', vt_v.passengers,
+              'luggages', vt_v.luggages,
+              'driver_waiting_charges', vt_v.driver_waiting_charges
+            )
+          )
+      END AS vehicle
+    FROM drivers d
+    LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
+    LEFT JOIN vehicles v ON v.id = d.vehicle_id
+    LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
+    LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
+    LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
+    ${whereClause}
+    ORDER BY d.id DESC;
+  `;
+
+    const result = await db.query(dataQuery, params);
+
+    return {
+      total,
+      drivers: result.rows.map((row) => ({
+        ...normalizeDriverDates(row),
+        subsidiary: { name: row.subsidiary_name },
+        vehicle: row.vehicle || null,
+      })),
+    };
   },
 };
 

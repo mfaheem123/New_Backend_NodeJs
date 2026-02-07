@@ -1,5 +1,4 @@
 const pool = require("../db");
-// const { ENRICHED_SELECT } = require("./bookingModel");
 
 const ENRICHED_SELECT = `
 SELECT 

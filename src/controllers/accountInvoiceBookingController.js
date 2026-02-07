@@ -60,8 +60,8 @@ exports.getBookingsForInvoice = async (req, res) => {
       },
     );
 
-    // 🧾 Final response
-    res.json({
+    // Final response
+    res.status(200).json({
       status: true,
       count: bookings.length,
       bookings,

@@ -21,7 +21,7 @@ exports.getAll = async () => {
 exports.getById = async (id) => {
   const result = await pool.query(
     "SELECT * FROM fare_increments WHERE id = $1",
-    [id]
+    [id],
   );
   return result.rows[0];
 };
@@ -47,39 +47,52 @@ exports.create = async (data) => {
 
 // UPDATE
 exports.update = async (id, data) => {
-  const { start_date, end_date, operator, amount, fix_fare, mileage } = data;
+  const fields = [];
+  const values = [];
+  let index = 1;
+
+  for (const key in data) {
+    if (data[key] !== undefined) {
+      fields.push(`${key} = $${index}`);
+      values.push(data[key]);
+      index++;
+    }
+  }
+
+  // agar kuch update hi nahi bheja
+  if (fields.length === 0) {
+    throw new Error("No fields provided for update");
+  }
 
   const query = `
     UPDATE fare_increments
-    SET start_date = $1,
-        end_date = $2,
-        operator = $3,
-        amount = $4,
-        fix_fare = $5,
-        mileage = $6,
+    SET ${fields.join(", ")},
         updated_at = CURRENT_TIMESTAMP
-    WHERE id = $7
+    WHERE id = $${index}
     RETURNING id,
               TO_CHAR(start_date, 'DD-MM-YYYY') AS start_date,
               TO_CHAR(end_date, 'DD-MM-YYYY') AS end_date,
               operator, amount, fix_fare, mileage;
   `;
 
-  const values = [
-    start_date,
-    end_date,
-    operator,
-    amount,
-    fix_fare,
-    mileage,
-    id,
-  ];
+  values.push(id);
+
   const result = await pool.query(query, values);
   return result.rows[0];
 };
 
+
 // DELETE
 exports.delete = async (id) => {
-  await pool.query("DELETE FROM fare_increments WHERE id = $1", [id]);
+  const result = await pool.query(
+    "DELETE FROM fare_increments WHERE id = $1 RETURNING id",
+    [id]
+  );
+
+  if (result.rowCount === 0) {
+    throw new Error("Fare increment not found");
+  }
+
   return true;
 };
+
