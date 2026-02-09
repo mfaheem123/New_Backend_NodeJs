@@ -1,15 +1,14 @@
 const pool = require("../db");
 
 // GET ALL FARES BY VEHICLE
-exports.getAll = async (offset = 0, limit = 10) => {
+exports.getAll = async () => {
   const query = `
     SELECT fbv.*, row_to_json(vt) as vehicle_type
     FROM fare_by_vehicles fbv
     LEFT JOIN vehicle_types vt ON fbv.vehicle_type_id = vt.id
     ORDER BY fbv.id ASC
-    OFFSET $1 LIMIT $2
   `;
-  const result = await pool.query(query, [offset, limit]);
+  const result = await pool.query(query);
   return result.rows;
 };
 

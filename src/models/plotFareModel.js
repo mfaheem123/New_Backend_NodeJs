@@ -43,32 +43,36 @@ const PlotFare = {
 
   // ✅ Update
   async update(id, data) {
-    const { vehicle_type_id, pickup_plot_id, dropoff_plot_id, fares } = data;
-    const updateQuery = `
-      UPDATE plot_fares
-      SET 
-        vehicle_type_id = $1,
-        pickup_plot_id = $2,
-        dropoff_plot_id = $3,
-        fares = $4,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = $5
-      RETURNING id;
-    `;
-    const values = [
-      vehicle_type_id,
-      pickup_plot_id,
-      dropoff_plot_id,
-      fares,
-      id,
-    ];
-    const { rows } = await pool.query(updateQuery, values);
+  const { vehicle_type_id, pickup_plot_id, dropoff_plot_id, fares } = data;
 
-    if (!rows.length) return null;
+  const updateQuery = `
+    UPDATE plot_fares
+    SET 
+      vehicle_type_id = COALESCE($1, vehicle_type_id),
+      pickup_plot_id  = COALESCE($2, pickup_plot_id),
+      dropoff_plot_id = COALESCE($3, dropoff_plot_id),
+      fares           = COALESCE($4, fares),
+      updated_at = CURRENT_TIMESTAMP
+    WHERE id = $5
+    RETURNING id;
+  `;
 
-    // Return full joined row
-    return await this.getById(id);
-  },
+  const values = [
+    vehicle_type_id ?? null,
+    pickup_plot_id ?? null,
+    dropoff_plot_id ?? null,
+    fares ?? null,
+    id,
+  ];
+
+  const { rows } = await pool.query(updateQuery, values);
+
+  if (!rows.length) return null;
+
+  // Return full joined row
+  return await this.getById(id);
+},
+
 
   // ✅ Delete
   async delete(id) {

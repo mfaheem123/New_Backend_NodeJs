@@ -496,6 +496,17 @@ const getBookingByDriverId = async (driver_id, lastdays) => {
   return res.rows;
 };
 
+const getBookingByDriverCommission = async (driver_id, payment_type_id) => {
+  const sql = `
+    ${ENRICHED_SELECT}
+    WHERE b.driver_id = $1 
+    AND b.payment_type_id = $2 
+    AND b.booking_status_id = 11
+  `;
+  const res = await pool.query(sql, [driver_id, payment_type_id]);
+  return res.rows[0];
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -520,4 +531,5 @@ module.exports = {
   updateBookingFares,
   getBookingByDriverId,
   updateBookingonRoute,
+  getBookingByDriverCommission,
 };

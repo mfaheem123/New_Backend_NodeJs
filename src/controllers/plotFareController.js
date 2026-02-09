@@ -29,7 +29,7 @@ exports.create = async (req, res) => {
   try {
     console.log(
       "🚀 INCOMING PLOT FARE ADD BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
     const newPlotFare = await PlotFare.create(req.body);
     res.json({
@@ -70,7 +70,10 @@ exports.delete = async (req, res) => {
         .status(404)
         .json({ status: false, message: "Plot Fare not found" });
 
-    res.json({ status: true, deleted_plot_fare: deleted });
+    res.json({
+      status: true,
+      message: "Plot Fare Deleted Successfully",
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ status: false, error: err.message });

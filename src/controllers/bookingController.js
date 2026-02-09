@@ -19,6 +19,7 @@ const {
   updateBookingFares,
   getBookingByDriverId,
   updateBookingonRoute,
+  getBookingByDriverCommission
 } = require("../models/bookingModel");
 
 function parseJSONFields(row) {
@@ -547,5 +548,25 @@ exports.getBookingByDriverId = async (req, res) => {
     success: true,
     count: bookings.length,
     bookings: data,
+  });
+};
+
+exports.getBookingByDriverCommission = async (req, res) => {
+  const { driver_id, payment_type_id } = req.query;
+
+  const booking = await getBookingByDriverCommission(driver_id, payment_type_id);
+
+  if (!booking) {
+    return res.status(404).json({
+      success: false,
+      message: "Booking not found",
+    });
+  }
+
+  const data = parseJSONFields(booking);
+
+  res.status(200).json({
+    success: true,
+    booking: data,
   });
 };

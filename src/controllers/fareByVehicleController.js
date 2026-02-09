@@ -3,10 +3,7 @@ const fareByVehicleModel = require("../models/fareByVehicleModel");
 // GET ALL
 exports.getAll = async (req, res) => {
   try {
-    const offset = parseInt(req.query.offset) || 0;
-    const limit = parseInt(req.query.limit) || 10;
-
-    const fareByVehicles = await fareByVehicleModel.getAll(offset, limit);
+    const fareByVehicles = await fareByVehicleModel.getAll();
     const count = await fareByVehicleModel.getCount();
 
     res.json({
