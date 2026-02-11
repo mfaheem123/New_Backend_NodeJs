@@ -70,8 +70,15 @@ exports.deleteFixedFare = async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await FixedFare.delete(id);
-    res.json({ status: true, fixed_fare: deleted });
+
+    if (!deleted) {
+      // If no record was found to delete
+      return res.status(404).json({ status: false, message: "Fixed Fare Not Found" });
+    }
+
+    res.json({ status: true, message: "Fixed Fare Deleted Successfully" });
   } catch (err) {
     res.status(500).json({ status: false, error: err.message });
   }
 };
+

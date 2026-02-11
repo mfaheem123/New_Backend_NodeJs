@@ -161,7 +161,7 @@ async function generateUniqueDriverAccessToken(db) {
 }
 
 const Driver = {
-  // ✅ Check if username already exists
+  // Check if username already exists
   async checkUsernameExists(username) {
     const query = `
       SELECT id FROM drivers 

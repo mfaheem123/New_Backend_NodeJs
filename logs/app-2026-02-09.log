@@ -1328,3 +1328,109 @@
 {"level":"info","message":"GET /api/auth/customer-profile/0 404 0.453 ms","timestamp":"2026-02-09T16:43:17.732Z"}
 {"duration":52,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T17:06:32.346Z"}
 {"level":"info","message":"GET /api/location-types 200 52.502 ms","timestamp":"2026-02-09T17:06:32.347Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T17:31:07.710Z"}
+{"level":"info","message":"GET /api/location-types 200 28.121 ms","timestamp":"2026-02-09T17:31:07.733Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T17:31:07.745Z"}
+{"level":"info","message":"GET /api/location-types 200 4.469 ms","timestamp":"2026-02-09T17:31:07.748Z"}
+{"level":"info","message":"GET /api/auth/customer-profile/0 404 7.254 ms","timestamp":"2026-02-09T17:44:02.935Z"}
+{"duration":51,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    ;\n  ","timestamp":"2026-02-09T17:44:35.935Z"}
+{"duration":4,"level":"info","message":"db-query","rows":30,"text":"\n    SELECT \n      l.*, \n      jsonb_build_object(\n        'id', lt.id,\n        'name', lt.name,\n        'shortcut', lt.shortcut,\n        'background_color', lt.background_color,\n        'foreground_color', lt.foreground_color\n      ) AS location_type,\n      CASE WHEN z.id IS NOT NULL THEN\n        jsonb_build_object(\n          'id', z.id,\n          'name', z.name,\n          'secondary_name', z.secondary_name,\n          'type', z.type,\n          'category', z.category,\n          'vertices', z.vertices,\n          'base', z.base,\n          'overlay', z.overlay\n        )\n      ELSE NULL END AS zone\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    \n    ORDER BY l.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2026-02-09T17:44:35.939Z"}
+{"level":"info","message":"GET /api/locations/get 200 56.676 ms","timestamp":"2026-02-09T17:44:35.940Z"}
+{"level":"info","message":"GET /api/services/search?search=t 200 63.814 ms","timestamp":"2026-02-09T17:44:35.943Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    ;\n  ","timestamp":"2026-02-09T17:44:36.521Z"}
+{"duration":6,"level":"info","message":"db-query","rows":30,"text":"\n    SELECT \n      l.*, \n      jsonb_build_object(\n        'id', lt.id,\n        'name', lt.name,\n        'shortcut', lt.shortcut,\n        'background_color', lt.background_color,\n        'foreground_color', lt.foreground_color\n      ) AS location_type,\n      CASE WHEN z.id IS NOT NULL THEN\n        jsonb_build_object(\n          'id', z.id,\n          'name', z.name,\n          'secondary_name', z.secondary_name,\n          'type', z.type,\n          'category', z.category,\n          'vertices', z.vertices,\n          'base', z.base,\n          'overlay', z.overlay\n        )\n      ELSE NULL END AS zone\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    \n    ORDER BY l.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2026-02-09T17:44:36.529Z"}
+{"level":"info","message":"GET /api/locations/get 200 12.775 ms","timestamp":"2026-02-09T17:44:36.533Z"}
+{"level":"info","message":"GET /api/addresses/search?search=tn 200 195.117 ms","timestamp":"2026-02-09T17:44:36.739Z"}
+{"level":"info","message":"GET /api/services/search?search=tn 200 226.596 ms","timestamp":"2026-02-09T17:44:36.741Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    ;\n  ","timestamp":"2026-02-09T17:44:39.745Z"}
+{"duration":6,"level":"info","message":"db-query","rows":30,"text":"\n    SELECT \n      l.*, \n      jsonb_build_object(\n        'id', lt.id,\n        'name', lt.name,\n        'shortcut', lt.shortcut,\n        'background_color', lt.background_color,\n        'foreground_color', lt.foreground_color\n      ) AS location_type,\n      CASE WHEN z.id IS NOT NULL THEN\n        jsonb_build_object(\n          'id', z.id,\n          'name', z.name,\n          'secondary_name', z.secondary_name,\n          'type', z.type,\n          'category', z.category,\n          'vertices', z.vertices,\n          'base', z.base,\n          'overlay', z.overlay\n        )\n      ELSE NULL END AS zone\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    \n    ORDER BY l.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2026-02-09T17:44:39.752Z"}
+{"level":"info","message":"GET /api/locations/get 200 12.150 ms","timestamp":"2026-02-09T17:44:39.756Z"}
+{"level":"info","message":"GET /api/services/search?search=t 200 23.988 ms","timestamp":"2026-02-09T17:44:39.763Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    ;\n  ","timestamp":"2026-02-09T17:44:40.229Z"}
+{"duration":6,"level":"info","message":"db-query","rows":30,"text":"\n    SELECT \n      l.*, \n      jsonb_build_object(\n        'id', lt.id,\n        'name', lt.name,\n        'shortcut', lt.shortcut,\n        'background_color', lt.background_color,\n        'foreground_color', lt.foreground_color\n      ) AS location_type,\n      CASE WHEN z.id IS NOT NULL THEN\n        jsonb_build_object(\n          'id', z.id,\n          'name', z.name,\n          'secondary_name', z.secondary_name,\n          'type', z.type,\n          'category', z.category,\n          'vertices', z.vertices,\n          'base', z.base,\n          'overlay', z.overlay\n        )\n      ELSE NULL END AS zone\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    \n    ORDER BY l.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2026-02-09T17:44:40.236Z"}
+{"level":"info","message":"GET /api/locations/get 200 14.685 ms","timestamp":"2026-02-09T17:44:40.241Z"}
+{"level":"info","message":"GET /api/addresses/search?search=tn 200 11.548 ms","timestamp":"2026-02-09T17:44:40.256Z"}
+{"level":"info","message":"GET /api/services/search?search=tn 200 37.179 ms","timestamp":"2026-02-09T17:44:40.260Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:44:44.782Z"}
+{"duration":2,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:44:44.785Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 5.767 ms","timestamp":"2026-02-09T17:44:44.786Z"}
+{"duration":162,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:48:08.355Z"}
+{"duration":2,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:48:08.357Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 165.410 ms","timestamp":"2026-02-09T17:48:08.358Z"}
+{"duration":46,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:52:05.462Z"}
+{"duration":1,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:52:05.464Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 48.458 ms","timestamp":"2026-02-09T17:52:05.465Z"}
+{"duration":80,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:52:54.634Z"}
+{"duration":1,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:52:54.636Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 83.370 ms","timestamp":"2026-02-09T17:52:54.638Z"}
+{"duration":48,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:53:32.184Z"}
+{"duration":2,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:53:32.186Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 52.111 ms","timestamp":"2026-02-09T17:53:32.188Z"}
+{"duration":65,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:53:56.613Z"}
+{"duration":1,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:53:56.615Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 68.112 ms","timestamp":"2026-02-09T17:53:56.616Z"}
+{"duration":80,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:54:46.579Z"}
+{"duration":2,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:54:46.581Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 82.636 ms","timestamp":"2026-02-09T17:54:46.582Z"}
+{"level":"info","message":"GET /api/auth/customer-profile/0 404 1.238 ms","timestamp":"2026-02-09T17:55:06.584Z"}
+{"duration":77,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    ;\n  ","timestamp":"2026-02-09T17:55:13.741Z"}
+{"duration":3,"level":"info","message":"db-query","rows":30,"text":"\n    SELECT \n      l.*, \n      jsonb_build_object(\n        'id', lt.id,\n        'name', lt.name,\n        'shortcut', lt.shortcut,\n        'background_color', lt.background_color,\n        'foreground_color', lt.foreground_color\n      ) AS location_type,\n      CASE WHEN z.id IS NOT NULL THEN\n        jsonb_build_object(\n          'id', z.id,\n          'name', z.name,\n          'secondary_name', z.secondary_name,\n          'type', z.type,\n          'category', z.category,\n          'vertices', z.vertices,\n          'base', z.base,\n          'overlay', z.overlay\n        )\n      ELSE NULL END AS zone\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    \n    ORDER BY l.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2026-02-09T17:55:13.744Z"}
+{"level":"info","message":"GET /api/locations/get 200 82.888 ms","timestamp":"2026-02-09T17:55:13.747Z"}
+{"level":"info","message":"GET /api/addresses/search?search=y 200 62.078 ms","timestamp":"2026-02-09T17:55:13.812Z"}
+{"level":"info","message":"GET /api/services/search?search=y 200 161.299 ms","timestamp":"2026-02-09T17:55:13.817Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    ;\n  ","timestamp":"2026-02-09T17:55:17.461Z"}
+{"duration":2,"level":"info","message":"db-query","rows":30,"text":"\n    SELECT \n      l.*, \n      jsonb_build_object(\n        'id', lt.id,\n        'name', lt.name,\n        'shortcut', lt.shortcut,\n        'background_color', lt.background_color,\n        'foreground_color', lt.foreground_color\n      ) AS location_type,\n      CASE WHEN z.id IS NOT NULL THEN\n        jsonb_build_object(\n          'id', z.id,\n          'name', z.name,\n          'secondary_name', z.secondary_name,\n          'type', z.type,\n          'category', z.category,\n          'vertices', z.vertices,\n          'base', z.base,\n          'overlay', z.overlay\n        )\n      ELSE NULL END AS zone\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    \n    ORDER BY l.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2026-02-09T17:55:17.464Z"}
+{"level":"info","message":"GET /api/locations/get 200 5.696 ms","timestamp":"2026-02-09T17:55:17.466Z"}
+{"level":"info","message":"GET /api/services/search?search=t 200 8.860 ms","timestamp":"2026-02-09T17:55:17.468Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    ;\n  ","timestamp":"2026-02-09T17:55:17.885Z"}
+{"duration":5,"level":"info","message":"db-query","rows":30,"text":"\n    SELECT \n      l.*, \n      jsonb_build_object(\n        'id', lt.id,\n        'name', lt.name,\n        'shortcut', lt.shortcut,\n        'background_color', lt.background_color,\n        'foreground_color', lt.foreground_color\n      ) AS location_type,\n      CASE WHEN z.id IS NOT NULL THEN\n        jsonb_build_object(\n          'id', z.id,\n          'name', z.name,\n          'secondary_name', z.secondary_name,\n          'type', z.type,\n          'category', z.category,\n          'vertices', z.vertices,\n          'base', z.base,\n          'overlay', z.overlay\n        )\n      ELSE NULL END AS zone\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    \n    ORDER BY l.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2026-02-09T17:55:17.891Z"}
+{"level":"info","message":"GET /api/locations/get 200 10.289 ms","timestamp":"2026-02-09T17:55:17.895Z"}
+{"level":"info","message":"GET /api/addresses/search?search=tn 200 26.426 ms","timestamp":"2026-02-09T17:55:17.930Z"}
+{"level":"info","message":"GET /api/services/search?search=tn 200 51.554 ms","timestamp":"2026-02-09T17:55:17.932Z"}
+{"duration":6,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:55:20.060Z"}
+{"duration":3,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:55:20.064Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 11.390 ms","timestamp":"2026-02-09T17:55:20.066Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:55:24.669Z"}
+{"duration":2,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:55:24.672Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 6.923 ms","timestamp":"2026-02-09T17:55:24.675Z"}
+{"duration":43,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:56:49.575Z"}
+{"duration":1,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:56:49.577Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 46.481 ms","timestamp":"2026-02-09T17:56:49.578Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:56:55.221Z"}
+{"duration":2,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:56:55.224Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 5.982 ms","timestamp":"2026-02-09T17:56:55.226Z"}
+{"duration":189,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-09T17:57:10.862Z"}
+{"duration":1,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-09T17:57:10.864Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 192.797 ms","timestamp":"2026-02-09T17:57:10.865Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:00:23.142Z"}
+{"level":"info","message":"GET /api/location-types 200 11.939 ms","timestamp":"2026-02-09T18:00:23.150Z"}
+{"duration":49,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:00:23.188Z"}
+{"level":"info","message":"GET /api/location-types 200 50.860 ms","timestamp":"2026-02-09T18:00:23.190Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:00:43.630Z"}
+{"level":"info","message":"GET /api/location-types 200 14.458 ms","timestamp":"2026-02-09T18:00:43.640Z"}
+{"duration":166,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:00:43.792Z"}
+{"level":"info","message":"GET /api/location-types 200 166.913 ms","timestamp":"2026-02-09T18:00:43.793Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:00:49.120Z"}
+{"level":"info","message":"GET /api/location-types 200 21.104 ms","timestamp":"2026-02-09T18:00:49.131Z"}
+{"duration":82,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:00:49.195Z"}
+{"level":"info","message":"GET /api/location-types 200 88.343 ms","timestamp":"2026-02-09T18:00:49.201Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:01:07.114Z"}
+{"level":"info","message":"GET /api/location-types 200 20.169 ms","timestamp":"2026-02-09T18:01:07.127Z"}
+{"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:01:07.171Z"}
+{"level":"info","message":"GET /api/location-types 200 64.693 ms","timestamp":"2026-02-09T18:01:07.172Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:01:30.431Z"}
+{"level":"info","message":"GET /api/location-types 200 21.972 ms","timestamp":"2026-02-09T18:01:30.444Z"}
+{"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:01:30.487Z"}
+{"level":"info","message":"GET /api/location-types 200 64.402 ms","timestamp":"2026-02-09T18:01:30.488Z"}
+{"duration":11,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:01:33.906Z"}
+{"level":"info","message":"GET /api/location-types 200 38.311 ms","timestamp":"2026-02-09T18:01:33.930Z"}
+{"duration":71,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:01:33.970Z"}
+{"level":"info","message":"GET /api/location-types 200 72.173 ms","timestamp":"2026-02-09T18:01:33.972Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:01:48.353Z"}
+{"level":"info","message":"GET /api/location-types 200 12.248 ms","timestamp":"2026-02-09T18:01:48.360Z"}
+{"duration":55,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:01:48.405Z"}
+{"level":"info","message":"GET /api/location-types 200 57.410 ms","timestamp":"2026-02-09T18:01:48.406Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:01:51.771Z"}
+{"level":"info","message":"GET /api/location-types 200 11.759 ms","timestamp":"2026-02-09T18:01:51.778Z"}
+{"duration":47,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-09T18:01:51.814Z"}
+{"level":"info","message":"GET /api/location-types 200 51.735 ms","timestamp":"2026-02-09T18:01:51.819Z"}

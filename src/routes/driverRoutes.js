@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// 🧩 Routes
+// Routes
 router.post("/add", upload.any(), driverController.create);
 router.get("/get", driverController.getAll);
 router.get("/getbyid/:id", driverController.getById);

@@ -726,7 +726,6 @@ exports.getByCompany = async (req, res) => {
   }
 };
 
-
 // GET ALL DRIVER BY DRIVER TYPE
 exports.getDriversByCommissionType = async (req, res) => {
   try {

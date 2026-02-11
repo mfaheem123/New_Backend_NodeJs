@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("../controllers/fareIncrementController");
+const fareIncrementController = require("../controllers/fareIncrementController");
 
-router.get("/get", controller.getAll);
-router.post("/add", controller.add);
-router.post("/update/:id", controller.update);
-router.delete("/delete/:id", controller.delete);
+router.get("/get", fareIncrementController.getAll);
+router.post("/add", fareIncrementController.add);
+router.post("/update/:id", fareIncrementController.update);
+router.delete("/delete/:id", fareIncrementController.delete);
 
 module.exports = router;

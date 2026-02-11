@@ -81,12 +81,11 @@ exports.update = async (id, data) => {
   return result.rows[0];
 };
 
-
 // DELETE
 exports.delete = async (id) => {
   const result = await pool.query(
     "DELETE FROM fare_increments WHERE id = $1 RETURNING id",
-    [id]
+    [id],
   );
 
   if (result.rowCount === 0) {
@@ -95,4 +94,3 @@ exports.delete = async (id) => {
 
   return true;
 };
-

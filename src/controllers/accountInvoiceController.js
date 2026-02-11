@@ -1,50 +1,40 @@
-const pool = require("../db");
 const InvoiceModel = require("../models/accountInvoiceModel");
-const { generateInvoiceNumber } = require("../models/documentNumberHelper");
 
 exports.create = async (req, res) => {
   try {
-    const {
-      subsidiary_id,
-      account_id,
-      invoice_date,
-      invoice_due_date,
-      from_date,
-      to_date,
-      invoice_type,
-      department_id,
-      order_number,
-      amount,
-    } = req.body;
+    console.log(
+      "🚀 INCOMING ADD ACCOUNT INVOICE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
 
-    await pool.query("BEGIN");
-
-    // 🔐 generate invoice number
-    const invoice_number = await generateInvoiceNumber(subsidiary_id);
-
-    // 📄 create invoice
-    const invoice = await InvoiceModel.create({
-      subsidiary_id,
-      account_id,
-      invoice_number,
-      invoice_date,
-      invoice_due_date,
-      from_date,
-      to_date,
-      invoice_type,
-      department_id,
-      order_number,
-      amount,
-    });
-
-    await pool.query("COMMIT");
+    const result = await InvoiceModel.create(req.body);
 
     res.json({
       status: true,
-      account_invoice: invoice,
+      ...result,
     });
   } catch (err) {
-    await pool.query("ROLLBACK");
+    console.error(err);
+    res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.getAll = async (req, res) => {
+  try {
+    const { offset = 0, limit = 100, invoice_type } = req.query;
+
+    const result = await InvoiceModel.getAll({
+      offset: Number(offset),
+      limit: Number(limit),
+      invoice_type,
+    });
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({
       status: false,
       message: err.message,

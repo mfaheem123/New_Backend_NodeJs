@@ -43,9 +43,9 @@ const PlotFare = {
 
   // ✅ Update
   async update(id, data) {
-  const { vehicle_type_id, pickup_plot_id, dropoff_plot_id, fares } = data;
+    const { vehicle_type_id, pickup_plot_id, dropoff_plot_id, fares } = data;
 
-  const updateQuery = `
+    const updateQuery = `
     UPDATE plot_fares
     SET 
       vehicle_type_id = COALESCE($1, vehicle_type_id),
@@ -57,22 +57,21 @@ const PlotFare = {
     RETURNING id;
   `;
 
-  const values = [
-    vehicle_type_id ?? null,
-    pickup_plot_id ?? null,
-    dropoff_plot_id ?? null,
-    fares ?? null,
-    id,
-  ];
+    const values = [
+      vehicle_type_id ?? null,
+      pickup_plot_id ?? null,
+      dropoff_plot_id ?? null,
+      fares ?? null,
+      id,
+    ];
 
-  const { rows } = await pool.query(updateQuery, values);
+    const { rows } = await pool.query(updateQuery, values);
 
-  if (!rows.length) return null;
+    if (!rows.length) return null;
 
-  // Return full joined row
-  return await this.getById(id);
-},
-
+    // Return full joined row
+    return await this.getById(id);
+  },
 
   // ✅ Delete
   async delete(id) {

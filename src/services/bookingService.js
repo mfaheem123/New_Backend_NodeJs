@@ -7,7 +7,7 @@ const {
   getBookingByIdEnriched,
 } = require("../models/bookingModel");
 const { sendBookingNotification } = require("./notificationService");
-
+const { calculateFare } = require("../controllers/fareController");
 const DEFAULT_EMPLOYEE_ID = 28;
 
 const parseJSONFields = (row) => {
@@ -938,10 +938,71 @@ async function updateBookingService(bookingId, payload) {
   return parseJSONFields(enriched);
 }
 
+async function cloneOneWayBookingService(payload) {
+  const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id } =
+    payload;
+
+  // 1️⃣ Fetch existing booking
+  const existing = await findBookingsById(booking_id);
+  if (!existing) {
+    throw new Error("Original booking not found");
+  }
+
+  // 2️⃣ Prepare new booking object
+  const newBooking = {
+    ...existing,
+    id: undefined,
+    reference_number: await genRef(),
+    journey_type_id: 1, // FORCE ONE WAY
+    vehicle_type_id,
+    pickup_date,
+    pickup_time,
+    driver_id: driver_id || null,
+    booking_status_id: 1,
+    completed: false,
+    on_route: false,
+    arrived: false,
+    passenger_on_board: false,
+    associated_booking: null,
+    multi_booking_id: 0,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  delete newBooking.id;
+
+  // 3️⃣ Normalize payload
+  const normalized = await normalizeBookingPayload(newBooking);
+
+  // 4️⃣ Insert booking
+  const inserted = await createBookingRow(pool, normalized);
+
+  // 5️⃣ Calculate fare
+  const farePayload = {
+    ...normalized,
+    booking_id: inserted.id,
+    miles: payload.miles || 0,
+    parking_charges: payload.parking_charges || 0,
+    congestion_charges: payload.congestion_charges || 0,
+    meet_and_greet: payload.meet_and_greet || 0,
+    waiting_charges: payload.waiting_charges || 0,
+    extra_drop_charges: payload.extra_drop_charges || 0,
+    credit_card_charges: payload.credit_card_charges || 0,
+    company_price: payload.company_price || 0,
+  };
+
+  const fare = await calculateFare(farePayload);
+
+  // 7️⃣ Enrich & return
+  const enriched = await getBookingByIdEnriched(inserted.id);
+  return parseJSONFields(enriched);
+}
+
 // EXPORTS
 module.exports = {
   create,
   genRef,
   normalizeBookingPayload,
   updateBookingService,
+  cloneOneWayBookingService,
 };

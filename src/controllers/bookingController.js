@@ -19,7 +19,7 @@ const {
   updateBookingFares,
   getBookingByDriverId,
   updateBookingonRoute,
-  getBookingByDriverCommission
+  getBookingByDriverCommission,
 } = require("../models/bookingModel");
 
 function parseJSONFields(row) {
@@ -554,7 +554,10 @@ exports.getBookingByDriverId = async (req, res) => {
 exports.getBookingByDriverCommission = async (req, res) => {
   const { driver_id, payment_type_id } = req.query;
 
-  const booking = await getBookingByDriverCommission(driver_id, payment_type_id);
+  const booking = await getBookingByDriverCommission(
+    driver_id,
+    payment_type_id,
+  );
 
   if (!booking) {
     return res.status(404).json({
@@ -569,4 +572,43 @@ exports.getBookingByDriverCommission = async (req, res) => {
     success: true,
     booking: data,
   });
+};
+
+exports.cloneOneWayBooking = async (req, res) => {
+  try {
+    const {
+      booking_id,
+      vehicle_type_id,
+      pickup_date,
+      pickup_time,
+      driver_id,
+    } = req.body;
+
+    if (!booking_id || !vehicle_type_id || !pickup_date || !pickup_time) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "booking_id, vehicle_type_id, pickup_date and pickup_time are required",
+      });
+    }
+
+    const result = await bookingService.cloneOneWayBookingService({
+      booking_id,
+      vehicle_type_id,
+      pickup_date,
+      pickup_time,
+      driver_id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      booking: result,
+    });
+  } catch (err) {
+    console.error("cloneOneWayBooking error:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };
