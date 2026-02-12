@@ -394,3 +394,5 @@ exports.calculateFare = async (req, res) => {
     });
   }
 };
+
+exports.calculateSingleFare = calculateSingleFare;

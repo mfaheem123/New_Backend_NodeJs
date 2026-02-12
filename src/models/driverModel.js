@@ -1,7 +1,7 @@
 const db = require("../db");
 const bcrypt = require("bcrypt");
 
-// 🧰 Helper: Format date as DD-MM-YYYY
+//  Helper: Format date as DD-MM-YYYY
 function formatDateOnly(date) {
   if (!date) return null;
   const d = new Date(date);

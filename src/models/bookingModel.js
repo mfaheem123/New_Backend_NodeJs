@@ -507,6 +507,42 @@ const getBookingByDriverCommission = async (driver_id, payment_type_id) => {
   return res.rows[0];
 };
 
+// Total bookings
+const getTotalBookingsByCustomer = async (customerId) => {
+  const query = `
+    SELECT COUNT(*) 
+    FROM bookings 
+    WHERE customer_id = $1
+  `;
+  const { rows } = await pool.query(query, [customerId]);
+  return Number(rows[0].count);
+};
+
+// Cancelled bookings
+const getCancelledBookingsByCustomer = async (customerId) => {
+  const query = `
+    SELECT COUNT(*) 
+    FROM bookings 
+    WHERE customer_id = $1 
+    AND booking_status_id = 12
+  `;
+  const { rows } = await pool.query(query, [customerId]);
+  return Number(rows[0].count);
+};
+
+// Total completed ride amount
+const getTotalAmountByCustomer = async (customerId) => {
+  const query = `
+    SELECT COALESCE(SUM(fares), 0) as total
+    FROM bookings
+    WHERE customer_id = $1
+    AND booking_status_id = 11
+  `;
+  const { rows } = await pool.query(query, [customerId]);
+  return Number(rows[0].total);
+};
+
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -532,4 +568,7 @@ module.exports = {
   getBookingByDriverId,
   updateBookingonRoute,
   getBookingByDriverCommission,
+  getTotalBookingsByCustomer,
+  getCancelledBookingsByCustomer,
+  getTotalAmountByCustomer
 };

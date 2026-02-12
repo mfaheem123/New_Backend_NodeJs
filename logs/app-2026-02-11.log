@@ -3912,3 +3912,71 @@
 {"duration":44,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM escorts\n    ;\n  ","timestamp":"2026-02-11T18:11:59.064Z"}
 {"duration":2,"level":"info","message":"db-query","rows":10,"text":"\n    SELECT *\n    FROM escorts\n    \n    ORDER BY id DESC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-11T18:11:59.067Z"}
 {"level":"info","message":"GET /api/escorts/get?page=1&limit=10 200 50.179 ms","timestamp":"2026-02-11T18:11:59.070Z"}
+{"duration":53,"level":"info","message":"db-query","rows":1,"text":"DELETE FROM escorts WHERE id = $1","timestamp":"2026-02-11T18:12:09.786Z"}
+{"level":"info","message":"DELETE /api/escorts/delete/13 200 54.209 ms","timestamp":"2026-02-11T18:12:09.787Z"}
+{"duration":10,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(DISTINCT a.id) AS total\n    FROM accounts a\n    LEFT JOIN subsidiaries s ON a.subsidiary_id = s.id\n    ;\n  ","timestamp":"2026-02-11T18:12:09.956Z"}
+{"duration":24,"level":"info","message":"db-query","rows":2,"text":"\nSELECT\n  a.*,\n\n  -- departments\n  COALESCE(\n    json_agg(DISTINCT jsonb_build_object(\n      'id', d.id,\n      'account_id', d.account_id,\n      'name', d.name\n    )) FILTER (WHERE d.id IS NOT NULL),\n    '[]'\n  ) AS departments,\n\n  -- contacts\n  COALESCE(\n    json_agg(DISTINCT jsonb_build_object(\n      'id', c.id,\n      'account_id', c.account_id,\n      'name', c.name,\n      'email', c.email,\n      'password', c.password,\n      'mobile', c.mobile,\n      'telephone', c.telephone\n    )) FILTER (WHERE c.id IS NOT NULL),\n    '[]'\n  ) AS contacts,\n\n  -- order numbers\n  COALESCE(\n    json_agg(DISTINCT jsonb_build_object(\n      'id', o.id,\n      'account_id', o.account_id,\n      'order_number', o.order_number\n    )) FILTER (WHERE o.id IS NOT NULL),\n    '[]'\n  ) AS order_numbers,\n\n  -- company addresses\n  COALESCE(\n    json_agg(DISTINCT jsonb_build_object(\n      'id', ca.id,\n      'account_id', ca.account_id,\n      'address', ca.address\n    )) FILTER (WHERE ca.id IS NOT NULL),\n    '[]'\n  ) AS company_addresses,\n\n  -- web logins\n  COALESCE(\n    json_agg(DISTINCT jsonb_build_object(\n      'id', wl.id,\n      'account_id', wl.account_id,\n      'account_number', wl.account_number,\n      'username', wl.username,\n      'password', wl.password,\n      'mobile', wl.mobile,\n      'telephone', wl.telephone\n    )) FILTER (WHERE wl.id IS NOT NULL),\n    '[]'\n  ) AS web_logins,\n\n  -- subsidiary\n  jsonb_build_object(\n    'id', s.id,\n    'name', s.name,\n    'telephone_number', s.telephone_number,\n    'email', s.email\n  ) AS subsidiary\n\nFROM accounts a\nLEFT JOIN departments d ON d.account_id = a.id\nLEFT JOIN contacts c ON c.account_id = a.id\nLEFT JOIN order_numbers o ON o.account_id = a.id\nLEFT JOIN company_addresses ca ON ca.account_id = a.id\nLEFT JOIN web_logins wl ON wl.account_id = a.id\nLEFT JOIN subsidiaries s ON s.id = a.subsidiary_id\n\n\nGROUP BY a.id, s.id\nORDER BY a.id ASC\nOFFSET $1 LIMIT $2;\n","timestamp":"2026-02-11T18:12:09.981Z"}
+{"level":"info","message":"GET /api/accounts/get?page=1&limit=5 200 38.259 ms","timestamp":"2026-02-11T18:12:09.983Z"}
+{"duration":172,"level":"info","message":"db-query","rows":1,"text":"\n      INSERT INTO escorts (\n        name, dob, email, mobile, address, active,\n        image, safeguarding_document, pat_document, firstaid_document, dbs_document,\n        safeguarding_number, pat_number, firstaid_number, dbs_number,\n        safeguarding_expiry, pat_expiry, firstaid_expiry, dbs_expiry\n      )\n      VALUES (\n        $1,$2,$3,$4,$5,$6,\n        $7,$8,$9,$10,$11,\n        $12,$13,$14,$15,\n        $16,$17,$18,$19\n      )\n      RETURNING *;\n    ","timestamp":"2026-02-11T18:13:58.457Z"}
+{"level":"info","message":"POST /api/escorts/add 200 183.430 ms","timestamp":"2026-02-11T18:13:58.462Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n      INSERT INTO escorts (\n        name, dob, email, mobile, address, active,\n        image, safeguarding_document, pat_document, firstaid_document, dbs_document,\n        safeguarding_number, pat_number, firstaid_number, dbs_number,\n        safeguarding_expiry, pat_expiry, firstaid_expiry, dbs_expiry\n      )\n      VALUES (\n        $1,$2,$3,$4,$5,$6,\n        $7,$8,$9,$10,$11,\n        $12,$13,$14,$15,\n        $16,$17,$18,$19\n      )\n      RETURNING *;\n    ","timestamp":"2026-02-11T18:14:02.326Z"}
+{"level":"info","message":"POST /api/escorts/add 200 5.341 ms","timestamp":"2026-02-11T18:14:02.327Z"}
+{"duration":54,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM escorts\n    ;\n  ","timestamp":"2026-02-11T18:14:14.290Z"}
+{"duration":2,"level":"info","message":"db-query","rows":10,"text":"\n    SELECT *\n    FROM escorts\n    \n    ORDER BY id DESC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-11T18:14:14.294Z"}
+{"level":"info","message":"GET /api/escorts/get?page=1&limit=10 200 58.981 ms","timestamp":"2026-02-11T18:14:14.295Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:14:28.793Z"}
+{"level":"info","message":"GET /api/location-types 200 12.510 ms","timestamp":"2026-02-11T18:14:28.800Z"}
+{"duration":51,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:14:28.840Z"}
+{"level":"info","message":"GET /api/location-types 200 53.136 ms","timestamp":"2026-02-11T18:14:28.842Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:14:39.467Z"}
+{"level":"info","message":"GET /api/location-types 200 11.236 ms","timestamp":"2026-02-11T18:14:39.473Z"}
+{"duration":61,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:14:39.525Z"}
+{"level":"info","message":"GET /api/location-types 200 64.335 ms","timestamp":"2026-02-11T18:14:39.528Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM escorts\n    ;\n  ","timestamp":"2026-02-11T18:14:41.593Z"}
+{"duration":3,"level":"info","message":"db-query","rows":12,"text":"\n    SELECT *\n    FROM escorts\n    \n    ORDER BY id DESC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-11T18:14:41.597Z"}
+{"level":"info","message":"GET /api/escorts/get 200 8.101 ms","timestamp":"2026-02-11T18:14:41.598Z"}
+{"duration":53,"level":"info","message":"db-query","rows":1,"text":"DELETE FROM escorts WHERE id = $1","timestamp":"2026-02-11T18:14:56.760Z"}
+{"level":"info","message":"DELETE /api/escorts/delete/16 200 55.472 ms","timestamp":"2026-02-11T18:14:56.762Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"DELETE FROM escorts WHERE id = $1","timestamp":"2026-02-11T18:15:00.478Z"}
+{"level":"info","message":"DELETE /api/escorts/delete/17 200 7.071 ms","timestamp":"2026-02-11T18:15:00.480Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM escorts\n    ;\n  ","timestamp":"2026-02-11T18:15:07.530Z"}
+{"duration":2,"level":"info","message":"db-query","rows":10,"text":"\n    SELECT *\n    FROM escorts\n    \n    ORDER BY id DESC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-11T18:15:07.533Z"}
+{"level":"info","message":"GET /api/escorts/get?page=1&limit=10 200 6.095 ms","timestamp":"2026-02-11T18:15:07.535Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:15:49.660Z"}
+{"level":"info","message":"GET /api/location-types 200 11.726 ms","timestamp":"2026-02-11T18:15:49.666Z"}
+{"duration":54,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:15:49.709Z"}
+{"level":"info","message":"GET /api/location-types 200 55.741 ms","timestamp":"2026-02-11T18:15:49.711Z"}
+{"duration":62,"level":"info","message":"db-query","rows":15,"text":"\n    SELECT id,\n           TO_CHAR(start_date, 'DD-MM-YYYY') AS start_date,\n           TO_CHAR(end_date, 'DD-MM-YYYY') AS end_date,\n           operator,\n           amount,\n           fix_fare,\n           mileage\n    FROM fare_increments\n    ORDER BY id DESC;\n  ","timestamp":"2026-02-11T18:20:23.086Z"}
+{"level":"info","message":"GET /api/fareincrement/get 200 64.206 ms","timestamp":"2026-02-11T18:20:23.088Z"}
+{"duration":55,"level":"info","message":"db-query","rows":10,"text":"\n      SELECT f.*, vt.name AS vehicle_type_name\n      FROM fixed_fares f\n      JOIN vehicle_types vt ON f.vehicle_type_id = vt.id\n      ORDER BY f.id DESC\n      OFFSET $1 LIMIT $2\n    ","timestamp":"2026-02-11T18:23:51.190Z"}
+{"level":"info","message":"GET /api/fixedfares/get?&page=1&limit=10&vehicle=&from_location=&to_location=&fares= 200 58.358 ms","timestamp":"2026-02-11T18:23:51.194Z"}
+{"duration":57,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM vehicle_types vt\n    ;\n  ","timestamp":"2026-02-11T18:23:51.195Z"}
+{"duration":3,"level":"info","message":"db-query","rows":6,"text":"\n    SELECT vt.*\n    FROM vehicle_types vt\n    \n    ORDER BY vt.id ASC\n    OFFSET $1 LIMIT $2;\n  ","timestamp":"2026-02-11T18:23:51.199Z"}
+{"level":"info","message":"GET /api/vehicle-type/get 200 62.423 ms","timestamp":"2026-02-11T18:23:51.201Z"}
+{"duration":79,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:23:51.218Z"}
+{"level":"info","message":"GET /api/location-types 200 80.336 ms","timestamp":"2026-02-11T18:23:51.220Z"}
+{"level":"info","message":"GET /api/combined/vehicle-location-types 200 93.007 ms","timestamp":"2026-02-11T18:23:51.223Z"}
+{"duration":67,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    ;\n  ","timestamp":"2026-02-11T18:24:02.636Z"}
+{"duration":4,"level":"info","message":"db-query","rows":30,"text":"\n    SELECT \n      l.*, \n      jsonb_build_object(\n        'id', lt.id,\n        'name', lt.name,\n        'shortcut', lt.shortcut,\n        'background_color', lt.background_color,\n        'foreground_color', lt.foreground_color\n      ) AS location_type,\n      CASE WHEN z.id IS NOT NULL THEN\n        jsonb_build_object(\n          'id', z.id,\n          'name', z.name,\n          'secondary_name', z.secondary_name,\n          'type', z.type,\n          'category', z.category,\n          'vertices', z.vertices,\n          'base', z.base,\n          'overlay', z.overlay\n        )\n      ELSE NULL END AS zone\n    FROM locations l\n    LEFT JOIN location_types lt ON l.location_type_id = lt.id\n    LEFT JOIN zones z ON l.zone_id = z.id\n    \n    ORDER BY l.id ASC\n    LIMIT $1 OFFSET $2;\n  ","timestamp":"2026-02-11T18:24:02.640Z"}
+{"level":"info","message":"GET /api/locations/get 200 74.141 ms","timestamp":"2026-02-11T18:24:02.644Z"}
+{"level":"info","message":"GET /api/services/search?search=T 200 79.324 ms","timestamp":"2026-02-11T18:24:02.646Z"}
+{"level":"info","message":"GET /api/services/search?search= 400 0.453 ms","timestamp":"2026-02-11T18:24:05.339Z"}
+{"level":"info","message":"GET /api/services/search?search= 400 0.260 ms","timestamp":"2026-02-11T18:24:11.738Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:29:08.967Z"}
+{"level":"info","message":"GET /api/location-types 200 13.350 ms","timestamp":"2026-02-11T18:29:08.976Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:29:08.985Z"}
+{"level":"info","message":"GET /api/location-types 200 5.344 ms","timestamp":"2026-02-11T18:29:08.989Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:29:52.770Z"}
+{"level":"info","message":"GET /api/location-types 200 15.107 ms","timestamp":"2026-02-11T18:29:52.780Z"}
+{"duration":60,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:29:52.827Z"}
+{"level":"info","message":"GET /api/location-types 200 65.146 ms","timestamp":"2026-02-11T18:29:52.832Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:29:55.727Z"}
+{"level":"info","message":"GET /api/location-types 200 12.488 ms","timestamp":"2026-02-11T18:29:55.734Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:29:55.742Z"}
+{"level":"info","message":"GET /api/location-types 200 2.841 ms","timestamp":"2026-02-11T18:29:55.744Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:30:04.578Z"}
+{"level":"info","message":"GET /api/location-types 200 12.754 ms","timestamp":"2026-02-11T18:30:04.585Z"}
+{"duration":49,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-02-11T18:30:04.623Z"}
+{"level":"info","message":"GET /api/location-types 200 51.429 ms","timestamp":"2026-02-11T18:30:04.626Z"}
+{"duration":200,"level":"info","message":"db-query","rows":2,"text":"\n    SELECT\n      a.id,a.subsidiary_id,a.account_type,a.name,a.email,a.mobile,a.payment_types,a.information,a.background_color,a.foreground_color,\n      json_agg(DISTINCT jsonb_build_object('id', d.id, 'name', d.name)) AS departments,\n      jsonb_build_object(\n        'id', s.id,\n        'name', s.name,\n        'telephone_number', s.telephone_number,\n        'email', s.email\n      ) AS subsidiary\n    FROM accounts a\n    LEFT JOIN departments d ON a.id = d.account_id\n    LEFT JOIN subsidiaries s ON a.subsidiary_id = s.id\n    WHERE a.subsidiary_id = $1\n    GROUP BY a.id, s.id\n    ORDER BY a.id ASC;\n  ","timestamp":"2026-02-11T18:38:20.454Z"}
+{"level":"info","message":"GET /api/accounts/subsidiary/10 304 204.312 ms","timestamp":"2026-02-11T18:38:20.456Z"}

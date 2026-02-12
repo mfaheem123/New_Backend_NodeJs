@@ -18,7 +18,7 @@ exports.findCustomer = async (req, res) => {
       ...result,
     });
   } catch (error) {
-    console.error("CLI findCustomer error:", error);
+    console.error("CLI Find Customer Details Error:", error);
     res.status(500).json({
       success: false,
       message: "Internal Server Error",

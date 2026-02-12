@@ -1,4 +1,4 @@
-const db = require("./src/db/index");   // 👈 pool nahi, object milega
+const db = require("./src/db/index"); // 👈 pool nahi, object milega
 const client = require("./elasticsearchClient");
 
 const CHUNK_SIZE = 5000;
@@ -13,7 +13,7 @@ function chunkArray(array, size) {
 
 async function syncData() {
   try {
-    const res = await db.query("SELECT * FROM address");  // 👈 db.query
+    const res = await db.query("SELECT * FROM address"); // 👈 db.query
     const allAddresses = res.rows;
 
     console.log(`Fetched ${allAddresses.length} rows from Postgres`);
@@ -21,7 +21,7 @@ async function syncData() {
     const chunks = chunkArray(allAddresses, CHUNK_SIZE);
 
     for (const [i, chunk] of chunks.entries()) {
-      const body = chunk.flatMap(doc => [
+      const body = chunk.flatMap((doc) => [
         { index: { _index: "addresses", _id: doc._id } },
         {
           name: doc.name,
@@ -44,7 +44,9 @@ async function syncData() {
       if (response.errors) {
         console.error("❌ Some documents failed to index");
       } else {
-        console.log(`✅ [${i+1}/${chunks.length}] Indexed chunk of ${chunk.length} documents`);
+        console.log(
+          `✅ [${i + 1}/${chunks.length}] Indexed chunk of ${chunk.length} documents`,
+        );
       }
     }
 
@@ -52,7 +54,7 @@ async function syncData() {
   } catch (err) {
     console.error("Error syncing data:", err);
   } finally {
-    await db.pool.end();   // 👈 ab sahi
+    await db.pool.end(); // 👈 ab sahi
   }
 }
 

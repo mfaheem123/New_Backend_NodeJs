@@ -7,7 +7,7 @@ const {
   getBookingByIdEnriched,
 } = require("../models/bookingModel");
 const { sendBookingNotification } = require("./notificationService");
-const { calculateFare } = require("../controllers/fareController");
+const { calculateSingleFare } = require("../controllers/fareController");
 const DEFAULT_EMPLOYEE_ID = 28;
 
 const parseJSONFields = (row) => {
@@ -836,17 +836,17 @@ async function create(payload) {
 }
 
 async function updateBookingService(bookingId, payload) {
-  // 🔴 COMPLETED STATUS
+  //  COMPLETED STATUS
   const COMPLETED_STATUS_ID = 11;
 
-  // 0️⃣ Existing booking fetch
+  // 0️ Existing booking fetch
   const existing = await findBookingsById(bookingId);
   if (!existing) return null;
 
   const isCompleted =
     Number(existing.booking_status_id) === COMPLETED_STATUS_ID;
 
-  // 1️⃣ Allowed columns (UPDATE ke liye)
+  // 1 Allowed columns (UPDATE ke liye)
   const allowed = [
     "booking_status_id",
     "driver_id",
@@ -877,7 +877,7 @@ async function updateBookingService(bookingId, payload) {
     "dispatch_as",
   ];
 
-  // 2️⃣ Filter payload
+  // 2️ Filter payload
   const updates = {};
   for (const key of allowed) {
     if (payload[key] !== undefined) {
@@ -885,7 +885,7 @@ async function updateBookingService(bookingId, payload) {
     }
   }
 
-  // 3️⃣ JSON stringify
+  // 3️ JSON stringify
   const jsonFields = ["viapoints", "restricted_drivers", "child_seat", "notes"];
   for (const f of jsonFields) {
     if (updates[f] !== undefined) {
@@ -901,7 +901,7 @@ async function updateBookingService(bookingId, payload) {
   }
 
   // =====================================================
-  // 🟢 CASE 1: BOOKING NOT COMPLETED → NORMAL UPDATE
+  //  CASE 1: BOOKING NOT COMPLETED → NORMAL UPDATE
   // =====================================================
   if (!isCompleted) {
     const updated = await updateBooking(bookingId, updates);
@@ -912,7 +912,7 @@ async function updateBookingService(bookingId, payload) {
   }
 
   // =====================================================
-  // 🔴 CASE 2: BOOKING COMPLETED → CREATE NEW BOOKING
+  //  CASE 2: BOOKING COMPLETED → CREATE NEW BOOKING
   // =====================================================
   const newBookingPayload = {
     ...existing,
@@ -926,7 +926,7 @@ async function updateBookingService(bookingId, payload) {
     updated_at: new Date(),
   };
 
-  // ❌ Remove non-insertable fields
+  //  Remove non-insertable fields
   delete newBookingPayload.id;
 
   // Normalize JSON fields again
@@ -942,13 +942,13 @@ async function cloneOneWayBookingService(payload) {
   const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id } =
     payload;
 
-  // 1️⃣ Fetch existing booking
+  // 1️ Fetch existing booking
   const existing = await findBookingsById(booking_id);
   if (!existing) {
     throw new Error("Original booking not found");
   }
 
-  // 2️⃣ Prepare new booking object
+  // 2️ Prepare new booking object
   const newBooking = {
     ...existing,
     id: undefined,
@@ -971,13 +971,13 @@ async function cloneOneWayBookingService(payload) {
 
   delete newBooking.id;
 
-  // 3️⃣ Normalize payload
+  // 3️ Normalize payload
   const normalized = await normalizeBookingPayload(newBooking);
 
-  // 4️⃣ Insert booking
+  // 4️ Insert booking
   const inserted = await createBookingRow(pool, normalized);
 
-  // 5️⃣ Calculate fare
+  // 5️ Calculate fare
   const farePayload = {
     ...normalized,
     booking_id: inserted.id,
@@ -991,9 +991,15 @@ async function cloneOneWayBookingService(payload) {
     company_price: payload.company_price || 0,
   };
 
-  const fare = await calculateFare(farePayload);
+  const fare = await calculateSingleFare(farePayload);
 
-  // 7️⃣ Enrich & return
+  // Update booking
+  await pool.query(`UPDATE bookings SET total_charges = $1 WHERE id = $2`, [
+    fare.total_fare,
+    inserted.id,
+  ]);
+
+  // 7️ Enrich & return
   const enriched = await getBookingByIdEnriched(inserted.id);
   return parseJSONFields(enriched);
 }

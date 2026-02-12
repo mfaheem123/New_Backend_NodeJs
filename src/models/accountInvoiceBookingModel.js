@@ -184,7 +184,7 @@ exports.getForAccountInvoice = async (filters) => {
   values.push(from_date, to_date);
 
   if (department) {
-    conditions.push(`b.department_id = $${idx++}`);
+    conditions.push(`b.department = $${idx++}`);
     values.push(department);
   }
 

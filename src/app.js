@@ -49,7 +49,6 @@ const accountInvoiceBookingRoutes = require("./routes/accountInvoiceBookingRoute
 const accountInvoiceRoutes = require("./routes/accountInvoiceRoutes");
 const documentNumberRoutes = require("./routes/documentNumberRoutes");
 
-
 const app = express();
 
 // ✅ CORS configuration
@@ -143,7 +142,6 @@ app.use("/api/cli", cliRoutes);
 app.use("/api/account_invoice", accountInvoiceBookingRoutes);
 app.use("/api/account_invoice", accountInvoiceRoutes);
 app.use("/api/document", documentNumberRoutes);
-
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

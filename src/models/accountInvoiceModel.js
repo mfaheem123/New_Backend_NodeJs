@@ -234,3 +234,181 @@ exports.getAll = async ({ offset = 0, limit = 100, invoice_type }) => {
     throw err;
   }
 };
+
+exports.update = async (id, data) => {
+  try {
+    await pool.query("BEGIN");
+
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    const allowedFields = [
+      "subsidiary_id",
+      "account_id",
+      "invoice_date",
+      "invoice_due_date",
+      "from_date",
+      "to_date",
+      "invoice_type",
+      "department_id",
+      "order_number",
+      "amount",
+      "status",
+      "stripe_customer_id",
+      "stripe_payment_id",
+    ];
+
+    for (const key of allowedFields) {
+      if (data[key] !== undefined) {
+        fields.push(`${key} = $${idx++}`);
+        values.push(data[key]);
+      }
+    }
+
+    let invoice;
+
+    if (fields.length > 0) {
+      const updateQuery = `
+        UPDATE account_invoices
+        SET ${fields.join(", ")},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = $${idx}
+        RETURNING *
+      `;
+
+      values.push(id);
+
+      const res = await pool.query(updateQuery, values);
+      invoice = res.rows[0];
+    } else {
+      const res = await pool.query(
+        `SELECT * FROM account_invoices WHERE id = $1`,
+        [id]
+      );
+      invoice = res.rows[0];
+    }
+
+    if (!invoice) {
+      throw new Error("Invoice not found");
+    }
+
+    // ===============================
+    // 🔄 HANDLE LINEITEM UPDATE
+    // ===============================
+
+    let insertedLineItems = [];
+
+    if (Array.isArray(data.account_invoice_lineitems)) {
+      // delete old
+      await pool.query(
+        `DELETE FROM account_invoice_lineitems WHERE account_invoice_id = $1`,
+        [id]
+      );
+
+      for (const item of data.account_invoice_lineitems) {
+        const lineRes = await pool.query(
+          `INSERT INTO account_invoice_lineitems
+           (account_invoice_id, booking_id, total_charges)
+           VALUES ($1,$2,$3)
+           RETURNING id, account_invoice_id, booking_id`,
+          [id, item.booking_id, Number(item.total_charges || 0)]
+        );
+
+        insertedLineItems.push(lineRes.rows[0]);
+
+        await pool.query(
+          `UPDATE bookings
+           SET invoice_number = $1
+           WHERE id = $2`,
+          [invoice.invoice_number, item.booking_id]
+        );
+      }
+    } else {
+      // if no new lineitems sent, return existing ones
+      const existing = await pool.query(
+        `SELECT id, account_invoice_id, booking_id
+         FROM account_invoice_lineitems
+         WHERE account_invoice_id = $1`,
+        [id]
+      );
+
+      insertedLineItems = existing.rows;
+    }
+
+    await pool.query("COMMIT");
+
+    return {
+      account_invoice: {
+        id: invoice.id,
+        invoice_date: invoice.invoice_date,
+        invoice_due_date: invoice.invoice_due_date,
+        account_id: invoice.account_id,
+        from_date: invoice.from_date,
+        to_date: invoice.to_date,
+        invoice_type: invoice.invoice_type,
+        department_id: invoice.department_id,
+        order_number: invoice.order_number,
+        invoice_number: invoice.invoice_number,
+        amount: Number(invoice.amount),
+        status: invoice.status,
+        stripe_customer_id: invoice.stripe_customer_id,
+        stripe_payment_id: invoice.stripe_payment_id,
+      },
+      account_invoice_lineitems: {
+        status: true,
+        account_invoice_lineitems: insertedLineItems,
+      },
+    };
+  } catch (err) {
+    await pool.query("ROLLBACK");
+    throw err;
+  }
+};
+
+exports.delete = async (id) => {
+  try {
+    await pool.query("BEGIN");
+
+    // 🔎 Check if invoice exists
+    const checkRes = await pool.query(
+      `SELECT * FROM account_invoices WHERE id = $1`,
+      [id]
+    );
+
+    if (checkRes.rows.length === 0) {
+      throw new Error("NOT_FOUND");
+    }
+
+    const invoice = checkRes.rows[0];
+
+    // 🔁 Optional: Remove invoice_number from bookings
+    await pool.query(
+      `UPDATE bookings
+       SET invoice_number = NULL
+       WHERE invoice_number = $1`,
+      [invoice.invoice_number]
+    );
+
+    // 🗑 Delete lineitems first
+    await pool.query(
+      `DELETE FROM account_invoice_lineitems WHERE account_invoice_id = $1`,
+      [id]
+    );
+
+    // 🗑 Delete invoice
+    await pool.query(
+      `DELETE FROM account_invoices WHERE id = $1`,
+      [id]
+    );
+
+    await pool.query("COMMIT");
+
+    return {
+      deleted_id: id,
+    };
+  } catch (err) {
+    await pool.query("ROLLBACK");
+    throw err;
+  }
+};

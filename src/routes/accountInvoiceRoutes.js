@@ -4,6 +4,8 @@ const accountInvoiceController = require("../controllers/accountInvoiceControlle
 
 router.post("/add", accountInvoiceController.create);
 router.get("/get", accountInvoiceController.getAll);
+router.post("/update/:id", accountInvoiceController.update);
+router.delete("/delete/:id", accountInvoiceController.delete);
 
 
 module.exports = router;

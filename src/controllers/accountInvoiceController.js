@@ -41,3 +41,51 @@ exports.getAll = async (req, res) => {
     });
   }
 };
+
+exports.update = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const result = await InvoiceModel.update(id, req.body);
+
+    res.json({
+      status: true,
+      message: "Account invoice updated successfully",
+      ...result,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.delete = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const result = await InvoiceModel.delete(id);
+
+    res.json({
+      status: true,
+      message: "Account invoice deleted successfully",
+      ...result,
+    });
+  } catch (err) {
+    console.error(err);
+
+    if (err.message === "NOT_FOUND") {
+      return res.status(404).json({
+        status: false,
+        message: "Account invoice not found",
+      });
+    }
+
+    res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};

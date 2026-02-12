@@ -66,13 +66,43 @@ const findCustomerByPhone = async (phone) => {
     return diffDays <= 15 && b.customer_id === customer.id;
   });
 
+  const parseJSONField = (field) => {
+    if (!field) return [];
+
+    if (typeof field === "object") return field; // already parsed
+
+    try {
+      return JSON.parse(field);
+    } catch (err) {
+      return [];
+    }
+  };
+
   // 3️⃣ Deduplicate
-  const uniqueBookings = deduplicateBookings(last15Days);
+  const uniqueBookings = deduplicateBookings(last15Days).map((b) => ({
+    ...b,
+    viapoints: parseJSONField(b.viapoints),
+    restricted_drivers: parseJSONField(b.restricted_drivers),
+    child_seat: parseJSONField(b.child_seat),
+    notes: parseJSONField(b.notes),
+    skipped_bookings: parseJSONField(b.skipped_bookings),
+  }));
+  // 4️⃣ Ride history data
+  const [totalUsed, totalCancelled, totalAmount] = await Promise.all([
+    BookingModel.getTotalBookingsByCustomer(customer.id),
+    BookingModel.getCancelledBookingsByCustomer(customer.id),
+    BookingModel.getTotalAmountByCustomer(customer.id),
+  ]);
 
   return {
     is_new: false,
     customer,
     bookings: uniqueBookings,
+    ride_history: {
+      used: totalUsed,
+      cancelled: totalCancelled,
+      balance_amount: totalAmount,
+    },
   };
 };
 
