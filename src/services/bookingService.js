@@ -36,6 +36,30 @@ const parseJSONFields = (row) => {
   return parsed;
 };
 
+function toNullableInt(value) {
+  if (
+    value === undefined ||
+    value === null ||
+    value === "" ||
+    value === "null"
+  ) {
+    return null;
+  }
+  return Number(value);
+}
+
+function toNullableFloat(value) {
+  if (
+    value === undefined ||
+    value === null ||
+    value === "" ||
+    value === "null"
+  ) {
+    return null;
+  }
+  return parseFloat(value);
+}
+
 // UNIQUE REFERENCE GENERATOR
 async function genRef() {
   let ref;
@@ -78,6 +102,56 @@ async function normalizeBookingPayload(src) {
       b[f] = "[]";
     }
   }
+
+  // Integer fields
+  const intFields = [
+    "journey_type_id",
+    "account_id",
+    "vehicle_type_id",
+    "vehicle_id",
+    "driver_id",
+    "passengers",
+    "luggages",
+    "hand_luggages",
+    "payment_type_id",
+    "subsidiary_id",
+    "booking_status_id",
+    "booking_type_id",
+    "employee_id",
+    "department",
+    "escort_id",
+    "multi_booking_id",
+    "associated_booking",
+  ];
+
+  intFields.forEach((field) => {
+    if (b[field] !== undefined) {
+      b[field] = toNullableInt(b[field]);
+    }
+  });
+
+  // Float fields
+  const floatFields = [
+    "fares",
+    "total_charges",
+    "company_price",
+    "parking_charges",
+    "waiting_charges",
+    "extra_drop_charges",
+    "credit_card_charges",
+    "congestion_charges",
+    "miles",
+    "pickup_latitude",
+    "pickup_longitude",
+    "dropoff_latitude",
+    "dropoff_longitude",
+  ];
+
+  floatFields.forEach((field) => {
+    if (b[field] !== undefined) {
+      b[field] = toNullableFloat(b[field]);
+    }
+  });
 
   b.quotation = b.quotation || false;
   b.quoted = b.quoted || false;

@@ -6,7 +6,7 @@ const createBatch = async (token) => {
     `INSERT INTO call_event_batches (token)
      VALUES ($1)
      RETURNING id`,
-    [token]
+    [token],
   );
   return result.rows[0].id;
 };
@@ -28,7 +28,7 @@ const insertSingleEvent = async (batchId, e) => {
       e.callerId || "",
       e.status,
       e.time,
-    ]
+    ],
   );
 
   return result.rows[0];
@@ -36,10 +36,9 @@ const insertSingleEvent = async (batchId, e) => {
 
 // ✅ MARK CLI TRIGGERED
 const markCliTriggered = async (id) => {
-  await db.query(
-    `UPDATE call_events SET cli_triggered = true WHERE id = $1`,
-    [id]
-  );
+  await db.query(`UPDATE call_events SET cli_triggered = true WHERE id = $1`, [
+    id,
+  ]);
 };
 
 // Get Events By Token
@@ -52,7 +51,7 @@ const getEventsByToken = async (token) => {
     WHERE b.token = $1
     ORDER BY e.id DESC
     `,
-    [token]
+    [token],
   );
   return result.rows;
 };
@@ -61,7 +60,7 @@ const getEventsByToken = async (token) => {
 const deleteEventsByToken = async (token) => {
   const result = await db.query(
     `DELETE FROM call_event_batches WHERE token = $1`,
-    [token]
+    [token],
   );
   return result.rowCount;
 };

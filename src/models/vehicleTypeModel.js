@@ -72,7 +72,7 @@ const VehicleType = {
   async getById(id) {
     const result = await pool.query(
       "SELECT * FROM vehicle_types WHERE id = $1",
-      [id]
+      [id],
     );
     return result.rows[0];
   },
@@ -122,7 +122,7 @@ const VehicleType = {
         default_vehicle,
         vehicle_type_minimum_fares,
         image,
-      ]
+      ],
     );
     const vehicle = result.rows[0];
     const vehicleTypeId = vehicle.id;
@@ -143,7 +143,7 @@ const VehicleType = {
         0, // autostop_waiting_speed_limit
         JSON.stringify([]), // waiting_charges
         0, // waiting_intervals
-      ]
+      ],
     );
     return result.rows[0];
   },
@@ -160,7 +160,7 @@ const VehicleType = {
       `UPDATE vehicle_types 
        SET ${set}, updated_at = now() 
        WHERE id = $${values.length} RETURNING *`,
-      values
+      values,
     );
     return result.rows[0];
   },
@@ -168,7 +168,7 @@ const VehicleType = {
   async delete(id) {
     const result = await pool.query(
       "DELETE FROM vehicle_types WHERE id = $1 RETURNING *",
-      [id]
+      [id],
     );
     return result.rows[0];
   },
@@ -176,7 +176,7 @@ const VehicleType = {
   async findByName(name) {
     const result = await pool.query(
       "SELECT * FROM vehicle_types WHERE name = $1",
-      [name]
+      [name],
     );
     return result.rows[0];
   },

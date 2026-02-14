@@ -22,7 +22,7 @@ const LocationType = {
   getById: async (id) => {
     const result = await pool.query(
       "SELECT * FROM location_types WHERE id = $1",
-      [id]
+      [id],
     );
     return result.rows[0];
   },
@@ -90,7 +90,7 @@ const LocationType = {
   delete: async (id) => {
     const result = await pool.query(
       "DELETE FROM location_types WHERE id=$1 RETURNING *",
-      [id]
+      [id],
     );
     return result.rows[0];
   },

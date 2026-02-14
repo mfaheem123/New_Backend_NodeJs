@@ -99,7 +99,7 @@ module.exports = {
       // Get vehicle type name
       const vehicleResult = await pool.query(
         "SELECT name FROM vehicle_types WHERE id = $1",
-        [row.vehicle_type_id]
+        [row.vehicle_type_id],
       );
       const vehicleName = vehicleResult.rowCount
         ? vehicleResult.rows[0].name

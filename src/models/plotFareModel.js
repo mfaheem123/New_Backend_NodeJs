@@ -1,7 +1,7 @@
 const pool = require("../db");
 
 const PlotFare = {
-  // ✅ Get All
+  //  Get All
   async getAll(offset = 0, limit = 100) {
     const query = `
       SELECT 
@@ -41,7 +41,7 @@ const PlotFare = {
     return await this.getById(id);
   },
 
-  // ✅ Update
+  //  Update
   async update(id, data) {
     const { vehicle_type_id, pickup_plot_id, dropoff_plot_id, fares } = data;
 
@@ -73,14 +73,14 @@ const PlotFare = {
     return await this.getById(id);
   },
 
-  // ✅ Delete
+  //  Delete
   async delete(id) {
     const query = `DELETE FROM plot_fares WHERE id = $1 RETURNING *;`;
     const { rows } = await pool.query(query, [id]);
     return rows[0];
   },
 
-  // ✅ Get By ID (Used internally by create/update)
+  //  Get By ID (Used internally by create/update)
   async getById(id) {
     const query = `
       SELECT 

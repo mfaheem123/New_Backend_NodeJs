@@ -79,7 +79,7 @@ module.exports = {
   async delete(id) {
     const result = await pool.query(
       "DELETE FROM surcharges WHERE id=$1 RETURNING id;",
-      [id]
+      [id],
     );
     return result.rows[0];
   },
@@ -90,7 +90,7 @@ module.exports = {
                 TO_CHAR(from_date, 'DD-MM-YYYY') AS from_date,
                 TO_CHAR(to_date, 'DD-MM-YYYY') AS to_date,
                 surcharges_type, condition, postcode, operator, fare, parking_charges,
-                extra_drop_charges, congestion_charges, duration,from_time, to_time, active, day, created_at, updated_at FROM surcharges ORDER BY id ASC;`
+                extra_drop_charges, congestion_charges, duration,from_time, to_time, active, day, created_at, updated_at FROM surcharges ORDER BY id ASC;`,
     );
     return result.rows;
   },

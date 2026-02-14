@@ -284,7 +284,7 @@ exports.update = async (id, data) => {
     } else {
       const res = await pool.query(
         `SELECT * FROM account_invoices WHERE id = $1`,
-        [id]
+        [id],
       );
       invoice = res.rows[0];
     }
@@ -303,7 +303,7 @@ exports.update = async (id, data) => {
       // delete old
       await pool.query(
         `DELETE FROM account_invoice_lineitems WHERE account_invoice_id = $1`,
-        [id]
+        [id],
       );
 
       for (const item of data.account_invoice_lineitems) {
@@ -312,7 +312,7 @@ exports.update = async (id, data) => {
            (account_invoice_id, booking_id, total_charges)
            VALUES ($1,$2,$3)
            RETURNING id, account_invoice_id, booking_id`,
-          [id, item.booking_id, Number(item.total_charges || 0)]
+          [id, item.booking_id, Number(item.total_charges || 0)],
         );
 
         insertedLineItems.push(lineRes.rows[0]);
@@ -321,7 +321,7 @@ exports.update = async (id, data) => {
           `UPDATE bookings
            SET invoice_number = $1
            WHERE id = $2`,
-          [invoice.invoice_number, item.booking_id]
+          [invoice.invoice_number, item.booking_id],
         );
       }
     } else {
@@ -330,7 +330,7 @@ exports.update = async (id, data) => {
         `SELECT id, account_invoice_id, booking_id
          FROM account_invoice_lineitems
          WHERE account_invoice_id = $1`,
-        [id]
+        [id],
       );
 
       insertedLineItems = existing.rows;
@@ -373,7 +373,7 @@ exports.delete = async (id) => {
     // 🔎 Check if invoice exists
     const checkRes = await pool.query(
       `SELECT * FROM account_invoices WHERE id = $1`,
-      [id]
+      [id],
     );
 
     if (checkRes.rows.length === 0) {
@@ -387,20 +387,17 @@ exports.delete = async (id) => {
       `UPDATE bookings
        SET invoice_number = NULL
        WHERE invoice_number = $1`,
-      [invoice.invoice_number]
+      [invoice.invoice_number],
     );
 
     // 🗑 Delete lineitems first
     await pool.query(
       `DELETE FROM account_invoice_lineitems WHERE account_invoice_id = $1`,
-      [id]
+      [id],
     );
 
     // 🗑 Delete invoice
-    await pool.query(
-      `DELETE FROM account_invoices WHERE id = $1`,
-      [id]
-    );
+    await pool.query(`DELETE FROM account_invoices WHERE id = $1`, [id]);
 
     await pool.query("COMMIT");
 

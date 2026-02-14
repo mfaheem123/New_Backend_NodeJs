@@ -28,6 +28,7 @@ const COLUMNS = [
   "address_longitude",
 ];
 
+// Get All Subsidiary With Pagination + Searching
 const getAll = async ({
   page = 1,
   limit = 100,
@@ -98,7 +99,7 @@ const create = async (data) => {
   const values = cols.map((c) => data[c]);
   const params = values.map((_, i) => `$${i + 1}`).join(",");
   const q = `INSERT INTO subsidiaries (${cols.join(
-    ","
+    ",",
   )}) VALUES (${params}) RETURNING *`;
   const { rows } = await pool.query(q, values);
   return rows[0];

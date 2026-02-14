@@ -542,7 +542,6 @@ const getTotalAmountByCustomer = async (customerId) => {
   return Number(rows[0].total);
 };
 
-
 module.exports = {
   pool,
   insertBookingRow,
@@ -570,5 +569,5 @@ module.exports = {
   getBookingByDriverCommission,
   getTotalBookingsByCustomer,
   getCancelledBookingsByCustomer,
-  getTotalAmountByCustomer
+  getTotalAmountByCustomer,
 };

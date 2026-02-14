@@ -47,10 +47,13 @@ exports.update = async (req, res) => {
     const id = Number(req.params.id);
 
     const result = await InvoiceModel.update(id, req.body);
-
+    console.log(
+      "🚀 INCOMING UPDATE ACCOUNT INVOICE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     res.json({
       status: true,
-      message: "Account invoice updated successfully",
+      message: "Account Invoice Updated Successfully",
       ...result,
     });
   } catch (err) {
@@ -70,7 +73,7 @@ exports.delete = async (req, res) => {
 
     res.json({
       status: true,
-      message: "Account invoice deleted successfully",
+      message: "Account Invoice Deleted Successfully",
       ...result,
     });
   } catch (err) {
