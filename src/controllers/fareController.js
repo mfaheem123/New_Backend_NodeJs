@@ -187,7 +187,10 @@ const calculateSingleFare = async (payload) => {
   const totalFare =
     baseFare + airportPickup + airportDropoff + extraChargesTotal;
 
+  const fareWithoutExtras = baseFare + airportPickup + airportDropoff;
+
   return {
+    fare: Number(fareWithoutExtras.toFixed(2)),
     total_fare: Number(totalFare.toFixed(2)),
   };
 };

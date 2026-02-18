@@ -20,6 +20,7 @@ const {
   getBookingByDriverId,
   updateBookingonRoute,
   getBookingByDriverCommission,
+  getBookingStatusById,
 } = require("../models/bookingModel");
 
 function parseJSONFields(row) {
@@ -312,6 +313,10 @@ exports.getBookingByTabs = async (req, res) => {
 // Get Booking By ID
 exports.getBookingById = async (req, res) => {
   const booking_id = parseInt(req.params.id);
+  console.log(
+    "🚀 INCOMING GET BOOKING BODY:",
+    JSON.stringify(req.params, null, 2),
+  );
 
   const booking = await getBookingByIdEnriched(booking_id);
 
@@ -607,6 +612,44 @@ exports.cloneOneWayBooking = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: err.message,
+    });
+  }
+};
+
+exports.checkBookingStatus = async (req, res) => {
+  try {
+    const { booking_id } = req.params;
+
+    if (!booking_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Booking ID is required",
+      });
+    }
+
+    const booking = await getBookingStatusById(booking_id);
+
+    if (!booking) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    const isTrue =
+      booking.booking_status_id === 1 || booking.booking_status_id === "1";
+
+    return res.json({
+      status: true,
+      booking_id: booking_id,
+      booking_status_id: booking.booking_status_id,
+      booking_status: isTrue,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
     });
   }
 };

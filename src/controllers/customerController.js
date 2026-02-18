@@ -1,25 +1,76 @@
 const Customer = require("../models/customerModel");
+const sendEmail = require("../config/emailConfig");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const bcrypt = require("bcrypt");
+const {
+  generateSecurityCode,
+  validateSecurityCode,
+} = require("../utils/generateOTP");
 
 module.exports = {
   createCustomer: async (req, res) => {
     try {
       console.log(
         "🚀 INCOMING CUSTOMER ADD BODY:",
-        JSON.stringify(req.body, null, 2)
+        JSON.stringify(req.body, null, 2),
+      );
+      const OTP = generateSecurityCode(); // OTP generated first
+      if (!validateSecurityCode(OTP)) {
+        return res.status(400).json({ error: "Generated OTP is invalid" });
+      }
+      // 🔹 Email already exists check
+      const existingCustomer = await Customer.findByEmail(req.body.email);
+      if (existingCustomer) {
+        return res.status(400).json({
+          status: false,
+          error: "Email already exists",
+        });
+      }
+
+      // 🔹 Inject OTP inside payload before insert
+      req.body.email_verification_code = OTP;
+      req.body.email_verified = false;
+      req.body.email_verified_at = null;
+      req.body.otp_created_at = new Date();
+
+     
+      // Hash password
+      if (req.body.password && req.body.password.trim() !== "") {
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        req.body.password = hashedPassword;
+      } else {
+        req.body.password = null; // ya existing null value rakho
+      }
+
+       console.log(
+        "🚀 CUSTOMER BODY IN DB:",
+        JSON.stringify(req.body, null, 2),
       );
 
       const customerId = await Customer.create(req.body);
+
+      // 🔹 Send Email
+      const message = `
+      Welcome ${req.body.name || "User"}!
+
+      Your OTP Code is: ${OTP}
+
+      This code will expire in 15 minutes.
+    `;
+
+      await sendEmail(req.body.email, "Email Verification OTP", message);
 
       let restrictedDrivers = [];
 
       if (req.body.restricted_drivers) {
         console.log(
           "🧾 Raw restricted_drivers type:",
-          typeof req.body.restricted_drivers
+          typeof req.body.restricted_drivers,
         );
         console.log(
           "🧾 Raw restricted_drivers value:",
-          req.body.restricted_drivers
+          req.body.restricted_drivers,
         );
 
         if (typeof req.body.restricted_drivers === "string") {
@@ -27,12 +78,12 @@ module.exports = {
             restrictedDrivers = JSON.parse(req.body.restricted_drivers);
             console.log(
               "✅ Parsed restricted_drivers (from string):",
-              restrictedDrivers
+              restrictedDrivers,
             );
           } catch (err) {
             console.warn(
               "⚠️ Failed to parse restricted_drivers JSON:",
-              err.message
+              err.message,
             );
             restrictedDrivers = [];
           }
@@ -40,18 +91,18 @@ module.exports = {
           restrictedDrivers = req.body.restricted_drivers;
           console.log(
             "✅ restricted_drivers is already an array:",
-            restrictedDrivers
+            restrictedDrivers,
           );
         } else {
           console.warn(
             "⚠️ Unexpected type for restricted_drivers:",
-            typeof req.body.restricted_drivers
+            typeof req.body.restricted_drivers,
           );
         }
 
         if (restrictedDrivers.length > 0) {
           console.log(
-            `🚀 Inserting ${restrictedDrivers.length} restricted drivers for customer ID: ${customerId}`
+            `🚀 Inserting ${restrictedDrivers.length} restricted drivers for customer ID: ${customerId}`,
           );
           await Customer.setRestrictedDrivers(customerId, restrictedDrivers);
         } else {
@@ -80,10 +131,10 @@ module.exports = {
         mobile_device_id: req.body.mobile_device_id || null,
         email_verification_code: req.body.email_verification_code || null,
         mobile_verification_code: req.body.mobile_verification_code || null,
-        email_verified: req.body.email_verified || null,
-        mobile_verified: req.body.mobile_verified || null,
-        email_verified_at: req.body.email_verified_at || null,
-        mobile_verified_at: req.body.mobile_verified_at || null,
+        email_verified: false,
+        mobile_verified: false,
+        email_verified_at: null,
+        mobile_verified_at: null,
         restricted_drivers: restrictedDrivers,
         sms_flag: req.body.sms_flag ?? true,
       };
@@ -158,7 +209,7 @@ module.exports = {
 
       console.log(
         "🚀 INCOMING CUSTOMER UPDATE BODY:",
-        JSON.stringify(req.body, null, 2)
+        JSON.stringify(req.body, null, 2),
       );
 
       // Step 1: Update normal fields dynamically
@@ -179,7 +230,7 @@ module.exports = {
         }
 
         console.log(
-          `🚀 Updating ${restrictedDrivers.length} restricted drivers for customer ID: ${id}`
+          `🚀 Updating ${restrictedDrivers.length} restricted drivers for customer ID: ${id}`,
         );
         await Customer.setRestrictedDrivers(id, restrictedDrivers);
       }
@@ -220,6 +271,7 @@ module.exports = {
       res.status(500).json({ status: false, error: err.message });
     }
   },
+
   searchCustomerByMobile: async (req, res) => {
     try {
       const { mobile } = req.query;
@@ -247,4 +299,180 @@ module.exports = {
       });
     }
   },
+
+  verifyEmailOTP: async (req, res) => {
+    try {
+      const { email, otp } = req.body;
+
+      if (!email || !otp) {
+        return res.status(400).json({
+          status: false,
+          error: "Email and OTP are required",
+        });
+      }
+
+      // 🔹 Get customer by email
+      const customer = await Customer.findByEmailWithOTP(email);
+
+      if (!customer) {
+        return res.status(400).json({
+          status: false,
+          error: "Invalid OTP or Email",
+        });
+      }
+
+      // 🔹 Check OTP match
+      if (customer.email_verification_code !== String(otp)) {
+        return res.status(400).json({
+          status: false,
+          error: "Invalid OTP or Email",
+        });
+      }
+
+      // 🔹 Expiry Check (15 minutes)
+      const now = new Date();
+      const createdAt = new Date(customer.otp_created_at);
+      const diffMinutes = (now - createdAt) / (1000 * 60);
+
+      if (diffMinutes > 15) {
+        return res.status(400).json({
+          status: false,
+          error: "OTP expired",
+        });
+      }
+
+      // 🔹 Update customer as verified
+      await Customer.markEmailVerified(customer.id);
+
+      res.status(200).json({
+        status: true,
+        message: "OTP Verified Successfully.",
+      });
+    } catch (err) {
+      console.error("❌ Verify OTP Error:", err);
+      res.status(500).json({
+        status: false,
+        error: err.message,
+      });
+    }
+  },
+
+  resendEmailOTP: async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({
+          status: false,
+          error: "Email is required",
+        });
+      }
+
+      // 🔹 Fetch customer by email
+      const customer = await Customer.findByEmailWithOTP(email);
+      if (!customer) {
+        return res.status(400).json({
+          status: false,
+          error: "Invalid Email",
+        });
+      }
+
+      // 🔹 Generate new OTP
+      const newOTP = generateSecurityCode();
+      if (!validateSecurityCode(newOTP)) {
+        return res.status(400).json({
+          status: false,
+          error: "Generated OTP is invalid",
+        });
+      }
+
+      const now = new Date();
+
+      // 🔹 Update customer in DB
+      await Customer.updateOTP(customer.id, newOTP, now);
+
+      // 🔹 Send OTP Email
+      const message = `
+      Hello ${customer.name || "User"},
+
+      Your new OTP is: ${newOTP}
+
+      This code will expire in 15 minutes.
+    `;
+      await sendEmail(customer.email, "Your New OTP", message);
+
+      res.status(200).json({
+        status: true,
+        message: "A new OTP has been sent to your email.",
+      });
+    } catch (err) {
+      console.error("❌ Resend OTP Error:", err);
+      res.status(500).json({
+        status: false,
+        error: err.message,
+      });
+    }
+  },
+
+  customerLogin: async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        status: false,
+        error: "Email and password are required",
+      });
+    }
+
+    // 🔹 Get customer by email
+    const customer = await Customer.findByEmailForLogin(email);
+
+    if (!customer) {
+      return res.status(404).json({
+        status: false,
+        error: "Customer not found",
+      });
+    }
+
+    // 🔹 Check email verified
+    if (!customer.email_verified) {
+      return res.status(401).json({
+        status: false,
+        error: "Email not verified",
+      });
+    }
+
+    // 🔹 Compare hashed password
+    const isMatch = await bcrypt.compare(password, customer.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        status: false,
+        error: "Invalid password",
+      });
+    }
+
+    // 🔹 Generate JWT
+    const token = jwt.sign(
+      { customerID: customer.id },
+      process.env.JWT_SECRET || "yourSecretKey",
+      { expiresIn: "7d" }
+    );
+
+    res.status(200).json({
+      status: true,
+      message: "Login successful",
+      customer: customer,
+      token,
+    });
+
+  } catch (error) {
+    console.error("❌ Login Error:", error);
+    res.status(500).json({
+      status: false,
+      error: error.message,
+    });
+  }
+},
 };

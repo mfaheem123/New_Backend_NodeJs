@@ -542,6 +542,16 @@ const getTotalAmountByCustomer = async (customerId) => {
   return Number(rows[0].total);
 };
 
+const getBookingStatusById = async (bookingId) => {
+  const query = `
+    SELECT booking_status_id 
+    FROM bookings
+    WHERE id = $1
+  `;
+
+  const result = await pool.query(query, [bookingId]);
+  return result.rows[0];
+};
 module.exports = {
   pool,
   insertBookingRow,
@@ -570,4 +580,5 @@ module.exports = {
   getTotalBookingsByCustomer,
   getCancelledBookingsByCustomer,
   getTotalAmountByCustomer,
+  getBookingStatusById
 };

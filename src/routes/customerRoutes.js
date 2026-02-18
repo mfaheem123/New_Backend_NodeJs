@@ -7,6 +7,9 @@ router.get("/get", CustomerController.getAllCustomers);
 router.get("/getbyid/:id", CustomerController.getCustomerById);
 router.get("/search", CustomerController.searchCustomerByMobile);
 router.post("/edit/:id", CustomerController.updateCustomer);
+router.post("/verify-otp", CustomerController.verifyEmailOTP);
+router.post("/resend-otp", CustomerController.resendEmailOTP);
+router.post("/login", CustomerController.customerLogin);
 router.delete("/delete/:id", CustomerController.deleteCustomer);
 
 module.exports = router;

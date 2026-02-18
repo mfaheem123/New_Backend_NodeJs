@@ -48,6 +48,8 @@ const cliRoutes = require("./routes/cliRoutes");
 const accountInvoiceBookingRoutes = require("./routes/accountInvoiceBookingRoutes");
 const accountInvoiceRoutes = require("./routes/accountInvoiceRoutes");
 const documentNumberRoutes = require("./routes/documentNumberRoutes");
+const driverCommissionRoutes = require("./routes/driverCommissionRoutes");
+
 
 const app = express();
 
@@ -142,6 +144,8 @@ app.use("/api/cli", cliRoutes);
 app.use("/api/account_invoice", accountInvoiceBookingRoutes);
 app.use("/api/account_invoice", accountInvoiceRoutes);
 app.use("/api/document", documentNumberRoutes);
+app.use("/api/driver_commission", driverCommissionRoutes);
+
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

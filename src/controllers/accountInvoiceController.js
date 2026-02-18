@@ -24,12 +24,22 @@ exports.create = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const { offset = 0, limit = 100, invoice_type } = req.query;
+    const {
+      offset = 0,
+      limit = 10,
+      search,
+      from_date,
+      to_date,
+      status,
+    } = req.query;
 
     const result = await InvoiceModel.getAll({
       offset: Number(offset),
       limit: Number(limit),
-      invoice_type,
+      search,
+      from_date,
+      to_date,
+      status,
     });
 
     res.json(result);
@@ -41,6 +51,7 @@ exports.getAll = async (req, res) => {
     });
   }
 };
+
 
 exports.update = async (req, res) => {
   try {

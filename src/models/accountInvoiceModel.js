@@ -127,79 +127,98 @@ exports.create = async (data) => {
   }
 };
 
-exports.getAll = async ({ offset = 0, limit = 100, invoice_type }) => {
+exports.getAll = async ({
+  offset = 0,
+  limit = 10,
+  search,
+  from_date,
+  to_date,
+  status,
+}) => {
   try {
     const conditions = [];
     const values = [];
     let idx = 1;
 
-    if (invoice_type) {
-      conditions.push(`ai.invoice_type = $${idx++}`);
-      values.push(invoice_type);
+    // =========================
+    // 🔍 GLOBAL SEARCH
+    // =========================
+    if (search) {
+      conditions.push(`
+        (
+          ai.invoice_number ILIKE $${idx}
+          OR a.name ILIKE $${idx}
+          OR d.name ILIKE $${idx}
+          OR ai.order_number ILIKE $${idx}
+          OR CAST(ai.invoice_date AS TEXT) ILIKE $${idx}
+          OR CAST(ai.invoice_due_date AS TEXT) ILIKE $${idx}
+          OR ai.status ILIKE $${idx}
+          OR CAST(ai.amount AS TEXT) ILIKE $${idx}
+          OR s.name ILIKE $${idx}
+        )
+      `);
+      values.push(`%${search}%`);
+      idx++;
+    }
+
+    // =========================
+    // 📅 DATE FILTER
+    // =========================
+    if (from_date) {
+      conditions.push(`ai.invoice_date >= $${idx++}`);
+      values.push(from_date);
+    }
+
+    if (to_date) {
+      conditions.push(`ai.invoice_date <= $${idx++}`);
+      values.push(to_date);
+    }
+
+    // =========================
+    // 📌 STATUS FILTER
+    // =========================
+    if (status && status !== "ALL") {
+      conditions.push(`ai.status = $${idx++}`);
+      values.push(status.toLowerCase());
     }
 
     const whereClause =
       conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-    // 🔢 Count Query
+    // =========================
+    // 🔢 COUNT QUERY
+    // =========================
     const countQuery = `
-      SELECT COUNT(*) 
+      SELECT COUNT(*)
       FROM account_invoices ai
+      LEFT JOIN accounts a ON ai.account_id = a.id
+      LEFT JOIN subsidiaries s ON a.subsidiary_id = s.id
+      LEFT JOIN departments d ON ai.department_id = d.id
       ${whereClause}
     `;
 
     const countRes = await pool.query(countQuery, values);
     const count = parseInt(countRes.rows[0].count);
 
-    // 📄 Main Query
+    // =========================
+    // 📄 DATA QUERY
+    // =========================
     const dataQuery = `
       SELECT 
         ai.*,
 
-        -- Account
         json_build_object(
           'name', a.name,
           'email', a.email,
-          'has_vat', a.has_vat,
-          'admin_fees', a.admin_fees,
-          'admin_fees_type', a.admin_fees_type,
-          'admin_fees_vat', a.admin_fees_vat,
-          'bank_information', a.bank_information,
           'subsidiary_id', a.subsidiary_id,
 
-          -- Subsidiary
           'subsidiary',
           json_build_object(
             'id', s.id,
-            'logo', s.logo,
-            'background_color', s.background_color,
-            'foreground_color', s.foreground_color,
-            'name', s.name,
-            'telephone_number', s.telephone_number,
-            'emergency_contact_number', s.emergency_contact_number,
-            'email', s.email,
-            'fax', s.fax,
-            'website', s.website,
-            'address', s.address,
-            'sort_code', s.sort_code,
-            'account_number', s.account_number,
-            'account_title', s.account_title,
-            'bank', s.bank,
-            'company_number', s.company_number,
-            'vat_number', s.vat_number,
-            'iban', s.iban,
-            'balance', s.balance,
-            'currency', s.currency,
-            'web_access_token', s.web_access_token,
-            'mobile_access_token', s.mobile_access_token,
-            'maximum_drivers', s.maximum_drivers,
-            'active_drivers', s.active_drivers,
-            'address_latitude', s.address_latitude,
-            'address_longitude', s.address_longitude
+            'name', s.name
           )
         ) as account,
 
-        -- Department
         CASE 
           WHEN d.id IS NOT NULL THEN 
             json_build_object(
@@ -207,7 +226,7 @@ exports.getAll = async ({ offset = 0, limit = 100, invoice_type }) => {
               'name', d.name
             )
           ELSE NULL
-        END as departments
+        END as department
 
       FROM account_invoices ai
       LEFT JOIN accounts a ON ai.account_id = a.id
@@ -228,12 +247,15 @@ exports.getAll = async ({ offset = 0, limit = 100, invoice_type }) => {
     return {
       status: true,
       count,
+      offset,
+      limit,
       account_invoices: dataRes.rows,
     };
   } catch (err) {
     throw err;
   }
 };
+
 
 exports.update = async (id, data) => {
   try {

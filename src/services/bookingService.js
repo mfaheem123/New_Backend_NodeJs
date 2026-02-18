@@ -1051,6 +1051,11 @@ async function cloneOneWayBookingService(payload) {
   // 4️ Insert booking
   const inserted = await createBookingRow(pool, normalized);
 
+  // SEND NOTIFICATION
+    // if (inserted.driver_id) {
+    //   await sendBookingNotification(inserted.driver_id, inserted);
+    // }
+
   // 5️ Calculate fare
   const farePayload = {
     ...normalized,

@@ -4,13 +4,17 @@ module.exports = {
   create: async (data) => {
     const query = `
       INSERT INTO customers (
-        name, email, mobile, telephone, fax, door_number, address1, address2,
-        blacklist, blacklist_reason, notes, username, password, web_device_id,
-        mobile_device_id, email_verification_code, mobile_verification_code,
-        email_verified, mobile_verified, email_verified_at, mobile_verified_at, sms_flag
-      )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
-      RETURNING id
+  name, email, mobile, telephone, fax, door_number, address1, address2,
+  blacklist, blacklist_reason, notes, username, password, web_device_id,
+  mobile_device_id, email_verification_code, mobile_verification_code,
+  email_verified, mobile_verified, email_verified_at, mobile_verified_at,
+  sms_flag, otp_created_at
+)
+VALUES (
+  $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23
+)
+RETURNING id
+
     `;
 
     const values = [
@@ -31,11 +35,12 @@ module.exports = {
       data.mobile_device_id || null,
       data.email_verification_code || null,
       data.mobile_verification_code || null,
-      data.email_verified || null,
-      data.mobile_verified || null,
-      data.email_verified_at || null,
-      data.mobile_verified_at || null,
+      false, // email_verified default false
+      false, // mobile_verified default false
+      null,
+      null,
       data.sms_flag ?? true,
+      data.otp_created_at || new Date(),
     ];
 
     const { rows } = await db.query(query, values);
@@ -342,4 +347,61 @@ module.exports = {
     const result = await db.query(query, [`%${mobile}%`]);
     return result.rows;
   },
+
+  findByEmail: async (email) => {
+    const { rows } = await db.query(
+      "SELECT id FROM customers WHERE email = $1 LIMIT 1",
+      [email],
+    );
+    return rows[0] || null;
+  },
+
+findByEmailWithOTP: async (email) => {
+  const { rows } = await db.query(
+    `SELECT id, name, email, email_verification_code, otp_created_at
+     FROM customers
+     WHERE email = $1
+     LIMIT 1`,
+    [email]
+  );
+
+  return rows[0] || null;
+},
+
+markEmailVerified: async (id) => {
+  await db.query(
+    `UPDATE customers
+     SET email_verified = true,
+         email_verified_at = NOW(),
+         email_verification_code = NULL,
+         otp_created_at = NULL
+     WHERE id = $1`,
+    [id]
+  );
+},
+
+updateOTP: async (id, otp, createdAt) => {
+  await db.query(
+    `UPDATE customers
+     SET email_verification_code = $1,
+         otp_created_at = $2,
+         email_verified = false
+     WHERE id = $3`,
+    [otp, createdAt, id]
+  );
+},
+
+findByEmailForLogin: async (email) => {
+  const { rows } = await db.query(
+    `SELECT *
+     FROM customers
+     WHERE email = $1
+     LIMIT 1`,
+    [email]
+  );
+
+  return rows[0] || null;
+},
+
+
 };
