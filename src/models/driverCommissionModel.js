@@ -1,7 +1,6 @@
 const db = require("../db");
 
 class DriverCommission {
-
   /* ================= CREATE ================= */
 
   static async create(data) {
@@ -10,8 +9,7 @@ class DriverCommission {
     try {
       await client.query("BEGIN");
 
-      const transaction_number =
-        "at" + Math.floor(Date.now() / 1000);
+      const transaction_number = "at" + Math.floor(Date.now() / 1000);
 
       const insertQuery = `
         INSERT INTO driver_commissions (
@@ -50,7 +48,7 @@ class DriverCommission {
         data.from_date,
         data.to_date,
         null,
-        data.last_modified
+        data.last_modified,
       ];
 
       const result = await client.query(insertQuery, values);
@@ -65,7 +63,7 @@ class DriverCommission {
            (driver_commission_id, booking_id)
            VALUES ($1,$2)
            RETURNING *`,
-          [commission.id, item.booking_id]
+          [commission.id, item.booking_id],
         );
 
         lineItems.push(li.rows[0]);
@@ -77,13 +75,12 @@ class DriverCommission {
          SET balance = $1,
              last_modified = CURRENT_DATE
          WHERE id = $2`,
-        [data.current_balance, data.driver_id]
+        [data.current_balance, data.driver_id],
       );
 
       await client.query("COMMIT");
 
       return { commission, lineItems };
-
     } catch (err) {
       await client.query("ROLLBACK");
       throw err;
@@ -130,7 +127,7 @@ class DriverCommission {
 
     return {
       count: result.rows,
-      driver_commissions: drivers.rows
+      driver_commissions: drivers.rows,
     };
   }
 
@@ -178,8 +175,7 @@ class DriverCommission {
 
     const lineItems = await db.query(lineItemsQuery, [id]);
 
-    commission.rows[0].driver_commission_lineitems =
-      lineItems.rows;
+    commission.rows[0].driver_commission_lineitems = lineItems.rows;
 
     return commission.rows[0];
   }

@@ -11,14 +11,13 @@ exports.create = async (req, res) => {
       driver_commission: result.commission,
       driver_commission_lineitems: {
         status: true,
-        driver_commission_lineitems: result.lineItems
-      }
+        driver_commission_lineitems: result.lineItems,
+      },
     });
-
   } catch (err) {
     return res.status(500).json({
       status: false,
-      message: err.message
+      message: err.message,
     });
   }
 };
@@ -35,13 +34,12 @@ exports.getDistinct = async (req, res) => {
     return res.json({
       status: true,
       count: result.count,
-      driver_commissions: result.driver_commissions
+      driver_commissions: result.driver_commissions,
     });
-
   } catch (err) {
     return res.status(500).json({
       status: false,
-      message: err.message
+      message: err.message,
     });
   }
 };
@@ -55,7 +53,7 @@ exports.getByDriverId = async (req, res) => {
     if (!driver_id) {
       return res.status(400).json({
         status: false,
-        message: "driver_id is required"
+        message: "driver_id is required",
       });
     }
 
@@ -64,13 +62,12 @@ exports.getByDriverId = async (req, res) => {
     return res.json({
       status: true,
       count: commissions.length,
-      driver_commissions: commissions
+      driver_commissions: commissions,
     });
-
   } catch (err) {
     return res.status(500).json({
       status: false,
-      message: err.message
+      message: err.message,
     });
   }
 };
@@ -84,7 +81,7 @@ exports.getById = async (req, res) => {
     if (!id) {
       return res.status(400).json({
         status: false,
-        message: "id is required"
+        message: "id is required",
       });
     }
 
@@ -93,19 +90,18 @@ exports.getById = async (req, res) => {
     if (!commission) {
       return res.status(404).json({
         status: false,
-        message: "Driver commission not found"
+        message: "Driver commission not found",
       });
     }
 
     return res.json({
       status: true,
-      driver_commission: commission
+      driver_commission: commission,
     });
-
   } catch (err) {
     return res.status(500).json({
       status: false,
-      message: err.message
+      message: err.message,
     });
   }
 };

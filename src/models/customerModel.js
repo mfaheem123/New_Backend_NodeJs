@@ -356,52 +356,50 @@ RETURNING id
     return rows[0] || null;
   },
 
-findByEmailWithOTP: async (email) => {
-  const { rows } = await db.query(
-    `SELECT id, name, email, email_verification_code, otp_created_at
+  findByEmailWithOTP: async (email) => {
+    const { rows } = await db.query(
+      `SELECT id, name, email, email_verification_code, otp_created_at
      FROM customers
      WHERE email = $1
      LIMIT 1`,
-    [email]
-  );
+      [email],
+    );
 
-  return rows[0] || null;
-},
+    return rows[0] || null;
+  },
 
-markEmailVerified: async (id) => {
-  await db.query(
-    `UPDATE customers
+  markEmailVerified: async (id) => {
+    await db.query(
+      `UPDATE customers
      SET email_verified = true,
          email_verified_at = NOW(),
          email_verification_code = NULL,
          otp_created_at = NULL
      WHERE id = $1`,
-    [id]
-  );
-},
+      [id],
+    );
+  },
 
-updateOTP: async (id, otp, createdAt) => {
-  await db.query(
-    `UPDATE customers
+  updateOTP: async (id, otp, createdAt) => {
+    await db.query(
+      `UPDATE customers
      SET email_verification_code = $1,
          otp_created_at = $2,
          email_verified = false
      WHERE id = $3`,
-    [otp, createdAt, id]
-  );
-},
+      [otp, createdAt, id],
+    );
+  },
 
-findByEmailForLogin: async (email) => {
-  const { rows } = await db.query(
-    `SELECT *
+  findByEmailForLogin: async (email) => {
+    const { rows } = await db.query(
+      `SELECT *
      FROM customers
      WHERE email = $1
      LIMIT 1`,
-    [email]
-  );
+      [email],
+    );
 
-  return rows[0] || null;
-},
-
-
+    return rows[0] || null;
+  },
 };

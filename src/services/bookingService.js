@@ -1051,11 +1051,6 @@ async function cloneOneWayBookingService(payload) {
   // 4️ Insert booking
   const inserted = await createBookingRow(pool, normalized);
 
-  // SEND NOTIFICATION
-    // if (inserted.driver_id) {
-    //   await sendBookingNotification(inserted.driver_id, inserted);
-    // }
-
   // 5️ Calculate fare
   const farePayload = {
     ...normalized,
@@ -1080,7 +1075,14 @@ async function cloneOneWayBookingService(payload) {
 
   // 7️ Enrich & return
   const enriched = await getBookingByIdEnriched(inserted.id);
-  return parseJSONFields(enriched);
+  const clean = parseJSONFields(enriched);
+
+  // 8️ SEND NOTIFICATION
+  if (clean.driver_id) {
+    await sendBookingNotification(clean.driver_id, clean);
+  }
+
+  return clean;
 }
 
 // EXPORTS

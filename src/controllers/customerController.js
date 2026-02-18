@@ -34,7 +34,6 @@ module.exports = {
       req.body.email_verified_at = null;
       req.body.otp_created_at = new Date();
 
-     
       // Hash password
       if (req.body.password && req.body.password.trim() !== "") {
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
@@ -43,10 +42,7 @@ module.exports = {
         req.body.password = null; // ya existing null value rakho
       }
 
-       console.log(
-        "🚀 CUSTOMER BODY IN DB:",
-        JSON.stringify(req.body, null, 2),
-      );
+      console.log("🚀 CUSTOMER BODY IN DB:", JSON.stringify(req.body, null, 2));
 
       const customerId = await Customer.create(req.body);
 
@@ -415,64 +411,63 @@ module.exports = {
   },
 
   customerLogin: async (req, res) => {
-  try {
-    const { email, password } = req.body;
+    try {
+      const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({
+      if (!email || !password) {
+        return res.status(400).json({
+          status: false,
+          error: "Email and password are required",
+        });
+      }
+
+      // 🔹 Get customer by email
+      const customer = await Customer.findByEmailForLogin(email);
+
+      if (!customer) {
+        return res.status(404).json({
+          status: false,
+          error: "Customer not found",
+        });
+      }
+
+      // 🔹 Check email verified
+      if (!customer.email_verified) {
+        return res.status(401).json({
+          status: false,
+          error: "Email not verified",
+        });
+      }
+
+      // 🔹 Compare hashed password
+      const isMatch = await bcrypt.compare(password, customer.password);
+
+      if (!isMatch) {
+        return res.status(401).json({
+          status: false,
+          error: "Invalid password",
+        });
+      }
+
+      // 🔹 Generate JWT
+      const token = jwt.sign(
+        { customerID: customer.id },
+        process.env.JWT_SECRET || "yourSecretKey",
+        { expiresIn: "7d" },
+      );
+
+      res.status(200).json({
+        status: true,
+        message: "Login successful",
+        customer: customer,
+        token,
+      });
+    } catch (error) {
+      console.error("❌ Login Error:", error);
+      res.status(500).json({
         status: false,
-        error: "Email and password are required",
+        error: error.message,
       });
     }
-
-    // 🔹 Get customer by email
-    const customer = await Customer.findByEmailForLogin(email);
-
-    if (!customer) {
-      return res.status(404).json({
-        status: false,
-        error: "Customer not found",
-      });
-    }
-
-    // 🔹 Check email verified
-    if (!customer.email_verified) {
-      return res.status(401).json({
-        status: false,
-        error: "Email not verified",
-      });
-    }
-
-    // 🔹 Compare hashed password
-    const isMatch = await bcrypt.compare(password, customer.password);
-
-    if (!isMatch) {
-      return res.status(401).json({
-        status: false,
-        error: "Invalid password",
-      });
-    }
-
-    // 🔹 Generate JWT
-    const token = jwt.sign(
-      { customerID: customer.id },
-      process.env.JWT_SECRET || "yourSecretKey",
-      { expiresIn: "7d" }
-    );
-
-    res.status(200).json({
-      status: true,
-      message: "Login successful",
-      customer: customer,
-      token,
-    });
-
-  } catch (error) {
-    console.error("❌ Login Error:", error);
-    res.status(500).json({
-      status: false,
-      error: error.message,
-    });
-  }
-},
+  },
 };

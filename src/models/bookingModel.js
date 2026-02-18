@@ -580,5 +580,5 @@ module.exports = {
   getTotalBookingsByCustomer,
   getCancelledBookingsByCustomer,
   getTotalAmountByCustomer,
-  getBookingStatusById
+  getBookingStatusById,
 };

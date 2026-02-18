@@ -135,6 +135,8 @@ exports.getAll = async ({
   to_date,
   status,
   invoice_number,
+  account_name,
+  department_name,
 }) => {
   try {
     const conditions = [];
@@ -145,6 +147,18 @@ exports.getAll = async ({
     if (invoice_number) {
       conditions.push(`ai.invoice_number ILIKE $${idx++}`);
       values.push(`%${invoice_number}%`);
+    }
+
+    // ✅ Account Name Filter
+    if (account_name) {
+      conditions.push(`a.name ILIKE $${idx++}`);
+      values.push(`%${account_name}%`);
+    }
+
+    // ✅ Department Name Filter
+    if (department_name) {
+      conditions.push(`d.name ILIKE $${idx++}`);
+      values.push(`%${department_name}%`);
     }
 
     // =========================
@@ -184,7 +198,7 @@ exports.getAll = async ({
     // =========================
     // 📌 STATUS FILTER
     // =========================
-    if (status && status !== "ALL") {
+    if (status && status !== "all") {
       conditions.push(`ai.status = $${idx++}`);
       values.push(status.toLowerCase());
     }
