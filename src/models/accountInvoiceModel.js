@@ -134,11 +134,18 @@ exports.getAll = async ({
   from_date,
   to_date,
   status,
+  invoice_number,
 }) => {
   try {
     const conditions = [];
     const values = [];
     let idx = 1;
+
+    // 🔎 Exact Invoice Number Filter
+    if (invoice_number) {
+      conditions.push(`ai.invoice_number ILIKE $${idx++}`);
+      values.push(`%${invoice_number}%`);
+    }
 
     // =========================
     // 🔍 GLOBAL SEARCH
@@ -255,7 +262,6 @@ exports.getAll = async ({
     throw err;
   }
 };
-
 
 exports.update = async (id, data) => {
   try {

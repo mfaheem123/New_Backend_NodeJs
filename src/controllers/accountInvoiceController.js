@@ -31,6 +31,7 @@ exports.getAll = async (req, res) => {
       from_date,
       to_date,
       status,
+      invoice_number,
     } = req.query;
 
     const result = await InvoiceModel.getAll({
@@ -40,6 +41,7 @@ exports.getAll = async (req, res) => {
       from_date,
       to_date,
       status,
+      invoice_number,
     });
 
     res.json(result);
