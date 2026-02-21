@@ -197,7 +197,7 @@ module.exports = {
     }
   },
 
-  // PUT /api/customer/:id
+  // POST /api/customer/:id
   updateCustomer: async (req, res) => {
     try {
       const id = req.params.id;

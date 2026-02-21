@@ -25,7 +25,7 @@ exports.create = async (req, res) => {
 exports.getAll = async (req, res) => {
   try {
     const {
-      offset = 0,
+      page = 1,
       limit = 10,
       search,
       from_date,
@@ -37,7 +37,7 @@ exports.getAll = async (req, res) => {
     } = req.query;
 
     const result = await InvoiceModel.getAll({
-      offset: Number(offset),
+      page: Number(page),
       limit: Number(limit),
       search,
       from_date,
@@ -45,7 +45,7 @@ exports.getAll = async (req, res) => {
       status,
       invoice_number,
       account_name,
-      department_name
+      department_name,
     });
 
     res.json(result);
@@ -57,6 +57,32 @@ exports.getAll = async (req, res) => {
     });
   }
 };
+
+exports.getById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await InvoiceModel.getById(id);
+
+    if (!result) {
+      return res.status(404).json({
+        status: false,
+        message: "Invoice not found",
+      });
+    }
+
+    res.json({
+      account_invoice: result,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};
+
 
 
 exports.update = async (req, res) => {

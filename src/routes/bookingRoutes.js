@@ -8,6 +8,7 @@ router.get("/get/:id", bookingController.getBookingSections);
 router.get("/getbytabs/:id", bookingController.getBookingByTabs);
 router.get("/getbyid/:id", bookingController.getBookingById);
 router.get("/getbydriverid/:id", bookingController.getBookingByDriverId);
+router.get("/getbookingsbydriver/:id", bookingController.getBookingByDriverIdAndStatus);
 router.get("/check-status/:booking_id", bookingController.checkBookingStatus);
 router.get(
   "/driver-commission",

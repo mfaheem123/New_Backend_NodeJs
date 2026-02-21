@@ -455,13 +455,13 @@ const updateBookingStatus = async (id, statusId) => {
   return pool.query(query, [statusId, id]);
 };
 
-const updateBookingonRoute = async (id, on_route) => {
+const updateBookingonRoute = async (id, on_route, completed) => {
   const query = `
     UPDATE bookings
-    SET on_route = $1
-    WHERE id = $2
+    SET on_route = $1, completed = $2
+    WHERE id = $3
   `;
-  return pool.query(query, [on_route, id]);
+  return pool.query(query, [on_route, completed, id]);
 };
 
 const updateBookingFares = async (id, fares) => {
@@ -552,6 +552,23 @@ const getBookingStatusById = async (bookingId) => {
   const result = await pool.query(query, [bookingId]);
   return result.rows[0];
 };
+
+// GET BOOKINGS BY ID
+const getBookingByDriverIdAndStatus = async (driver_id, booking_status_id) => {
+  let whereClause = `WHERE b.driver_id = $1 AND b.booking_status_id = $2`;
+  const values = [driver_id, booking_status_id];
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    ORDER BY 
+      b.pickup_date DESC,
+      b.pickup_time DESC
+  `;
+
+  const res = await pool.query(sql, values);
+  return res.rows;
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -581,4 +598,5 @@ module.exports = {
   getCancelledBookingsByCustomer,
   getTotalAmountByCustomer,
   getBookingStatusById,
+  getBookingByDriverIdAndStatus
 };

@@ -128,7 +128,7 @@ exports.create = async (data) => {
 };
 
 exports.getAll = async ({
-  offset = 0,
+  page = 1,
   limit = 10,
   search,
   from_date,
@@ -142,6 +142,8 @@ exports.getAll = async ({
     const conditions = [];
     const values = [];
     let idx = 1;
+
+    const offset = (page - 1) * limit;
 
     // 🔎 Exact Invoice Number Filter
     if (invoice_number) {
@@ -220,6 +222,7 @@ exports.getAll = async ({
 
     const countRes = await pool.query(countQuery, values);
     const count = parseInt(countRes.rows[0].count);
+    const total_pages = Math.ceil(count / limit);
 
     // =========================
     // 📄 DATA QUERY
@@ -268,7 +271,8 @@ exports.getAll = async ({
     return {
       status: true,
       count,
-      offset,
+      page,
+      total_pages,
       limit,
       account_invoices: dataRes.rows,
     };
@@ -276,6 +280,156 @@ exports.getAll = async ({
     throw err;
   }
 };
+
+exports.getById = async (id) => {
+  try {
+    const query = `
+      SELECT
+        ai.*,
+        
+        -- Account Object
+        json_build_object(
+          'id', a.id,
+          'subsidiary_id', a.subsidiary_id,
+          'subsidiary_bank_account_id', a.subsidiary_bank_account_id,
+          'account_type', a.account_type,
+          'closed', a.closed,
+          'name', a.name,
+          'code', a.code,
+          'email', a.email,
+          'password', a.password,
+          'mobile', a.mobile,
+          'telephone', a.telephone,
+          'fax', a.fax,
+          'website', a.website,
+          'account_number', a.account_number,
+          'credit_card', a.credit_card,
+          'address', a.address,
+          'payment_types', a.payment_types,
+          'information', a.information,
+          'contact_name', a.contact_name,
+          'background_color', a.background_color,
+          'foreground_color', a.foreground_color,
+          'agent_commission_type', a.agent_commission_type,
+          'agent_commission', a.agent_commission,
+          'admin_fees_type', a.admin_fees_type,
+          'admin_fees', a.admin_fees,
+          'account_fees_type', a.account_fees_type,
+          'account_fees', a.account_fees,
+          'has_booked_by', a.has_booked_by,
+          'fare_controller', a.fare_controller,
+          'has_escort', a.has_escort,
+          'has_vat', a.has_vat,
+          'admin_fees_vat', a.admin_fees_vat,
+          'account_fees_vat', a.account_fees_vat,
+          'has_order_number', a.has_order_number,
+          'dispatch_customer_text', a.dispatch_customer_text,
+          'confirmation_text', a.confirmation_text,
+          'arrival_text', a.arrival_text,
+          'clear_job_text', a.clear_job_text,
+          'bank_information', a.bank_information,
+          'subsidiary', json_build_object(
+            'id', s.id,
+            'name', s.name,
+            'logo', s.logo,
+            'background_color', s.background_color,
+            'foreground_color', s.foreground_color,
+            'telephone_number', s.telephone_number,
+            'emergency_contact_number', s.emergency_contact_number,
+            'email', s.email,
+            'fax', s.fax,
+            'website', s.website,
+            'address', s.address,
+            'sort_code', s.sort_code,
+            'account_number', s.account_number,
+            'account_title', s.account_title,
+            'bank', s.bank,
+            'company_number', s.company_number,
+            'vat_number', s.vat_number,
+            'iban', s.iban,
+            'balance', s.balance,
+            'currency', s.currency,
+            'web_access_token', s.web_access_token,
+            'mobile_access_token', s.mobile_access_token,
+            'maximum_drivers', s.maximum_drivers,
+            'active_drivers', s.active_drivers,
+            'address_latitude', s.address_latitude,
+            'address_longitude', s.address_longitude
+          )
+        ) AS account,
+
+        -- Department
+        CASE 
+          WHEN d.id IS NOT NULL THEN 
+            json_build_object('id', d.id, 'name', d.name)
+          ELSE NULL
+        END AS account_department,
+
+        -- Line items with booking details
+        COALESCE(
+          json_agg(
+            DISTINCT jsonb_build_object(
+              'id', ail.id,
+              'account_invoice_id', ail.account_invoice_id,
+              'booking_id', ail.booking_id,
+              'booking', jsonb_build_object(
+                'id', b.id,
+                'reference_number', b.reference_number,
+                'pickup', b.pickup,
+                'dropoff', b.dropoff,
+                'pickup_date', b.pickup_date,
+                'pickup_time', b.pickup_time,
+                'viapoints', b.viapoints,
+                'name', b.name,
+                'company_price', b.company_price,
+                'parking_charges', b.parking_charges,
+                'waiting_charges', b.waiting_charges,
+                'extra_drop_charges', b.extra_drop_charges,
+                'meet_and_greet', b.meet_and_greet,
+                'congestion_charges', b.congestion_charges,
+                'total_charges', b.total_charges,
+                'department', b.department,
+                'order_number', b.order_number,
+                'vehicle_type', json_build_object('name', vt.name),
+                'journey_type', json_build_object('journey_type', jt.journey_type),
+                'payment_type', json_build_object(
+                  'id', pt.id,
+                  'name', pt.name
+                )
+              )
+            )
+          ) FILTER (WHERE ail.id IS NOT NULL),
+          '[]'
+        ) AS account_invoice_lineitems
+
+      FROM account_invoices ai
+      LEFT JOIN accounts a ON ai.account_id = a.id
+      LEFT JOIN subsidiaries s ON a.subsidiary_id = s.id
+      LEFT JOIN departments d ON ai.department_id = d.id
+
+      LEFT JOIN account_invoice_lineitems ail ON ail.account_invoice_id = ai.id
+      LEFT JOIN bookings b ON b.id = ail.booking_id
+      LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id
+      LEFT JOIN journey_types jt ON b.journey_type_id = jt.id
+      LEFT JOIN payment_types pt ON b.payment_type_id = pt.id
+
+      WHERE ai.id = $1
+      GROUP BY ai.id, a.id, s.id, d.id
+    `;
+
+    const result = await pool.query(query, [id]);
+
+    return {
+      status: true,
+      account_invoice: result.rows[0] || null
+    };
+  } catch (err) {
+    throw err;
+  }
+};
+
+
+
 
 exports.update = async (id, data) => {
   try {

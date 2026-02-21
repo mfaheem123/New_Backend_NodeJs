@@ -21,6 +21,7 @@ const {
   updateBookingonRoute,
   getBookingByDriverCommission,
   getBookingStatusById,
+  getBookingByDriverIdAndStatus,
 } = require("../models/bookingModel");
 
 function parseJSONFields(row) {
@@ -459,6 +460,10 @@ exports.updateBookingStatus = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
     const { booking_status_id } = req.body;
+    console.log(
+      "🚀 INCOMING BOOKING STATUS BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
 
     if (!booking_status_id) {
       return res.status(400).json({
@@ -477,10 +482,10 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     if (booking_status_id == 3) {
-      await updateBookingonRoute(bookingId, true);
+      await updateBookingonRoute(bookingId, true, false);
     }
     if (booking_status_id == 11) {
-      await updateBookingonRoute(bookingId, false);
+      await updateBookingonRoute(bookingId, false, true);
     }
     await updateBookingStatus(bookingId, booking_status_id);
 
@@ -652,4 +657,27 @@ exports.checkBookingStatus = async (req, res) => {
       message: "Internal Server Error",
     });
   }
+};
+
+
+exports.getBookingByDriverIdAndStatus = async (req, res) => {
+  const {driver_id, booking_status_id} = req.body;
+  
+
+  const bookings = await getBookingByDriverIdAndStatus(driver_id, booking_status_id);
+
+  if (!bookings || bookings.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "No bookings found for this driver",
+    });
+  }
+
+  const data = bookings.map((b) => parseJSONFields(b));
+
+  res.status(200).json({
+    success: true,
+    count: bookings.length,
+    bookings: data,
+  });
 };
