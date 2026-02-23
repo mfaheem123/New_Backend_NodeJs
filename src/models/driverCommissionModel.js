@@ -87,8 +87,8 @@ class DriverCommission {
       /* Update Driver Balance */
       await db.query(
         `UPDATE drivers
-   SET balance = $1
-   WHERE id = $2`,
+          SET balance = $1
+          WHERE id = $2`,
         [data.current_balance, data.driver_id],
       );
 

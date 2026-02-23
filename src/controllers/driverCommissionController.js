@@ -9,7 +9,7 @@ exports.create = async (req, res) => {
       JSON.stringify(req.body, null, 2),
     );
     const result = await DriverCommission.create(req.body);
-    
+
     return res.status(201).json({
       status: true,
       driver_commission: result.commission,

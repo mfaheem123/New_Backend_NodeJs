@@ -148,114 +148,136 @@ exports.handleFallbackIvr = async (body) => {
       email: null,
       mobile: null,
       telephone: null,
+      subsidiary_id: null,
     });
   }
 
   const session = sessions.get(uniqueCallId);
 
-  /* STEP 1 */
-  if (session.step === 1) {
-    if (!text)
-      return waitForKeypress(
-        "Press 1 to repeat previous journey. Press 2 for operator.",
-      );
+/* STEP 1 - PICKUP MENU */
+if (session.step === 1) {
+  if (!text)
+    return waitForKeypress(
+      "Press 1 to repeat previous journey. Press 2 for operator.",
+    );
 
-    if (text === "2") return transfer(OFFICE_NUMBER);
+  if (text === "2") return transfer(OFFICE_NUMBER);
 
-    if (text === "1") {
-      session.step = 2;
+  if (text === "1") {
+    session.step = 2;
 
-      const jobs = await pool.query(
-        `SELECT 
-    b.pickup,
-    b.dropoff,
-    b.pickup_latitude,
-    b.pickup_longitude,
-    b.dropoff_latitude,
-    b.dropoff_longitude,
-    b.vehicle_type_id,
-    c.name,
-    c.email,
-    c.mobile,
-    c.telephone
-  FROM bookings b
-  JOIN customers c ON b.customer_id = c.id
-  WHERE b.mobile = $1
-  ORDER BY b.id DESC
-  LIMIT 3`,
-        [callerNumber],
-      );
-      console.log("Customer Mobile: ", callerNumber);
-      console.log("Customer Bookings Found: ", jobs.rows.length);
+    const jobs = await pool.query(
+      `SELECT 
+        b.pickup,
+        b.dropoff,
+        b.pickup_latitude,
+        b.pickup_longitude,
+        b.dropoff_latitude,
+        b.dropoff_longitude,
+        b.vehicle_type_id,
+        b.subsidiary_id,
+        c.name,
+        c.email,
+        c.mobile,
+        c.telephone
+      FROM bookings b
+      JOIN customers c ON b.customer_id = c.id
+      WHERE b.mobile = $1
+      ORDER BY b.id DESC
+      LIMIT 10`,
+      [callerNumber],
+    );
 
-      if (!jobs.rows.length) return hangup("No recent jobs found.");
+    if (!jobs.rows.length) return hangup("No recent jobs found.");
 
-      session.jobs = jobs.rows;
-
-      let menu = "For pickup location ";
-      jobs.rows.forEach((j, i) => {
-        menu += `press ${i + 1} for ${j.pickup}. `;
-      });
-
-      return waitForKeypress(menu);
-    }
-
-    return hangup();
-  }
-
-  /* STEP 2 PICKUP */
-  if (session.step === 2) {
-    if (!text) return hangup("Invalid selection.");
-
-    const index = parseInt(text) - 1;
-
-    if (!session.jobs[index]) return hangup("Invalid pickup selection.");
-
-    const selectedJob = session.jobs[index];
-
-    // ✅ ONLY pickup save karo
-    session.pickup = selectedJob.pickup;
-    session.pickup_latitude = selectedJob.pickup_latitude;
-    session.pickup_longitude = selectedJob.pickup_longitude;
-
-    // Store remaining customer info (once only)
-    session.vehicle_type_id = selectedJob.vehicle_type_id;
-    session.name = selectedJob.name;
-    session.email = selectedJob.email;
-    session.mobile = selectedJob.mobile;
-    session.telephone = selectedJob.telephone;
-
-    session.step = 3;
-
-    // 🔥 Ab dropoff menu show karo (separate)
-    let dropMenu = "For dropoff location ";
-    session.jobs.forEach((j, i) => {
-      dropMenu += `press ${i + 1} for ${j.dropoff}. `;
+    // ----------------- UNIQUE PICKUP -----------------
+    let seenPickups = new Set();
+    let uniqueJobs = [];
+    jobs.rows.forEach((j) => {
+      if (!seenPickups.has(j.pickup)) {
+        seenPickups.add(j.pickup);
+        uniqueJobs.push(j);
+      }
     });
 
-    return waitForKeypress(dropMenu);
+    session.jobs = uniqueJobs;
+
+    // Build IVR menu
+    let menu = "For pickup location ";
+    session.jobs.forEach((j, i) => {
+      menu += `press ${i + 1} for ${j.pickup}. `;
+    });
+
+    return waitForKeypress(menu);
   }
-  /* STEP 3 DROPOFF */
-  if (session.step === 3) {
-    if (!text) return hangup("Invalid selection.");
 
-    const index = parseInt(text) - 1;
+  return hangup();
+}
 
-    if (!session.jobs[index]) return hangup("Invalid dropoff selection.");
+/* STEP 2 - PICKUP SELECTION */
+if (session.step === 2) {
+  if (!text) return hangup("Invalid selection.");
 
-    const selectedJob = session.jobs[index];
+  const index = parseInt(text) - 1;
+  if (!session.jobs[index]) return hangup("Invalid pickup selection.");
 
-    // ✅ Only dropoff save
-    session.dropoff = selectedJob.dropoff;
-    session.dropoff_latitude = selectedJob.dropoff_latitude;
-    session.dropoff_longitude = selectedJob.dropoff_longitude;
+  const selectedJob = session.jobs[index];
 
-    session.step = 4;
+  // Save pickup info
+  session.pickup = selectedJob.pickup;
+  session.pickup_latitude = selectedJob.pickup_latitude;
+  session.pickup_longitude = selectedJob.pickup_longitude;
 
-    return waitForKeypress(
-      `You selected pickup ${session.pickup} and dropoff ${session.dropoff}. Press 1 to confirm booking. Press 2 to cancel.`,
-    );
-  }
+  // Save customer info once
+  session.vehicle_type_id = selectedJob.vehicle_type_id;
+  session.name = selectedJob.name;
+  session.email = selectedJob.email;
+  session.mobile = selectedJob.mobile;
+  session.telephone = selectedJob.telephone;
+  session.subsidiary_id = selectedJob.subsidiary_id;
+
+  session.step = 3;
+
+  // ----------------- UNIQUE DROPOFF -----------------
+  let seenDropoffs = new Set();
+  let uniqueDropJobs = [];
+  session.jobs.forEach((j) => {
+    if (!seenDropoffs.has(j.dropoff)) {
+      seenDropoffs.add(j.dropoff);
+      uniqueDropJobs.push(j);
+    }
+  });
+  session.jobs = uniqueDropJobs;
+
+  // Build dropoff menu
+  let dropMenu = "For dropoff location ";
+  session.jobs.forEach((j, i) => {
+    dropMenu += `press ${i + 1} for ${j.dropoff}. `;
+  });
+
+  return waitForKeypress(dropMenu);
+}
+
+/* STEP 3 - DROPOFF SELECTION */
+if (session.step === 3) {
+  if (!text) return hangup("Invalid selection.");
+
+  const index = parseInt(text) - 1;
+  if (!session.jobs[index]) return hangup("Invalid dropoff selection.");
+
+  const selectedJob = session.jobs[index];
+
+  // Save dropoff info
+  session.dropoff = selectedJob.dropoff;
+  session.dropoff_latitude = selectedJob.dropoff_latitude;
+  session.dropoff_longitude = selectedJob.dropoff_longitude;
+
+  session.step = 4;
+
+  return waitForKeypress(
+    `You selected pickup ${session.pickup} and dropoff ${session.dropoff}. Press 1 to confirm booking. Press 2 to cancel.`,
+  );
+}
 
   /* STEP 4 CONFIRM */
   if (session.step === 4) {
@@ -298,6 +320,7 @@ exports.handleFallbackIvr = async (body) => {
       pickup_time,
       reference_number,
       vehicle_type_id,
+      subsidiary_id,
       name,
       email,
       mobile,
@@ -308,7 +331,7 @@ exports.handleFallbackIvr = async (body) => {
       booking_type_id,
       payment_type_id
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'ivr',1,1,1,1)`,
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,'ivr',1,1,1,1)`,
         [
           customerId,
           session.pickup,
@@ -321,6 +344,7 @@ exports.handleFallbackIvr = async (body) => {
           pickup_time,
           reference_number,
           session.vehicle_type_id,
+          session.subsidiary_id,
           session.name,
           session.email,
           session.mobile,
@@ -337,6 +361,28 @@ exports.handleFallbackIvr = async (body) => {
     sessions.delete(uniqueCallId);
     return hangup("Invalid option.");
   }
+
+  /* STEP 5 AFTER CONFIRMATION */
+if (session.step === 5) {
+  if (!text)
+    return waitForKeypress(
+      "Press 1 for operator. Press 0 to hangup."
+    );
+
+  if (text === "1") {
+    sessions.delete(uniqueCallId);
+    return transfer(OFFICE_NUMBER);
+  }
+
+  if (text === "0") {
+    sessions.delete(uniqueCallId);
+    return hangup("Thank you for calling.");
+  }
+
+  return waitForKeypress(
+    "Invalid option. Press 1 for operator. Press 0 to hangup."
+  );
+}
 
   return hangup();
 };
