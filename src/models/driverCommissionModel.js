@@ -4,10 +4,25 @@ class DriverCommission {
   /* ================= CREATE ================= */
 
   static async create(data) {
-    const client = await db.connect();
-
     try {
-      await client.query("BEGIN");
+      await db.query("BEGIN");
+
+      // Normalize numbers
+      data.driver_id = Number(data.driver_id);
+      data.jobs_total = Number(data.jobs_total);
+      data.commission_total = Number(data.commission_total);
+      data.cash_jobs_total = Number(data.cash_jobs_total);
+      data.account_jobs_total = Number(data.account_jobs_total);
+      data.owed = Number(data.owed);
+      data.old_balance = Number(data.old_balance);
+      data.current_balance = Number(data.current_balance);
+
+      // Parse lineitems if string
+      if (typeof data.driver_commission_lineitems === "string") {
+        data.driver_commission_lineitems = JSON.parse(
+          data.driver_commission_lineitems,
+        );
+      }
 
       const transaction_number = "at" + Math.floor(Date.now() / 1000);
 
@@ -51,14 +66,14 @@ class DriverCommission {
         data.last_modified,
       ];
 
-      const result = await client.query(insertQuery, values);
+      const result = await db.query(insertQuery, values);
       const commission = result.rows[0];
 
       /* Insert Line Items */
       const lineItems = [];
 
       for (const item of data.driver_commission_lineitems) {
-        const li = await client.query(
+        const li = await db.query(
           `INSERT INTO driver_commission_lineitems
            (driver_commission_id, booking_id)
            VALUES ($1,$2)
@@ -70,42 +85,30 @@ class DriverCommission {
       }
 
       /* Update Driver Balance */
-      await client.query(
+      await db.query(
         `UPDATE drivers
-         SET balance = $1,
-             last_modified = CURRENT_DATE
-         WHERE id = $2`,
+   SET balance = $1
+   WHERE id = $2`,
         [data.current_balance, data.driver_id],
       );
 
-      await client.query("COMMIT");
+      await db.query("COMMIT");
 
       return { commission, lineItems };
     } catch (err) {
-      await client.query("ROLLBACK");
+      await db.query("ROLLBACK");
       throw err;
-    } finally {
-      client.release();
     }
   }
 
   /* ================= DISTINCT ================= */
 
   static async getDistinct(offset, limit) {
-    const countQuery = `
-      SELECT driver_id, driver_id AS id,
-      COUNT(*) AS count,
-      MAX(last_modified) AS last_modified
-      FROM driver_commissions
-      GROUP BY driver_id
-      ORDER BY last_modified DESC
-      LIMIT $1 OFFSET $2
-    `;
-
-    const result = await db.query(countQuery, [limit, offset]);
-
-    const driversQuery = `
-      SELECT DISTINCT d.id AS driver_id,
+    const query = `
+    SELECT 
+      dc.driver_id,
+      COUNT(dc.id) AS count,
+      MAX(dc.last_modified) AS last_modified,
       json_build_object(
         'name', d.name,
         'username', d.username,
@@ -114,20 +117,28 @@ class DriverCommission {
         'pda_rent', d.pda_rent,
         'balance', d.balance,
         'active', d.active,
-        'subsidiary_id', d.subsidiary_id,
-        'last_modified', d.last_modified
+        'subsidiary_id', d.subsidiary_id
       ) AS driver
-      FROM driver_commissions dc
-      JOIN drivers d ON dc.driver_id = d.id
-      ORDER BY d.last_modified DESC
-      LIMIT $1 OFFSET $2
-    `;
+    FROM driver_commissions dc
+    JOIN drivers d ON dc.driver_id = d.id
+    GROUP BY dc.driver_id, d.id
+    ORDER BY MAX(dc.last_modified) DESC
+    LIMIT $1 OFFSET $2
+  `;
 
-    const drivers = await db.query(driversQuery, [limit, offset]);
+    const result = await db.query(query, [limit, offset]);
 
     return {
-      count: result.rows,
-      driver_commissions: drivers.rows,
+      count: result.rows.map((r) => ({
+        driver_id: r.driver_id,
+        id: r.driver_id,
+        count: r.count,
+        last_modified: r.last_modified,
+      })),
+      driver_commissions: result.rows.map((r) => ({
+        driver_id: r.driver_id,
+        driver: r.driver,
+      })),
     };
   }
 

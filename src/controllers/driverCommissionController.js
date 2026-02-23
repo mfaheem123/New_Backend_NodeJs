@@ -4,8 +4,12 @@ const DriverCommission = require("../models/driverCommissionModel");
 
 exports.create = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING ADD DRIVER COMMISSION BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const result = await DriverCommission.create(req.body);
-
+    
     return res.status(201).json({
       status: true,
       driver_commission: result.commission,

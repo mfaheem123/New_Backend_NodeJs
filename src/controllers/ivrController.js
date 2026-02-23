@@ -3,7 +3,7 @@ const ivrService = require("../services/ivrService");
 exports.mainIvr = async (req, res) => {
   try {
     console.log(
-      "🚀 INCOMING ADD IVR MAIN BODY:",
+      "🚀 INCOMING IVR MAIN BODY:",
       JSON.stringify(req.body, null, 2),
     );
     const response = await ivrService.handleMainIvr(req.body);
@@ -16,6 +16,10 @@ exports.mainIvr = async (req, res) => {
 
 exports.fallbackIvr = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING IVR FALLBACK BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const response = await ivrService.handleFallbackIvr(req.body);
     return res.json(response);
   } catch (err) {

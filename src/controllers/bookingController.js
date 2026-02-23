@@ -659,12 +659,13 @@ exports.checkBookingStatus = async (req, res) => {
   }
 };
 
-
 exports.getBookingByDriverIdAndStatus = async (req, res) => {
-  const {driver_id, booking_status_id} = req.body;
-  
+  const { driver_id, booking_status_id } = req.body;
 
-  const bookings = await getBookingByDriverIdAndStatus(driver_id, booking_status_id);
+  const bookings = await getBookingByDriverIdAndStatus(
+    driver_id,
+    booking_status_id,
+  );
 
   if (!bookings || bookings.length === 0) {
     return res.status(404).json({

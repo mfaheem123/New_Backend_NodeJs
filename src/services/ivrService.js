@@ -79,8 +79,8 @@ exports.handleMainIvr = async (body) => {
   );
   const GREETING = process.env.IVR_GREETING || "Nexus Tech Groups.";
   if (!text) {
-    console.log("Mobile Number", formattedNumber)
-    console.log("Booking Found",bookingRes.rows.length);
+    console.log("Mobile Number", formattedNumber);
+    console.log("Booking Found", bookingRes.rows.length);
 
     if (!bookingRes.rows.length) {
       // ✅ NEW CUSTOMER (no previous booking)
@@ -167,24 +167,26 @@ exports.handleFallbackIvr = async (body) => {
 
       const jobs = await pool.query(
         `SELECT 
-      pickup,
-      dropoff,
-      pickup_latitude,
-      pickup_longitude,
-      dropoff_latitude,
-      dropoff_longitude,
-      vehicle_type_id,
-      name,
-      email,
-      mobile,
-      telephone
-      FROM bookings b
-      JOIN customers c ON b.customer_id = c.id
-      WHERE c.mobile = $1
-      ORDER BY b.id DESC
-      LIMIT 3`,
+    b.pickup,
+    b.dropoff,
+    b.pickup_latitude,
+    b.pickup_longitude,
+    b.dropoff_latitude,
+    b.dropoff_longitude,
+    b.vehicle_type_id,
+    c.name,
+    c.email,
+    c.mobile,
+    c.telephone
+  FROM bookings b
+  JOIN customers c ON b.customer_id = c.id
+  WHERE b.mobile = $1
+  ORDER BY b.id DESC
+  LIMIT 3`,
         [callerNumber],
       );
+      console.log("Customer Mobile: ", callerNumber);
+      console.log("Customer Bookings Found: ", jobs.rows.length);
 
       if (!jobs.rows.length) return hangup("No recent jobs found.");
 
@@ -203,18 +205,20 @@ exports.handleFallbackIvr = async (body) => {
 
   /* STEP 2 PICKUP */
   if (session.step === 2) {
+    if (!text) return hangup("Invalid selection.");
+
     const index = parseInt(text) - 1;
 
-    if (!session.jobs[index]) return hangup("Invalid selection.");
+    if (!session.jobs[index]) return hangup("Invalid pickup selection.");
 
     const selectedJob = session.jobs[index];
 
+    // ✅ ONLY pickup save karo
     session.pickup = selectedJob.pickup;
-    session.dropoff = selectedJob.dropoff;
     session.pickup_latitude = selectedJob.pickup_latitude;
     session.pickup_longitude = selectedJob.pickup_longitude;
-    session.dropoff_latitude = selectedJob.dropoff_latitude;
-    session.dropoff_longitude = selectedJob.dropoff_longitude;
+
+    // Store remaining customer info (once only)
     session.vehicle_type_id = selectedJob.vehicle_type_id;
     session.name = selectedJob.name;
     session.email = selectedJob.email;
@@ -223,13 +227,38 @@ exports.handleFallbackIvr = async (body) => {
 
     session.step = 3;
 
+    // 🔥 Ab dropoff menu show karo (separate)
+    let dropMenu = "For dropoff location ";
+    session.jobs.forEach((j, i) => {
+      dropMenu += `press ${i + 1} for ${j.dropoff}. `;
+    });
+
+    return waitForKeypress(dropMenu);
+  }
+  /* STEP 3 DROPOFF */
+  if (session.step === 3) {
+    if (!text) return hangup("Invalid selection.");
+
+    const index = parseInt(text) - 1;
+
+    if (!session.jobs[index]) return hangup("Invalid dropoff selection.");
+
+    const selectedJob = session.jobs[index];
+
+    // ✅ Only dropoff save
+    session.dropoff = selectedJob.dropoff;
+    session.dropoff_latitude = selectedJob.dropoff_latitude;
+    session.dropoff_longitude = selectedJob.dropoff_longitude;
+
+    session.step = 4;
+
     return waitForKeypress(
-      `Press 1 to confirm booking from ${session.pickup} to ${session.dropoff}. Press 2 to cancel.`,
+      `You selected pickup ${session.pickup} and dropoff ${session.dropoff}. Press 1 to confirm booking. Press 2 to cancel.`,
     );
   }
 
-  /* STEP 3 CONFIRM */
-  if (session.step === 3) {
+  /* STEP 4 CONFIRM */
+  if (session.step === 4) {
     if (text === "2") return hangup("Booking cancelled.");
 
     if (text === "1") {
@@ -244,43 +273,42 @@ exports.handleFallbackIvr = async (body) => {
         String(now.getMinutes()).padStart(2, "0");
 
       const reference_number = await genRef();
-
-      // 1️⃣ Get customer id
+      const formattedNumber = formatMobile(callerNumber);
+      console.log("CUSTOMER Mobile Formatted: ", formattedNumber);
       const customerRes = await pool.query(
         `SELECT id FROM customers WHERE mobile = $1`,
-        [callerNumber],
+        [formattedNumber],
       );
-
+      console.log("Customer Length: ", customerRes.rows.length);
       if (!customerRes.rows.length) return hangup("Customer not found.");
 
       const customerId = customerRes.rows[0].id;
 
-      // 2️⃣ Insert booking with lat/lng
       await pool.query(
         `INSERT INTO bookings
-          (
-          customer_id,
-          pickup,
-          dropoff,
-          pickup_latitude,
-          pickup_longitude,
-          dropoff_latitude,
-          dropoff_longitude,
-          pickup_date,
-          pickup_time,
-          reference_number,
-          vehicle_type_id,
-          name,
-          email,
-          mobile,
-          telephone,
-          booking_source,
-          booking_status_id,
-          journey_type_id,
-          booking_type_id,
-          payment_type_id
-          )
-          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15'ivr',1,1,1,1)`,
+      (
+      customer_id,
+      pickup,
+      dropoff,
+      pickup_latitude,
+      pickup_longitude,
+      dropoff_latitude,
+      dropoff_longitude,
+      pickup_date,
+      pickup_time,
+      reference_number,
+      vehicle_type_id,
+      name,
+      email,
+      mobile,
+      telephone,
+      booking_source,
+      booking_status_id,
+      journey_type_id,
+      booking_type_id,
+      payment_type_id
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,'ivr',1,1,1,1)`,
         [
           customerId,
           session.pickup,
@@ -300,12 +328,14 @@ exports.handleFallbackIvr = async (body) => {
         ],
       );
 
+      session.step = 5;
+
       return waitForKeypress(
         "Booking confirmed. Press 1 for operator. Press 0 to hangup.",
       );
     }
-
-    return hangup();
+    sessions.delete(uniqueCallId);
+    return hangup("Invalid option.");
   }
 
   return hangup();

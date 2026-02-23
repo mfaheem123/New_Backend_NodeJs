@@ -147,7 +147,6 @@ app.use("/api/document", documentNumberRoutes);
 app.use("/api/driver_commission", driverCommissionRoutes);
 app.use("/api/ivr", ivrRoutes);
 
-
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {
   stack.forEach((r) => {
