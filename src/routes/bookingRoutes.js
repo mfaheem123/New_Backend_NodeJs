@@ -8,8 +8,13 @@ router.get("/get/:id", bookingController.getBookingSections);
 router.get("/getbytabs/:id", bookingController.getBookingByTabs);
 router.get("/getbyid/:id", bookingController.getBookingById);
 router.get("/getbydriverid/:id", bookingController.getBookingByDriverId);
+router.get("/driver-current-booking", bookingController.getCurrentJob);
 router.get(
-  "/getbookingsbydriver/:id",
+  "/check-active-booking",
+  bookingController.checkDriverActiveBookingToday
+);
+router.get(
+  "/getbookingsbydriver",
   bookingController.getBookingByDriverIdAndStatus,
 );
 router.get("/check-status/:booking_id", bookingController.checkBookingStatus);
@@ -20,6 +25,7 @@ router.get(
 router.post("/update/:id", bookingController.updateBooking);
 router.post("/status/:id", bookingController.updateBookingStatus);
 router.post("/fares/:id", bookingController.updateBookingFares);
+router.post("/fare-charges/:id", bookingController.updateBookingFareCharges);
 router.post("/cli", bookingController.cloneOneWayBooking);
 router.delete("/delete/:id", bookingController.deleteBooking);
 router.delete("/bulkdelete", bookingController.deleteMultipleBookings);

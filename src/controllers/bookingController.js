@@ -22,6 +22,9 @@ const {
   getBookingByDriverCommission,
   getBookingStatusById,
   getBookingByDriverIdAndStatus,
+  hasActiveBookingToday,
+  getDriverCurrentJob,
+  updateBookingFareCharges
 } = require("../models/bookingModel");
 
 function parseJSONFields(row) {
@@ -481,11 +484,14 @@ exports.updateBookingStatus = async (req, res) => {
       });
     }
 
-    if (booking_status_id == 3) {
-      await updateBookingonRoute(bookingId, true, false);
+    if (booking_status_id == 3 || booking_status_id == "3") {
+      await updateBookingonRoute(bookingId, true, false, false);
     }
-    if (booking_status_id == 11) {
-      await updateBookingonRoute(bookingId, false, true);
+    if (booking_status_id == 11 || booking_status_id == "11") {
+      await updateBookingonRoute(bookingId, false, true, true);
+    }
+    if (booking_status_id == 6 || booking_status_id == "6") {
+      await updateBookingonRoute(bookingId, false, false, true);
     }
     await updateBookingStatus(bookingId, booking_status_id);
 
@@ -681,4 +687,98 @@ exports.getBookingByDriverIdAndStatus = async (req, res) => {
     count: bookings.length,
     bookings: data,
   });
+};
+
+exports.checkDriverActiveBookingToday = async (req, res) => {
+  try {
+    const { driver_id } = req.query;
+
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "driver_id is required",
+      });
+    }
+
+     const { has_active, booking_id } = await hasActiveBookingToday(driver_id);
+
+    return res.json({
+      status: true,
+      driver_id,
+      booking_id: booking_id,
+      has_active_booking: has_active,
+    });
+
+  } catch (error) {
+    console.error("Error checking driver booking:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.getCurrentJob = async (req, res) => {
+  try {
+    const { driver_id } = req.query;
+
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "driver_id is required",
+      });
+    }
+
+    const job = await getDriverCurrentJob(driver_id);
+
+    return res.json({
+      status: true,
+      has_current_job: !!job,
+      booking: job,
+    });
+
+  } catch (error) {
+    console.error("Error fetching current job:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.updateBookingFareCharges = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+    const { fares, parking_charges, waiting_charges, extra_drop_charges, meet_and_greet, congestion_charges, total_charges} = req.body;
+
+    if (!fares || !parking_charges || !waiting_charges || !extra_drop_charges || !meet_and_greet || !congestion_charges || !total_charges) {
+      return res.status(400).json({
+        status: false,
+        message: "All Fares Are Required",
+      });
+    }
+
+    const booking = await findBookingById(bookingId);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    await updateBookingFareCharges(bookingId, fares, parking_charges, waiting_charges, extra_drop_charges, meet_and_greet, congestion_charges, total_charges);
+
+    return res.status(200).json({
+      status: true,
+      message: "Booking Fares updated successfully",
+      fares: fares,
+    });
+  } catch (error) {
+    console.error("Update Booking Fares Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
 };

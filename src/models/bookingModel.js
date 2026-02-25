@@ -455,16 +455,16 @@ const updateBookingStatus = async (id, statusId) => {
   return pool.query(query, [statusId, id]);
 };
 
-const updateBookingonRoute = async (id, on_route, completed) => {
+const updateBookingonRoute = async (id, on_route, completed, arrived) => {
   const query = `
     UPDATE bookings
-    SET on_route = $1, completed = $2
-    WHERE id = $3
+    SET on_route = $1, completed = $2, arrived = $3
+    WHERE id = $4
   `;
-  return pool.query(query, [on_route, completed, id]);
+  return pool.query(query, [on_route, completed, arrived, id]);
 };
 
-const updateBookingFares = async (id, fares) => {
+const updateBookingFares = async (id, fares,) => {
   const query = `
     UPDATE bookings
     SET fares = $1
@@ -555,11 +555,16 @@ const getBookingStatusById = async (bookingId) => {
 
 // GET BOOKINGS BY ID
 const getBookingByDriverIdAndStatus = async (driver_id, booking_status_id) => {
-  let whereClause = `WHERE b.driver_id = $1 AND b.booking_status_id = $2`;
+  const whereClause = `
+    WHERE b.driver_id = $1 
+    AND b.booking_status_id = $2
+  `;
+
   const values = [driver_id, booking_status_id];
 
   const sql = `
     ${ENRICHED_SELECT}
+    ${whereClause}
     ORDER BY 
       b.pickup_date DESC,
       b.pickup_time DESC
@@ -567,6 +572,56 @@ const getBookingByDriverIdAndStatus = async (driver_id, booking_status_id) => {
 
   const res = await pool.query(sql, values);
   return res.rows;
+};
+
+const hasActiveBookingToday = async (driverId) => {
+   const query = `
+    SELECT id
+    FROM bookings
+    WHERE driver_id = $1
+      AND booking_status_id IN (1,2,3,6,10,14,15)
+      AND TO_DATE(pickup_date, 'YYYY-FMMM-FMDD') = CURRENT_DATE
+    LIMIT 1;
+  `;
+
+  const result = await pool.query(query, [driverId]);
+
+  if (result.rows.length > 0) {
+    return {
+      has_active: true,
+      booking_id: result.rows[0].id,
+    };
+  }
+
+  return {
+    has_active: false,
+    booking_id: null,
+  };
+};
+
+
+const getDriverCurrentJob = async (driverId) => {
+  const query = `
+    ${ENRICHED_SELECT}
+    WHERE b.driver_id = $1
+      AND b.booking_status_id IN (1,2,3,6,10,14,15)
+      AND TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') = CURRENT_DATE
+    ORDER BY b.id DESC
+    LIMIT 1
+  `;
+
+  const result = await pool.query(query, [driverId]);
+
+  return result.rows[0] || null;
+};
+
+const updateBookingFareCharges = async (id, fares, parking_charges, waiting_charges, extra_drop_charges, meet_and_greet, congestion_charges, total_charges) => {
+  const query = `
+    UPDATE bookings
+    SET fares = $1, parking_charges = $2 , waiting_charges = $3 , extra_drop_charges = $4 , meet_and_greet = $5 , congestion_charges = $6 , total_charges= $7
+    WHERE id = $8
+  `;
+  return pool.query(query, [fares, parking_charges, waiting_charges, extra_drop_charges, meet_and_greet, congestion_charges, total_charges, id]);
 };
 
 module.exports = {
@@ -599,4 +654,7 @@ module.exports = {
   getTotalAmountByCustomer,
   getBookingStatusById,
   getBookingByDriverIdAndStatus,
+  hasActiveBookingToday,
+  getDriverCurrentJob,
+  updateBookingFareCharges
 };
