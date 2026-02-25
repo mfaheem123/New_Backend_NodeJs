@@ -4,37 +4,37 @@ const EnumerationsModel = {
   getAll: async () => {
     // BOOKING STATUS
     const booking_statuses = await db.query(
-      `SELECT * FROM booking_statuses ORDER BY id ASC`
+      `SELECT * FROM booking_statuses ORDER BY id ASC`,
     );
 
     // BOOKING TYPES
     const booking_types = await db.query(
-      `SELECT * FROM booking_types ORDER BY id ASC`
+      `SELECT * FROM booking_types ORDER BY id ASC`,
     );
 
     // JOURNEY TYPES
     const journey_types = await db.query(
-      `SELECT * FROM journey_types ORDER BY id ASC`
+      `SELECT * FROM journey_types ORDER BY id ASC`,
     );
 
     // PAYMENT STATUS
     const payment_statuses = await db.query(
-      `SELECT * FROM payment_statuses ORDER BY id ASC`
+      `SELECT * FROM payment_statuses ORDER BY id ASC`,
     );
 
     // PAYMENT TYPES
     const payment_types = await db.query(
-      `SELECT * FROM payment_types ORDER BY id ASC`
+      `SELECT * FROM payment_types ORDER BY id ASC`,
     );
 
     // VEHICLE TYPES
     const vehicle_types = await db.query(
-      `SELECT * FROM vehicle_types ORDER BY id ASC`
+      `SELECT * FROM vehicle_types ORDER BY id ASC`,
     );
 
     // SUBSIDIARIES
     const subsidiaries = await db.query(
-      `SELECT id, background_color, foreground_color, name FROM subsidiaries ORDER BY id ASC`
+      `SELECT id, background_color, foreground_color, name FROM subsidiaries ORDER BY id ASC`,
     );
 
     // LIST OF LOGGED IN DRIVERS
@@ -93,7 +93,7 @@ const EnumerationsModel = {
       vt.minimum_fares AS vehicle_minimum_fare
         FROM fare_configurations f
           LEFT JOIN vehicle_types vt ON vt.id = f.vehicle_type_id
-        ORDER BY id ASC`
+        ORDER BY id ASC`,
     );
 
     // FIXED FARES
@@ -110,7 +110,7 @@ const EnumerationsModel = {
            ON f.from_location_id = lf.id
         JOIN location_types lt 
           ON f.to_location_id = lt.id
-      ORDER BY f.id ASC`
+      ORDER BY f.id ASC`,
     );
 
     // PLOT FARES
@@ -124,7 +124,7 @@ const EnumerationsModel = {
       JOIN vehicle_types vt ON vt.id = pf.vehicle_type_id
       JOIN zones p1 ON p1.id = pf.pickup_plot_id
       JOIN zones p2 ON p2.id = pf.dropoff_plot_id
-      ORDER BY pf.id ASC`
+      ORDER BY pf.id ASC`,
     );
 
     // FARES BY VEHICLE
@@ -132,7 +132,7 @@ const EnumerationsModel = {
       ` SELECT fbv.*, row_to_json(vt) as vehicle_type
     FROM fare_by_vehicles fbv
     LEFT JOIN vehicle_types vt ON fbv.vehicle_type_id = vt.id
-    ORDER BY fbv.id ASC`
+    ORDER BY fbv.id ASC`,
     );
 
     //AIRPORT CHARGES
@@ -143,7 +143,7 @@ const EnumerationsModel = {
             LEFT JOIN location_types lt
               ON lt.id = l.location_type_id
             WHERE l.location_type_id = 2
-            ORDER BY l.id ASC`
+            ORDER BY l.id ASC`,
     );
 
     return {
@@ -161,6 +161,16 @@ const EnumerationsModel = {
       plot_fares: plot_fares.rows,
       fare_by_vehicles: fare_by_vehicles.rows,
       airport_charges: airport_charges.rows,
+    };
+  },
+
+  getPaymentTypes: async () => {
+    // PAYMENT TYPES
+    const payment_types = await db.query(
+      `SELECT * FROM payment_types ORDER BY id ASC`,
+    );
+    return {
+      payment_types: payment_types.rows,
     };
   },
 };

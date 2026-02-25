@@ -511,7 +511,7 @@ exports.updateBookingStatus = async (req, res) => {
 exports.updateBookingFares = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
-    const { fares } = req.body;
+    const { fares, parking_charges, waiting_charges, extra_drop_charges, total_charges } = req.body;
 
     if (!fares) {
       return res.status(400).json({
@@ -529,7 +529,7 @@ exports.updateBookingFares = async (req, res) => {
       });
     }
 
-    await updateBookingFares(bookingId, fares);
+    await updateBookingFares(bookingId, fares, parking_charges, waiting_charges, extra_drop_charges, total_charges);
 
     return res.status(200).json({
       status: true,
@@ -568,25 +568,35 @@ exports.getBookingByDriverId = async (req, res) => {
 };
 
 exports.getBookingByDriverCommission = async (req, res) => {
-  const { driver_id, payment_type_id } = req.query;
+  const { driver_id, payment_type_id, from_date, to_date } = req.query;
 
-  const booking = await getBookingByDriverCommission(
-    driver_id,
-    payment_type_id,
-  );
-
-  if (!booking) {
-    return res.status(404).json({
+  if (!driver_id || !payment_type_id || !from_date || !to_date) {
+    return res.status(400).json({
       success: false,
-      message: "Booking not found",
+      message: "driver_id, payment_type_id, from_date and to_date are required",
     });
   }
 
-  const data = parseJSONFields(booking);
+  const bookings = await getBookingByDriverCommission(
+    driver_id,
+    payment_type_id,
+    from_date,
+    to_date
+  );
+
+  if (!bookings.length) {
+    return res.status(404).json({
+      success: false,
+      message: "No bookings found in given date range",
+    });
+  }
+
+  const data = bookings.map(parseJSONFields);
 
   res.status(200).json({
     success: true,
-    booking: data,
+    count: data.length,
+    bookings: data,
   });
 };
 

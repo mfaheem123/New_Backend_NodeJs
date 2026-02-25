@@ -17,3 +17,21 @@ exports.getAllEnumerations = async (req, res) => {
     });
   }
 };
+
+
+exports.getAllPaymentTypes = async (req, res) => {
+  try {
+    const data = await EnumerationsModel.getPaymentTypes();
+
+    return res.json({
+      status: true,
+      ...data,
+    });
+  } catch (error) {
+    console.log("Error Getting Payment Types:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
