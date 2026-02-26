@@ -1073,21 +1073,21 @@ async function updateBookingService(bookingId, payload) {
   //  CASE 1: BOOKING NOT COMPLETED → NORMAL UPDATE
   // =====================================================
   if (!isCompleted) {
-     const oldDriverId = existing.driver_id;
+    const oldDriverId = existing.driver_id;
     const updated = await updateBooking(bookingId, updates);
     if (!updated) return null;
 
     const enriched = await getBookingByIdEnriched(updated.id);
-     const clean = parseJSONFields(enriched);
+    const clean = parseJSONFields(enriched);
     // 🔔 SEND NOTIFICATION IF DRIVER ASSIGNED / CHANGED
-  if (
-    updates.driver_id && 
-    Number(updates.driver_id) !== Number(oldDriverId)
-  ) {
-    await sendBookingNotification(updates.driver_id, clean);
-  }
+    if (
+      updates.driver_id &&
+      Number(updates.driver_id) !== Number(oldDriverId)
+    ) {
+      await sendBookingNotification(updates.driver_id, clean);
+    }
 
-  return clean;
+    return clean;
   }
 
   // =====================================================
@@ -1114,7 +1114,7 @@ async function updateBookingService(bookingId, payload) {
   const inserted = await createBookingRow(pool, normalized);
 
   const enriched = await getBookingByIdEnriched(inserted.id);
-   const clean = parseJSONFields(enriched);
+  const clean = parseJSONFields(enriched);
 
   // 8️ SEND NOTIFICATION
   if (clean.driver_id) {

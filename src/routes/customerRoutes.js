@@ -9,6 +9,9 @@ router.get("/search", CustomerController.searchCustomerByMobile);
 router.post("/edit/:id", CustomerController.updateCustomer);
 router.post("/verify-otp", CustomerController.verifyEmailOTP);
 router.post("/resend-otp", CustomerController.resendEmailOTP);
+router.post("/forgot-password", CustomerController.forgotPassword);
+router.post("/reset-password", CustomerController.resetPassword);
+router.post("/change-password/:id", CustomerController.changePassword);
 router.post("/login", CustomerController.customerLogin);
 router.delete("/delete/:id", CustomerController.deleteCustomer);
 

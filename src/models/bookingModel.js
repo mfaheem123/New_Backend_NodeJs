@@ -514,7 +514,7 @@ const getBookingByDriverCommission = async (
   driver_id,
   payment_type_id,
   from_date,
-  to_date
+  to_date,
 ) => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -522,6 +522,7 @@ const getBookingByDriverCommission = async (
     AND b.payment_type_id = $2 
     AND b.booking_status_id = 11
     AND b.commission_status = 'open'
+    AND b.commission = true
     AND b.pickup_date::date BETWEEN $3::date AND $4::date
   `;
 
@@ -534,7 +535,6 @@ const getBookingByDriverCommission = async (
 
   return res.rows;
 };
-
 
 // Total bookings
 const getTotalBookingsByCustomer = async (customerId) => {
@@ -670,6 +670,20 @@ const updateBookingFareCharges = async (
   ]);
 };
 
+const getDriverTotalEarning = async (driver_id) => {
+  const query = `
+    SELECT 
+      COALESCE(SUM(fares), 0) AS total_earning,
+      COUNT(id) AS total_bookings
+    FROM bookings
+    WHERE driver_id = $1
+    AND booking_status_id = 11
+  `;
+
+  const { rows } = await pool.query(query, [driver_id]);
+  return rows[0];
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -703,4 +717,5 @@ module.exports = {
   hasActiveBookingToday,
   getDriverCurrentJob,
   updateBookingFareCharges,
+  getDriverTotalEarning,
 };

@@ -307,6 +307,7 @@ RETURNING id
     const { rows } = await db.query(query, [id]);
     return rows[0];
   },
+
   getRestrictedDrivers: async (customerId) => {
     const { rows } = await db.query(
       `SELECT driver_id AS id, driver_username AS username, driver_name AS name
@@ -316,6 +317,7 @@ RETURNING id
     );
     return rows;
   },
+
   delete: async (id) => {
     try {
       // Step 1: Delete all restricted drivers linked to this customer
@@ -336,6 +338,7 @@ RETURNING id
       throw err;
     }
   },
+
   searchByMobile: async (mobile) => {
     const query = `
         SELECT 
@@ -355,6 +358,19 @@ RETURNING id
     );
     return rows[0] || null;
   },
+
+findByEmails: async (email) => {
+  const { rows } = await db.query(
+    `SELECT id, name, email
+     FROM customers
+     WHERE email = $1
+     LIMIT 1`,
+    [email]
+  );
+
+  return rows[0] || null;
+},
+
 
   findByEmailWithOTP: async (email) => {
     const { rows } = await db.query(
@@ -402,4 +418,52 @@ RETURNING id
 
     return rows[0] || null;
   },
+
+
+findByEmailPass: async (email) => {
+  const { rows } = await db.query(
+    `SELECT id, email, password
+     FROM customers
+     WHERE email = $1
+     LIMIT 1`,
+    [email]
+  );
+
+  return rows[0] || null;
+},
+
+updatePassword: async (email, hashedPassword) => {
+  const { rowCount } = await db.query(
+    `UPDATE customers
+     SET password = $1
+     WHERE email = $2`,
+    [hashedPassword, email]
+  );
+
+  return rowCount > 0;
+},
+
+findById: async (id) => {
+  const { rows } = await db.query(
+    `SELECT id, email, password
+     FROM customers
+     WHERE id = $1
+     LIMIT 1`,
+    [id]
+  );
+
+  return rows[0] || null;
+},
+
+updatePasswordById: async (id, hashedPassword) => {
+  const { rowCount } = await db.query(
+    `UPDATE customers
+     SET password = $1
+     WHERE id = $2`,
+    [hashedPassword, id]
+  );
+
+  return rowCount > 0;
+},
+
 };

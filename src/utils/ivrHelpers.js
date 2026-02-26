@@ -9,7 +9,10 @@ exports.waitForKeypress = (text) => ({
   wait: WAIT_MS,
 });
 
-exports.transfer = (number, msg = "Please hold while we transfer your call.") => ({
+exports.transfer = (
+  number,
+  msg = "Please hold while we transfer your call.",
+) => ({
   errorCode: 0,
   nextAction: "Transfer",
   audioPrompt: { text: msg, interruptible: false },

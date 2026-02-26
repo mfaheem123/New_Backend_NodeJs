@@ -24,7 +24,8 @@ const {
   getBookingByDriverIdAndStatus,
   hasActiveBookingToday,
   getDriverCurrentJob,
-  updateBookingFareCharges
+  updateBookingFareCharges,
+  getDriverTotalEarning,
 } = require("../models/bookingModel");
 
 function parseJSONFields(row) {
@@ -511,7 +512,13 @@ exports.updateBookingStatus = async (req, res) => {
 exports.updateBookingFares = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
-    const { fares, parking_charges, waiting_charges, extra_drop_charges, total_charges } = req.body;
+    const {
+      fares,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      total_charges,
+    } = req.body;
 
     if (!fares) {
       return res.status(400).json({
@@ -529,7 +536,14 @@ exports.updateBookingFares = async (req, res) => {
       });
     }
 
-    await updateBookingFares(bookingId, fares, parking_charges, waiting_charges, extra_drop_charges, total_charges);
+    await updateBookingFares(
+      bookingId,
+      fares,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      total_charges,
+    );
 
     return res.status(200).json({
       status: true,
@@ -554,7 +568,7 @@ exports.getBookingByDriverId = async (req, res) => {
   if (!bookings || bookings.length === 0) {
     return res.status(404).json({
       success: false,
-      message: "No bookings found for this driver",
+      message: "Booking Not Found",
     });
   }
 
@@ -581,7 +595,7 @@ exports.getBookingByDriverCommission = async (req, res) => {
     driver_id,
     payment_type_id,
     from_date,
-    to_date
+    to_date,
   );
 
   if (!bookings.length) {
@@ -710,7 +724,7 @@ exports.checkDriverActiveBookingToday = async (req, res) => {
       });
     }
 
-     const { has_active, booking_id } = await hasActiveBookingToday(driver_id);
+    const { has_active, booking_id } = await hasActiveBookingToday(driver_id);
 
     return res.json({
       status: true,
@@ -718,7 +732,6 @@ exports.checkDriverActiveBookingToday = async (req, res) => {
       booking_id: booking_id,
       has_active_booking: has_active,
     });
-
   } catch (error) {
     console.error("Error checking driver booking:", error);
     return res.status(500).json({
@@ -746,7 +759,6 @@ exports.getCurrentJob = async (req, res) => {
       has_current_job: !!job,
       booking: job,
     });
-
   } catch (error) {
     console.error("Error fetching current job:", error);
     return res.status(500).json({
@@ -759,9 +771,25 @@ exports.getCurrentJob = async (req, res) => {
 exports.updateBookingFareCharges = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
-    const { fares, parking_charges, waiting_charges, extra_drop_charges, meet_and_greet, congestion_charges, total_charges} = req.body;
+    const {
+      fares,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
+    } = req.body;
 
-    if (!fares || !parking_charges || !waiting_charges || !extra_drop_charges || !meet_and_greet || !congestion_charges || !total_charges) {
+    if (
+      !fares ||
+      !parking_charges ||
+      !waiting_charges ||
+      !extra_drop_charges ||
+      !meet_and_greet ||
+      !congestion_charges ||
+      !total_charges
+    ) {
       return res.status(400).json({
         status: false,
         message: "All Fares Are Required",
@@ -777,7 +805,16 @@ exports.updateBookingFareCharges = async (req, res) => {
       });
     }
 
-    await updateBookingFareCharges(bookingId, fares, parking_charges, waiting_charges, extra_drop_charges, meet_and_greet, congestion_charges, total_charges);
+    await updateBookingFareCharges(
+      bookingId,
+      fares,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
+    );
 
     return res.status(200).json({
       status: true,
@@ -786,6 +823,38 @@ exports.updateBookingFareCharges = async (req, res) => {
     });
   } catch (error) {
     console.error("Update Booking Fares Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+
+exports.getDriverEarning = async (req, res) => {
+  try {
+    const { driver_id } = req.body;
+
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver ID is required",
+      });
+    }
+
+    const result = await getDriverTotalEarning(driver_id);
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver total earning fetched successfully",
+      driverEarning: {
+        driver_id,
+        total_earning: result.total_earning,
+        total_bookings: result.total_bookings,
+      },
+    });
+  } catch (error) {
+    console.error("Driver Earning Error:", error);
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",

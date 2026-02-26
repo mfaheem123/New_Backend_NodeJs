@@ -4,7 +4,7 @@ async function calculateDistanceAndTimeOSRM(
   pickup_lat,
   pickup_lng,
   drop_lat,
-  drop_lng
+  drop_lng,
 ) {
   try {
     // OSRM demo server URL (replace with your own if you have one)
@@ -40,5 +40,5 @@ async function calculateDistanceAndTimeOSRM(
 }
 
 module.exports = {
-    calculateDistanceAndTimeOSRM
-}
+  calculateDistanceAndTimeOSRM,
+};

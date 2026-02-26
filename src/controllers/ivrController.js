@@ -10,7 +10,7 @@ exports.mainIvr = async (req, res) => {
     return res.json(response);
   } catch (err) {
     console.error("Main IVR Error:", err);
-    return res.json(ivrService.hangup("System error. Goodbye."));
+    return res.status(500).json(ivrService.hangup("System error. Goodbye."));
   }
 };
 
@@ -24,6 +24,6 @@ exports.fallbackIvr = async (req, res) => {
     return res.json(response);
   } catch (err) {
     console.error("Fallback IVR Error:", err);
-    return res.json(ivrService.hangup("System error. Goodbye."));
+    return res.status(500).json(ivrService.hangup("System error. Goodbye."));
   }
 };
