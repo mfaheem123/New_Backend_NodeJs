@@ -359,18 +359,17 @@ RETURNING id
     return rows[0] || null;
   },
 
-findByEmails: async (email) => {
-  const { rows } = await db.query(
-    `SELECT id, name, email
+  findByEmails: async (email) => {
+    const { rows } = await db.query(
+      `SELECT id, name, email
      FROM customers
      WHERE email = $1
      LIMIT 1`,
-    [email]
-  );
+      [email],
+    );
 
-  return rows[0] || null;
-},
-
+    return rows[0] || null;
+  },
 
   findByEmailWithOTP: async (email) => {
     const { rows } = await db.query(
@@ -419,51 +418,58 @@ findByEmails: async (email) => {
     return rows[0] || null;
   },
 
-
-findByEmailPass: async (email) => {
-  const { rows } = await db.query(
-    `SELECT id, email, password
+  findByEmailPass: async (email) => {
+    const { rows } = await db.query(
+      `SELECT id, email, password
      FROM customers
      WHERE email = $1
      LIMIT 1`,
-    [email]
-  );
+      [email],
+    );
 
-  return rows[0] || null;
-},
+    return rows[0] || null;
+  },
 
-updatePassword: async (email, hashedPassword) => {
-  const { rowCount } = await db.query(
-    `UPDATE customers
+  updatePassword: async (email, hashedPassword) => {
+    const { rowCount } = await db.query(
+      `UPDATE customers
      SET password = $1
      WHERE email = $2`,
-    [hashedPassword, email]
-  );
+      [hashedPassword, email],
+    );
 
-  return rowCount > 0;
-},
+    return rowCount > 0;
+  },
 
-findById: async (id) => {
-  const { rows } = await db.query(
-    `SELECT id, email, password
+  findById: async (id) => {
+    const { rows } = await db.query(
+      `SELECT id, email, password
      FROM customers
      WHERE id = $1
      LIMIT 1`,
-    [id]
-  );
+      [id],
+    );
 
-  return rows[0] || null;
-},
+    return rows[0] || null;
+  },
 
-updatePasswordById: async (id, hashedPassword) => {
-  const { rowCount } = await db.query(
-    `UPDATE customers
+  updatePasswordById: async (id, hashedPassword) => {
+    const { rowCount } = await db.query(
+      `UPDATE customers
      SET password = $1
      WHERE id = $2`,
-    [hashedPassword, id]
-  );
+      [hashedPassword, id],
+    );
 
-  return rowCount > 0;
-},
+    return rowCount > 0;
+  },
 
+  updateProfileImage: async (id, image) => {
+    await db.query(
+      `UPDATE customers
+     SET profile_image = $1
+     WHERE id = $2`,
+      [image, id],
+    );
+  },
 };

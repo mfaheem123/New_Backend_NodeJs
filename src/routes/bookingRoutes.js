@@ -27,7 +27,7 @@ router.post("/status/:id", bookingController.updateBookingStatus);
 router.post("/fares/:id", bookingController.updateBookingFares);
 router.post("/fare-charges/:id", bookingController.updateBookingFareCharges);
 router.post("/cli", bookingController.cloneOneWayBooking);
-router.post("/driver-total-earning", bookingController.getDriverEarning);
+router.get("/driver-total-earning/:id", bookingController.getDriverEarning);
 router.delete("/delete/:id", bookingController.deleteBooking);
 router.delete("/bulkdelete", bookingController.deleteMultipleBookings);
 

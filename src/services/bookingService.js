@@ -747,66 +747,183 @@ async function createMultiReservationBooking(payload) {
      * ----------------------------- */
     const createdBookingIds = [];
 
-    for (const mr of payload.multi_reservation) {
-      if (mr.exclude === true) continue;
+  /* ==========================
+     MULTI RESERVATION WITHOUT FARE
+  ========================== */
+    
+    // for (const mr of payload.multi_reservation) {
+    //   if (mr.exclude === true) continue;
 
-      /* -------- OUTBOUND BOOKING -------- */
-      const clone = { ...payload };
+    //   /* -------- OUTBOUND BOOKING -------- */
+    //   const clone = { ...payload };
 
-      clone.pickup = payload.pickup;
-      clone.dropoff = payload.dropoff;
+    //   clone.pickup = payload.pickup;
+    //   clone.dropoff = payload.dropoff;
 
-      clone.pickup_date = mr.pickup_date;
-      clone.pickup_time = mr.pickup_time;
+    //   clone.pickup_date = mr.pickup_date;
+    //   clone.pickup_time = mr.pickup_time;
 
-      clone.fares = mr.total_fare;
-      clone.total_charges = mr.total_fare;
+    //   // clone.fares = mr.total_fare;
+    //   // clone.total_charges = mr.total_fare;
 
-      delete clone.multi_reservation;
-      delete clone.multi_vehicle;
+    //   delete clone.multi_reservation;
+    //   delete clone.multi_vehicle;
 
-      const normalized = await normalizeBookingPayload(clone);
+    //   /* -------- CALCULATE FARE -------- */
+    //   const fare = await calculateSingleFare({
+    //     ...clone,
+    //     pickup_date: mr.pickup_date,
+    //     pickup_time: mr.pickup_time,
+    //     journey_type_id: payload.journey_type_id,
+    //   });
 
-      normalized.customer_id = customerId;
-      normalized.multi_booking_id = multiBookingId;
-      normalized.reference_number = await genRef();
+    //   clone.fares = fare.fare;
+    //   clone.total_charges = fare.total_fare;
 
-      const outboundInserted = await createBookingRow(pool, normalized);
-      createdBookingIds.push(outboundInserted.id);
+    //   const normalized = await normalizeBookingPayload(clone);
 
-      /* -------- RETURN BOOKING (CONDITIONAL) -------- */
-      const shouldCreateReturn =
-        Number(payload.journey_type_id) === 3 && mr.return_pickup_time;
+    //   normalized.customer_id = customerId;
+    //   normalized.multi_booking_id = multiBookingId;
+    //   normalized.reference_number = await genRef();
 
-      if (shouldCreateReturn) {
-        if (!payload.return_pickup || !payload.return_dropoff) {
-          throw new Error(
-            "return_pickup and return_dropoff are required for return journey",
-          );
-        }
+    //   const outboundInserted = await createBookingRow(pool, normalized);
+    //   createdBookingIds.push(outboundInserted.id);
 
-        const returnClone = {
-          ...normalized,
+    //   /* -------- RETURN BOOKING (CONDITIONAL) -------- */
+    //   const shouldCreateReturn =
+    //     Number(payload.journey_type_id) === 3 && mr.return_pickup_time;
 
-          pickup: payload.return_pickup,
-          dropoff: payload.return_dropoff,
+    //   if (shouldCreateReturn) {
+    //     if (!payload.return_pickup || !payload.return_dropoff) {
+    //       throw new Error(
+    //         "return_pickup and return_dropoff are required for return journey",
+    //       );
+    //     }
 
-          pickup_date: mr.pickup_date,
-          pickup_time: mr.return_pickup_time,
+    //     const returnClone = {
+    //       ...normalized,
 
-          associated_booking: outboundInserted.id,
-          journey_type_id: 3,
+    //       pickup: payload.return_pickup,
+    //       dropoff: payload.return_dropoff,
 
-          driver_id: null,
-          vehicle_id: null,
+    //       pickup_date: mr.pickup_date,
+    //       pickup_time: mr.return_pickup_time,
 
-          reference_number: await genRef(),
-        };
+    //       associated_booking: outboundInserted.id,
+    //       journey_type_id: 3,
 
-        const returnInserted = await createBookingRow(pool, returnClone);
-        createdBookingIds.push(returnInserted.id);
-      }
-    }
+    //       driver_id: null,
+    //       vehicle_id: null,
+
+    //       reference_number: await genRef(),
+    //     };
+
+    //     const returnInserted = await createBookingRow(pool, returnClone);
+    //     createdBookingIds.push(returnInserted.id);
+    //   }
+    // }
+
+
+  /* ==========================
+     MULTI RESERVATION WITHOUT FARE
+  ========================== */
+for (const mr of payload.multi_reservation) {
+  if (mr.exclude === true) continue;
+
+  /* ==========================
+     OUTBOUND BOOKING
+  ========================== */
+
+  const outboundClone = { ...payload };
+
+  outboundClone.pickup = payload.pickup;
+  outboundClone.dropoff = payload.dropoff;
+
+  outboundClone.pickup_date = mr.pickup_date;
+  outboundClone.pickup_time = mr.pickup_time;
+
+  delete outboundClone.multi_reservation;
+  delete outboundClone.multi_vehicle;
+
+  /* ---- CALCULATE OUTBOUND FARE ---- */
+  const outboundFare = await calculateSingleFare({
+    ...outboundClone,
+    pickup_date: mr.pickup_date,
+    pickup_time: mr.pickup_time,
+    journey_type_id: 3,
+  });
+
+  outboundClone.fares = outboundFare.fare;
+  outboundClone.total_charges = outboundFare.total_fare;
+
+  const normalizedOutbound =
+    await normalizeBookingPayload(outboundClone);
+
+  normalizedOutbound.customer_id = customerId;
+  normalizedOutbound.multi_booking_id = multiBookingId;
+  normalizedOutbound.reference_number = await genRef();
+
+  const outboundInserted =
+    await createBookingRow(pool, normalizedOutbound);
+
+  createdBookingIds.push(outboundInserted.id);
+
+  /* ==========================
+     RETURN BOOKING
+  ========================== */
+
+  const shouldCreateReturn =
+    Number(payload.journey_type_id) === 3 &&
+    mr.return_pickup_time;
+
+  if (shouldCreateReturn) {
+
+    const returnClone = {
+      ...payload,
+
+      pickup: payload.return_pickup,
+      dropoff: payload.return_dropoff,
+
+      pickup_date: mr.pickup_date,
+      pickup_time: mr.return_pickup_time,
+
+      pickup_plot_id: payload.return_pickup_plot_id,
+      dropoff_plot_id: payload.return_dropoff_plot_id,
+
+      vehicle_type_id:
+        payload.return_vehicle_type_id || payload.vehicle_type_id,
+
+      associated_booking: outboundInserted.id,
+      journey_type_id: 3,
+    };
+
+    delete returnClone.multi_reservation;
+    delete returnClone.multi_vehicle;
+
+    /* ---- CALCULATE RETURN FARE ---- */
+    const returnFare = await calculateSingleFare({
+      ...returnClone,
+      pickup_date: mr.pickup_date,
+      pickup_time: mr.return_pickup_time,
+      journey_type_id: 1,
+    });
+
+    returnClone.fares = returnFare.fare;
+    returnClone.total_charges = returnFare.total_fare;
+
+    const normalizedReturn =
+      await normalizeBookingPayload(returnClone);
+
+    normalizedReturn.customer_id = customerId;
+    normalizedReturn.multi_booking_id = multiBookingId;
+    normalizedReturn.reference_number = await genRef();
+
+    const returnInserted =
+      await createBookingRow(pool, normalizedReturn);
+
+    createdBookingIds.push(returnInserted.id);
+  }
+}
 
     /* -----------------------------
      * FETCH ENRICHED BOOKINGS

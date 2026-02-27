@@ -50,6 +50,8 @@ const accountInvoiceRoutes = require("./routes/accountInvoiceRoutes");
 const documentNumberRoutes = require("./routes/documentNumberRoutes");
 const driverCommissionRoutes = require("./routes/driverCommissionRoutes");
 const ivrRoutes = require("./routes/ivrRoutes");
+const smsRoutes = require("./routes/smsRoutes");
+
 
 const app = express();
 
@@ -90,6 +92,7 @@ const skipFileUploadRoutes = [
   "/api/faresconfiguration",
   "/api/employees",
   "/api/drivers-app",
+  "/api/customers",
 ];
 
 app.use((req, res, next) => {
@@ -146,6 +149,7 @@ app.use("/api/account_invoice", accountInvoiceRoutes);
 app.use("/api/document", documentNumberRoutes);
 app.use("/api/driver_commission", driverCommissionRoutes);
 app.use("/api/ivr", ivrRoutes);
+app.use("/api/sms",smsRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

@@ -3,6 +3,7 @@ const sendEmail = require("../config/emailConfig");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const bcrypt = require("bcrypt");
+const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 const {
   generateSecurityCode,
   validateSecurityCode,
@@ -96,7 +97,7 @@ module.exports = {
       } else {
         console.log("ℹ️ No restricted_drivers field in payload.");
       }
-   // 🔹 Prepare Email Message
+      // 🔹 Prepare Email Message
       const message = `
       Welcome ${req.body.name || "User"}!
 
@@ -136,20 +137,16 @@ module.exports = {
 
       res.json({ status: true, customer });
 
-        // ✅ SEND EMAIL IN BACKGROUND
-    setImmediate(async () => {
-      try {
-        await sendEmail(
-          req.body.email,
-          "Email Verification OTP",
-          message
-        );
-        console.timeLog("CreateCustomer", "After Email (Background)");
-        console.timeEnd("CreateCustomer");
-      } catch (error) {
-        console.error("❌ Background Email Error:", error);
-      }
-    });
+      // ✅ SEND EMAIL IN BACKGROUND
+      setImmediate(async () => {
+        try {
+          await sendEmail(req.body.email, "Email Verification OTP", message);
+          console.timeLog("CreateCustomer", "After Email (Background)");
+          console.timeEnd("CreateCustomer");
+        } catch (error) {
+          console.error("❌ Background Email Error:", error);
+        }
+      });
     } catch (err) {
       console.error("❌ Error creating customer:", err);
       res.status(500).json({ status: false, error: err.message });
@@ -365,48 +362,48 @@ module.exports = {
     }
   },
 
- resendEmailOTP: async (req, res) => {
-  try {
-    const { email } = req.body;
+  resendEmailOTP: async (req, res) => {
+    try {
+      const { email } = req.body;
 
-    if (!email) {
-      return res.status(400).json({
-        status: false,
-        error: "Email is required",
-      });
-    }
+      if (!email) {
+        return res.status(400).json({
+          status: false,
+          error: "Email is required",
+        });
+      }
 
-    console.time("ResendOTP");
+      console.time("ResendOTP");
 
-    // 🔹 Fetch customer by email
-    const customer = await Customer.findByEmailWithOTP(email);
+      // 🔹 Fetch customer by email
+      const customer = await Customer.findByEmailWithOTP(email);
 
-    if (!customer) {
-      return res.status(400).json({
-        status: false,
-        error: "Invalid Email",
-      });
-    }
+      if (!customer) {
+        return res.status(400).json({
+          status: false,
+          error: "Invalid Email",
+        });
+      }
 
-    // 🔹 Generate new OTP
-    const newOTP = generateSecurityCode();
+      // 🔹 Generate new OTP
+      const newOTP = generateSecurityCode();
 
-    if (!validateSecurityCode(newOTP)) {
-      return res.status(400).json({
-        status: false,
-        error: "Generated OTP is invalid",
-      });
-    }
+      if (!validateSecurityCode(newOTP)) {
+        return res.status(400).json({
+          status: false,
+          error: "Generated OTP is invalid",
+        });
+      }
 
-    const now = new Date();
+      const now = new Date();
 
-    // 🔹 Update OTP in DB
-    await Customer.updateOTP(customer.id, newOTP, now);
+      // 🔹 Update OTP in DB
+      await Customer.updateOTP(customer.id, newOTP, now);
 
-    console.timeLog("ResendOTP", "After DB");
+      console.timeLog("ResendOTP", "After DB");
 
-    // 🔹 Prepare email message
-    const message = `
+      // 🔹 Prepare email message
+      const message = `
 Hello ${customer.name || "User"},
 
 Your new OTP is: ${newOTP}
@@ -414,31 +411,30 @@ Your new OTP is: ${newOTP}
 This code will expire in 15 minutes.
 `;
 
-    // ✅ SEND RESPONSE IMMEDIATELY
-    res.status(200).json({
-      status: true,
-      message: "A new OTP has been sent to your email.",
-    });
+      // ✅ SEND RESPONSE IMMEDIATELY
+      res.status(200).json({
+        status: true,
+        message: "A new OTP has been sent to your email.",
+      });
 
-    // ✅ SEND EMAIL IN BACKGROUND
-    setImmediate(async () => {
-      try {
-        await sendEmail(customer.email, "Your New OTP", message);
-        console.timeLog("ResendOTP", "After Email (Background)");
-        console.timeEnd("ResendOTP");
-      } catch (error) {
-        console.error("❌ Background Email Error:", error);
-      }
-    });
-
-  } catch (err) {
-    console.error("❌ Resend OTP Error:", err);
-    res.status(500).json({
-      status: false,
-      error: err.message,
-    });
-  }
-},
+      // ✅ SEND EMAIL IN BACKGROUND
+      setImmediate(async () => {
+        try {
+          await sendEmail(customer.email, "Your New OTP", message);
+          console.timeLog("ResendOTP", "After Email (Background)");
+          console.timeEnd("ResendOTP");
+        } catch (error) {
+          console.error("❌ Background Email Error:", error);
+        }
+      });
+    } catch (err) {
+      console.error("❌ Resend OTP Error:", err);
+      res.status(500).json({
+        status: false,
+        error: err.message,
+      });
+    }
+  },
 
   customerLogin: async (req, res) => {
     try {
@@ -501,48 +497,48 @@ This code will expire in 15 minutes.
     }
   },
 
-forgotPassword: async (req, res) => {
-  try {
-    const { email } = req.body;
+  forgotPassword: async (req, res) => {
+    try {
+      const { email } = req.body;
 
-    if (!email) {
-      return res.status(400).json({
-        status: false,
-        error: "Email address is required",
-      });
-    }
+      if (!email) {
+        return res.status(400).json({
+          status: false,
+          error: "Email address is required",
+        });
+      }
 
-    console.time("ForgotPassword");
+      console.time("ForgotPassword");
 
-    // 🔹 Find customer
-    const customer = await Customer.findByEmails(email);
+      // 🔹 Find customer
+      const customer = await Customer.findByEmails(email);
 
-    if (!customer) {
-      return res.status(404).json({
-        status: false,
-        error: "User not found",
-      });
-    }
+      if (!customer) {
+        return res.status(404).json({
+          status: false,
+          error: "User not found",
+        });
+      }
 
-    // 🔹 Generate OTP
-    const newOTP = generateSecurityCode();
+      // 🔹 Generate OTP
+      const newOTP = generateSecurityCode();
 
-    if (!validateSecurityCode(newOTP)) {
-      return res.status(400).json({
-        status: false,
-        error: "Generated OTP is invalid",
-      });
-    }
+      if (!validateSecurityCode(newOTP)) {
+        return res.status(400).json({
+          status: false,
+          error: "Generated OTP is invalid",
+        });
+      }
 
-    const now = new Date();
+      const now = new Date();
 
-    // 🔹 Save OTP in DB
-    await Customer.updateOTP(customer.id, newOTP, now);
+      // 🔹 Save OTP in DB
+      await Customer.updateOTP(customer.id, newOTP, now);
 
-    console.timeLog("ForgotPassword", "After DB");
+      console.timeLog("ForgotPassword", "After DB");
 
-    // 🔹 Prepare Email
-    const message = `
+      // 🔹 Prepare Email
+      const message = `
 Hello ${customer.name || "User"},
 
 Your OTP Code for Reset Password is: ${newOTP}
@@ -550,137 +546,166 @@ Your OTP Code for Reset Password is: ${newOTP}
 This code will expire in 15 minutes.
 `;
 
-    // ✅ SEND RESPONSE IMMEDIATELY
-    res.status(200).json({
-      status: true,
-      message: "A new OTP has been sent to your email",
-    });
+      // ✅ SEND RESPONSE IMMEDIATELY
+      res.status(200).json({
+        status: true,
+        message: "A new OTP has been sent to your email",
+      });
 
-    // ✅ SEND EMAIL IN BACKGROUND (NON-BLOCKING)
-    setImmediate(async () => {
-      try {
-        await sendEmail(email, "Reset Password OTP", message);
-        console.timeLog("ForgotPassword", "After Email (Background)");
-        console.timeEnd("ForgotPassword");
-      } catch (error) {
-        console.error("❌ Background Email Error:", error);
+      // ✅ SEND EMAIL IN BACKGROUND (NON-BLOCKING)
+      setImmediate(async () => {
+        try {
+          await sendEmail(email, "Reset Password OTP", message);
+          console.timeLog("ForgotPassword", "After Email (Background)");
+          console.timeEnd("ForgotPassword");
+        } catch (error) {
+          console.error("❌ Background Email Error:", error);
+        }
+      });
+    } catch (err) {
+      console.error("❌ Forgot Password Error:", err);
+      res.status(500).json({
+        status: false,
+        error: err.message,
+      });
+    }
+  },
+
+  resetPassword: async (req, res) => {
+    try {
+      const { email, password, confirmPassword } = req.body;
+
+      if (!email || !password || !confirmPassword) {
+        return res.status(400).json({
+          message: "Email, Password and Confirm Password are required",
+        });
       }
-    });
 
-  } catch (err) {
-    console.error("❌ Forgot Password Error:", err);
-    res.status(500).json({
-      status: false,
-      error: err.message,
-    });
-  }
-},
+      if (password !== confirmPassword) {
+        return res.status(400).json({
+          message: "Passwords do not match",
+        });
+      }
 
-resetPassword: async (req, res) => {
-  try {
-    const { email, password, confirmPassword } = req.body;
+      const customer = await Customer.findByEmailPass(email);
 
-    if (!email || !password || !confirmPassword) {
-      return res.status(400).json({
-        message: "Email, Password and Confirm Password are required",
+      if (!customer) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+
+      // 🔐 Hash password
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      const updated = await Customer.updatePassword(email, hashedPassword);
+
+      if (!updated) {
+        return res.status(500).json({
+          message: "Failed to update password",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Password has been reset successfully",
       });
-    }
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({
-        message: "Passwords do not match",
-      });
-    }
-
-    const customer = await Customer.findByEmailPass(email);
-
-    if (!customer) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
-
-    // 🔐 Hash password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const updated = await Customer.updatePassword(email, hashedPassword);
-
-    if (!updated) {
+    } catch (error) {
+      console.error("Reset Password Error:", error);
       return res.status(500).json({
-        message: "Failed to update password",
+        message: "An error occurred while resetting password",
       });
     }
+  },
 
-    return res.status(200).json({
-      message: "Password has been reset successfully",
-    });
-  } catch (error) {
-    console.error("Reset Password Error:", error);
-    return res.status(500).json({
-      message: "An error occurred while resetting password",
-    });
-  }
-},
+  changePassword: async (req, res) => {
+    try {
+      const userId = req.params.id;
+      const { currentPassword, newPassword, confirmPassword } = req.body;
 
-changePassword: async (req, res) => {
-  try {
-    const userId = req.params.id; // JWT middleware se
-    const { currentPassword, newPassword, confirmPassword } = req.body;
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        return res.status(400).json({
+          status: false,
+          message: "All fields are required",
+        });
+      }
 
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      return res.status(400).json({
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({
+          status: false,
+          message: "New password and confirm password do not match",
+        });
+      }
+
+      const customer = await Customer.findById(userId);
+
+      if (!customer) {
+        return res.status(404).json({
+          status: false,
+          message: "User not found",
+        });
+      }
+
+      // 🔐 Check current password
+      const isMatch = await bcrypt.compare(currentPassword, customer.password);
+
+      if (!isMatch) {
+        return res.status(401).json({
+          status: false,
+          message: "Current password is incorrect",
+        });
+      }
+
+      // 🔐 Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      await Customer.updatePasswordById(userId, hashedPassword);
+
+      return res.status(200).json({
+        status: true,
+        message: "Password changed successfully",
+      });
+    } catch (error) {
+      console.error("❌ Change Password Error:", error);
+      return res.status(500).json({
         status: false,
-        message: "All fields are required",
+        message: "Internal server error",
       });
     }
+  },
 
-    if (newPassword !== confirmPassword) {
-      return res.status(400).json({
+  updateProfileImage: async (req, res) => {
+    try {
+const userId = req.params.id;
+      const { image } = req.file;
+    
+      if (req.file) {
+      const imageUrl = `${BASE_URL}${req.file.filename}`;
+      req.body.image = imageUrl;
+    }
+      const customer = await Customer.findById(userId);
+
+      if (!customer) {
+        return res.status(400).json({
+          status: false,
+          error: "Customer Not Found",
+        });
+      }
+      await Customer.updateProfileImage(userId, req.body.image);
+
+      // ✅ SEND RESPONSE IMMEDIATELY
+      res.status(200).json({
+        status: true,
+        message: "Profile Image Updated Successfully",
+      });
+
+    } catch (err) {
+      console.error("❌ Profile Image Error:", err);
+      res.status(500).json({
         status: false,
-        message: "New password and confirm password do not match",
+        error: err.message,
       });
     }
-
-    const customer = await Customer.findById(userId);
-
-    if (!customer) {
-      return res.status(404).json({
-        status: false,
-        message: "User not found",
-      });
-    }
-
-    // 🔐 Check current password
-    const isMatch = await bcrypt.compare(
-      currentPassword,
-      customer.password
-    );
-
-    if (!isMatch) {
-      return res.status(401).json({
-        status: false,
-        message: "Current password is incorrect",
-      });
-    }
-
-    // 🔐 Hash new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    await Customer.updatePasswordById(userId, hashedPassword);
-
-    return res.status(200).json({
-      status: true,
-      message: "Password changed successfully",
-    });
-
-  } catch (error) {
-    console.error("❌ Change Password Error:", error);
-    return res.status(500).json({
-      status: false,
-      message: "Internal server error",
-    });
-  }
-},
+  },
 
 };

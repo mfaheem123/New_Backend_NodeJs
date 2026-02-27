@@ -421,15 +421,12 @@ exports.getById = async (id) => {
 
     return {
       status: true,
-      account_invoice: result.rows[0] || null
+      account_invoice: result.rows[0] || null,
     };
   } catch (err) {
     throw err;
   }
 };
-
-
-
 
 exports.update = async (id, data) => {
   try {

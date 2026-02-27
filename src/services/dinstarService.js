@@ -30,16 +30,13 @@ async function sendViaDinstar(number, text, port) {
 
     const response = await httpClient.request(url, options);
 
-    const responseData = response.data
-      ? response.data.toString()
-      : null;
+    const responseData = response.data ? response.data.toString() : null;
 
     return {
       success: true,
       statusCode: response.status,
       data: responseData,
     };
-
   } catch (error) {
     console.error("Dinstar Error:", error.message);
 

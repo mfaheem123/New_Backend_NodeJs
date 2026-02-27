@@ -780,13 +780,15 @@ exports.updateBookingFareCharges = async (req, res) => {
       congestion_charges,
       total_charges,
     } = req.body;
-
+    console.log(
+      "🚀 INCOMING UPDATE BOOKING CHARGES BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     if (
       !fares ||
       !parking_charges ||
       !waiting_charges ||
       !extra_drop_charges ||
-      !meet_and_greet ||
       !congestion_charges ||
       !total_charges
     ) {
@@ -830,11 +832,10 @@ exports.updateBookingFareCharges = async (req, res) => {
   }
 };
 
-
 exports.getDriverEarning = async (req, res) => {
   try {
-    const { driver_id } = req.body;
-
+    const  driver_id  = req.params.id;
+console.log(driver_id)
     if (!driver_id) {
       return res.status(400).json({
         status: false,

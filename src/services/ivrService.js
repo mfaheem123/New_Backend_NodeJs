@@ -279,163 +279,158 @@ exports.handleFallbackIvr = async (body) => {
   }
 
   /* STEP 4 - CONFIRM & CALCULATE FARE */
-//   if (session.step === 4) {
-//     if (text === "2") return hangup("Booking cancelled.");
-//     if (text !== "1") return hangup("Invalid option.");
+  //   if (session.step === 4) {
+  //     if (text === "2") return hangup("Booking cancelled.");
+  //     if (text !== "1") return hangup("Invalid option.");
 
-//     const now = new Date();
-//     const pickup_date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-//     const pickup_time = `${String(now.getHours()).padStart(2, "0")}:${String(
-//       now.getMinutes(),
-//     ).padStart(2, "0")}`;
-//     const reference_number = await genRef();
-//     const formattedNumber = formatMobile(callerNumber);
+  //     const now = new Date();
+  //     const pickup_date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+  //     const pickup_time = `${String(now.getHours()).padStart(2, "0")}:${String(
+  //       now.getMinutes(),
+  //     ).padStart(2, "0")}`;
+  //     const reference_number = await genRef();
+  //     const formattedNumber = formatMobile(callerNumber);
 
-//     console.time("customerQuery");
+  //     console.time("customerQuery");
 
-//     const customerRes = await pool.query(
-//       "SELECT id FROM customers WHERE mobile = $1",
-//       [formattedNumber],
-//     );
+  //     const customerRes = await pool.query(
+  //       "SELECT id FROM customers WHERE mobile = $1",
+  //       [formattedNumber],
+  //     );
 
-//     console.timeEnd("customerQuery");
+  //     console.timeEnd("customerQuery");
 
-//     if (!customerRes.rows.length) return hangup("Customer not found.");
-//     const customerId = customerRes.rows[0].id;
+  //     if (!customerRes.rows.length) return hangup("Customer not found.");
+  //     const customerId = customerRes.rows[0].id;
 
+  // console.time("osrm");
 
-// console.time("osrm");
+  //     // Calculate distance & ETA using OSRM
+  //     const { miles, eta } = await calculateDistanceAndTimeOSRM(
+  //       session.pickup_latitude,
+  //       session.pickup_longitude,
+  //       session.dropoff_latitude,
+  //       session.dropoff_longitude,
+  //     );
+  // console.timeEnd("osrm");
 
-//     // Calculate distance & ETA using OSRM
-//     const { miles, eta } = await calculateDistanceAndTimeOSRM(
-//       session.pickup_latitude,
-//       session.pickup_longitude,
-//       session.dropoff_latitude,
-//       session.dropoff_longitude,
-//     );
-// console.timeEnd("osrm");
+  // console.time("fare");
+  //     // Calculate fare
+  //     const fareData = await calculateSingleFare({
+  //       pickup_date,
+  //       pickup_time,
+  //       vehicle_type_id: session.vehicle_type_id,
+  //       pickup: session.pickup,
+  //       dropoff: session.dropoff,
+  //       miles,
+  //     });
 
+  // console.timeEnd("fare");
 
-// console.time("fare");
-//     // Calculate fare
-//     const fareData = await calculateSingleFare({
-//       pickup_date,
-//       pickup_time,
-//       vehicle_type_id: session.vehicle_type_id,
-//       pickup: session.pickup,
-//       dropoff: session.dropoff,
-//       miles,
-//     });
+  //     const fares = fareData.data?.fare || 0;
+  //     const total_charges = fareData.data?.total_fare || fares;
 
-// console.timeEnd("fare");
+  //     console.time("insert");
 
-//     const fares = fareData.data?.fare || 0;
-//     const total_charges = fareData.data?.total_fare || fares;
+  //     // Insert booking
+  //     await pool.query(
+  //       `INSERT INTO bookings (
+  //         customer_id,
+  //         pickup,
+  //         dropoff,
+  //         pickup_latitude,
+  //         pickup_longitude,
+  //         dropoff_latitude,
+  //         dropoff_longitude,
+  //         pickup_date,
+  //         pickup_time,
+  //         reference_number,
+  //         vehicle_type_id,
+  //         subsidiary_id,
+  //         employee_id,
+  //         name,
+  //         email,
+  //         mobile,
+  //         telephone,
+  //         miles,
+  //         eta,
+  //         fares,
+  //         total_charges,
+  //         booking_source,
+  //         booking_status_id,
+  //         journey_type_id,
+  //         booking_type_id,
+  //         payment_type_id,
+  //         viapoints,
+  //         restricted_drivers,
+  //         child_seat,
+  //         notes,
+  //         sms,
+  //         on_route,
+  //         arrived,
+  //         passenger_on_board,
+  //         completed,
+  //         controller_completed
+  //       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,'ivr',1,1,1,1,'[]','[]','[]','[]',true,false,false,false,false,false)`,
+  //       [
+  //         customerId,
+  //         session.pickup,
+  //         session.dropoff,
+  //         session.pickup_latitude,
+  //         session.pickup_longitude,
+  //         session.dropoff_latitude,
+  //         session.dropoff_longitude,
+  //         pickup_date,
+  //         pickup_time,
+  //         reference_number,
+  //         session.vehicle_type_id,
+  //         session.subsidiary_id,
+  //         session.employee_id,
+  //         session.name,
+  //         session.email,
+  //         session.mobile,
+  //         session.telephone,
+  //         miles,
+  //         eta,
+  //         fares,
+  //         total_charges,
+  //       ],
+  //     );
 
+  //  console.timeEnd("insert");
 
-//     console.time("insert");
+  //     session.step = 5;
 
+  //     return waitForKeypress(
+  //       "Booking confirmed. Press 1 for operator. Press 0 to hangup.",
+  //     );
+  //   }
 
-//     // Insert booking
-//     await pool.query(
-//       `INSERT INTO bookings (
-//         customer_id,
-//         pickup,
-//         dropoff,
-//         pickup_latitude,
-//         pickup_longitude,
-//         dropoff_latitude,
-//         dropoff_longitude,
-//         pickup_date,
-//         pickup_time,
-//         reference_number,
-//         vehicle_type_id,
-//         subsidiary_id,
-//         employee_id,
-//         name,
-//         email,
-//         mobile,
-//         telephone,
-//         miles,
-//         eta,
-//         fares,
-//         total_charges,
-//         booking_source,
-//         booking_status_id,
-//         journey_type_id,
-//         booking_type_id,
-//         payment_type_id,
-//         viapoints,
-//         restricted_drivers,
-//         child_seat,
-//         notes,
-//         sms,
-//         on_route,
-//         arrived,
-//         passenger_on_board,
-//         completed,
-//         controller_completed
-//       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,'ivr',1,1,1,1,'[]','[]','[]','[]',true,false,false,false,false,false)`,
-//       [
-//         customerId,
-//         session.pickup,
-//         session.dropoff,
-//         session.pickup_latitude,
-//         session.pickup_longitude,
-//         session.dropoff_latitude,
-//         session.dropoff_longitude,
-//         pickup_date,
-//         pickup_time,
-//         reference_number,
-//         session.vehicle_type_id,
-//         session.subsidiary_id,
-//         session.employee_id,
-//         session.name,
-//         session.email,
-//         session.mobile,
-//         session.telephone,
-//         miles,
-//         eta,
-//         fares,
-//         total_charges,
-//       ],
-//     );
+  /* STEP 4 - CONFIRM & FAST INSERT (ASYNC DISTANCE) */
+  if (session.step === 4) {
+    if (text === "2") return hangup("Booking cancelled.");
+    if (text !== "1") return hangup("Invalid option.");
 
-//  console.timeEnd("insert");
+    const now = new Date();
+    const pickup_date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    const pickup_time = `${String(now.getHours()).padStart(2, "0")}:${String(
+      now.getMinutes(),
+    ).padStart(2, "0")}`;
 
-//     session.step = 5;
+    const reference_number = await genRef();
+    const formattedNumber = formatMobile(callerNumber);
 
-//     return waitForKeypress(
-//       "Booking confirmed. Press 1 for operator. Press 0 to hangup.",
-//     );
-//   }
+    const customerRes = await pool.query(
+      "SELECT id FROM customers WHERE mobile = $1",
+      [formattedNumber],
+    );
 
+    if (!customerRes.rows.length) return hangup("Customer not found.");
+    const customerId = customerRes.rows[0].id;
 
-/* STEP 4 - CONFIRM & FAST INSERT (ASYNC DISTANCE) */
-if (session.step === 4) {
-  if (text === "2") return hangup("Booking cancelled.");
-  if (text !== "1") return hangup("Invalid option.");
-
-  const now = new Date();
-  const pickup_date = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-  const pickup_time = `${String(now.getHours()).padStart(2, "0")}:${String(
-    now.getMinutes(),
-  ).padStart(2, "0")}`;
-
-  const reference_number = await genRef();
-  const formattedNumber = formatMobile(callerNumber);
-
-  const customerRes = await pool.query(
-    "SELECT id FROM customers WHERE mobile = $1",
-    [formattedNumber],
-  );
-
-  if (!customerRes.rows.length) return hangup("Customer not found.");
-  const customerId = customerRes.rows[0].id;
-
-  /* 🚀 STEP 1: FAST INSERT (NO OSRM WAIT) */
-  const bookingRes = await pool.query(
-    `INSERT INTO bookings (
+    /* 🚀 STEP 1: FAST INSERT (NO OSRM WAIT) */
+    const bookingRes = await pool.query(
+      `INSERT INTO bookings (
       customer_id,
       pickup,
       dropoff,
@@ -479,74 +474,73 @@ if (session.step === 4) {
       '[]','[]','[]','[]',
       true,false,false,false,false,false
     ) RETURNING id`,
-    [
-      customerId,
-      session.pickup,
-      session.dropoff,
-      session.pickup_latitude,
-      session.pickup_longitude,
-      session.dropoff_latitude,
-      session.dropoff_longitude,
-      pickup_date,
-      pickup_time,
-      reference_number,
-      session.vehicle_type_id,
-      session.subsidiary_id,
-      session.employee_id,
-      session.name,
-      session.email,
-      session.mobile,
-      session.telephone,
-    ],
-  );
-
-  const bookingId = bookingRes.rows[0].id;
-
-  /* 🚀 STEP 2: BACKGROUND DISTANCE + FARE */
-  setImmediate(async () => {
-    try {
-      console.time("osrm-background");
-
-      const { miles, eta } = await calculateDistanceAndTimeOSRM(
+      [
+        customerId,
+        session.pickup,
+        session.dropoff,
         session.pickup_latitude,
         session.pickup_longitude,
         session.dropoff_latitude,
         session.dropoff_longitude,
-      );
-
-      console.timeEnd("osrm-background");
-
-      const fareData = await calculateSingleFare({
         pickup_date,
         pickup_time,
-        vehicle_type_id: session.vehicle_type_id,
-        pickup: session.pickup,
-        dropoff: session.dropoff,
-        miles,
-      });
+        reference_number,
+        session.vehicle_type_id,
+        session.subsidiary_id,
+        session.employee_id,
+        session.name,
+        session.email,
+        session.mobile,
+        session.telephone,
+      ],
+    );
 
-      const fares = fareData.data?.fare || 0;
-      const total_charges = fareData.data?.total_fare || fares;
+    const bookingId = bookingRes.rows[0].id;
 
-      await pool.query(
-        `UPDATE bookings
+    /* 🚀 STEP 2: BACKGROUND DISTANCE + FARE */
+    setImmediate(async () => {
+      try {
+        console.time("osrm-background");
+
+        const { miles, eta } = await calculateDistanceAndTimeOSRM(
+          session.pickup_latitude,
+          session.pickup_longitude,
+          session.dropoff_latitude,
+          session.dropoff_longitude,
+        );
+
+        console.timeEnd("osrm-background");
+
+        const fareData = await calculateSingleFare({
+          pickup_date,
+          pickup_time,
+          vehicle_type_id: session.vehicle_type_id,
+          pickup: session.pickup,
+          dropoff: session.dropoff,
+          miles,
+        });
+
+        const fares = fareData.data?.fare || 0;
+        const total_charges = fareData.data?.total_fare || fares;
+
+        await pool.query(
+          `UPDATE bookings
          SET miles=$1, eta=$2, fares=$3, total_charges=$4
          WHERE id=$5`,
-        [miles, eta, fares, total_charges, bookingId],
-      );
+          [miles, eta, fares, total_charges, bookingId],
+        );
+      } catch (err) {
+        console.error("Background fare calculation failed:", err);
+      }
+    });
 
-    } catch (err) {
-      console.error("Background fare calculation failed:", err);
-    }
-  });
+    session.step = 5;
 
-  session.step = 5;
-
-  /* 🚀 STEP 3: INSTANT IVR RESPONSE */
-  return waitForKeypress(
-    "Booking confirmed. Press 1 for operator. Press 0 to hangup.",
-  );
-}
+    /* 🚀 STEP 3: INSTANT IVR RESPONSE */
+    return waitForKeypress(
+      "Booking confirmed. Press 1 for operator. Press 0 to hangup.",
+    );
+  }
 
   /* STEP 5 - AFTER CONFIRMATION */
   if (session.step === 5) {
