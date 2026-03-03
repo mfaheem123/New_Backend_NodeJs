@@ -1,31 +1,55 @@
 const FixedFare = require("../models/fixedFareModel");
 
+
 exports.createFixedFares = async (req, res) => {
   try {
-    let fixedFares = req.body;
+    console.log(
+      "🚀 INCOMING ADD FIXED FARES BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
 
-    if (typeof fixedFares.data === "string") {
-      fixedFares = JSON.parse(fixedFares.data);
+    let data = req.body;
+
+    // Agar stringified JSON aaye
+    if (typeof data.area1 === "string" && data.area1.startsWith("[")) {
+      data.area1 = JSON.parse(data.area1);
     }
 
-    if (!Array.isArray(fixedFares)) {
-      fixedFares = [fixedFares];
+    if (typeof data.area2 === "string" && data.area2.startsWith("[")) {
+      data.area2 = JSON.parse(data.area2);
     }
 
-    if (fixedFares.length === 0) {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid payload",
-      });
+    // Ensure arrays
+    const area1Array = Array.isArray(data.area1)
+      ? data.area1
+      : [data.area1];
+
+    const area2Array = Array.isArray(data.area2)
+      ? data.area2
+      : [data.area2];
+
+    const finalPayload = [];
+
+    // 🔥 Cartesian Product Logic
+    for (const a1 of area1Array) {
+      for (const a2 of area2Array) {
+        finalPayload.push({
+          vehicle_type_id: data.vehicle_type_id,
+          area1: typeof a1 === "object" ? Object.values(a1)[0] : a1,
+          area2: typeof a2 === "object" ? Object.values(a2)[0] : a2,
+          fares: data.fares,
+          from_location_id: data.from_location_id,
+          to_location_id: data.to_location_id,
+        });
+      }
     }
 
-    const newFares = await FixedFare.create(fixedFares);
+    const newFares = await FixedFare.create(finalPayload);
 
     res.json({
       status: true,
       message: "Fixed Fare Created Successfully",
-      fixed_fare:
-        newFares.length === 1 ? newFares[0] : newFares,
+      fixed_fare: newFares,
     });
   } catch (err) {
     console.error(err);
@@ -36,14 +60,46 @@ exports.createFixedFares = async (req, res) => {
   }
 };
 
-
 exports.getAllFixedFares = async (req, res) => {
   try {
-    const { offset = 0, limit = 100 } = req.query;
-    const fares = await FixedFare.getAll(offset, limit);
-    res.json({ status: true, count: fares.length, fixed_fares: fares });
+    const {
+      page = 1,
+      limit = 10,
+      vehicle_type_name,
+      fares,
+      area1,
+      area2
+    } = req.query;
+
+    const offset = (page - 1) * limit;
+
+    const result = await FixedFare.getAll({
+      offset: Number(offset),
+      limit: Number(limit),
+      vehicle_type_name,
+      fares,
+      area1,
+      area2
+    });
+
+    const totalPages = Math.ceil(result.totalRecords / limit);
+
+    res.json({
+      status: true,
+      total_records: result.totalRecords,
+      total_pages: totalPages,
+      current_page: Number(page),
+      limit: Number(limit),
+      has_next: Number(page) < totalPages,
+      has_prev: Number(page) > 1,
+      fixed_fares: result.rows
+    });
+
   } catch (err) {
-    res.status(500).json({ status: false, error: err.message });
+    res.status(500).json({
+      status: false,
+      error: err.message
+    });
   }
 };
 

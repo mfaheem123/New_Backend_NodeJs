@@ -10,7 +10,7 @@ exports.create = async (req, res) => {
     );
     const result = await DriverCommission.create(req.body);
 
-    return res.status(201).json({
+    return res.status(200).json({
       status: true,
       driver_commission: result.commission,
       driver_commission_lineitems: {
@@ -101,6 +101,57 @@ exports.getById = async (req, res) => {
     return res.json({
       status: true,
       driver_commission: commission,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};
+
+
+exports.update = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        status: false,
+        message: "Commission id is required",
+      });
+    }
+
+    const result = await DriverCommission.update(id, req.body);
+
+    return res.status(200).json({
+      status: true,
+      driver_commission: result,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};
+
+exports.delete = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        status: false,
+        message: "Commission id is required",
+      });
+    }
+
+    await DriverCommission.delete(id);
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver commission deleted successfully",
     });
   } catch (err) {
     return res.status(500).json({

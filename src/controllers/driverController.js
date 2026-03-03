@@ -574,7 +574,6 @@ exports.driverLogin = async (req, res) => {
       expiresIn: "1d",
     });
 
-    await Driver.updateDriverLoginStatus(driver.id);
 
     if (fcm_token) {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
@@ -583,15 +582,6 @@ exports.driverLogin = async (req, res) => {
     // ONLY IMPORTANT FIX
     const updatedDriver = await Driver.getLoginDriverById(driver.id);
 
-    notifyDriverLogin({
-      id: updatedDriver.id,
-      name: updatedDriver.name,
-      mobile: updatedDriver.mobile,
-      vehicle_id: updatedDriver.vehicle_id,
-      company_vehicle_id: updatedDriver.company_vehicle_id,
-      status: "logged_in",
-      login_time: new Date(),
-    });
 
     // API Response
     return res.status(200).json({
@@ -643,14 +633,27 @@ exports.verifyDriverToken = async (req, res) => {
 
     // 3️⃣ Token comparison
     if (storedToken === driver_access_token) {
+
+      await Driver.updateDriverLoginStatus(id);
+const updatedDriver = await Driver.getLoginDriverById(id);
+
+  notifyDriverLogin({
+    id: updatedDriver.id,
+    name: updatedDriver.name,
+    mobile: updatedDriver.mobile,
+    vehicle_id: updatedDriver.vehicle_id,
+    company_vehicle_id: updatedDriver.company_vehicle_id,
+    status: "logged_in",
+    login_time: new Date(),
+  });
       return res.status(200).json({
         status: true,
         message: "Token verified successfully",
       });
     } else {
-      return res.status(401).json({
+      return res.status(400).json({
         status: false,
-        message: "Invalid token",
+        message: "Invalid Token",
       });
     }
   } catch (error) {
@@ -744,6 +747,63 @@ exports.getDriversByCommissionType = async (req, res) => {
     return res.status(500).json({
       status: false,
       message: "Internal server error",
+    });
+  }
+};
+
+
+exports.getBySessionStatus = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 100,
+      session_status,   // 👈 new param
+      username,
+      name,
+      mobile,
+      mot_expiry,
+      mot2_expiry,
+      insurance_expiry,
+      licence_expiry,
+      driver_end_date,
+      vehicle_end_date,
+      vehicle_type,
+      subsidiary,
+      active = true,
+    } = req.query;
+
+    const { total, drivers } = await Driver.getBySessionStatus({
+      page: Number(page),
+      limit: Math.min(1000, Number(limit)),
+      session_status,
+      username,
+      name,
+      mobile,
+      mot_expiry,
+      mot2_expiry,
+      insurance_expiry,
+      licence_expiry,
+      driver_end_date,
+      vehicle_end_date,
+      vehicle_type,
+      subsidiary,
+      active,
+    });
+
+    res.json({
+      status: true,
+      page: Number(page),
+      limit: Math.min(1000, Number(limit)),
+      total,
+      total_pages: Math.ceil(total / limit),
+      count: drivers.length,
+      drivers,
+    });
+  } catch (err) {
+    console.error("Error fetching drivers by session:", err);
+    res.status(500).json({
+      status: false,
+      message: "Server error",
     });
   }
 };

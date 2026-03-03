@@ -48,23 +48,74 @@ const FixedFare = {
 
 
   // ✅ READ ALL (with pagination)
-  async getAll(offset = 0, limit = 100) {
-    const query = `
-      SELECT 
-      f.*,
-      vt.name AS vehicle_type_name,
-      fl.name AS from_location_name,
-      tl.name AS to_location_name
+ async getAll({
+  offset = 0,
+  limit = 10,
+  vehicle_type_name,
+  fares,
+  area1,
+  area2
+}) {
+
+  let baseQuery = `
     FROM fixed_fares f
     JOIN vehicle_types vt ON f.vehicle_type_id = vt.id
     JOIN location_types fl ON f.from_location_id = fl.id
     JOIN location_types tl ON f.to_location_id = tl.id
+  `;
+
+  let conditions = [];
+  let values = [];
+  let index = 1;
+
+  if (vehicle_type_name) {
+    conditions.push(`LOWER(vt.name) LIKE LOWER($${index++})`);
+    values.push(`%${vehicle_type_name}%`);
+  }
+
+  if (fares) {
+    conditions.push(`CAST(f.fares AS TEXT) LIKE $${index++}`);
+    values.push(`%${fares}%`);
+  }
+
+  if (area1) {
+    conditions.push(`LOWER(f.area1) LIKE LOWER($${index++})`);
+    values.push(`%${area1}%`);
+  }
+
+  if (area2) {
+    conditions.push(`LOWER(f.area2) LIKE LOWER($${index++})`);
+    values.push(`%${area2}%`);
+  }
+
+  let whereClause = "";
+  if (conditions.length > 0) {
+    whereClause = " WHERE " + conditions.join(" AND ");
+  }
+
+  // 🔹 Get Total Count
+  const countQuery = `SELECT COUNT(*) ${baseQuery} ${whereClause}`;
+  const countResult = await pool.query(countQuery, values);
+  const totalRecords = parseInt(countResult.rows[0].count);
+
+  // 🔹 Get Paginated Data
+  const dataQuery = `
+    SELECT 
+      f.*,
+      vt.name AS vehicle_type_name,
+      fl.name AS from_location_name,
+      tl.name AS to_location_name
+    ${baseQuery}
+    ${whereClause}
     ORDER BY f.id DESC
-    OFFSET $1 LIMIT $2
-    `;
-    const { rows } = await pool.query(query, [offset, limit]);
-    return rows;
-  },
+    OFFSET $${index++} LIMIT $${index}
+  `;
+
+  const dataValues = [...values, offset, limit];
+  const { rows } = await pool.query(dataQuery, dataValues);
+
+  return { rows, totalRecords };
+},
 
   // ✅ READ BY ID
   async getById(id) {

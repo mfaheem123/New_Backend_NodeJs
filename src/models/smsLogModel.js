@@ -7,7 +7,7 @@ async function createSMSLog(data) {
     `INSERT INTO sms_logs 
     (template_id, mobile, message, status, gateway_response) 
     VALUES ($1, $2, $3, $4, $5)`,
-    [template_id, mobile, message, status, gateway_response]
+    [template_id, mobile, message, status, gateway_response],
   );
 }
 

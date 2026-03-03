@@ -7,7 +7,9 @@ const {
   getBookingByIdEnriched,
 } = require("../models/bookingModel");
 const { sendBookingNotification } = require("./notificationService");
+const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
+const driverAppFeatureModel = require("../models/driverAppFeaturesModel");
 const DEFAULT_EMPLOYEE_ID = 28;
 
 const parseJSONFields = (row) => {
@@ -326,14 +328,29 @@ async function createSimpleBooking(payload) {
       );
       customerId = res.rows[0].id;
     }
+    if (payload.driver_id) {
+      const driverFeatures = await driverAppFeatureModel.getByDriverId(
+        payload.driver_id,
+      );
 
+      if (driverFeatures) {
+        payload.fare_meter = !!driverFeatures.fare_meter;
+      } else {
+        // Agar record hi nahi mila to default false rakh do
+        payload.fare_meter = false;
+      }
+    }
     const normalized = await normalizeBookingPayload(payload);
     if (customerId) normalized.customer_id = customerId;
 
     const inserted = await createBookingRow(pool, normalized);
+    console.log(inserted);
 
     const enriched = await getBookingByIdEnriched(inserted.id);
     const clean = parseJSONFields(enriched);
+
+    //  SEND SMS
+    await sendBookingSMS(clean);
 
     // SEND NOTIFICATION
     if (clean.driver_id) {
@@ -747,10 +764,10 @@ async function createMultiReservationBooking(payload) {
      * ----------------------------- */
     const createdBookingIds = [];
 
-  /* ==========================
+    /* ==========================
      MULTI RESERVATION WITHOUT FARE
   ========================== */
-    
+
     // for (const mr of payload.multi_reservation) {
     //   if (mr.exclude === true) continue;
 
@@ -823,107 +840,100 @@ async function createMultiReservationBooking(payload) {
     //   }
     // }
 
-
-  /* ==========================
+    /* ==========================
      MULTI RESERVATION WITHOUT FARE
   ========================== */
-for (const mr of payload.multi_reservation) {
-  if (mr.exclude === true) continue;
+    for (const mr of payload.multi_reservation) {
+      if (mr.exclude === true) continue;
 
-  /* ==========================
+      /* ==========================
      OUTBOUND BOOKING
   ========================== */
 
-  const outboundClone = { ...payload };
+      const outboundClone = { ...payload };
 
-  outboundClone.pickup = payload.pickup;
-  outboundClone.dropoff = payload.dropoff;
+      outboundClone.pickup = payload.pickup;
+      outboundClone.dropoff = payload.dropoff;
 
-  outboundClone.pickup_date = mr.pickup_date;
-  outboundClone.pickup_time = mr.pickup_time;
+      outboundClone.pickup_date = mr.pickup_date;
+      outboundClone.pickup_time = mr.pickup_time;
 
-  delete outboundClone.multi_reservation;
-  delete outboundClone.multi_vehicle;
+      delete outboundClone.multi_reservation;
+      delete outboundClone.multi_vehicle;
 
-  /* ---- CALCULATE OUTBOUND FARE ---- */
-  const outboundFare = await calculateSingleFare({
-    ...outboundClone,
-    pickup_date: mr.pickup_date,
-    pickup_time: mr.pickup_time,
-    journey_type_id: 3,
-  });
+      /* ---- CALCULATE OUTBOUND FARE ---- */
+      const outboundFare = await calculateSingleFare({
+        ...outboundClone,
+        pickup_date: mr.pickup_date,
+        pickup_time: mr.pickup_time,
+        journey_type_id: 3,
+      });
 
-  outboundClone.fares = outboundFare.fare;
-  outboundClone.total_charges = outboundFare.total_fare;
+      outboundClone.fares = outboundFare.fare;
+      outboundClone.total_charges = outboundFare.total_fare;
 
-  const normalizedOutbound =
-    await normalizeBookingPayload(outboundClone);
+      const normalizedOutbound = await normalizeBookingPayload(outboundClone);
 
-  normalizedOutbound.customer_id = customerId;
-  normalizedOutbound.multi_booking_id = multiBookingId;
-  normalizedOutbound.reference_number = await genRef();
+      normalizedOutbound.customer_id = customerId;
+      normalizedOutbound.multi_booking_id = multiBookingId;
+      normalizedOutbound.reference_number = await genRef();
 
-  const outboundInserted =
-    await createBookingRow(pool, normalizedOutbound);
+      const outboundInserted = await createBookingRow(pool, normalizedOutbound);
 
-  createdBookingIds.push(outboundInserted.id);
+      createdBookingIds.push(outboundInserted.id);
 
-  /* ==========================
+      /* ==========================
      RETURN BOOKING
   ========================== */
 
-  const shouldCreateReturn =
-    Number(payload.journey_type_id) === 3 &&
-    mr.return_pickup_time;
+      const shouldCreateReturn =
+        Number(payload.journey_type_id) === 3 && mr.return_pickup_time;
 
-  if (shouldCreateReturn) {
+      if (shouldCreateReturn) {
+        const returnClone = {
+          ...payload,
 
-    const returnClone = {
-      ...payload,
+          pickup: payload.return_pickup,
+          dropoff: payload.return_dropoff,
 
-      pickup: payload.return_pickup,
-      dropoff: payload.return_dropoff,
+          pickup_date: mr.pickup_date,
+          pickup_time: mr.return_pickup_time,
 
-      pickup_date: mr.pickup_date,
-      pickup_time: mr.return_pickup_time,
+          pickup_plot_id: payload.return_pickup_plot_id,
+          dropoff_plot_id: payload.return_dropoff_plot_id,
 
-      pickup_plot_id: payload.return_pickup_plot_id,
-      dropoff_plot_id: payload.return_dropoff_plot_id,
+          vehicle_type_id:
+            payload.return_vehicle_type_id || payload.vehicle_type_id,
 
-      vehicle_type_id:
-        payload.return_vehicle_type_id || payload.vehicle_type_id,
+          associated_booking: outboundInserted.id,
+          journey_type_id: 3,
+        };
 
-      associated_booking: outboundInserted.id,
-      journey_type_id: 3,
-    };
+        delete returnClone.multi_reservation;
+        delete returnClone.multi_vehicle;
 
-    delete returnClone.multi_reservation;
-    delete returnClone.multi_vehicle;
+        /* ---- CALCULATE RETURN FARE ---- */
+        const returnFare = await calculateSingleFare({
+          ...returnClone,
+          pickup_date: mr.pickup_date,
+          pickup_time: mr.return_pickup_time,
+          journey_type_id: 1,
+        });
 
-    /* ---- CALCULATE RETURN FARE ---- */
-    const returnFare = await calculateSingleFare({
-      ...returnClone,
-      pickup_date: mr.pickup_date,
-      pickup_time: mr.return_pickup_time,
-      journey_type_id: 1,
-    });
+        returnClone.fares = returnFare.fare;
+        returnClone.total_charges = returnFare.total_fare;
 
-    returnClone.fares = returnFare.fare;
-    returnClone.total_charges = returnFare.total_fare;
+        const normalizedReturn = await normalizeBookingPayload(returnClone);
 
-    const normalizedReturn =
-      await normalizeBookingPayload(returnClone);
+        normalizedReturn.customer_id = customerId;
+        normalizedReturn.multi_booking_id = multiBookingId;
+        normalizedReturn.reference_number = await genRef();
 
-    normalizedReturn.customer_id = customerId;
-    normalizedReturn.multi_booking_id = multiBookingId;
-    normalizedReturn.reference_number = await genRef();
+        const returnInserted = await createBookingRow(pool, normalizedReturn);
 
-    const returnInserted =
-      await createBookingRow(pool, normalizedReturn);
-
-    createdBookingIds.push(returnInserted.id);
-  }
-}
+        createdBookingIds.push(returnInserted.id);
+      }
+    }
 
     /* -----------------------------
      * FETCH ENRICHED BOOKINGS
@@ -1161,6 +1171,7 @@ async function updateBookingService(bookingId, payload) {
     "stripe_payment_id",
     "invoice_number",
     "initial_subsidiary_id",
+    "lead_time",
   ];
 
   // 2️ Filter payload

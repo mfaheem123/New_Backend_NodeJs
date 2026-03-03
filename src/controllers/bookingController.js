@@ -591,9 +591,23 @@ exports.getBookingByDriverCommission = async (req, res) => {
     });
   }
 
+  let paymentTypeArray;
+
+  try {
+    // handle both single and multiple values
+    paymentTypeArray = Array.isArray(payment_type_id)
+      ? payment_type_id.map(Number)
+      : JSON.parse(payment_type_id).map(Number);
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      message: "payment_type_id must be valid array like [1,3]",
+    });
+  }
+
   const bookings = await getBookingByDriverCommission(
-    driver_id,
-    payment_type_id,
+    Number(driver_id),
+    paymentTypeArray,
     from_date,
     to_date,
   );

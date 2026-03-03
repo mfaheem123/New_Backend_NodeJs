@@ -4,8 +4,8 @@ const pool = require("../db");
 exports.getAll = async () => {
   const query = `
     SELECT id,
-           TO_CHAR(start_date, 'DD-MM-YYYY') AS start_date,
-           TO_CHAR(end_date, 'DD-MM-YYYY') AS end_date,
+           start_date,
+           end_date,
            operator,
            amount,
            fix_fare,
@@ -35,8 +35,8 @@ exports.create = async (data) => {
     VALUES (
     $1,$2,$3, $4, $5, $6)
     RETURNING id,
-              TO_CHAR(start_date, 'DD-MM-YYYY') AS start_date,
-              TO_CHAR(end_date, 'DD-MM-YYYY') AS end_date,
+              start_date,
+              end_date,
               operator, amount, fix_fare, mileage;
   `;
 
@@ -70,8 +70,8 @@ exports.update = async (id, data) => {
         updated_at = CURRENT_TIMESTAMP
     WHERE id = $${index}
     RETURNING id,
-              TO_CHAR(start_date, 'DD-MM-YYYY') AS start_date,
-              TO_CHAR(end_date, 'DD-MM-YYYY') AS end_date,
+              start_date,
+              end_date,
               operator, amount, fix_fare, mileage;
   `;
 

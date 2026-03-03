@@ -19,4 +19,3 @@ router.post("/app_features", upload.none(), controller.updateDriverAppFeatures);
 router.get("/app_features", controller.getDriverAppFeatures);
 
 module.exports = router;
-

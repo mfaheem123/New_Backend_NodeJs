@@ -107,7 +107,11 @@ const create = async (req, res) => {
     else if (req.body.blacklist === "false" || req.body.blacklist === false)
       req.body.blacklist = false;
     else req.body.blacklist = false; // default
-
+    
+console.log(
+      "🚀 INCOMING ADD LOCATION BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const newLoc = await Location.create(req.body);
     res.status(200).json({
       status: true,

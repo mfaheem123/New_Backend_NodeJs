@@ -512,14 +512,14 @@ const getBookingByDriverId = async (driver_id, lastdays) => {
 
 const getBookingByDriverCommission = async (
   driver_id,
-  payment_type_id,
+  payment_type_ids,
   from_date,
   to_date,
 ) => {
   const sql = `
     ${ENRICHED_SELECT}
     WHERE b.driver_id = $1 
-    AND b.payment_type_id = $2 
+    AND b.payment_type_id = ANY($2::int[])
     AND b.booking_status_id = 11
     AND b.commission_status = 'open'
     AND b.commission = true
@@ -528,7 +528,7 @@ const getBookingByDriverCommission = async (
 
   const res = await pool.query(sql, [
     driver_id,
-    payment_type_id,
+    payment_type_ids,
     from_date,
     to_date,
   ]);
