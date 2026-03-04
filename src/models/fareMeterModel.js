@@ -108,4 +108,17 @@ module.exports = {
     const query = `DELETE FROM fare_meters WHERE id = $1 RETURNING *;`;
     return pool.query(query, [id]);
   },
+// ✅ GET BY VEHICLE TYPE ID
+async getByVehicleTypeId(vehicle_type_id) {
+  const query = `
+    SELECT fm.*, vt.name AS vehicle_type
+    FROM fare_meters fm
+    LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id
+    WHERE fm.vehicle_type_id = $1
+    ORDER BY fm.id ASC;
+  `;
+
+  return pool.query(query, [vehicle_type_id]);
+}
+
 };

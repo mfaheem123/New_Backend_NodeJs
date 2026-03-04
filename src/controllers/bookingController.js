@@ -848,8 +848,8 @@ exports.updateBookingFareCharges = async (req, res) => {
 
 exports.getDriverEarning = async (req, res) => {
   try {
-    const  driver_id  = req.params.id;
-console.log(driver_id)
+    const driver_id = req.params.id;
+    console.log(driver_id);
     if (!driver_id) {
       return res.status(400).json({
         status: false,

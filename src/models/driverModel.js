@@ -1096,7 +1096,7 @@ const Driver = {
       `;
     return db.query(query, [driverId]);
   },
-  
+
   async updateDriverLogoutStatus(id) {
     const query = `
     UPDATE drivers
@@ -1267,103 +1267,103 @@ const Driver = {
   },
 
   async getBySessionStatus({
-  page = 1,
-  limit = 50,
-  session_status,
-  username,
-  name,
-  mobile,
-  mot_expiry,
-  mot2_expiry,
-  insurance_expiry,
-  licence_expiry,
-  driver_end_date,
-  vehicle_end_date,
-  vehicle_type,
-  subsidiary,
-  active = true,
-} = {}) {
-  const offset = (page - 1) * limit;
+    page = 1,
+    limit = 50,
+    session_status,
+    username,
+    name,
+    mobile,
+    mot_expiry,
+    mot2_expiry,
+    insurance_expiry,
+    licence_expiry,
+    driver_end_date,
+    vehicle_end_date,
+    vehicle_type,
+    subsidiary,
+    active = true,
+  } = {}) {
+    const offset = (page - 1) * limit;
 
-  const conditions = [];
-  const params = [];
-  let idx = 1;
+    const conditions = [];
+    const params = [];
+    let idx = 1;
 
-  // Active filter
-  if (active !== undefined) {
-    conditions.push(`d.active = $${idx++}`);
-    params.push(active === "false" ? false : true);
-  }
+    // Active filter
+    if (active !== undefined) {
+      conditions.push(`d.active = $${idx++}`);
+      params.push(active === "false" ? false : true);
+    }
 
-  // 👇 SESSION STATUS FILTER
-  if (session_status) {
-    conditions.push(`d.session_status = $${idx++}`);
-    params.push(session_status);
-  }
+    // 👇 SESSION STATUS FILTER
+    if (session_status) {
+      conditions.push(`d.session_status = $${idx++}`);
+      params.push(session_status);
+    }
 
-  if (username) {
-    conditions.push(`d.username ILIKE $${idx++}`);
-    params.push(`%${username}%`);
-  }
+    if (username) {
+      conditions.push(`d.username ILIKE $${idx++}`);
+      params.push(`%${username}%`);
+    }
 
-  if (name) {
-    conditions.push(`d.name ILIKE $${idx++}`);
-    params.push(`%${name}%`);
-  }
+    if (name) {
+      conditions.push(`d.name ILIKE $${idx++}`);
+      params.push(`%${name}%`);
+    }
 
-  if (mobile) {
-    conditions.push(`d.mobile ILIKE $${idx++}`);
-    params.push(`%${mobile}%`);
-  }
+    if (mobile) {
+      conditions.push(`d.mobile ILIKE $${idx++}`);
+      params.push(`%${mobile}%`);
+    }
 
-  if (mot_expiry) {
-    conditions.push(`d.mot_expiry ILIKE $${idx++}`);
-    params.push(`%${mot_expiry}%`);
-  }
+    if (mot_expiry) {
+      conditions.push(`d.mot_expiry ILIKE $${idx++}`);
+      params.push(`%${mot_expiry}%`);
+    }
 
-  if (mot2_expiry) {
-    conditions.push(`d.mot2_expiry ILIKE $${idx++}`);
-    params.push(`%${mot2_expiry}%`);
-  }
+    if (mot2_expiry) {
+      conditions.push(`d.mot2_expiry ILIKE $${idx++}`);
+      params.push(`%${mot2_expiry}%`);
+    }
 
-  if (insurance_expiry) {
-    conditions.push(`d.insurance_expiry ILIKE $${idx++}`);
-    params.push(`%${insurance_expiry}%`);
-  }
+    if (insurance_expiry) {
+      conditions.push(`d.insurance_expiry ILIKE $${idx++}`);
+      params.push(`%${insurance_expiry}%`);
+    }
 
-  if (licence_expiry) {
-    conditions.push(`d.licence_expiry ILIKE $${idx++}`);
-    params.push(`%${licence_expiry}%`);
-  }
+    if (licence_expiry) {
+      conditions.push(`d.licence_expiry ILIKE $${idx++}`);
+      params.push(`%${licence_expiry}%`);
+    }
 
-  if (driver_end_date) {
-    conditions.push(`d.end_date ILIKE $${idx++}`);
-    params.push(`%${driver_end_date}%`);
-  }
+    if (driver_end_date) {
+      conditions.push(`d.end_date ILIKE $${idx++}`);
+      params.push(`%${driver_end_date}%`);
+    }
 
-  if (vehicle_end_date) {
-    conditions.push(`v.end_date ILIKE $${idx++}`);
-    params.push(`%${vehicle_end_date}%`);
-  }
+    if (vehicle_end_date) {
+      conditions.push(`v.end_date ILIKE $${idx++}`);
+      params.push(`%${vehicle_end_date}%`);
+    }
 
-  if (vehicle_type) {
-    conditions.push(
-      `(vt_v.name ILIKE $${idx++} OR vt_cv.name ILIKE $${idx++})`
-    );
-    params.push(`%${vehicle_type}%`, `%${vehicle_type}%`);
-  }
+    if (vehicle_type) {
+      conditions.push(
+        `(vt_v.name ILIKE $${idx++} OR vt_cv.name ILIKE $${idx++})`,
+      );
+      params.push(`%${vehicle_type}%`, `%${vehicle_type}%`);
+    }
 
-  if (subsidiary) {
-    conditions.push(`s.name ILIKE $${idx++}`);
-    params.push(`%${subsidiary}%`);
-  }
+    if (subsidiary) {
+      conditions.push(`s.name ILIKE $${idx++}`);
+      params.push(`%${subsidiary}%`);
+    }
 
-  const whereClause = conditions.length
-    ? `WHERE ${conditions.join(" AND ")}`
-    : "";
+    const whereClause = conditions.length
+      ? `WHERE ${conditions.join(" AND ")}`
+      : "";
 
-  // COUNT QUERY
-  const countQuery = `
+    // COUNT QUERY
+    const countQuery = `
     SELECT COUNT(*) AS total
     FROM drivers d
     LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
@@ -1374,13 +1374,13 @@ const Driver = {
     ${whereClause};
   `;
 
-  const countResult = await db.query(countQuery, params);
-  const total = Number(countResult.rows[0].total) || 0;
+    const countResult = await db.query(countQuery, params);
+    const total = Number(countResult.rows[0].total) || 0;
 
-  // PAGINATION
-  params.push(limit, offset);
+    // PAGINATION
+    params.push(limit, offset);
 
-  const dataQuery = `
+    const dataQuery = `
     SELECT 
       d.*,
       s.name AS subsidiary_name,
@@ -1413,14 +1413,13 @@ const Driver = {
     LIMIT $${params.length - 1} OFFSET $${params.length};
   `;
 
-  const result = await db.query(dataQuery, params);
+    const result = await db.query(dataQuery, params);
 
-  return {
-    total,
-    drivers: result.rows,
-  };
-},
-
+    return {
+      total,
+      drivers: result.rows,
+    };
+  },
 };
 
 module.exports = Driver;

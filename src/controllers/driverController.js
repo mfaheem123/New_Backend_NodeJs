@@ -574,14 +574,12 @@ exports.driverLogin = async (req, res) => {
       expiresIn: "1d",
     });
 
-
     if (fcm_token) {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
     }
 
     // ONLY IMPORTANT FIX
     const updatedDriver = await Driver.getLoginDriverById(driver.id);
-
 
     // API Response
     return res.status(200).json({
@@ -633,19 +631,18 @@ exports.verifyDriverToken = async (req, res) => {
 
     // 3️⃣ Token comparison
     if (storedToken === driver_access_token) {
-
       await Driver.updateDriverLoginStatus(id);
-const updatedDriver = await Driver.getLoginDriverById(id);
+      const updatedDriver = await Driver.getLoginDriverById(id);
 
-  notifyDriverLogin({
-    id: updatedDriver.id,
-    name: updatedDriver.name,
-    mobile: updatedDriver.mobile,
-    vehicle_id: updatedDriver.vehicle_id,
-    company_vehicle_id: updatedDriver.company_vehicle_id,
-    status: "logged_in",
-    login_time: new Date(),
-  });
+      notifyDriverLogin({
+        id: updatedDriver.id,
+        name: updatedDriver.name,
+        mobile: updatedDriver.mobile,
+        vehicle_id: updatedDriver.vehicle_id,
+        company_vehicle_id: updatedDriver.company_vehicle_id,
+        status: "logged_in",
+        login_time: new Date(),
+      });
       return res.status(200).json({
         status: true,
         message: "Token verified successfully",
@@ -751,13 +748,12 @@ exports.getDriversByCommissionType = async (req, res) => {
   }
 };
 
-
 exports.getBySessionStatus = async (req, res) => {
   try {
     const {
       page = 1,
       limit = 100,
-      session_status,   // 👈 new param
+      session_status, // 👈 new param
       username,
       name,
       mobile,

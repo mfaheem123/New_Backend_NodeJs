@@ -200,6 +200,51 @@ const FareConfiguration = {
     );
     return result.rowCount > 0; // true if a row was deleted
   },
+
+  // ✅ GET BY VEHICLE TYPE ID
+async getByVehicleTypeId(vehicle_type_id) {
+  const query = `
+    SELECT 
+      f.*, 
+      vt.name AS vehicle_type_name, 
+      vt.minimum_fares AS vehicle_minimum_fare,
+      a.name AS account_name
+    FROM fare_configurations f
+    LEFT JOIN vehicle_types vt ON vt.id = f.vehicle_type_id
+    LEFT JOIN accounts a ON a.id = f.account_id
+    WHERE f.vehicle_type_id = $1
+    ORDER BY f.id DESC;
+  `;
+
+  const result = await db.query(query, [vehicle_type_id]);
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    vehicle_type_id: row.vehicle_type_id,
+    account_id: row.account_id,
+    from_day: row.from_day,
+    to_day: row.to_day,
+    from_time: row.from_time,
+    to_time: row.to_time,
+    minimum_fares: Number(row.minimum_fares),
+    minimum_miles: Number(row.minimum_miles),
+    from_date: row.from_date,
+    to_date: row.to_date,
+    title: row.title,
+    vehicle_type: row.vehicle_type_id
+      ? {
+          minimum_fares: Number(row.vehicle_minimum_fare),
+          name: row.vehicle_type_name,
+        }
+      : null,
+    account: row.account_id
+      ? {
+          name: row.account_name,
+        }
+      : null,
+  }));
+},
+
 };
 
 module.exports = FareConfiguration;

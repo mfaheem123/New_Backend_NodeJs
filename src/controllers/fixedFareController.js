@@ -1,11 +1,10 @@
 const FixedFare = require("../models/fixedFareModel");
 
-
 exports.createFixedFares = async (req, res) => {
   try {
     console.log(
       "🚀 INCOMING ADD FIXED FARES BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
 
     let data = req.body;
@@ -20,13 +19,9 @@ exports.createFixedFares = async (req, res) => {
     }
 
     // Ensure arrays
-    const area1Array = Array.isArray(data.area1)
-      ? data.area1
-      : [data.area1];
+    const area1Array = Array.isArray(data.area1) ? data.area1 : [data.area1];
 
-    const area2Array = Array.isArray(data.area2)
-      ? data.area2
-      : [data.area2];
+    const area2Array = Array.isArray(data.area2) ? data.area2 : [data.area2];
 
     const finalPayload = [];
 
@@ -68,7 +63,7 @@ exports.getAllFixedFares = async (req, res) => {
       vehicle_type_name,
       fares,
       area1,
-      area2
+      area2,
     } = req.query;
 
     const offset = (page - 1) * limit;
@@ -79,7 +74,7 @@ exports.getAllFixedFares = async (req, res) => {
       vehicle_type_name,
       fares,
       area1,
-      area2
+      area2,
     });
 
     const totalPages = Math.ceil(result.totalRecords / limit);
@@ -92,13 +87,12 @@ exports.getAllFixedFares = async (req, res) => {
       limit: Number(limit),
       has_next: Number(page) < totalPages,
       has_prev: Number(page) > 1,
-      fixed_fares: result.rows
+      fixed_fares: result.rows,
     });
-
   } catch (err) {
     res.status(500).json({
       status: false,
-      error: err.message
+      error: err.message,
     });
   }
 };

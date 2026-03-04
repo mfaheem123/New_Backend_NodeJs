@@ -13,12 +13,12 @@ async function sendSMSWithTemplate(payload) {
 
   // 2️⃣ Format Mobile
   const formattedMobile = formatMobile(mobile);
-  console.log("Formatted Mobile No. : ", formattedMobile)
+  console.log("Formatted Mobile No. : ", formattedMobile);
 
   // 3️⃣ Parse Template
   const message = parseTemplate(template.content, data);
 
-  console.log("MESSAGE SENT: ", message)
+  console.log("MESSAGE SENT: ", message);
 
   // // 4️⃣ Send via Dinstar
   // const gatewayResponse = await sendViaDinstar(

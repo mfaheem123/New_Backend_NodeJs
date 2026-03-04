@@ -51,7 +51,7 @@ const documentNumberRoutes = require("./routes/documentNumberRoutes");
 const driverCommissionRoutes = require("./routes/driverCommissionRoutes");
 const ivrRoutes = require("./routes/ivrRoutes");
 const smsRoutes = require("./routes/smsRoutes");
-
+const fareMeterDetailsRoutes = require("./routes/fareMeterDetailsRoutes");
 
 const app = express();
 
@@ -149,7 +149,9 @@ app.use("/api/account_invoice", accountInvoiceRoutes);
 app.use("/api/document", documentNumberRoutes);
 app.use("/api/driver_commission", driverCommissionRoutes);
 app.use("/api/ivr", ivrRoutes);
-app.use("/api/sms",smsRoutes);
+app.use("/api/sms", smsRoutes);
+app.use("/api/fare-meter", fareMeterDetailsRoutes);
+
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

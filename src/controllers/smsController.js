@@ -8,7 +8,6 @@ async function sendSMS(req, res) {
       status: true,
       gateway: result,
     });
-
   } catch (error) {
     res.status(400).json({
       status: false,

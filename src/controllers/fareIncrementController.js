@@ -14,7 +14,7 @@ exports.getAll = async (req, res) => {
 exports.add = async (req, res) => {
   try {
     const data = await FareIncrement.create(req.body);
-console.log(
+    console.log(
       "🚀 INCOMING ADD FARE INCREMENT BODY:",
       JSON.stringify(req.body, null, 2),
     );

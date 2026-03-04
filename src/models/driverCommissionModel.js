@@ -166,7 +166,7 @@ class DriverCommission {
   /* ================= GET BY ID ================= */
 
   static async getById(id) {
-  const query = `
+    const query = `
     SELECT 
       dc.id,
       dc.transaction_number,
@@ -201,11 +201,11 @@ class DriverCommission {
     WHERE dc.id = $1
   `;
 
-  const commissionRes = await db.query(query, [id]);
+    const commissionRes = await db.query(query, [id]);
 
-  if (!commissionRes.rows.length) return null;
+    if (!commissionRes.rows.length) return null;
 
-  const lineItemsQuery = `
+    const lineItemsQuery = `
     SELECT 
       dcl.id,
       dcl.driver_commission_id,
@@ -254,148 +254,147 @@ class DriverCommission {
     WHERE dcl.driver_commission_id = $1
   `;
 
-  const lineItemsRes = await db.query(lineItemsQuery, [id]);
+    const lineItemsRes = await db.query(lineItemsQuery, [id]);
 
-  commissionRes.rows[0].driver_commission_lineitems = lineItemsRes.rows;
+    commissionRes.rows[0].driver_commission_lineitems = lineItemsRes.rows;
 
-  return commissionRes.rows[0];
-}
+    return commissionRes.rows[0];
+  }
 
-static async update(id, data) {
-  try {
-    await db.query("BEGIN");
+  static async update(id, data) {
+    try {
+      await db.query("BEGIN");
 
-    const fields = [];
-    const values = [];
-    let index = 1;
+      const fields = [];
+      const values = [];
+      let index = 1;
 
-    // Allowed fields only (security)
-    const allowedFields = [
-      "transaction_date",
-      "driver_id",
-      "jobs_total",
-      "commission_total",
-      "cash_jobs_total",
-      "account_jobs_total",
-      "owed",
-      "old_balance",
-      "current_balance",
-      "from_date",
-      "to_date",
-      "payment_type",
-      "last_modified",
-    ];
+      // Allowed fields only (security)
+      const allowedFields = [
+        "transaction_date",
+        "driver_id",
+        "jobs_total",
+        "commission_total",
+        "cash_jobs_total",
+        "account_jobs_total",
+        "owed",
+        "old_balance",
+        "current_balance",
+        "from_date",
+        "to_date",
+        "payment_type",
+        "last_modified",
+      ];
 
-    for (const key of allowedFields) {
-      if (data[key] !== undefined) {
-        fields.push(`${key} = $${index}`);
-        values.push(data[key]);
-        index++;
+      for (const key of allowedFields) {
+        if (data[key] !== undefined) {
+          fields.push(`${key} = $${index}`);
+          values.push(data[key]);
+          index++;
+        }
       }
-    }
 
-    if (fields.length > 0) {
-      const updateQuery = `
+      if (fields.length > 0) {
+        const updateQuery = `
         UPDATE driver_commissions
         SET ${fields.join(", ")}
         WHERE id = $${index}
         RETURNING *;
       `;
 
-      values.push(id);
+        values.push(id);
 
-      await db.query(updateQuery, values);
-    }
-
-    /* Optional LineItems Update */
-    if (data.driver_commission_lineitems) {
-      if (typeof data.driver_commission_lineitems === "string") {
-        data.driver_commission_lineitems = JSON.parse(
-          data.driver_commission_lineitems
-        );
+        await db.query(updateQuery, values);
       }
 
-      // delete old lineitems
-      await db.query(
-        `DELETE FROM driver_commission_lineitems WHERE driver_commission_id = $1`,
-        [id]
-      );
+      /* Optional LineItems Update */
+      if (data.driver_commission_lineitems) {
+        if (typeof data.driver_commission_lineitems === "string") {
+          data.driver_commission_lineitems = JSON.parse(
+            data.driver_commission_lineitems,
+          );
+        }
 
-      // insert new
-      for (const item of data.driver_commission_lineitems) {
+        // delete old lineitems
         await db.query(
-          `INSERT INTO driver_commission_lineitems
+          `DELETE FROM driver_commission_lineitems WHERE driver_commission_id = $1`,
+          [id],
+        );
+
+        // insert new
+        for (const item of data.driver_commission_lineitems) {
+          await db.query(
+            `INSERT INTO driver_commission_lineitems
            (driver_commission_id, booking_id)
            VALUES ($1,$2)`,
-          [id, item.booking_id]
-        );
+            [id, item.booking_id],
+          );
+        }
       }
+
+      /* Update Driver Balance Only If Sent */
+      if (data.current_balance !== undefined && data.driver_id !== undefined) {
+        await db.query(`UPDATE drivers SET balance = $1 WHERE id = $2`, [
+          data.current_balance,
+          data.driver_id,
+        ]);
+      }
+
+      await db.query("COMMIT");
+
+      return await this.getById(id);
+    } catch (err) {
+      await db.query("ROLLBACK");
+      throw err;
     }
-
-    /* Update Driver Balance Only If Sent */
-    if (data.current_balance !== undefined && data.driver_id !== undefined) {
-      await db.query(
-        `UPDATE drivers SET balance = $1 WHERE id = $2`,
-        [data.current_balance, data.driver_id]
-      );
-    }
-
-    await db.query("COMMIT");
-
-    return await this.getById(id);
-  } catch (err) {
-    await db.query("ROLLBACK");
-    throw err;
   }
-}
 
-static async delete(id) {
-  try {
-    await db.query("BEGIN");
+  static async delete(id) {
+    try {
+      await db.query("BEGIN");
 
-    // 1️⃣ Get commission first
-    const commissionRes = await db.query(
-      `SELECT driver_id, current_balance, old_balance
+      // 1️⃣ Get commission first
+      const commissionRes = await db.query(
+        `SELECT driver_id, current_balance, old_balance
        FROM driver_commissions
        WHERE id = $1`,
-      [id]
-    );
+        [id],
+      );
 
-    if (!commissionRes.rows.length) {
-      throw new Error("Driver commission not found");
-    }
+      if (!commissionRes.rows.length) {
+        throw new Error("Driver commission not found");
+      }
 
-    const commission = commissionRes.rows[0];
+      const commission = commissionRes.rows[0];
 
-    // 2️⃣ Restore driver balance to old_balance
-    await db.query(
-      `UPDATE drivers
+      // 2️⃣ Restore driver balance to old_balance
+      await db.query(
+        `UPDATE drivers
        SET balance = $1
        WHERE id = $2`,
-      [commission.old_balance, commission.driver_id]
-    );
+        [commission.old_balance, commission.driver_id],
+      );
 
-    // 3️⃣ Delete lineitems
-    await db.query(
-      `DELETE FROM driver_commission_lineitems
+      // 3️⃣ Delete lineitems
+      await db.query(
+        `DELETE FROM driver_commission_lineitems
        WHERE driver_commission_id = $1`,
-      [id]
-    );
+        [id],
+      );
 
-    // 4️⃣ Delete commission
-    await db.query(
-      `DELETE FROM driver_commissions
+      // 4️⃣ Delete commission
+      await db.query(
+        `DELETE FROM driver_commissions
        WHERE id = $1`,
-      [id]
-    );
+        [id],
+      );
 
-    await db.query("COMMIT");
-  } catch (err) {
-    await db.query("ROLLBACK");
-    throw err;
+      await db.query("COMMIT");
+    } catch (err) {
+      await db.query("ROLLBACK");
+      throw err;
+    }
   }
-}
-
 }
 
 module.exports = DriverCommission;

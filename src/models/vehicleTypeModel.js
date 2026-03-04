@@ -180,6 +180,16 @@ const VehicleType = {
     );
     return result.rows[0];
   },
+
+  async exists(id) {
+    const result = await pool.query(
+      `SELECT id FROM vehicle_types WHERE id = $1`,
+      [id]
+    );
+    return result.rowCount > 0;
+  },
+
+
 };
 
 module.exports = VehicleType;

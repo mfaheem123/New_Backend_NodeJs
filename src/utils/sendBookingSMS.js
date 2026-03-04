@@ -6,7 +6,7 @@ const sendBookingSMS = async (clean) => {
     if (clean?.booking_status_id !== 1) return;
 
     const viapointsStr = clean?.viapoints?.length
-      ? clean.viapoints.map(v => ` via ${v}`).join("")
+      ? clean.viapoints.map((v) => ` via ${v}`).join("")
       : "";
 
     const totalFare = clean?.total_charges ?? "0.00";
@@ -104,7 +104,6 @@ const sendBookingSMS = async (clean) => {
         data: template2Data,
       });
     }
-
   } catch (error) {
     console.error("❌ SMS Sending Error:", error);
   }
