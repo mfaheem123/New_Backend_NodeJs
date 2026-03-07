@@ -25,7 +25,7 @@ const upload = multer({ storage });
 router.post("/add", upload.any(), create);
 router.get("/get", getAll);
 router.get("/:id", getById);
-router.post("/edit/:id", upload.any(), update);
+router.post("/update/:id", upload.any(), update);
 router.delete("/delete/:id", remove);
 
 module.exports = router;

@@ -71,6 +71,7 @@ class DriverCommission {
 
       /* Insert Line Items */
       const lineItems = [];
+      const bookingIds = [];
 
       for (const item of data.driver_commission_lineitems) {
         const li = await db.query(
@@ -82,8 +83,19 @@ class DriverCommission {
         );
 
         lineItems.push(li.rows[0]);
-      }
+        bookingIds.push(item.booking_id);
 
+        // ✅ UPDATE BOOKING COMMISSION STATUS
+      }
+// if (bookingIds.length) {
+//     await db.query(
+//       `UPDATE bookings
+//        SET commission = false,
+//            commission_status = 'close'
+//        WHERE id = ANY($1::int[])`,
+//       [bookingIds]
+//     );
+//   }
       /* Update Driver Balance */
       await db.query(
         `UPDATE drivers

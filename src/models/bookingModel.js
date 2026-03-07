@@ -410,7 +410,22 @@ const getBookingByIdEnriched = async (id) => {
 
 // CHECKING ID IS PRESENT OR NOT (FOR UPDATE STATUS AND FARES)
 const findBookingById = async (id) => {
-  const query = `SELECT id FROM bookings WHERE id = $1`;
+  const query = `
+    SELECT 
+      b.*,
+      vt.name as vehicle_type_name,
+      d.name as driver_name,
+      v.color,
+      v.make,
+      v.model,
+      v.vehicle_number
+    FROM bookings b
+    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id
+    LEFT JOIN drivers d ON b.driver_id = d.id
+    LEFT JOIN vehicles v ON d.vehicle_id = v.id
+    WHERE b.id = $1
+  `;
+
   return pool.query(query, [id]);
 };
 
@@ -682,6 +697,33 @@ const getDriverTotalEarning = async (driver_id) => {
 
   const { rows } = await pool.query(query, [driver_id]);
   return rows[0];
+};
+
+
+const getBookingByDriverRent = async (
+  driver_id,
+  payment_type_ids,
+  from_date,
+  to_date,
+) => {
+  const sql = `
+    ${ENRICHED_SELECT}
+    WHERE b.driver_id = $1 
+    AND b.payment_type_id = ANY($2::int[])
+    AND b.booking_status_id = 11
+    AND b.commission_status = 'open'
+    AND b.commission = true
+    AND b.pickup_date::date BETWEEN $3::date AND $4::date
+  `;
+
+  const res = await pool.query(sql, [
+    driver_id,
+    payment_type_ids,
+    from_date,
+    to_date,
+  ]);
+
+  return res.rows;
 };
 
 module.exports = {

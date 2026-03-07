@@ -2,7 +2,6 @@ const pool = require("../db");
 
 // Create a new zone
 const Zone = {
-  
   create: async (data) => {
     const query = `
       INSERT INTO zones (name, secondary_name, type, category, vertices, base, overlay)

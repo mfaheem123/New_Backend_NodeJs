@@ -120,7 +120,10 @@ exports.update = async (req, res) => {
         message: "Commission id is required",
       });
     }
-
+console.log(
+      "🚀 INCOMING UPDATE DRIVER COMMISSION BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const result = await DriverCommission.update(id, req.body);
 
     return res.status(200).json({

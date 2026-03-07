@@ -15,6 +15,11 @@ const create = async (req, res) => {
         req.body[key] = `${BASE_URL}${file.filename}`;
       });
     }
+     console.log(
+      "🚀 INCOMING COMPANY VEHICLE ADD BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    console.log("🚀 COMPANY VEHICLE ADD FILES:", req.files);
 
     // 🧩 Convert booleans
     req.body.assigned =
@@ -118,27 +123,39 @@ const getById = async (req, res) => {
 const update = async (req, res) => {
   try {
     const id = req.params.id;
+
+    // Only process fields that actually exist in req.body
+    const dataToUpdate = {};
     Object.keys(req.body).forEach((k) => {
-      if (req.body[k] === "") req.body[k] = null;
+      if (req.body[k] !== undefined) {
+        dataToUpdate[k] = req.body[k] === "" ? null : req.body[k];
+      }
     });
 
     // File update
-    if (req.files) {
-      Object.keys(req.files).forEach((f) => {
-        req.body[f] = `${BASE_URL}${req.files[f][0].filename}`;
+    if (req.files && req.files.length > 0) {
+      req.files.forEach((file) => {
+        dataToUpdate[file.fieldname] = `${BASE_URL}${file.filename}`;
       });
     }
-    console.log(
+
+    if (Object.keys(dataToUpdate).length === 0) {
+      return res.status(400).json({ status: false, message: "No fields to update" });
+    }
+console.log(
       "🚀 INCOMING COMPANY VEHICLE UPDATE BODY:",
       JSON.stringify(req.body, null, 2),
     );
-    const updated = await CompanyVehicle.update(id, req.body);
+    console.log("🚀 COMPANY VEHICLE UPDATE FILES:", req.files);
+    // console.log("🚀 INCOMING COMPANY VEHICLE UPDATE BODY:", dataToUpdate);
+    const updated = await CompanyVehicle.update(id, dataToUpdate);
     res.json({ status: true, vehicle: updated });
   } catch (err) {
     console.error("Error updating company vehicle:", err);
     res.status(500).json({ status: false, message: "Server Error" });
   }
 };
+
 
 const remove = async (req, res) => {
   try {

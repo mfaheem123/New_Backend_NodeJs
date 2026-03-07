@@ -52,6 +52,7 @@ const driverCommissionRoutes = require("./routes/driverCommissionRoutes");
 const ivrRoutes = require("./routes/ivrRoutes");
 const smsRoutes = require("./routes/smsRoutes");
 const fareMeterDetailsRoutes = require("./routes/fareMeterDetailsRoutes");
+const driverRentRoutes = require("./routes/driverRentRoutes");
 
 const app = express();
 
@@ -151,6 +152,7 @@ app.use("/api/driver_commission", driverCommissionRoutes);
 app.use("/api/ivr", ivrRoutes);
 app.use("/api/sms", smsRoutes);
 app.use("/api/fare-meter", fareMeterDetailsRoutes);
+app.use("/api/driver_rent", driverRentRoutes);
 
 
 // ✅ Print all routes in console (for debugging)

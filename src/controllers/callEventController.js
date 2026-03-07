@@ -1,5 +1,7 @@
 const CallEventModel = require("../models/callEventModel");
 const { notifyCLIOpen } = require("../sockets/cliWebSocket");
+// const { getIO } = require("../sockets/io");
+// const io = getIO();
 
 function normalizeStatus(status) {
   if (!status) return null;
@@ -56,6 +58,14 @@ exports.receiveCallEvents = async (req, res) => {
           callerId: event.callerId,
           extension: event.extension,
         });
+
+        // const payload = {
+        //   callId: event.callId,
+        //   callerId: event.callerId,
+        //   extension: event.extension,
+        // }
+
+        // notifyCLIOpen(io, event.extension, payload);
 
         // 3️⃣ Mark as triggered
         await CallEventModel.markCliTriggered(savedEvent.id);

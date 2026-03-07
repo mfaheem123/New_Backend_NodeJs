@@ -4,12 +4,27 @@ const app = require("./app");
 const client = require("prom-client");
 const initWebSocket = require("./sockets");
 
+// const { Server } = require("socket.io");
+// const { initIO } = require("./sockets/io");
+// const initSockets = require("./sockets");
+
 const PORT = process.env.PORT || 5000;
 
 const server = http.createServer(app);
 
 // PURE WebSocket attach
-initWebSocket(server);
+initWebSocket(server); // IS KO DISBALE KRNA HAI
+
+
+// SOCKET.IO INIT
+// const io = new Server(server, {
+//   cors: {
+//     origin: "*",
+//   },
+// });
+
+// initIO(io); 
+// initSockets(io);
 
 // Prometheus (same as before)
 const httpRequestDurationMs = new client.Histogram({

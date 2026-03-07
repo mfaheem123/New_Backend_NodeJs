@@ -1420,6 +1420,58 @@ const Driver = {
       drivers: result.rows,
     };
   },
+
+async getAvailableLoggedInDrivers() {
+  const query = `
+    SELECT 
+      id,
+      name,
+      mobile,
+      vehicle_id,
+      company_vehicle_id,
+      session_status,
+      booking_status,
+      driver_status
+    FROM drivers
+    WHERE session_status = $1
+      AND booking_status = $2
+      AND driver_status = $3
+  `;
+
+  const result = await db.query(query, [
+    "logged_in",
+    "Available",
+    "Available",
+  ]);
+
+  return result.rows;
+},
+
+async getBusyLoggedInDrivers() {
+  const result = await db.query(
+    `
+    SELECT 
+      id,
+      name,
+      mobile,
+      vehicle_id,
+      company_vehicle_id,
+      session_status,
+      booking_status,
+      driver_status
+    FROM drivers
+    WHERE session_status = $1
+      AND (
+        booking_status != $2
+        OR driver_status != $3
+      )
+    `,
+    ["logged_in", "Available", "Available"]
+  );
+
+  return result.rows;
+},
+
 };
 
 module.exports = Driver;

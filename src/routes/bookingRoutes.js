@@ -14,12 +14,16 @@ router.get(
   bookingController.checkDriverActiveBookingToday,
 );
 router.get(
-  "/getbookingsbydriver",
+  "/booking-history-driver",
   bookingController.getBookingByDriverIdAndStatus,
 );
 router.get("/check-status/:booking_id", bookingController.checkBookingStatus);
 router.get(
   "/driver-commission",
+  bookingController.getBookingByDriverCommission,
+);
+router.get(
+  "/driver-rent",
   bookingController.getBookingByDriverCommission,
 );
 router.post("/update/:id", bookingController.updateBooking);

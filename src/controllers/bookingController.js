@@ -1,4 +1,5 @@
 const bookingService = require("../services/bookingService");
+const { sendBookingSMS } = require("../services/smsService");
 const {
   getTodayBookings,
   // getAllBookings,
@@ -464,10 +465,6 @@ exports.updateBookingStatus = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
     const { booking_status_id } = req.body;
-    console.log(
-      "🚀 INCOMING BOOKING STATUS BODY:",
-      JSON.stringify(req.body, null, 2),
-    );
 
     if (!booking_status_id) {
       return res.status(400).json({
@@ -485,16 +482,25 @@ exports.updateBookingStatus = async (req, res) => {
       });
     }
 
-    if (booking_status_id == 3 || booking_status_id == "3") {
+    if (booking_status_id == 3) {
       await updateBookingonRoute(bookingId, true, false, false);
     }
-    if (booking_status_id == 11 || booking_status_id == "11") {
+
+    if (booking_status_id == 11) {
       await updateBookingonRoute(bookingId, false, true, true);
     }
-    if (booking_status_id == 6 || booking_status_id == "6") {
+
+    if (booking_status_id == 6) {
       await updateBookingonRoute(bookingId, false, false, true);
     }
+
     await updateBookingStatus(bookingId, booking_status_id);
+
+    // 🔹 GET UPDATED BOOKING
+    const updatedBooking = await findBookingById(bookingId);
+
+    // 🔹 SEND SMS
+    await sendBookingSMS(updatedBooking.rows[0]);
 
     return res.status(200).json({
       status: true,
@@ -502,6 +508,7 @@ exports.updateBookingStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Update Booking Status Error:", error);
+
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",
@@ -706,6 +713,19 @@ exports.checkBookingStatus = async (req, res) => {
 exports.getBookingByDriverIdAndStatus = async (req, res) => {
   const { driver_id, booking_status_id } = req.body;
 
+if(!driver_id){
+  return res.status(400).json({
+    status:false,
+    message: "Driver ID Required"
+  });
+}
+
+if(!booking_status_id){
+  return res.status(400).json({
+    status:false,
+    message: "Booking Status ID Required"
+  });
+}
   const bookings = await getBookingByDriverIdAndStatus(
     driver_id,
     booking_status_id,

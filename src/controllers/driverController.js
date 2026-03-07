@@ -3,10 +3,13 @@ const {
   notifyDriverLogin,
   notifyDriverLogout,
 } = require("../sockets/driverWebSocket");
+// const { getIO } = require("../sockets/io");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const pool = require("../db");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
+
+// const io = getIO();
 
 // Helper: Recursively convert empty strings ("") to null
 function cleanEmptyToNull(obj) {
@@ -547,157 +550,6 @@ exports.delete = async (req, res) => {
   }
 };
 
-//Driver Login
-exports.driverLogin = async (req, res) => {
-  const { username, password, fcm_token } = req.body;
-
-  try {
-    const driver = await Driver.findDriverByUsername(username);
-    if (!driver) {
-      return res.status(404).json({ message: "Driver not found" });
-    }
-
-    if (!driver.active) {
-      return res.status(401).json({ message: "Your account is inactive" });
-    }
-
-    const passwordMatch = await bcrypt.compare(password, driver.password);
-    if (!passwordMatch) {
-      return res.status(401).json({ message: "Invalid password" });
-    }
-
-    if (driver.session_status === "logged_in") {
-      return res.status(400).json({ message: "Driver is already logged in" });
-    }
-
-    const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
-
-    if (fcm_token) {
-      await Driver.updateDriverFcmToken(driver.id, fcm_token);
-    }
-
-    // ONLY IMPORTANT FIX
-    const updatedDriver = await Driver.getLoginDriverById(driver.id);
-
-    // API Response
-    return res.status(200).json({
-      message: "Login successful",
-      driverInfo: updatedDriver,
-      token: token,
-    });
-  } catch (error) {
-    console.error("Login Error:", error);
-    return res.status(500).json({ message: "An error occurred during login" });
-  }
-};
-
-// Verify Driver NTG
-exports.verifyDriverToken = async (req, res) => {
-  try {
-    const { id, driver_access_token } = req.body;
-    console.log(
-      "🚀 INCOMING DRIVER VERIFY TOKEN BODY:",
-      JSON.stringify(req.body, null, 2),
-    );
-    if (!id || !driver_access_token) {
-      return res.status(400).json({
-        status: false,
-        message: "Driver_ID and Driver_Access_Token Are Required",
-      });
-    }
-
-    // 1️⃣ Driver data fetch karna
-    const query = `SELECT driver_access_token FROM drivers WHERE id = $1`;
-    const result = await pool.query(query, [id]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: "Driver not found",
-      });
-    }
-
-    const storedToken = result.rows[0].driver_access_token;
-
-    // 2️⃣ Null token check
-    if (!storedToken) {
-      return res.status(400).json({
-        status: false,
-        message: "Driver has no access token stored",
-      });
-    }
-
-    // 3️⃣ Token comparison
-    if (storedToken === driver_access_token) {
-      await Driver.updateDriverLoginStatus(id);
-      const updatedDriver = await Driver.getLoginDriverById(id);
-
-      notifyDriverLogin({
-        id: updatedDriver.id,
-        name: updatedDriver.name,
-        mobile: updatedDriver.mobile,
-        vehicle_id: updatedDriver.vehicle_id,
-        company_vehicle_id: updatedDriver.company_vehicle_id,
-        status: "logged_in",
-        login_time: new Date(),
-      });
-      return res.status(200).json({
-        status: true,
-        message: "Token verified successfully",
-      });
-    } else {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid Token",
-      });
-    }
-  } catch (error) {
-    console.error("Error verifying driver token:", error);
-    return res.status(500).json({
-      status: false,
-      message: "Internal server error",
-    });
-  }
-};
-
-//Driver Logout
-exports.driverLogout = async (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    return res.status(400).json({ message: "driverId is required" });
-  }
-
-  try {
-    const driver = await Driver.getById(id);
-    if (!driver) {
-      return res.status(404).json({ message: "Driver not found" });
-    }
-
-    // DB update
-    await Driver.updateDriverLogoutStatus(id);
-    await Driver.clearDriverFcmToken(id);
-
-    // REMOVE FROM WS LOGIN SOCKET
-    notifyDriverLogout(Number(id));
-
-    return res.status(200).json({
-      status: true,
-      message: "Logout successful",
-      driverId: id,
-      session_status: "logged_out",
-    });
-  } catch (error) {
-    console.error("Logout Error:", error);
-    res.status(500).json({
-      status: false,
-      message: "An error occurred during logout",
-    });
-  }
-};
-
 // GET DRIVERS BY COMPANY ID
 exports.getByCompany = async (req, res) => {
   try {
@@ -723,6 +575,96 @@ exports.getByCompany = async (req, res) => {
       status: false,
       message: "Server error",
     });
+  }
+};
+
+exports.driverLogin = async (req, res) => {
+  const { username, password, fcm_token } = req.body;
+  try {
+    const driver = await Driver.findDriverByUsername(username);
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+    if (!driver.active) {
+      return res.status(401).json({ message: "Your account is inactive" });
+    }
+    const passwordMatch = await bcrypt.compare(password, driver.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+    if (driver.session_status === "logged_in") {
+      return res.status(400).json({ message: "Driver is already logged in" });
+    }
+    const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+    await Driver.updateDriverLoginStatus(driver.id);
+    if (fcm_token) {
+      await Driver.updateDriverFcmToken(driver.id, fcm_token);
+    } // ONLY IMPORTANT FIX
+    const updatedDriver = await Driver.getLoginDriverById(driver.id);
+    notifyDriverLogin({
+      id: updatedDriver.id,
+      name: updatedDriver.name,
+      mobile: updatedDriver.mobile,
+      vehicle_id: updatedDriver.vehicle_id,
+      company_vehicle_id: updatedDriver.company_vehicle_id,
+      status: "logged_in",
+      login_time: new Date(),
+    }); // API Response
+    return res
+      .status(200)
+      .json({
+        message: "Login successful",
+        driverInfo: updatedDriver,
+        token: token,
+      });
+  } catch (error) {
+    console.error("Login Error:", error);
+    return res.status(500).json({ message: "An error occurred during login" });
+  }
+};
+
+exports.verifyDriverToken = async (req, res) => {
+  try {
+    const { id, driver_access_token } = req.body;
+    console.log(
+      "🚀 INCOMING DRIVER VERIFY TOKEN BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    if (!id || !driver_access_token) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver_ID and Driver_Access_Token Are Required",
+      });
+    } // 1️⃣ Driver data fetch karna
+    const query = `SELECT driver_access_token FROM drivers WHERE id = $1`;
+    const result = await pool.query(query, [id]);
+    if (result.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Driver not found" });
+    }
+    const storedToken = result.rows[0].driver_access_token;
+    // 2️⃣ Null token check
+    if (!storedToken) {
+      return res
+        .status(400)
+        .json({ status: false, message: "Driver has no access token stored" });
+    }
+    // 3️⃣ Token comparison
+    if (storedToken === driver_access_token) {
+      return res
+        .status(200)
+        .json({ status: true, message: "Token verified successfully" });
+    } else {
+      return res.status(401).json({ status: false, message: "Invalid token" });
+    }
+  } catch (error) {
+    console.error("Error verifying driver token:", error);
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal server error" });
   }
 };
 
@@ -803,3 +745,147 @@ exports.getBySessionStatus = async (req, res) => {
     });
   }
 };
+
+exports.driverLogout = async (req, res) => {
+  const { id } = req.params;
+
+  if (!id) {
+    return res.status(400).json({ message: "driverId is required" });
+  }
+
+  try {
+    const driver = await Driver.getById(id);
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    // DB update
+    await Driver.updateDriverLogoutStatus(id);
+    await Driver.clearDriverFcmToken(id);
+
+    // REMOVE FROM WS LOGIN SOCKET
+    notifyDriverLogout(Number(id));
+
+    // REMOVE FROM SOCKET IO LOGIN SOCKET
+    // notifyDriverLogout(Number(id), io);
+
+    return res.status(200).json({
+      status: true,
+      message: "Logout successful",
+      driverId: id,
+      session_status: "logged_out",
+    });
+  } catch (error) {
+    console.error("Logout Error:", error);
+    res.status(500).json({
+      status: false,
+      message: "An error occurred during logout",
+    });
+  }
+};
+
+exports.onBreakDriver = async (req, res) => {
+  try {
+    const { driver_id, on_break } = req.body;
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver ID is Required",
+      });
+    }
+    if (!on_break) {
+      return res.status(400).json({
+        status: false,
+        message: "on_break is Required",
+      });
+    }
+    console.log(
+      "🚀 INCOMING DRIVER ON BREAK BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+
+    // const data = await Driver.getAllDriverByCommissionType(active, driver_type);
+    if (on_break == true || on_break == "true") {
+      console.log("DRIVER IS ON BREAK:", on_break);
+      return res.status(200).json({
+        status: true,
+        message: "Driver Is On Break",
+        driver_id: driver_id,
+        on_break: true,
+      });
+    }
+    if (on_break == false || on_break == "false") {
+      console.log("DRIVER BREAK IS END:", on_break);
+      return res.status(200).json({
+        status: true,
+        message: "Driver Break End",
+        driver_id: driver_id,
+        on_break: false,
+      });
+    }
+    return res.status(400).json({
+      status: false,
+      message: "Invalid options",
+    });
+  } catch (error) {
+    console.error("❌ Error fetching commission drivers:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.onPanicDriver = async (req, res) => {
+  try {
+    const { driver_id, panic } = req.body;
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver ID is Required",
+      });
+    }
+    if (!panic) {
+      return res.status(400).json({
+        status: false,
+        message: "panic is Required",
+      });
+    }
+    console.log(
+      "🚀 INCOMING DRIVER ON BREAK BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+
+    // const data = await Driver.getAllDriverByCommissionType(active, driver_type);
+    if (panic == true || panic == "true") {
+      console.log("DRIVER PANIC BUTTON ACTIVE:", panic);
+      return res.status(200).json({
+        status: true,
+        message: "Driver Enable Panic",
+        driver_id: driver_id,
+        panic: true,
+      });
+    }
+    if (panic == false || panic == "false") {
+      console.log("DRIVER PANIC BUTTON DISABLE:", panic);
+      return res.status(200).json({
+        status: true,
+        message: "Driver Disable Panic",
+        driver_id: driver_id,
+        panic: false,
+      });
+    }
+    return res.status(400).json({
+      status: false,
+      message: "Invalid options",
+    });
+  } catch (error) {
+    console.error("❌ Error panic button:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
