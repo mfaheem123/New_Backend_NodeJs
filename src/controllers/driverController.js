@@ -658,7 +658,7 @@ exports.verifyDriverToken = async (req, res) => {
         .status(200)
         .json({ status: true, message: "Token verified successfully" });
     } else {
-      return res.status(401).json({ status: false, message: "Invalid token" });
+      return res.status(400).json({ status: false, message: "Invalid token" });
     }
   } catch (error) {
     console.error("Error verifying driver token:", error);
@@ -887,5 +887,3 @@ exports.onPanicDriver = async (req, res) => {
     });
   }
 };
-
-

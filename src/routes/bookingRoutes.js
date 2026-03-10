@@ -13,7 +13,7 @@ router.get(
   "/check-active-booking",
   bookingController.checkDriverActiveBookingToday,
 );
-router.get(
+router.post(
   "/booking-history-driver",
   bookingController.getBookingByDriverIdAndStatus,
 );

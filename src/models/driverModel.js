@@ -1472,6 +1472,18 @@ async getBusyLoggedInDrivers() {
   return result.rows;
 },
 
+ async updateDriverStatus(driverId, booking_status, driver_status) {
+    const query = `
+    UPDATE drivers
+    SET 
+      booking_status = $1,
+      driver_status = $2
+    WHERE id = $3
+  `;
+    await db.query(query, [booking_status ,driver_status ,driverId]);
+    return true;
+  },
+
 };
 
 module.exports = Driver;

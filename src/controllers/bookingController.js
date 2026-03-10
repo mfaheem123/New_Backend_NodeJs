@@ -1,5 +1,5 @@
 const bookingService = require("../services/bookingService");
-const { sendBookingSMS } = require("../services/smsService");
+const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const {
   getTodayBookings,
   // getAllBookings,
@@ -28,6 +28,7 @@ const {
   updateBookingFareCharges,
   getDriverTotalEarning,
 } = require("../models/bookingModel");
+const Driver = require("../models/driverModel")
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -461,6 +462,66 @@ exports.deleteMultipleBookings = async (req, res) => {
   }
 };
 
+// exports.updateBookingStatus = async (req, res) => {
+//   try {
+//     const bookingId = parseInt(req.params.id);
+//     const { booking_status_id } = req.body;
+
+//     if (!booking_status_id) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "booking_status_id is required",
+//       });
+//     }
+
+//     const booking = await findBookingById(bookingId);
+
+//     if (booking.rowCount === 0) {
+//       return res.status(404).json({
+//         status: false,
+//         message: "Booking not found",
+//       });
+//     }
+
+//     if (booking_status_id == 3) {
+//       await updateBookingonRoute(bookingId, true, false, false);
+//     }
+
+//     if (booking_status_id == 11) {
+//       await updateBookingonRoute(bookingId, false, true, true);
+//       await Driver.updateDriverStatus(booking.driver_id, "Available", "Available")
+//     }
+
+//     if (booking_status_id == 6) {
+//       await updateBookingonRoute(bookingId, false, false, true);
+      
+//     }
+
+//     await updateBookingStatus(bookingId, booking_status_id);
+//             await Driver.updateDriverStatus(booking.driver_id, "Unavailable", "Unavailable")
+
+
+//     // 🔹 GET UPDATED BOOKING
+//     const updatedBooking = await findBookingById(bookingId);
+
+//     // 🔹 SEND SMS
+//     await sendBookingSMS(updatedBooking.rows[0]);
+
+//     return res.status(200).json({
+//       status: true,
+//       message: "Booking status updated successfully",
+//     });
+//   } catch (error) {
+//     console.error("Update Booking Status Error:", error);
+
+//     return res.status(500).json({
+//       status: false,
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
+
+
 exports.updateBookingStatus = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -482,30 +543,43 @@ exports.updateBookingStatus = async (req, res) => {
       });
     }
 
+    const driverId = booking.rows[0].driver_id;
+
+    // ON ROUTE
     if (booking_status_id == 3) {
       await updateBookingonRoute(bookingId, true, false, false);
     }
 
-    if (booking_status_id == 11) {
-      await updateBookingonRoute(bookingId, false, true, true);
-    }
-
+    // ARRIVED
     if (booking_status_id == 6) {
       await updateBookingonRoute(bookingId, false, false, true);
     }
 
+    // COMPLETED
+    if (booking_status_id == 11) {
+      await updateBookingonRoute(bookingId, false, true, true);
+      await Driver.updateDriverStatus(driverId, "Available", "Available");
+    }
+
+    // UPDATE BOOKING STATUS
     await updateBookingStatus(bookingId, booking_status_id);
 
-    // 🔹 GET UPDATED BOOKING
+    // DRIVER UNAVAILABLE FOR THESE STATUS
+    const unavailableStatuses = [15, 10, 9, 6, 3];
+
+    if (unavailableStatuses.includes(booking_status_id)) {
+      await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
+    }
+
     const updatedBooking = await findBookingById(bookingId);
 
-    // 🔹 SEND SMS
     await sendBookingSMS(updatedBooking.rows[0]);
 
     return res.status(200).json({
       status: true,
       message: "Booking status updated successfully",
     });
+
   } catch (error) {
     console.error("Update Booking Status Error:", error);
 
