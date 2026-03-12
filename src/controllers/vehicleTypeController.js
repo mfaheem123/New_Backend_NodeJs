@@ -1,7 +1,7 @@
 const VehicleType = require("../models/vehicleTypeModel");
 const path = require("path");
 
-const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
+const BASE_URL = process.env.BASE_URL || "http://192.168.100.93:5000/uploads/";
 
 const getAll = async (req, res) => {
   try {

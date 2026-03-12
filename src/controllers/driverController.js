@@ -7,7 +7,7 @@ const {
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const pool = require("../db");
-const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
+const BASE_URL = process.env.BASE_URL || "http://192.168.100.93:5000/uploads/";
 
 // const io = getIO();
 
