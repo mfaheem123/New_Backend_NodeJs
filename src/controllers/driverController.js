@@ -603,22 +603,14 @@ exports.driverLogin = async (req, res) => {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
     } // ONLY IMPORTANT FIX
     const updatedDriver = await Driver.getLoginDriverById(driver.id);
-    notifyDriverLogin({
-      id: updatedDriver.id,
-      name: updatedDriver.name,
-      mobile: updatedDriver.mobile,
-      vehicle_id: updatedDriver.vehicle_id,
-      company_vehicle_id: updatedDriver.company_vehicle_id,
-      status: "logged_in",
-      login_time: new Date(),
-    }); // API Response
-    return res
-      .status(200)
-      .json({
-        message: "Login successful",
-        driverInfo: updatedDriver,
-        token: token,
-      });
+    const updatedDriverSocket = await Driver.getById(driver.id);
+  
+    notifyDriverLogin(updatedDriverSocket);
+    return res.status(200).json({
+      message: "Login successful",
+      driverInfo: updatedDriver,
+      token: token,
+    });
   } catch (error) {
     console.error("Login Error:", error);
     return res.status(500).json({ message: "An error occurred during login" });

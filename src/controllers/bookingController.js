@@ -28,7 +28,8 @@ const {
   updateBookingFareCharges,
   getDriverTotalEarning,
 } = require("../models/bookingModel");
-const Driver = require("../models/driverModel")
+const Driver = require("../models/driverModel");
+const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -494,12 +495,11 @@ exports.deleteMultipleBookings = async (req, res) => {
 
 //     if (booking_status_id == 6) {
 //       await updateBookingonRoute(bookingId, false, false, true);
-      
+
 //     }
 
 //     await updateBookingStatus(bookingId, booking_status_id);
 //             await Driver.updateDriverStatus(booking.driver_id, "Unavailable", "Unavailable")
-
 
 //     // 🔹 GET UPDATED BOOKING
 //     const updatedBooking = await findBookingById(bookingId);
@@ -521,11 +521,14 @@ exports.deleteMultipleBookings = async (req, res) => {
 //   }
 // };
 
-
 exports.updateBookingStatus = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
     const { booking_status_id } = req.body;
+console.log(
+      "🚀 INCOMING UPDATE BOOKING STATUS BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
 
     if (!booking_status_id) {
       return res.status(400).json({
@@ -556,30 +559,48 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     // COMPLETED
+    // if (booking_status_id == 11) {
+    //   await updateBookingonRoute(bookingId, false, true, true);
+    //   await Driver.updateDriverStatus(driverId, "Available", "Available");
+    // }
+
     if (booking_status_id == 11) {
       await updateBookingonRoute(bookingId, false, true, true);
+
       await Driver.updateDriverStatus(driverId, "Available", "Available");
+
+      const driver = await Driver.getById(driverId);
+
+      notifyBusyDriverUpdate(driver);
     }
 
     // UPDATE BOOKING STATUS
     await updateBookingStatus(bookingId, booking_status_id);
 
     // DRIVER UNAVAILABLE FOR THESE STATUS
-    const unavailableStatuses = [15, 10, 9, 6, 3];
+    const booking_status_ids = Number(req.body.booking_status_id);
+    console.log(booking_status_ids)
 
-    if (unavailableStatuses.includes(booking_status_id)) {
-      await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
-    }
+const unavailableStatuses = [15, 10, 9, 6, 3];
+
+if (unavailableStatuses.includes(booking_status_ids)) {
+
+  await Driver.updateDriverStatus(driverId,"Unavailable","Unavailable");
+
+  const driver = await Driver.getById(driverId);
+console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+  notifyBusyDriverUpdate(driver);
+
+}
 
     const updatedBooking = await findBookingById(bookingId);
 
-    await sendBookingSMS(updatedBooking.rows[0]);
+    // await sendBookingSMS(updatedBooking.rows[0]);
 
     return res.status(200).json({
       status: true,
       message: "Booking status updated successfully",
     });
-
   } catch (error) {
     console.error("Update Booking Status Error:", error);
 
@@ -787,19 +808,19 @@ exports.checkBookingStatus = async (req, res) => {
 exports.getBookingByDriverIdAndStatus = async (req, res) => {
   const { driver_id, booking_status_id } = req.body;
 
-if(!driver_id){
-  return res.status(400).json({
-    status:false,
-    message: "Driver ID Required"
-  });
-}
+  if (!driver_id) {
+    return res.status(400).json({
+      status: false,
+      message: "Driver ID Required",
+    });
+  }
 
-if(!booking_status_id){
-  return res.status(400).json({
-    status:false,
-    message: "Booking Status ID Required"
-  });
-}
+  if (!booking_status_id) {
+    return res.status(400).json({
+      status: false,
+      message: "Booking Status ID Required",
+    });
+  }
   const bookings = await getBookingByDriverIdAndStatus(
     driver_id,
     booking_status_id,

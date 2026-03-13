@@ -1,0 +1,675 @@
+{"duration":593,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:00:10.036Z"}
+{"level":"info","message":"GET /api/location-types 200 603.503 ms","timestamp":"2026-03-13T09:00:10.047Z"}
+{"duration":614,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:00:10.054Z"}
+{"level":"info","message":"GET /api/location-types 200 619.702 ms","timestamp":"2026-03-13T09:00:10.059Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:04:06.225Z"}
+{"level":"info","message":"GET /api/location-types 200 16.588 ms","timestamp":"2026-03-13T09:04:06.232Z"}
+{"duration":60,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:04:06.277Z"}
+{"level":"info","message":"GET /api/location-types 200 60.872 ms","timestamp":"2026-03-13T09:04:06.278Z"}
+{"duration":20,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:04:11.730Z"}
+{"level":"info","message":"GET /api/location-types 200 29.158 ms","timestamp":"2026-03-13T09:04:11.737Z"}
+{"duration":73,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:04:11.785Z"}
+{"level":"info","message":"GET /api/location-types 200 74.981 ms","timestamp":"2026-03-13T09:04:11.787Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:04:28.590Z"}
+{"level":"info","message":"GET /api/location-types 200 11.740 ms","timestamp":"2026-03-13T09:04:28.597Z"}
+{"duration":51,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:04:28.638Z"}
+{"level":"info","message":"GET /api/location-types 200 52.501 ms","timestamp":"2026-03-13T09:04:28.639Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:05:18.485Z"}
+{"level":"info","message":"GET /api/location-types 200 12.004 ms","timestamp":"2026-03-13T09:05:18.492Z"}
+{"duration":48,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:05:18.528Z"}
+{"level":"info","message":"GET /api/location-types 200 49.028 ms","timestamp":"2026-03-13T09:05:18.530Z"}
+{"duration":11,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:07:11.327Z"}
+{"level":"info","message":"GET /api/location-types 200 20.675 ms","timestamp":"2026-03-13T09:07:11.335Z"}
+{"duration":163,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:07:11.482Z"}
+{"level":"info","message":"GET /api/location-types 200 165.413 ms","timestamp":"2026-03-13T09:07:11.484Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:07:17.381Z"}
+{"level":"info","message":"GET /api/location-types 200 12.254 ms","timestamp":"2026-03-13T09:07:17.388Z"}
+{"duration":58,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:07:17.435Z"}
+{"level":"info","message":"GET /api/location-types 200 59.847 ms","timestamp":"2026-03-13T09:07:17.437Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:09:14.031Z"}
+{"level":"info","message":"GET /api/location-types 200 11.758 ms","timestamp":"2026-03-13T09:09:14.038Z"}
+{"duration":53,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:09:14.080Z"}
+{"level":"info","message":"GET /api/location-types 200 54.583 ms","timestamp":"2026-03-13T09:09:14.082Z"}
+{"duration":9,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:10:48.763Z"}
+{"level":"info","message":"GET /api/location-types 200 19.213 ms","timestamp":"2026-03-13T09:10:48.772Z"}
+{"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:10:48.821Z"}
+{"level":"info","message":"GET /api/location-types 200 72.699 ms","timestamp":"2026-03-13T09:10:48.830Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:10:52.075Z"}
+{"level":"info","message":"GET /api/location-types 200 23.938 ms","timestamp":"2026-03-13T09:10:52.093Z"}
+{"duration":82,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:10:52.152Z"}
+{"level":"info","message":"GET /api/location-types 200 82.798 ms","timestamp":"2026-03-13T09:10:52.154Z"}
+{"duration":4,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:14:43.614Z"}
+{"level":"info","message":"GET /api/location-types 200 10.620 ms","timestamp":"2026-03-13T09:14:43.620Z"}
+{"duration":163,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:14:43.774Z"}
+{"level":"info","message":"GET /api/location-types 200 164.610 ms","timestamp":"2026-03-13T09:14:43.775Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:15:37.796Z"}
+{"level":"info","message":"GET /api/location-types 200 17.059 ms","timestamp":"2026-03-13T09:15:37.808Z"}
+{"duration":81,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:15:37.874Z"}
+{"level":"info","message":"GET /api/location-types 200 83.364 ms","timestamp":"2026-03-13T09:15:37.876Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:15:41.323Z"}
+{"level":"info","message":"GET /api/location-types 200 11.139 ms","timestamp":"2026-03-13T09:15:41.329Z"}
+{"duration":50,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:15:41.369Z"}
+{"level":"info","message":"GET /api/location-types 200 51.137 ms","timestamp":"2026-03-13T09:15:41.370Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:16:16.072Z"}
+{"level":"info","message":"GET /api/location-types 200 12.273 ms","timestamp":"2026-03-13T09:16:16.080Z"}
+{"duration":48,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:16:16.117Z"}
+{"level":"info","message":"GET /api/location-types 200 50.010 ms","timestamp":"2026-03-13T09:16:16.119Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:16:21.291Z"}
+{"level":"info","message":"GET /api/location-types 200 12.282 ms","timestamp":"2026-03-13T09:16:21.298Z"}
+{"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:16:21.350Z"}
+{"level":"info","message":"GET /api/location-types 200 65.569 ms","timestamp":"2026-03-13T09:16:21.352Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:28:16.484Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"9378e3b1-c663-446b-b193-08c42f057710","timestamp":"2026-03-13T09:28:16.489Z"}
+{"duration":242,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T09:28:42.333Z"}
+{"duration":59,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T09:28:42.476Z"}
+{"duration":6,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:28:42.483Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:28:42.487Z"}
+{"level":"info","message":"POST /api/drivers/login 200 403.490 ms","timestamp":"2026-03-13T09:28:42.489Z"}
+{"duration":135,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T09:28:57.088Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T09:28:57.170Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:28:57.172Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:28:57.174Z"}
+{"level":"info","message":"POST /api/drivers/login 200 223.400 ms","timestamp":"2026-03-13T09:28:57.175Z"}
+{"duration":7,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T09:29:04.065Z"}
+{"duration":48,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T09:29:04.113Z"}
+{"duration":26,"level":"info","message":"db-query","rows":0,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T09:29:04.140Z"}
+{"duration":17,"level":"info","message":"db-query","rows":0,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T09:29:04.157Z"}
+{"duration":56,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T09:29:04.214Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T09:29:04.216Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T09:29:04.219Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T09:29:04.220Z"}
+{"driverId":169,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T09:29:04.221Z"}
+{"level":"info","message":"POST /api/drivers/logout/169 200 164.753 ms","timestamp":"2026-03-13T09:29:04.223Z"}
+{"duration":221,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM bookings b\n    LEFT JOIN booking_statuses bs ON b.booking_status_id = bs.id\n    LEFT JOIN journey_types jt ON b.journey_type_id = jt.id\n    LEFT JOIN payment_types pt ON b.payment_type_id = pt.id\n    LEFT JOIN accounts a ON b.account_id = a.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    \n    WHERE \n          DATE(b.pickup_date) = CURRENT_DATE\n          AND b.booking_status_id = 1 AND b.trash = false\n        \n    \n  \n  ","timestamp":"2026-03-13T09:31:05.951Z"}
+{"duration":171,"level":"info","message":"db-query","rows":0,"text":"\n  \nSELECT \n  b.*,\n\n  json_build_object(\n    'booking_status', bs.booking_status\n  ) AS booking_status,\n\n  json_build_object(\n    'booking_type', bt.booking_type\n  ) AS booking_type,\n\n  json_build_object(\n    'journey_type', jt.journey_type\n  ) AS journey_type,\n\n  json_build_object(\n    'id', s.id,\n    'name', s.name,\n    'telephone_number', s.telephone_number\n  ) AS subsidiary,\n\n  json_build_object(\n    'name', vt.name,\n    'background_color', vt.background_color,\n    'foreground_color', vt.foreground_color\n  ) AS vehicle_type,\n\n  json_build_object(\n    'id', pt.id,\n    'name', pt.name,\n    'background_color', pt.background_color,\n    'foreground_color', pt.foreground_color\n  ) AS payment_type,\n\n  json_build_object(\n    'id', a.id,\n    'name', a.name,\n    'background_color', a.background_color,\n    'foreground_color', a.foreground_color,\n    'has_vat', a.has_vat,\n    'bank_information', a.bank_information,\n    'fare_controller', a.fare_controller,\n    'account_fees_type', a.account_fees_type,\n    'account_fees', a.account_fees,\n    'account_fees_vat', a.account_fees_vat\n  ) AS account,\n\n  json_build_object(\n    'id', d.id,\n    'username', d.username,\n    'name', d.name,\n    'mobile_device_id', d.mobile_device_id,\n    'phc_vehicle_number', d.phc_vehicle_number,\n    'phc_driver_number', d.phc_driver_number,\n    'vehicle_id', d.vehicle_id,\n    'driver_commission', d.driver_commission,\n    'session_status', d.session_status,\n    'vehicle', json_build_object(\n        'make', v.make,\n        'model', v.model,\n        'color', v.color,\n        'vehicle_number', v.vehicle_number\n    )\n  ) AS driver,\n\n  json_build_object(\n    'door_number', c.door_number,\n    'address1', c.address1,\n    'address2', c.address2,\n    'blacklist', c.blacklist\n  ) AS customer,\n\n  json_build_object(\n    'username', e.username,\n    'role_id', e.role_id\n  ) AS employee,\n\n  json_build_object(\n  'pickup',\n  CASE\n    WHEN lp.id IS NOT NULL THEN json_build_object(\n      'id', lp.id,\n      'name', lp.name,\n      'location_type', json_build_object(\n            'id', ltp.id,\n            'name', ltp.name,\n            'background_color', ltp.background_color,\n            'foreground_color', ltp.foreground_color\n          )\n    )\n    ELSE \n    json_build_object(\n      'id', null,\n      'name', null,\n      'location_type', json_build_object(\n        'id', null,\n        'name', null,\n        'background_color', null,\n        'foreground_color', null\n      )\n    )\n  END,\n  'dropoff',\n  CASE\n    WHEN ld.id IS NOT NULL THEN json_build_object(\n      'id', ld.id,\n      'name', ld.name,\n      'location_type', json_build_object(\n            'id', ltp.id,\n            'name', ltp.name,\n            'background_color', ltp.background_color,\n            'foreground_color', ltp.foreground_color\n          )\n\n    )\n    ELSE \n    json_build_object(\n      'id', null,\n      'name', null,\n      'location_type', json_build_object(\n  'id', null,\n  'name', null,\n  'background_color', null,\n  'foreground_color', null\n)\n\n    )\n  END\n) AS airport\n\n\nFROM bookings b\nLEFT JOIN booking_statuses bs ON b.booking_status_id = bs.id\nLEFT JOIN booking_types bt ON b.booking_type_id = bt.id\nLEFT JOIN journey_types jt ON b.journey_type_id = jt.id\nLEFT JOIN subsidiaries s ON b.subsidiary_id = s.id\nLEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\nLEFT JOIN payment_types pt ON b.payment_type_id = pt.id\nLEFT JOIN accounts a ON b.account_id = a.id\nLEFT JOIN drivers d ON b.driver_id = d.id\nLEFT JOIN vehicles v ON d.vehicle_id = v.id\nLEFT JOIN customers c ON b.customer_id = c.id\nLEFT JOIN employees e ON b.employee_id = e.id\nLEFT JOIN locations lp\n  ON lp.location_type_id = 2\n AND b.pickup ILIKE '%' || lp.name || '%'\n\nLEFT JOIN locations ld\n  ON ld.location_type_id = 2\n AND b.dropoff ILIKE '%' || ld.name || '%'\nLEFT JOIN location_types ltp ON lp.location_type_id = ltp.id\nLEFT JOIN location_types ltd ON ld.location_type_id = ltd.id\n\n\n\n  \n    WHERE \n          DATE(b.pickup_date) = CURRENT_DATE\n          AND b.booking_status_id = 1 AND b.trash = false\n        \n    \n  \n  ORDER BY \n          TRIM(b.pickup_time)::time ASC,\n          b.id ASC\n        \n  OFFSET $1 LIMIT $2\n","timestamp":"2026-03-13T09:31:06.124Z"}
+{"level":"info","message":"GET /api/bookings/getbytabs/1 200 396.992 ms","timestamp":"2026-03-13T09:31:06.126Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM bookings b\n    LEFT JOIN booking_statuses bs ON b.booking_status_id = bs.id\n    LEFT JOIN journey_types jt ON b.journey_type_id = jt.id\n    LEFT JOIN payment_types pt ON b.payment_type_id = pt.id\n    LEFT JOIN accounts a ON b.account_id = a.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    \n    WHERE b.booking_status_id = 11 AND b.trash = false\n    \n  \n  ","timestamp":"2026-03-13T09:31:11.071Z"}
+{"duration":41,"level":"info","message":"db-query","rows":3,"text":"\n  \nSELECT \n  b.*,\n\n  json_build_object(\n    'booking_status', bs.booking_status\n  ) AS booking_status,\n\n  json_build_object(\n    'booking_type', bt.booking_type\n  ) AS booking_type,\n\n  json_build_object(\n    'journey_type', jt.journey_type\n  ) AS journey_type,\n\n  json_build_object(\n    'id', s.id,\n    'name', s.name,\n    'telephone_number', s.telephone_number\n  ) AS subsidiary,\n\n  json_build_object(\n    'name', vt.name,\n    'background_color', vt.background_color,\n    'foreground_color', vt.foreground_color\n  ) AS vehicle_type,\n\n  json_build_object(\n    'id', pt.id,\n    'name', pt.name,\n    'background_color', pt.background_color,\n    'foreground_color', pt.foreground_color\n  ) AS payment_type,\n\n  json_build_object(\n    'id', a.id,\n    'name', a.name,\n    'background_color', a.background_color,\n    'foreground_color', a.foreground_color,\n    'has_vat', a.has_vat,\n    'bank_information', a.bank_information,\n    'fare_controller', a.fare_controller,\n    'account_fees_type', a.account_fees_type,\n    'account_fees', a.account_fees,\n    'account_fees_vat', a.account_fees_vat\n  ) AS account,\n\n  json_build_object(\n    'id', d.id,\n    'username', d.username,\n    'name', d.name,\n    'mobile_device_id', d.mobile_device_id,\n    'phc_vehicle_number', d.phc_vehicle_number,\n    'phc_driver_number', d.phc_driver_number,\n    'vehicle_id', d.vehicle_id,\n    'driver_commission', d.driver_commission,\n    'session_status', d.session_status,\n    'vehicle', json_build_object(\n        'make', v.make,\n        'model', v.model,\n        'color', v.color,\n        'vehicle_number', v.vehicle_number\n    )\n  ) AS driver,\n\n  json_build_object(\n    'door_number', c.door_number,\n    'address1', c.address1,\n    'address2', c.address2,\n    'blacklist', c.blacklist\n  ) AS customer,\n\n  json_build_object(\n    'username', e.username,\n    'role_id', e.role_id\n  ) AS employee,\n\n  json_build_object(\n  'pickup',\n  CASE\n    WHEN lp.id IS NOT NULL THEN json_build_object(\n      'id', lp.id,\n      'name', lp.name,\n      'location_type', json_build_object(\n            'id', ltp.id,\n            'name', ltp.name,\n            'background_color', ltp.background_color,\n            'foreground_color', ltp.foreground_color\n          )\n    )\n    ELSE \n    json_build_object(\n      'id', null,\n      'name', null,\n      'location_type', json_build_object(\n        'id', null,\n        'name', null,\n        'background_color', null,\n        'foreground_color', null\n      )\n    )\n  END,\n  'dropoff',\n  CASE\n    WHEN ld.id IS NOT NULL THEN json_build_object(\n      'id', ld.id,\n      'name', ld.name,\n      'location_type', json_build_object(\n            'id', ltp.id,\n            'name', ltp.name,\n            'background_color', ltp.background_color,\n            'foreground_color', ltp.foreground_color\n          )\n\n    )\n    ELSE \n    json_build_object(\n      'id', null,\n      'name', null,\n      'location_type', json_build_object(\n  'id', null,\n  'name', null,\n  'background_color', null,\n  'foreground_color', null\n)\n\n    )\n  END\n) AS airport\n\n\nFROM bookings b\nLEFT JOIN booking_statuses bs ON b.booking_status_id = bs.id\nLEFT JOIN booking_types bt ON b.booking_type_id = bt.id\nLEFT JOIN journey_types jt ON b.journey_type_id = jt.id\nLEFT JOIN subsidiaries s ON b.subsidiary_id = s.id\nLEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\nLEFT JOIN payment_types pt ON b.payment_type_id = pt.id\nLEFT JOIN accounts a ON b.account_id = a.id\nLEFT JOIN drivers d ON b.driver_id = d.id\nLEFT JOIN vehicles v ON d.vehicle_id = v.id\nLEFT JOIN customers c ON b.customer_id = c.id\nLEFT JOIN employees e ON b.employee_id = e.id\nLEFT JOIN locations lp\n  ON lp.location_type_id = 2\n AND b.pickup ILIKE '%' || lp.name || '%'\n\nLEFT JOIN locations ld\n  ON ld.location_type_id = 2\n AND b.dropoff ILIKE '%' || ld.name || '%'\nLEFT JOIN location_types ltp ON lp.location_type_id = ltp.id\nLEFT JOIN location_types ltd ON ld.location_type_id = ltd.id\n\n\n\n  \n    WHERE b.booking_status_id = 11 AND b.trash = false\n    \n  \n  ORDER BY b.id ASC\n  OFFSET $1 LIMIT $2\n","timestamp":"2026-03-13T09:31:11.113Z"}
+{"level":"info","message":"GET /api/bookings/getbytabs/4 200 49.930 ms","timestamp":"2026-03-13T09:31:11.120Z"}
+{"duration":64,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:31:57.630Z"}
+{"duration":5,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:31:57.635Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:31:57.638Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 76.614 ms","timestamp":"2026-03-13T09:31:57.643Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:33:03.346Z"}
+{"level":"info","message":"GET /api/location-types 200 15.355 ms","timestamp":"2026-03-13T09:33:03.356Z"}
+{"duration":2,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:33:03.378Z"}
+{"level":"info","message":"GET /api/location-types 200 3.412 ms","timestamp":"2026-03-13T09:33:03.380Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:33:08.814Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"6bbff93d-bc94-407f-8b14-27b1ec6dab0c","timestamp":"2026-03-13T09:33:08.848Z"}
+{"duration":115,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T09:33:33.668Z"}
+{"duration":10,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T09:33:33.679Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T09:33:33.683Z"}
+{"duration":8,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T09:33:33.699Z"}
+{"duration":6,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T09:33:33.706Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T09:33:33.709Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T09:33:33.714Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T09:33:33.716Z"}
+{"driverId":167,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T09:33:33.717Z"}
+{"level":"info","message":"POST /api/drivers/logout/167 200 168.130 ms","timestamp":"2026-03-13T09:33:33.721Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T09:33:40.393Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T09:33:40.481Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:33:40.483Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:33:40.485Z"}
+{"level":"info","message":"POST /api/drivers/login 200 100.288 ms","timestamp":"2026-03-13T09:33:40.487Z"}
+{"duration":76,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:33:51.685Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:33:51.695Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:33:51.698Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 97.673 ms","timestamp":"2026-03-13T09:33:51.706Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:34:53.438Z"}
+{"level":"info","message":"GET /api/location-types 200 14.202 ms","timestamp":"2026-03-13T09:34:53.447Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:34:53.460Z"}
+{"level":"info","message":"GET /api/location-types 200 2.477 ms","timestamp":"2026-03-13T09:34:53.462Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:35:14.977Z"}
+{"level":"info","message":"GET /api/location-types 200 11.538 ms","timestamp":"2026-03-13T09:35:14.983Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:35:14.993Z"}
+{"level":"info","message":"GET /api/location-types 200 2.388 ms","timestamp":"2026-03-13T09:35:14.994Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:35:17.293Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"e8d54ddd-a704-4e66-a4eb-8608dcd46e06","timestamp":"2026-03-13T09:35:17.307Z"}
+{"duration":53,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T09:35:26.873Z"}
+{"duration":8,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T09:35:26.882Z"}
+{"duration":5,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T09:35:26.888Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T09:35:26.891Z"}
+{"duration":5,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T09:35:26.896Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T09:35:26.897Z"}
+{"duration":15,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T09:35:26.913Z"}
+{"duration":21,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T09:35:26.935Z"}
+{"driverId":167,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T09:35:26.938Z"}
+{"level":"info","message":"POST /api/drivers/logout/167 200 119.902 ms","timestamp":"2026-03-13T09:35:26.940Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T09:35:33.974Z"}
+{"duration":0,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T09:35:34.061Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:35:34.063Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:35:34.064Z"}
+{"level":"info","message":"POST /api/drivers/login 200 99.819 ms","timestamp":"2026-03-13T09:35:34.066Z"}
+{"duration":65,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:36:16.782Z"}
+{"duration":5,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:36:16.788Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:36:16.791Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 76.766 ms","timestamp":"2026-03-13T09:36:16.793Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:39:11.781Z"}
+{"level":"info","message":"GET /api/location-types 200 11.058 ms","timestamp":"2026-03-13T09:39:11.788Z"}
+{"duration":50,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:39:11.828Z"}
+{"level":"info","message":"GET /api/location-types 200 51.306 ms","timestamp":"2026-03-13T09:39:11.829Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:39:15.487Z"}
+{"level":"info","message":"GET /api/location-types 200 14.031 ms","timestamp":"2026-03-13T09:39:15.495Z"}
+{"duration":52,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:39:15.534Z"}
+{"level":"info","message":"GET /api/location-types 200 54.154 ms","timestamp":"2026-03-13T09:39:15.536Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:39:23.695Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"9eb89b06-c9a5-4a11-ab14-247f78563416","timestamp":"2026-03-13T09:39:23.699Z"}
+{"duration":47,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T09:39:37.930Z"}
+{"duration":9,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T09:39:37.940Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T09:39:37.944Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T09:39:37.948Z"}
+{"duration":6,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T09:39:37.955Z"}
+{"duration":0,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T09:39:37.956Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T09:39:37.962Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T09:39:37.964Z"}
+{"driverId":167,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T09:39:37.965Z"}
+{"level":"info","message":"POST /api/drivers/logout/167 200 84.325 ms","timestamp":"2026-03-13T09:39:37.967Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T09:39:41.571Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T09:39:41.655Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:39:41.657Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:39:41.658Z"}
+{"level":"info","message":"POST /api/drivers/login 200 96.153 ms","timestamp":"2026-03-13T09:39:41.660Z"}
+{"duration":63,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:39:56.225Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:39:56.228Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      booking_status = $1,\n      driver_status = $2\n    WHERE id = $3\n  ","timestamp":"2026-03-13T09:39:56.229Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:39:56.231Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:39:56.235Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 75.696 ms","timestamp":"2026-03-13T09:39:56.237Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:40:13.048Z"}
+{"level":"info","message":"GET /api/location-types 200 15.319 ms","timestamp":"2026-03-13T09:40:13.059Z"}
+{"duration":54,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:40:13.099Z"}
+{"level":"info","message":"GET /api/location-types 200 61.825 ms","timestamp":"2026-03-13T09:40:13.107Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:40:18.740Z"}
+{"level":"info","message":"GET /api/location-types 200 11.696 ms","timestamp":"2026-03-13T09:40:18.746Z"}
+{"duration":52,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:40:18.788Z"}
+{"level":"info","message":"GET /api/location-types 200 53.245 ms","timestamp":"2026-03-13T09:40:18.790Z"}
+{"duration":9,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:40:25.529Z"}
+{"level":"info","message":"GET /api/location-types 200 20.511 ms","timestamp":"2026-03-13T09:40:25.542Z"}
+{"duration":61,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:40:25.584Z"}
+{"level":"info","message":"GET /api/location-types 200 62.699 ms","timestamp":"2026-03-13T09:40:25.586Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:40:27.238Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"ba1bbf13-89c1-4c25-9e09-228fa7d466f7","timestamp":"2026-03-13T09:40:27.240Z"}
+{"duration":48,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T09:40:46.117Z"}
+{"duration":9,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T09:40:46.127Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T09:40:46.130Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T09:40:46.133Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T09:40:46.140Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T09:40:46.142Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T09:40:46.145Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T09:40:46.147Z"}
+{"driverId":167,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T09:40:46.147Z"}
+{"level":"info","message":"POST /api/drivers/logout/167 200 80.334 ms","timestamp":"2026-03-13T09:40:46.149Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T09:40:49.323Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T09:40:49.412Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:40:49.414Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:40:49.417Z"}
+{"level":"info","message":"POST /api/drivers/login 200 116.880 ms","timestamp":"2026-03-13T09:40:49.432Z"}
+{"duration":7,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:40:53.226Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:40:53.228Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      booking_status = $1,\n      driver_status = $2\n    WHERE id = $3\n  ","timestamp":"2026-03-13T09:40:53.232Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:40:53.234Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:40:53.238Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 21.332 ms","timestamp":"2026-03-13T09:40:53.239Z"}
+{"duration":12,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:43:03.350Z"}
+{"level":"info","message":"GET /api/location-types 200 31.448 ms","timestamp":"2026-03-13T09:43:03.368Z"}
+{"duration":87,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:43:03.429Z"}
+{"level":"info","message":"GET /api/location-types 200 88.941 ms","timestamp":"2026-03-13T09:43:03.431Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:43:29.291Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"3989651a-4bec-4137-81b4-8fd0f9844817","timestamp":"2026-03-13T09:43:29.295Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:45:02.614Z"}
+{"level":"info","message":"GET /api/location-types 200 19.633 ms","timestamp":"2026-03-13T09:45:02.625Z"}
+{"duration":163,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:45:02.771Z"}
+{"level":"info","message":"GET /api/location-types 200 164.604 ms","timestamp":"2026-03-13T09:45:02.772Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:45:05.779Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"96feda9a-1e4a-4b2f-98e8-e6c2de70f2a3","timestamp":"2026-03-13T09:45:05.782Z"}
+{"duration":47,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T09:45:13.162Z"}
+{"duration":8,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T09:45:13.171Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T09:45:13.175Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T09:45:13.178Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T09:45:13.183Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T09:45:13.185Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T09:45:13.191Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T09:45:13.193Z"}
+{"driverId":167,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T09:45:13.194Z"}
+{"level":"info","message":"POST /api/drivers/logout/167 200 80.364 ms","timestamp":"2026-03-13T09:45:13.195Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T09:45:15.786Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T09:45:15.883Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:45:15.885Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:45:15.888Z"}
+{"level":"info","message":"POST /api/drivers/login 200 111.396 ms","timestamp":"2026-03-13T09:45:15.890Z"}
+{"duration":7,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:45:18.856Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:45:18.860Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      booking_status = $1,\n      driver_status = $2\n    WHERE id = $3\n  ","timestamp":"2026-03-13T09:45:18.862Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:45:18.865Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:45:18.868Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 20.641 ms","timestamp":"2026-03-13T09:45:18.869Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"96feda9a-1e4a-4b2f-98e8-e6c2de70f2a3","timestamp":"2026-03-13T09:50:25.976Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:50:26.005Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"f61ea5c4-f912-4143-ba60-87c7ea72f5d8","timestamp":"2026-03-13T09:50:26.008Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"f61ea5c4-f912-4143-ba60-87c7ea72f5d8","timestamp":"2026-03-13T09:50:26.658Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:50:26.686Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"ba21c449-af6b-479b-9225-514d456b9ed5","timestamp":"2026-03-13T09:50:26.694Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"ba21c449-af6b-479b-9225-514d456b9ed5","timestamp":"2026-03-13T09:50:27.428Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:50:27.472Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"a2bca554-1efb-4e07-a641-4d1b15e16f98","timestamp":"2026-03-13T09:50:27.473Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"a2bca554-1efb-4e07-a641-4d1b15e16f98","timestamp":"2026-03-13T09:50:28.007Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:50:28.040Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"bc0716c0-82cd-4133-ad7a-d01b3f58a3eb","timestamp":"2026-03-13T09:50:28.043Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"bc0716c0-82cd-4133-ad7a-d01b3f58a3eb","timestamp":"2026-03-13T09:50:44.934Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:50:55.550Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"bb0c82c3-433d-4d54-ae14-21c4679dde38","timestamp":"2026-03-13T09:50:55.551Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"bb0c82c3-433d-4d54-ae14-21c4679dde38","timestamp":"2026-03-13T09:51:17.538Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:32.527Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"c6766fb3-fe4a-4fcd-ab27-b4ef9f6a407b","timestamp":"2026-03-13T09:51:32.528Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:32.541Z","url":"/websocket/busy-driver"}
+{"level":"warn","message":"ws:rejected","timestamp":"2026-03-13T09:51:32.541Z","url":"/websocket/busy-driver"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"c6766fb3-fe4a-4fcd-ab27-b4ef9f6a407b","timestamp":"2026-03-13T09:51:41.718Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:41.741Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"e28a1f62-72c7-481f-8fd4-5bc074f513d2","timestamp":"2026-03-13T09:51:41.742Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:41.755Z","url":"/websocket/busy-driver"}
+{"level":"warn","message":"ws:rejected","timestamp":"2026-03-13T09:51:41.758Z","url":"/websocket/busy-driver"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"e28a1f62-72c7-481f-8fd4-5bc074f513d2","timestamp":"2026-03-13T09:51:48.778Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:48.812Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"355ba89d-bf1f-411a-9815-4035e06b3ca3","timestamp":"2026-03-13T09:51:48.812Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:48.830Z","url":"/websocket/busy-driver"}
+{"level":"warn","message":"ws:rejected","timestamp":"2026-03-13T09:51:48.830Z","url":"/websocket/busy-driver"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"355ba89d-bf1f-411a-9815-4035e06b3ca3","timestamp":"2026-03-13T09:51:49.283Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:49.314Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"963dd6ec-0904-4586-9798-2d3fb113d348","timestamp":"2026-03-13T09:51:49.333Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:49.347Z","url":"/websocket/busy-driver"}
+{"level":"warn","message":"ws:rejected","timestamp":"2026-03-13T09:51:49.354Z","url":"/websocket/busy-driver"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"963dd6ec-0904-4586-9798-2d3fb113d348","timestamp":"2026-03-13T09:51:49.479Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:49.509Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"8497b6e3-d9d2-40d5-82d3-64e825b184ad","timestamp":"2026-03-13T09:51:49.510Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:49.538Z","url":"/websocket/busy-driver"}
+{"level":"warn","message":"ws:rejected","timestamp":"2026-03-13T09:51:49.538Z","url":"/websocket/busy-driver"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"8497b6e3-d9d2-40d5-82d3-64e825b184ad","timestamp":"2026-03-13T09:51:49.685Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:49.720Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"c5df160b-e183-44c0-8f61-8848ca00be46","timestamp":"2026-03-13T09:51:49.722Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:49.741Z","url":"/websocket/busy-driver"}
+{"level":"warn","message":"ws:rejected","timestamp":"2026-03-13T09:51:49.742Z","url":"/websocket/busy-driver"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"c5df160b-e183-44c0-8f61-8848ca00be46","timestamp":"2026-03-13T09:51:49.844Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:49.864Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"ad728de7-bc56-42ea-bdc8-48f3eebdf7bd","timestamp":"2026-03-13T09:51:49.865Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:51:49.882Z","url":"/websocket/busy-driver"}
+{"level":"warn","message":"ws:rejected","timestamp":"2026-03-13T09:51:49.882Z","url":"/websocket/busy-driver"}
+{"duration":64,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:51:55.942Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:51:55.944Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      booking_status = $1,\n      driver_status = $2\n    WHERE id = $3\n  ","timestamp":"2026-03-13T09:51:55.946Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:51:55.947Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:51:55.950Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 75.493 ms","timestamp":"2026-03-13T09:51:55.954Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"ad728de7-bc56-42ea-bdc8-48f3eebdf7bd","timestamp":"2026-03-13T09:52:13.027Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:52:20.444Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"e97e1033-f154-4b8c-b389-7c886ca6f7d7","timestamp":"2026-03-13T09:52:20.446Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:52:20.461Z","url":"/websocket/busy-driver"}
+{"level":"warn","message":"ws:rejected","timestamp":"2026-03-13T09:52:20.463Z","url":"/websocket/busy-driver"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"e97e1033-f154-4b8c-b389-7c886ca6f7d7","timestamp":"2026-03-13T09:53:13.057Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:53:13.079Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"fce2d3a1-0ff6-423a-9828-81e2f3741d4e","timestamp":"2026-03-13T09:53:13.080Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:53:13.091Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"4e948af3-afac-4a9f-9c65-8bc3d0b31311","timestamp":"2026-03-13T09:53:13.092Z"}
+{"duration":60,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T09:53:13.153Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"fce2d3a1-0ff6-423a-9828-81e2f3741d4e","timestamp":"2026-03-13T09:53:14.066Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:53:14.092Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"28f89d4c-0601-4fc8-a237-07eab68d47f5","timestamp":"2026-03-13T09:53:14.093Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:53:14.108Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"2f9d9a2d-def3-45a0-bea8-fb8ffccbf67f","timestamp":"2026-03-13T09:53:14.109Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T09:53:14.110Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"28f89d4c-0601-4fc8-a237-07eab68d47f5","timestamp":"2026-03-13T09:53:19.800Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:53:19.826Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"dd74eaba-14ac-4ae1-9ae5-389f20a59b10","timestamp":"2026-03-13T09:53:19.828Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:53:19.853Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"898057bf-4f97-42c9-a3c3-cc95f648775b","timestamp":"2026-03-13T09:53:19.855Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T09:53:19.857Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"dd74eaba-14ac-4ae1-9ae5-389f20a59b10","timestamp":"2026-03-13T09:53:25.749Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:53:31.998Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"aa001799-0367-495e-b75a-11b9aac7ffd7","timestamp":"2026-03-13T09:53:32.002Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:53:32.022Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"2f7d8d18-f79f-40f2-bf79-4c142716d47b","timestamp":"2026-03-13T09:53:32.024Z"}
+{"duration":68,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T09:53:32.093Z"}
+{"duration":157,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:53:57.398Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:53:57.401Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      booking_status = $1,\n      driver_status = $2\n    WHERE id = $3\n  ","timestamp":"2026-03-13T09:53:57.403Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:53:57.406Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:53:57.410Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 169.737 ms","timestamp":"2026-03-13T09:53:57.411Z"}
+{"duration":43,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T09:54:15.587Z"}
+{"duration":7,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T09:54:15.595Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T09:54:15.597Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T09:54:15.600Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T09:54:15.608Z"}
+{"duration":0,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T09:54:15.609Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T09:54:15.613Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T09:54:15.615Z"}
+{"driverId":167,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T09:54:15.615Z"}
+{"level":"info","message":"POST /api/drivers/logout/167 200 71.811 ms","timestamp":"2026-03-13T09:54:15.617Z"}
+{"duration":59,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T09:54:36.804Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T09:54:36.885Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:54:36.887Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:54:36.889Z"}
+{"level":"info","message":"POST /api/drivers/login 200 145.341 ms","timestamp":"2026-03-13T09:54:36.890Z"}
+{"duration":69,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:54:49.681Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T09:54:49.685Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      booking_status = $1,\n      driver_status = $2\n    WHERE id = $3\n  ","timestamp":"2026-03-13T09:54:49.687Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T09:54:49.690Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T09:54:49.694Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 82.391 ms","timestamp":"2026-03-13T09:54:49.695Z"}
+{"duration":4,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:57:40.118Z"}
+{"level":"info","message":"GET /api/location-types 200 11.524 ms","timestamp":"2026-03-13T09:57:40.125Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:57:40.133Z"}
+{"level":"info","message":"GET /api/location-types 200 2.335 ms","timestamp":"2026-03-13T09:57:40.134Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:58:21.720Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"296c1d32-725b-4e7d-bee5-aa58969f9bd9","timestamp":"2026-03-13T09:58:21.732Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:58:21.746Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"8ede8729-e6d7-432b-8cb0-a146a38a3b61","timestamp":"2026-03-13T09:58:21.747Z"}
+{"duration":56,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T09:58:21.803Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"296c1d32-725b-4e7d-bee5-aa58969f9bd9","timestamp":"2026-03-13T09:58:51.305Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:58:51.328Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"2c4e2f30-7f6d-4d34-86a7-c63d1317de52","timestamp":"2026-03-13T09:58:51.329Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:58:51.354Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"78b37f2b-714a-44f2-ae8d-3ffe7123f6ec","timestamp":"2026-03-13T09:58:51.356Z"}
+{"duration":55,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T09:58:51.411Z"}
+{"duration":13,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:59:07.754Z"}
+{"level":"info","message":"GET /api/location-types 200 24.664 ms","timestamp":"2026-03-13T09:59:07.764Z"}
+{"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:59:07.808Z"}
+{"level":"info","message":"GET /api/location-types 200 64.955 ms","timestamp":"2026-03-13T09:59:07.809Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:59:26.401Z"}
+{"level":"info","message":"GET /api/location-types 200 16.474 ms","timestamp":"2026-03-13T09:59:26.411Z"}
+{"duration":117,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T09:59:26.514Z"}
+{"level":"info","message":"GET /api/location-types 200 119.233 ms","timestamp":"2026-03-13T09:59:26.516Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:59:27.059Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"fd58133c-3503-46ba-a5e6-8ee6d9e56f74","timestamp":"2026-03-13T09:59:27.063Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T09:59:27.074Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"33948f15-10af-4290-a03c-024250a3b26f","timestamp":"2026-03-13T09:59:27.075Z"}
+{"duration":5,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T09:59:27.081Z"}
+{"duration":143,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T10:00:05.483Z"}
+{"duration":6,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T10:00:05.502Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T10:00:05.506Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T10:00:05.510Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T10:00:05.516Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T10:00:05.532Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T10:00:05.537Z"}
+{"duration":0,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T10:00:05.545Z"}
+{"driverId":167,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T10:00:05.545Z"}
+{"level":"info","message":"POST /api/drivers/logout/167 200 213.202 ms","timestamp":"2026-03-13T10:00:05.552Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T10:00:07.593Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T10:00:07.675Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T10:00:07.677Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T10:00:07.678Z"}
+{"level":"info","message":"POST /api/drivers/login 200 94.817 ms","timestamp":"2026-03-13T10:00:07.680Z"}
+{"duration":60,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T10:00:25.927Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T10:00:25.930Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      booking_status = $1,\n      driver_status = $2\n    WHERE id = $3\n  ","timestamp":"2026-03-13T10:00:25.931Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T10:00:25.933Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T10:00:25.938Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 73.185 ms","timestamp":"2026-03-13T10:00:25.940Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:05:57.710Z"}
+{"level":"info","message":"GET /api/location-types 200 13.629 ms","timestamp":"2026-03-13T10:05:57.718Z"}
+{"duration":60,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:05:57.767Z"}
+{"level":"info","message":"GET /api/location-types 200 61.511 ms","timestamp":"2026-03-13T10:05:57.768Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:06:02.663Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"ab246844-b346-4919-9440-2b9244e1809e","timestamp":"2026-03-13T10:06:02.665Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:06:02.685Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"70755def-e039-4612-b40e-ba2743743d77","timestamp":"2026-03-13T10:06:02.696Z"}
+{"duration":5,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:06:02.701Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"ab246844-b346-4919-9440-2b9244e1809e","timestamp":"2026-03-13T10:06:46.918Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:06:48.925Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"3ff45c2e-75f5-473a-b76b-6abf359d4854","timestamp":"2026-03-13T10:06:48.927Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:06:48.945Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"cd24829f-46b2-4726-b390-4cf0448dfc7b","timestamp":"2026-03-13T10:06:48.945Z"}
+{"duration":55,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:06:49.001Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"3ff45c2e-75f5-473a-b76b-6abf359d4854","timestamp":"2026-03-13T10:06:50.658Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:06:52.457Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"d822aca1-d517-4c58-897b-f4b30ffea19a","timestamp":"2026-03-13T10:06:52.459Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:06:52.475Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"dee380aa-871f-4d55-b586-bc304de7bc52","timestamp":"2026-03-13T10:06:52.476Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:06:52.477Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"d822aca1-d517-4c58-897b-f4b30ffea19a","timestamp":"2026-03-13T10:07:04.278Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:07:04.299Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"7ca7e830-395a-4bd9-8c18-b314ea481b2c","timestamp":"2026-03-13T10:07:04.300Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:07:04.315Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"7d8ed170-b571-4ee4-b9f4-c2c13b473f4d","timestamp":"2026-03-13T10:07:04.316Z"}
+{"duration":64,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:07:04.381Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:07:16.568Z"}
+{"level":"info","message":"GET /api/location-types 200 46.269 ms","timestamp":"2026-03-13T10:07:16.582Z"}
+{"duration":197,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:07:16.761Z"}
+{"level":"info","message":"GET /api/location-types 200 199.094 ms","timestamp":"2026-03-13T10:07:16.763Z"}
+{"duration":75,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T10:07:30.242Z"}
+{"duration":9,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T10:07:30.252Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T10:07:30.257Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T10:07:30.260Z"}
+{"duration":5,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T10:07:30.270Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T10:07:30.279Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T10:07:30.285Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T10:07:30.298Z"}
+{"driverId":167,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T10:07:30.299Z"}
+{"level":"info","message":"POST /api/drivers/logout/167 200 133.561 ms","timestamp":"2026-03-13T10:07:30.301Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:07:44.507Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"de09a061-5f53-4b22-ac26-89e318c1b73d","timestamp":"2026-03-13T10:07:44.515Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:07:44.541Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"6d40e0b6-0981-4c23-8758-5de633b19421","timestamp":"2026-03-13T10:07:44.543Z"}
+{"duration":65,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:07:44.609Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T10:07:49.270Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T10:07:49.352Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T10:07:49.354Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T10:07:49.356Z"}
+{"level":"info","message":"POST /api/drivers/login 200 94.242 ms","timestamp":"2026-03-13T10:07:49.358Z"}
+{"duration":10,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T10:07:54.881Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T10:07:54.886Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      booking_status = $1,\n      driver_status = $2\n    WHERE id = $3\n  ","timestamp":"2026-03-13T10:07:54.889Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T10:07:54.891Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T10:07:54.895Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 25.602 ms","timestamp":"2026-03-13T10:07:54.896Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"de09a061-5f53-4b22-ac26-89e318c1b73d","timestamp":"2026-03-13T10:08:07.829Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:08:07.859Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"c4588dae-865b-4b4c-bd16-7d07130f6712","timestamp":"2026-03-13T10:08:07.860Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:08:07.878Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"073d25d9-79c7-4c2c-bcd1-fd8c9d6cdbfa","timestamp":"2026-03-13T10:08:07.879Z"}
+{"duration":58,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:08:07.938Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"c4588dae-865b-4b4c-bd16-7d07130f6712","timestamp":"2026-03-13T10:08:21.314Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:08:21.344Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"4de10559-6708-4ae9-b807-a70e9a16aafe","timestamp":"2026-03-13T10:08:21.346Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:08:21.366Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"d06b1e00-7b04-4ad2-8acd-9854b76ba14d","timestamp":"2026-03-13T10:08:21.367Z"}
+{"duration":51,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:08:21.418Z"}
+{"duration":13,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:11:14.426Z"}
+{"level":"info","message":"GET /api/location-types 200 25.005 ms","timestamp":"2026-03-13T10:11:14.438Z"}
+{"duration":64,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:11:14.481Z"}
+{"level":"info","message":"GET /api/location-types 200 65.584 ms","timestamp":"2026-03-13T10:11:14.482Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:11:16.827Z"}
+{"level":"info","message":"GET /api/location-types 200 17.680 ms","timestamp":"2026-03-13T10:11:16.837Z"}
+{"duration":204,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:11:17.027Z"}
+{"level":"info","message":"GET /api/location-types 200 206.358 ms","timestamp":"2026-03-13T10:11:17.030Z"}
+{"duration":12,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:11:25.280Z"}
+{"level":"info","message":"GET /api/location-types 200 25.302 ms","timestamp":"2026-03-13T10:11:25.293Z"}
+{"duration":68,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:11:25.341Z"}
+{"level":"info","message":"GET /api/location-types 200 70.104 ms","timestamp":"2026-03-13T10:11:25.343Z"}
+{"duration":11,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:11:32.174Z"}
+{"level":"info","message":"GET /api/location-types 200 21.495 ms","timestamp":"2026-03-13T10:11:32.186Z"}
+{"duration":62,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:11:32.228Z"}
+{"level":"info","message":"GET /api/location-types 200 63.873 ms","timestamp":"2026-03-13T10:11:32.229Z"}
+{"duration":14,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:11:38.127Z"}
+{"level":"info","message":"GET /api/location-types 200 24.926 ms","timestamp":"2026-03-13T10:11:38.135Z"}
+{"duration":76,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:11:38.193Z"}
+{"level":"info","message":"GET /api/location-types 200 77.594 ms","timestamp":"2026-03-13T10:11:38.194Z"}
+{"duration":159,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T10:12:05.327Z"}
+{"duration":8,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T10:12:05.335Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T10:12:05.338Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T10:12:05.342Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T10:12:05.347Z"}
+{"duration":0,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T10:12:05.349Z"}
+{"level":"info","message":"GET /api/drivers/getbyid/167 200 183.045 ms","timestamp":"2026-03-13T10:12:05.351Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:12:29.914Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"7ae46626-9766-481a-a512-eec2d7a8cc55","timestamp":"2026-03-13T10:12:29.917Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:12:29.928Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"871bf767-6b68-4735-bb29-094f806b4b9a","timestamp":"2026-03-13T10:12:29.929Z"}
+{"duration":52,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:12:29.982Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"7ae46626-9766-481a-a512-eec2d7a8cc55","timestamp":"2026-03-13T10:12:31.610Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:12:31.630Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"b074dc52-1282-4757-80c6-fcbee1a7ed82","timestamp":"2026-03-13T10:12:31.631Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:12:31.643Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"f0dde211-2c75-4f8b-8b29-9f33eb475a60","timestamp":"2026-03-13T10:12:31.644Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:12:31.646Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"b074dc52-1282-4757-80c6-fcbee1a7ed82","timestamp":"2026-03-13T10:12:58.484Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:12:58.528Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"48160484-a20e-46e8-9ae5-b5e516f200f1","timestamp":"2026-03-13T10:12:58.555Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:12:58.579Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"fa97a142-1156-4659-a23f-eb532aafb031","timestamp":"2026-03-13T10:12:58.579Z"}
+{"duration":61,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:12:58.641Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"48160484-a20e-46e8-9ae5-b5e516f200f1","timestamp":"2026-03-13T10:13:05.446Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:13:05.464Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"02d494e4-2cb3-4fb7-a1cc-a4665706582d","timestamp":"2026-03-13T10:13:05.465Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:13:05.478Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"224d1019-4379-403f-a399-9b38eab07e34","timestamp":"2026-03-13T10:13:05.479Z"}
+{"duration":0,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:13:05.481Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"02d494e4-2cb3-4fb7-a1cc-a4665706582d","timestamp":"2026-03-13T10:13:12.083Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:13:12.112Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"2ee66829-a54a-4aa9-89a2-4912cd96ec48","timestamp":"2026-03-13T10:13:12.115Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:13:12.130Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"49da5022-f04b-455e-b27b-cd8eb22860b8","timestamp":"2026-03-13T10:13:12.131Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:13:12.133Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"2ee66829-a54a-4aa9-89a2-4912cd96ec48","timestamp":"2026-03-13T10:13:15.196Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:13:15.229Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"9fda95f2-6886-44b7-9d05-0a7f30a4ebaf","timestamp":"2026-03-13T10:13:15.230Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:13:15.246Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"65bbef79-1d04-437f-b4ec-9ab5fa817dfc","timestamp":"2026-03-13T10:13:15.246Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:13:15.248Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T10:13:22.999Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T10:13:23.003Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T10:13:23.007Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T10:13:23.012Z"}
+{"duration":5,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T10:13:23.018Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T10:13:23.030Z"}
+{"duration":5,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T10:13:23.036Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T10:13:23.046Z"}
+{"driverId":167,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T10:13:23.047Z"}
+{"level":"info","message":"POST /api/drivers/logout/167 200 51.478 ms","timestamp":"2026-03-13T10:13:23.050Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T10:13:27.778Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T10:13:27.860Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T10:13:27.861Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T10:13:27.863Z"}
+{"duration":0,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T10:13:27.864Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T10:13:27.866Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T10:13:27.867Z"}
+{"duration":0,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T10:13:27.868Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T10:13:27.871Z"}
+{"duration":0,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T10:13:27.872Z"}
+{"level":"info","message":"POST /api/drivers/login 200 105.654 ms","timestamp":"2026-03-13T10:13:27.877Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"9fda95f2-6886-44b7-9d05-0a7f30a4ebaf","timestamp":"2026-03-13T10:15:27.608Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:15:27.641Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"47e1c065-77f4-4518-8b2a-80461eb0f9f9","timestamp":"2026-03-13T10:15:27.642Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:15:27.658Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"83897976-d135-40f3-9222-f3180760674d","timestamp":"2026-03-13T10:15:27.658Z"}
+{"duration":163,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:15:27.822Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"47e1c065-77f4-4518-8b2a-80461eb0f9f9","timestamp":"2026-03-13T10:18:00.494Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:18:00.517Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"6c9fa9de-3684-4025-9791-3c146a0b3ad8","timestamp":"2026-03-13T10:18:00.523Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:18:00.535Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"a7d5757b-108d-4ca8-bfff-e932ba7423db","timestamp":"2026-03-13T10:18:00.538Z"}
+{"duration":56,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:18:00.594Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"6c9fa9de-3684-4025-9791-3c146a0b3ad8","timestamp":"2026-03-13T10:18:22.466Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:18:22.482Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"02e4a6c4-5c02-4f8e-9e29-08d144f02042","timestamp":"2026-03-13T10:18:22.483Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:18:22.496Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"72e76b04-87e4-4d96-97a4-86142250618a","timestamp":"2026-03-13T10:18:22.496Z"}
+{"duration":52,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:18:22.549Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"02e4a6c4-5c02-4f8e-9e29-08d144f02042","timestamp":"2026-03-13T10:18:24.165Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:18:24.195Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"dff17ecc-84b5-4ec3-991e-d4bcf9885d1a","timestamp":"2026-03-13T10:18:24.200Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:18:24.215Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"28491fcf-2f42-4942-87f5-e22949117bc2","timestamp":"2026-03-13T10:18:24.215Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:18:24.217Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"dff17ecc-84b5-4ec3-991e-d4bcf9885d1a","timestamp":"2026-03-13T10:18:28.111Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:18:28.133Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"a2c7e32a-16f6-4584-8ec6-00b41d8691f4","timestamp":"2026-03-13T10:18:28.133Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:18:28.155Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"8257e12c-9577-42b2-b5d6-62dd7cc78084","timestamp":"2026-03-13T10:18:28.156Z"}
+{"duration":0,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:18:28.157Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"a2c7e32a-16f6-4584-8ec6-00b41d8691f4","timestamp":"2026-03-13T10:18:29.596Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:18:29.621Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"c907d610-1532-4b97-9d91-1a151150fd84","timestamp":"2026-03-13T10:18:29.622Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:18:29.642Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"9cb97ef5-6410-43a8-8dd1-9dcc1e7e1f5e","timestamp":"2026-03-13T10:18:29.643Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:18:29.644Z"}
+{"duration":14,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:18:52.905Z"}
+{"level":"info","message":"GET /api/location-types 200 28.388 ms","timestamp":"2026-03-13T10:18:52.916Z"}
+{"duration":84,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:18:52.978Z"}
+{"level":"info","message":"GET /api/location-types 200 85.929 ms","timestamp":"2026-03-13T10:18:52.980Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:18:55.196Z"}
+{"level":"info","message":"GET /api/location-types 200 13.123 ms","timestamp":"2026-03-13T10:18:55.208Z"}
+{"duration":77,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:18:55.268Z"}
+{"level":"info","message":"GET /api/location-types 200 79.803 ms","timestamp":"2026-03-13T10:18:55.271Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:19:14.124Z"}
+{"level":"info","message":"GET /api/location-types 200 12.522 ms","timestamp":"2026-03-13T10:19:14.131Z"}
+{"duration":155,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-03-13T10:19:14.275Z"}
+{"level":"info","message":"GET /api/location-types 200 156.323 ms","timestamp":"2026-03-13T10:19:14.276Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:19:29.925Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"c1f45528-2845-42f6-9c38-9c776f066533","timestamp":"2026-03-13T10:19:29.928Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:19:29.942Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"c9a12cb7-f427-41ad-9fe5-a183ed5dbd35","timestamp":"2026-03-13T10:19:29.944Z"}
+{"duration":57,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:19:30.002Z"}
+{"duration":45,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T10:19:43.126Z"}
+{"duration":7,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T10:19:43.134Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T10:19:43.139Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T10:19:43.142Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T10:19:43.147Z"}
+{"duration":0,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T10:19:43.148Z"}
+{"duration":4,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T10:19:43.154Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T10:19:43.156Z"}
+{"driverId":167,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T10:19:43.157Z"}
+{"level":"info","message":"POST /api/drivers/logout/167 200 77.687 ms","timestamp":"2026-03-13T10:19:43.158Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT * FROM drivers \n        WHERE LOWER(username) = LOWER($1)\n        LIMIT 1\n    ","timestamp":"2026-03-13T10:19:46.657Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n        UPDATE drivers \n        SET \n          session_status = 'logged_in',\n          driver_status = 'Available',\n          booking_status = 'Available'\n        WHERE id = $1\n      ","timestamp":"2026-03-13T10:19:46.739Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      fcm_token = $1,\n      fcm_updated_at = NOW()\n    WHERE id = $2\n  ","timestamp":"2026-03-13T10:19:46.741Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM drivers WHERE id = $1 LIMIT 1","timestamp":"2026-03-13T10:19:46.742Z"}
+{"duration":0,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T10:19:46.743Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T10:19:46.744Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T10:19:46.746Z"}
+{"duration":0,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T10:19:46.747Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T10:19:46.749Z"}
+{"duration":0,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T10:19:46.749Z"}
+{"level":"info","message":"POST /api/drivers/login 200 100.939 ms","timestamp":"2026-03-13T10:19:46.751Z"}
+{"duration":6,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T10:19:55.370Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T10:19:55.371Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      booking_status = $1,\n      driver_status = $2\n    WHERE id = $3\n  ","timestamp":"2026-03-13T10:19:55.373Z"}
+{"duration":0,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T10:19:55.374Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T10:19:55.376Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T10:19:55.380Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T10:19:55.382Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T10:19:55.383Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T10:19:55.385Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T10:19:55.391Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 28.978 ms","timestamp":"2026-03-13T10:19:55.392Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T10:20:02.831Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET on_route = $1, completed = $2, arrived = $3\n    WHERE id = $4\n  ","timestamp":"2026-03-13T10:20:02.833Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      booking_status = $1,\n      driver_status = $2\n    WHERE id = $3\n  ","timestamp":"2026-03-13T10:20:02.834Z"}
+{"duration":0,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T10:20:02.835Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T10:20:02.837Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T10:20:02.840Z"}
+{"duration":0,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T10:20:02.841Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T10:20:02.843Z"}
+{"duration":0,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T10:20:02.844Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-03-13T10:20:02.848Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1\n  ","timestamp":"2026-03-13T10:20:02.851Z"}
+{"level":"info","message":"POST /api/bookings/status/887 200 23.098 ms","timestamp":"2026-03-13T10:20:02.852Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"BEGIN","timestamp":"2026-03-13T10:20:08.899Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT d.*, s.name AS subsidiary_name\n       FROM drivers d\n       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n       WHERE d.id = $1","timestamp":"2026-03-13T10:20:08.900Z"}
+{"duration":0,"level":"info","message":"db-query","rows":1,"text":"SELECT id, note, created_at, created_by\n       FROM driver_notes\n       WHERE driver_id = $1\n       ORDER BY created_at DESC","timestamp":"2026-03-13T10:20:08.901Z"}
+{"duration":0,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, start_time, end_time\n       FROM driver_shifts\n       WHERE driver_id = $1\n       ORDER BY id ASC","timestamp":"2026-03-13T10:20:08.902Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT \n            v.*,\n            json_build_object(\n              'id', vt.id,\n              'name', vt.name,\n              'driver_waiting_charges', vt.driver_waiting_charges,\n              'account_waiting_charges', vt.account_waiting_charges,\n              'waiting_time', vt.waiting_time\n            ) AS vehicle_type\n         FROM vehicles v\n         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id\n         WHERE v.id = $1\n         LIMIT 1","timestamp":"2026-03-13T10:20:08.904Z"}
+{"duration":1,"level":"info","message":"db-query","rows":null,"text":"COMMIT","timestamp":"2026-03-13T10:20:08.906Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE drivers\n    SET \n      session_status = 'logged_out',\n      driver_status = 'Unavailable',\n      booking_status = 'Unavailable'\n    WHERE id = $1\n  ","timestamp":"2026-03-13T10:20:08.910Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers SET fcm_token = NULL WHERE id = $1","timestamp":"2026-03-13T10:20:08.911Z"}
+{"driverId":167,"level":"info","message":"ws:driver-logout","timestamp":"2026-03-13T10:20:08.912Z"}
+{"level":"info","message":"POST /api/drivers/logout/167 200 15.271 ms","timestamp":"2026-03-13T10:20:08.914Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"c1f45528-2845-42f6-9c38-9c776f066533","timestamp":"2026-03-13T10:22:50.633Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:22:50.643Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"c49d2cb4-e35c-49ed-9f17-a0fdc1a4dd5c","timestamp":"2026-03-13T10:22:50.645Z"}
+{"duration":63,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:22:50.708Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:22:55.751Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"64f208ad-3972-4ea8-85bc-83e6660df1f2","timestamp":"2026-03-13T10:22:55.754Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:22:55.756Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-03-13T10:22:57.329Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"1d926b28-72b9-4e8f-8c01-e4ce8aee3396","timestamp":"2026-03-13T10:22:57.329Z"}
+{"duration":0,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT \n      id,\n      name,\n      mobile,\n      vehicle_id,\n      company_vehicle_id,\n      session_status,\n      booking_status,\n      driver_status\n    FROM drivers\n    WHERE session_status = $1\n      AND (\n        booking_status != $2\n        OR driver_status != $3\n      )\n    ","timestamp":"2026-03-13T10:22:57.330Z"}

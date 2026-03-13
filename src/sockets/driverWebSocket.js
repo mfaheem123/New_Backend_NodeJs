@@ -13,19 +13,27 @@ function handleDriverLoginSocket(ws) {
   dashboardClients.add(ws);
   logger.info("ws:dashboard-connected", { socketId: ws.id });
 
+  // 1️⃣ Sirf available logged in drivers bhejo
+  const availableDrivers = Array.from(loggedInDrivers.values()).filter(
+    (driver) =>
+      driver.session_status === "logged_in" &&
+      driver.booking_status === "Available" &&
+      driver.driver_status === "Available"
+  );
+
   // 1️⃣ Current state bhej do
   ws.send(
     JSON.stringify({
       event: "DRIVER_LIST",
-      data: Array.from(loggedInDrivers.values()),
+      data: availableDrivers,
     })
   );
 
   // 2️⃣ Subscribe future updates
   const driverLoginListener = (driver) => {
     if (driver.session_status !== "logged_in") return;
-    if (driver.booking_status !== "available") return;
-    if (driver.driver_status !== "available") return;
+    if (driver.booking_status !== "Available") return;
+    if (driver.driver_status !== "Available") return;
 
     ws.send(
       JSON.stringify({ event: "DRIVER_LOGIN", data: driver })
@@ -84,6 +92,14 @@ async function handleBusyDriverSocket(ws) {
 
 // Driver Login Notify At Web
 function notifyDriverLogin(driver) {
+   // Sirf available logged-in drivers allow
+  if (
+    driver.session_status !== "logged_in" ||
+    driver.booking_status !== "Available" ||
+    driver.driver_status !== "Available"
+  ) {
+    return;
+  }
   loggedInDrivers.set(driver.id, driver);
 
   const payload = JSON.stringify({
@@ -118,16 +134,55 @@ function notifyDriverLogout(driverId) {
   });
 }
 
+// function notifyBusyDriverUpdate(driver) {
+//   if (driver.session_status !== "logged_in") return;
+
+//   if (
+//     driver.booking_status === "Available" &&
+//     driver.driver_status === "Available"
+//   ) {
+//     return;
+//   }
+
+//   const payload = JSON.stringify({
+//     event: "BUSY_DRIVER_UPDATE",
+//     data: driver,
+//   });
+
+//   busyDashboardClients.forEach((client) => {
+//     if (client.readyState === WebSocket.OPEN) {
+//       client.send(payload);
+//     }
+//   });
+// }
+
 function notifyBusyDriverUpdate(driver) {
+ console.log("BUSY CLIENTS:", busyDashboardClients.size);
   if (driver.session_status !== "logged_in") return;
 
+  // Agar driver available ho gaya to login dashboard pe bhejo
   if (
     driver.booking_status === "Available" &&
     driver.driver_status === "Available"
   ) {
+
+    loggedInDrivers.set(driver.id, driver);
+
+    const payload = JSON.stringify({
+      event: "DRIVER_LOGIN",
+      data: driver,
+    });
+
+    dashboardClients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(payload);
+      }
+    });
+
     return;
   }
 
+  // Warna busy dashboard ko bhejo
   const payload = JSON.stringify({
     event: "BUSY_DRIVER_UPDATE",
     data: driver,
