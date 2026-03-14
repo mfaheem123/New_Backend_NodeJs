@@ -42,46 +42,46 @@ const PlotFare = {
   },
 
   // MULTIPLE DATA INSERT
-//   async create(plotFares) {
-//   const insertQuery = `
-//     INSERT INTO plot_fares (vehicle_type_id, pickup_plot_id, dropoff_plot_id, fares)
-//     VALUES ($1, $2, $3, $4)
-//     RETURNING id;
-//   `;
+  //   async create(plotFares) {
+  //   const insertQuery = `
+  //     INSERT INTO plot_fares (vehicle_type_id, pickup_plot_id, dropoff_plot_id, fares)
+  //     VALUES ($1, $2, $3, $4)
+  //     RETURNING id;
+  //   `;
 
-//   const createdFares = [];
+  //   const createdFares = [];
 
-//   for (const fare of plotFares) {
-//     const values = [
-//       fare.vehicle_type_id,
-//       fare.pickup_plot_id,
-//       fare.dropoff_plot_id,
-//       fare.fares,
-//     ];
+  //   for (const fare of plotFares) {
+  //     const values = [
+  //       fare.vehicle_type_id,
+  //       fare.pickup_plot_id,
+  //       fare.dropoff_plot_id,
+  //       fare.fares,
+  //     ];
 
-//     const insertResult = await pool.query(insertQuery, values);
-//     const insertedId = insertResult.rows[0].id;
+  //     const insertResult = await pool.query(insertQuery, values);
+  //     const insertedId = insertResult.rows[0].id;
 
-//     // 🔥 Fetch full joined record if needed
-//     const selectQuery = `
-//       SELECT 
-//         pf.*,
-//         vt.name AS vehicle_type_name,
-//         pu.name AS pickup_plot_name,
-//         dof.name AS dropoff_plot_name
-//       FROM plot_fares pf
-//       LEFT JOIN vehicle_types vt ON pf.vehicle_type_id = vt.id
-//       LEFT JOIN plots pu ON pf.pickup_plot_id = pu.id
-//       LEFT JOIN plots dof ON pf.dropoff_plot_id = dof.id
-//       WHERE pf.id = $1
-//     `;
+  //     // 🔥 Fetch full joined record if needed
+  //     const selectQuery = `
+  //       SELECT
+  //         pf.*,
+  //         vt.name AS vehicle_type_name,
+  //         pu.name AS pickup_plot_name,
+  //         dof.name AS dropoff_plot_name
+  //       FROM plot_fares pf
+  //       LEFT JOIN vehicle_types vt ON pf.vehicle_type_id = vt.id
+  //       LEFT JOIN plots pu ON pf.pickup_plot_id = pu.id
+  //       LEFT JOIN plots dof ON pf.dropoff_plot_id = dof.id
+  //       WHERE pf.id = $1
+  //     `;
 
-//     const { rows } = await pool.query(selectQuery, [insertedId]);
-//     createdFares.push(rows[0]);
-//   }
+  //     const { rows } = await pool.query(selectQuery, [insertedId]);
+  //     createdFares.push(rows[0]);
+  //   }
 
-//   return createdFares;
-// },
+  //   return createdFares;
+  // },
 
   //  Update
   async update(id, data) {

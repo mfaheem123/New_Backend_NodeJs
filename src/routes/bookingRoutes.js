@@ -22,10 +22,7 @@ router.get(
   "/driver-commission",
   bookingController.getBookingByDriverCommission,
 );
-router.get(
-  "/driver-rent",
-  bookingController.getBookingByDriverCommission,
-);
+router.get("/driver-rent", bookingController.getBookingByDriverCommission);
 router.post("/update/:id", bookingController.updateBooking);
 router.post("/status/:id", bookingController.updateBookingStatus);
 router.post("/fares/:id", bookingController.updateBookingFares);

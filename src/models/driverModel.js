@@ -1381,48 +1381,66 @@ const Driver = {
     params.push(limit, offset);
 
     const dataQuery = `
-    SELECT 
-      d.*,
-      s.name AS subsidiary_name,
-      CASE 
-        WHEN d.use_company_vehicle = true THEN
-          json_build_object(
-            'vehicle_number', cv.vehicle_number,
-            'make', cv.make,
-            'model', cv.model,
-            'color', cv.color,
-            'end_date', cv.end_date
-          )
-        ELSE
-          json_build_object(
-            'vehicle_number', v.vehicle_number,
-            'make', v.make,
-            'model', v.model,
-            'color', v.color,
-            'end_date', v.end_date
-          )
-      END AS vehicle
-    FROM drivers d
-    LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
-    LEFT JOIN vehicles v ON v.id = d.vehicle_id
-    LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
-    LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
-    LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
-    ${whereClause}
-    ORDER BY d.id DESC
-    LIMIT $${params.length - 1} OFFSET $${params.length};
-  `;
+SELECT 
+  d.*,
+  s.name AS subsidiary_name,
+  CASE 
+    WHEN d.use_company_vehicle = true THEN
+      json_build_object(
+        'vehicle_number', cv.vehicle_number,
+        'make', cv.make,
+        'model', cv.model,
+        'color', cv.color,
+        'end_date', cv.end_date,
+        'vehicle_type', json_build_object(
+          'id', vt_cv.id,
+          'name', vt_cv.name,
+          'passengers', vt_cv.passengers,
+          'luggages', vt_cv.luggages,
+          'driver_waiting_charges', vt_cv.driver_waiting_charges
+        )
+      )
+    ELSE
+      json_build_object(
+        'vehicle_number', v.vehicle_number,
+        'make', v.make,
+        'model', v.model,
+        'color', v.color,
+        'end_date', v.end_date,
+        'vehicle_type', json_build_object(
+          'id', vt_v.id,
+          'name', vt_v.name,
+          'passengers', vt_v.passengers,
+          'luggages', vt_v.luggages,
+          'driver_waiting_charges', vt_v.driver_waiting_charges
+        )
+      )
+  END AS vehicle
+FROM drivers d
+LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
+LEFT JOIN vehicles v ON v.id = d.vehicle_id
+LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
+LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
+LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
+${whereClause}
+ORDER BY d.id DESC
+LIMIT $${params.length - 1} OFFSET $${params.length};
+`;
 
-    const result = await db.query(dataQuery, params);
+const result = await db.query(dataQuery, params);
 
-    return {
-      total,
-      drivers: result.rows,
-    };
+return {
+  total,
+  drivers: result.rows.map((row) => ({
+    ...normalizeDriverDates(row),
+    subsidiary: { name: row.subsidiary_name },
+    vehicle: row.vehicle || null,
+  })),
+};
   },
 
-async getAvailableLoggedInDrivers() {
-  const query = `
+  async getAvailableLoggedInDrivers() {
+    const query = `
     SELECT 
       id,
       name,
@@ -1438,18 +1456,18 @@ async getAvailableLoggedInDrivers() {
       AND driver_status = $3
   `;
 
-  const result = await db.query(query, [
-    "logged_in",
-    "Available",
-    "Available",
-  ]);
+    const result = await db.query(query, [
+      "logged_in",
+      "Available",
+      "Available",
+    ]);
 
-  return result.rows;
-},
+    return result.rows;
+  },
 
-async getBusyLoggedInDrivers() {
-  const result = await db.query(
-    `
+  async getBusyLoggedInDrivers() {
+    const result = await db.query(
+      `
     SELECT 
       id,
       name,
@@ -1466,13 +1484,13 @@ async getBusyLoggedInDrivers() {
         OR driver_status != $3
       )
     `,
-    ["logged_in", "Available", "Available"]
-  );
+      ["logged_in", "Available", "Available"],
+    );
 
-  return result.rows;
-},
+    return result.rows;
+  },
 
- async updateDriverStatus(driverId, booking_status, driver_status) {
+  async updateDriverStatus(driverId, booking_status, driver_status) {
     const query = `
     UPDATE drivers
     SET 
@@ -1480,10 +1498,9 @@ async getBusyLoggedInDrivers() {
       driver_status = $2
     WHERE id = $3
   `;
-    await db.query(query, [booking_status ,driver_status ,driverId]);
+    await db.query(query, [booking_status, driver_status, driverId]);
     return true;
   },
-
 };
 
 module.exports = Driver;

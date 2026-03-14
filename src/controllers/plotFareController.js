@@ -93,7 +93,6 @@ exports.create = async (req, res) => {
 //   }
 // };
 
-
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;

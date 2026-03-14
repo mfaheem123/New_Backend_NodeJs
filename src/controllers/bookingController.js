@@ -525,7 +525,7 @@ exports.updateBookingStatus = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
     const { booking_status_id } = req.body;
-console.log(
+    console.log(
       "🚀 INCOMING UPDATE BOOKING STATUS BODY:",
       JSON.stringify(req.body, null, 2),
     );
@@ -579,19 +579,17 @@ console.log(
 
     // DRIVER UNAVAILABLE FOR THESE STATUS
     const booking_status_ids = Number(req.body.booking_status_id);
-    console.log(booking_status_ids)
+    console.log(booking_status_ids);
 
-const unavailableStatuses = [15, 10, 9, 6, 3];
+    const unavailableStatuses = [15, 10, 9, 6, 3];
 
-if (unavailableStatuses.includes(booking_status_ids)) {
+    if (unavailableStatuses.includes(booking_status_ids)) {
+      await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
 
-  await Driver.updateDriverStatus(driverId,"Unavailable","Unavailable");
-
-  const driver = await Driver.getById(driverId);
-console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
-  notifyBusyDriverUpdate(driver);
-
-}
+      const driver = await Driver.getById(driverId);
+      console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+      notifyBusyDriverUpdate(driver);
+    }
 
     const updatedBooking = await findBookingById(bookingId);
 

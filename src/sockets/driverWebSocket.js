@@ -101,7 +101,7 @@ function notifyDriverLogin(driver) {
   }
   loggedInDrivers.set(driver.id, driver);
 
- // ✅ Only required fields for frontend
+  // ✅ Only required fields for frontend
   const driverData = {
     id: driver.id,
     name: driver.name,
@@ -109,7 +109,6 @@ function notifyDriverLogin(driver) {
     zone: driver.zone,
     vehicle_type: driver.vehicle?.vehicle_type?.name || null,
   };
-
 
   const payload = JSON.stringify({
     event: "DRIVER_LOGIN",

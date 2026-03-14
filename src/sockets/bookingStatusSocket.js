@@ -28,7 +28,8 @@ function handleBookingStatusSocket(ws, req) {
 // 🔹 Notify all clients when booking is updated
 function notifyBookingStatus(bookingId) {
   connectedClients.forEach((client) => {
-    if (client.readyState === 1) { // 1 = OPEN
+    if (client.readyState === 1) {
+      // 1 = OPEN
       client.send(JSON.stringify({ bookingId, status: true }));
     }
   });
