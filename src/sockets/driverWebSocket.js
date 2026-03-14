@@ -1,6 +1,9 @@
 const WebSocket = require("ws");
 const logger = require("../utils/logger");
-const { getAvailableLoggedInDrivers, getBusyLoggedInDrivers } = require("../models/driverModel");
+const {
+  getAvailableLoggedInDrivers,
+  getBusyLoggedInDrivers,
+} = require("../models/driverModel");
 
 // Sirf dashboard sockets
 const dashboardClients = new Set();
@@ -18,7 +21,7 @@ function handleDriverLoginSocket(ws) {
     (driver) =>
       driver.session_status === "logged_in" &&
       driver.booking_status === "Available" &&
-      driver.driver_status === "Available"
+      driver.driver_status === "Available",
   );
 
   // 1️⃣ Current state bhej do
@@ -26,7 +29,7 @@ function handleDriverLoginSocket(ws) {
     JSON.stringify({
       event: "DRIVER_LIST",
       data: availableDrivers,
-    })
+    }),
   );
 
   // 2️⃣ Subscribe future updates
@@ -35,15 +38,11 @@ function handleDriverLoginSocket(ws) {
     if (driver.booking_status !== "Available") return;
     if (driver.driver_status !== "Available") return;
 
-    ws.send(
-      JSON.stringify({ event: "DRIVER_LOGIN", data: driver })
-    );
+    ws.send(JSON.stringify({ event: "DRIVER_LOGIN", data: driver }));
   };
 
   const driverLogoutListener = (driverId) => {
-    ws.send(
-      JSON.stringify({ event: "DRIVER_LOGOUT", data: { driverId } })
-    );
+    ws.send(JSON.stringify({ event: "DRIVER_LOGOUT", data: { driverId } }));
   };
 
   ws.on("close", () => {
@@ -70,7 +69,7 @@ async function handleBusyDriverSocket(ws) {
       JSON.stringify({
         event: "BUSY_DRIVER_LIST",
         data: drivers,
-      })
+      }),
     );
   } catch (error) {
     logger.error("ws:busy-driver-list-error", {
@@ -92,7 +91,7 @@ async function handleBusyDriverSocket(ws) {
 
 // Driver Login Notify At Web
 function notifyDriverLogin(driver) {
-   // Sirf available logged-in drivers allow
+  // Sirf available logged-in drivers allow
   if (
     driver.session_status !== "logged_in" ||
     driver.booking_status !== "Available" ||
@@ -102,9 +101,19 @@ function notifyDriverLogin(driver) {
   }
   loggedInDrivers.set(driver.id, driver);
 
+ // ✅ Only required fields for frontend
+  const driverData = {
+    id: driver.id,
+    name: driver.name,
+    username: driver.username,
+    zone: driver.zone,
+    vehicle_type: driver.vehicle?.vehicle_type?.name || null,
+  };
+
+
   const payload = JSON.stringify({
     event: "DRIVER_LOGIN",
-    data: driver,
+    data: driverData,
   });
 
   dashboardClients.forEach((client) => {
@@ -157,7 +166,7 @@ function notifyDriverLogout(driverId) {
 // }
 
 function notifyBusyDriverUpdate(driver) {
- console.log("BUSY CLIENTS:", busyDashboardClients.size);
+  console.log("BUSY CLIENTS:", busyDashboardClients.size);
   if (driver.session_status !== "logged_in") return;
 
   // Agar driver available ho gaya to login dashboard pe bhejo
@@ -165,7 +174,6 @@ function notifyBusyDriverUpdate(driver) {
     driver.booking_status === "Available" &&
     driver.driver_status === "Available"
   ) {
-
     loggedInDrivers.set(driver.id, driver);
 
     const payload = JSON.stringify({
@@ -200,10 +208,8 @@ module.exports = {
   notifyDriverLogin,
   notifyDriverLogout,
   notifyBusyDriverUpdate,
-  handleBusyDriverSocket
+  handleBusyDriverSocket,
 };
-
-
 
 // SOCKET IO CODE YAHA HAI
 // const logger = require("../utils/logger");

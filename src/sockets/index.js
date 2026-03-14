@@ -7,6 +7,7 @@ const {
   handleBusyDriverSocket,
 } = require("./driverWebSocket");
 const { handleCLISocket } = require("./cliWebSocket");
+const { handleBookingStatusSocket } = require("./bookingStatusSocket");
 
 function initWebSockets(server) {
   const wss = new WebSocket.Server({ noServer: true });
@@ -32,7 +33,13 @@ function initWebSockets(server) {
         ws.id = uuidv4();
         handleCLISocket(ws, req);
       });
-    } else {
+    } else if (url.startsWith("/websocket/booking-status")) {
+    wss.handleUpgrade(req, socket, head, (ws) => {
+      ws.id = uuidv4();
+      handleBookingStatusSocket(ws, req);
+    });
+  }
+    else {
       logger.warn("ws:rejected", { url });
       socket.destroy();
     }

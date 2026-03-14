@@ -604,7 +604,7 @@ exports.driverLogin = async (req, res) => {
     } // ONLY IMPORTANT FIX
     const updatedDriver = await Driver.getLoginDriverById(driver.id);
     const updatedDriverSocket = await Driver.getById(driver.id);
-  
+
     notifyDriverLogin(updatedDriverSocket);
     return res.status(200).json({
       message: "Login successful",
