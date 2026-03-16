@@ -1,6 +1,5 @@
 const db = require("../db");
 
-
 function randomLetters(length = 2) {
   const chars = "abcdefghijklmnopqrstuvwxyz";
   let result = "";
@@ -29,12 +28,11 @@ class DriverRent {
 
       // Parse lineitems if string
       if (typeof data.driver_rent_lineitems === "string") {
-        data.driver_rent_lineitems = JSON.parse(
-          data.driver_rent_lineitems,
-        );
+        data.driver_rent_lineitems = JSON.parse(data.driver_rent_lineitems);
       }
 
-      const transaction_number = randomLetters(2) + Math.floor(Date.now() / 1000);
+      const transaction_number =
+        randomLetters(2) + Math.floor(Date.now() / 1000);
 
       const insertQuery = `
         INSERT INTO driver_rents (
@@ -81,7 +79,7 @@ class DriverRent {
 
       /* Insert Line Items */
       const lineItems = [];
-const bookingIds = [];
+      const bookingIds = [];
 
       for (const item of data.driver_rent_lineitems) {
         const li = await db.query(
@@ -96,17 +94,16 @@ const bookingIds = [];
         bookingIds.push(item.booking_id);
 
         // ✅ UPDATE BOOKING COMMISSION STATUS
- 
       }
-// if (bookingIds.length) {
-//   await db.query(
-//     `UPDATE bookings
-//      SET commission = false,
-//          commission_status = 'close'
-//      WHERE id = ANY($1::int[])`,
-//     [bookingIds]
-//   );
-// }
+      // if (bookingIds.length) {
+      //   await db.query(
+      //     `UPDATE bookings
+      //      SET commission = false,
+      //          commission_status = 'close'
+      //      WHERE id = ANY($1::int[])`,
+      //     [bookingIds]
+      //   );
+      // }
       /* Update Driver Balance */
       await db.query(
         `UPDATE drivers
@@ -333,9 +330,7 @@ const bookingIds = [];
       /* Optional LineItems Update */
       if (data.driver_rent_lineitems) {
         if (typeof data.driver_rent_lineitems === "string") {
-          data.driver_rent_lineitems = JSON.parse(
-            data.driver_rent_lineitems,
-          );
+          data.driver_rent_lineitems = JSON.parse(data.driver_rent_lineitems);
         }
 
         // delete old lineitems

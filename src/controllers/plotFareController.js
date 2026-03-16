@@ -25,73 +25,73 @@ exports.getAll = async (req, res) => {
   }
 };
 
-exports.create = async (req, res) => {
-  try {
-    console.log(
-      "🚀 INCOMING PLOT FARE ADD BODY:",
-      JSON.stringify(req.body, null, 2),
-    );
-    const newPlotFare = await PlotFare.create(req.body);
-    res.json({
-      status: true,
-      plot_fare: [formatResponse(newPlotFare)],
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: false, error: err.message });
-  }
-};
-
-// MULTIPLE DATA INSERT
 // exports.create = async (req, res) => {
 //   try {
 //     console.log(
 //       "🚀 INCOMING PLOT FARE ADD BODY:",
-//       JSON.stringify(req.body, null, 2)
+//       JSON.stringify(req.body, null, 2),
 //     );
-
-//     let data = req.body;
-
-//     // Parse if stringified arrays
-//     if (typeof data.pickup_plot_id === "string" && data.pickup_plot_id.startsWith("[")) {
-//       data.pickup_plot_id = JSON.parse(data.pickup_plot_id);
-//     }
-//     if (typeof data.dropoff_plot_id === "string" && data.dropoff_plot_id.startsWith("[")) {
-//       data.dropoff_plot_id = JSON.parse(data.dropoff_plot_id);
-//     }
-
-//     const pickupArray = Array.isArray(data.pickup_plot_id) ? data.pickup_plot_id : [data.pickup_plot_id];
-//     const dropoffArray = Array.isArray(data.dropoff_plot_id) ? data.dropoff_plot_id : [data.dropoff_plot_id];
-
-//     const finalPayload = [];
-
-//     // 🔥 Cartesian Product Logic
-//     for (const pickup of pickupArray) {
-//       for (const dropoff of dropoffArray) {
-//         finalPayload.push({
-//           vehicle_type_id: data.vehicle_type_id,
-//           pickup_plot_id: typeof pickup === "object" ? Object.values(pickup)[0] : pickup,
-//           dropoff_plot_id: typeof dropoff === "object" ? Object.values(dropoff)[0] : dropoff,
-//           fares: data.fares,
-//         });
-//       }
-//     }
-
-//     const newPlotFares = await PlotFare.create(finalPayload);
-
+//     const newPlotFare = await PlotFare.create(req.body);
 //     res.json({
 //       status: true,
-//       message: "Plot Fares Created Successfully",
-//       plot_fares: newPlotFares,
+//       plot_fare: [formatResponse(newPlotFare)],
 //     });
 //   } catch (err) {
 //     console.error(err);
-//     res.status(500).json({
-//       status: false,
-//       error: err.message,
-//     });
+//     res.status(500).json({ status: false, error: err.message });
 //   }
 // };
+
+// MULTIPLE DATA INSERT
+exports.create = async (req, res) => {
+  try {
+    console.log(
+      "🚀 INCOMING PLOT FARE ADD BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
+
+    let data = req.body;
+
+    // Parse if stringified arrays
+    if (typeof data.pickup_plot_id === "string" && data.pickup_plot_id.startsWith("[")) {
+      data.pickup_plot_id = JSON.parse(data.pickup_plot_id);
+    }
+    if (typeof data.dropoff_plot_id === "string" && data.dropoff_plot_id.startsWith("[")) {
+      data.dropoff_plot_id = JSON.parse(data.dropoff_plot_id);
+    }
+
+    const pickupArray = Array.isArray(data.pickup_plot_id) ? data.pickup_plot_id : [data.pickup_plot_id];
+    const dropoffArray = Array.isArray(data.dropoff_plot_id) ? data.dropoff_plot_id : [data.dropoff_plot_id];
+
+    const finalPayload = [];
+
+    // 🔥 Cartesian Product Logic
+    for (const pickup of pickupArray) {
+      for (const dropoff of dropoffArray) {
+        finalPayload.push({
+          vehicle_type_id: data.vehicle_type_id,
+          pickup_plot_id: typeof pickup === "object" ? Object.values(pickup)[0] : pickup,
+          dropoff_plot_id: typeof dropoff === "object" ? Object.values(dropoff)[0] : dropoff,
+          fares: data.fares,
+        });
+      }
+    }
+
+    const newPlotFares = await PlotFare.create(finalPayload);
+
+    res.json({
+      status: true,
+      message: "Plot Fares Created Successfully",
+      plot_fares: newPlotFares,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      status: false,
+      error: err.message,
+    });
+  }
+};
 
 exports.update = async (req, res) => {
   try {
