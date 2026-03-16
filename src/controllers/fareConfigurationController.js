@@ -63,26 +63,24 @@ exports.updateFareConfiguration = async (req, res) => {
 
     res.json({
       status: true,
-      fare_configuration: data
+      fare_configuration: data,
     });
-
   } catch (err) {
     console.error(err);
 
     if (err.message === "Fare configuration not found") {
       return res.status(404).json({
         status: false,
-        error: err.message
+        error: err.message,
       });
     }
 
     res.status(500).json({
       status: false,
-      error: err.message
+      error: err.message,
     });
   }
 };
-
 
 exports.deleteFareConfiguration = async (req, res) => {
   try {

@@ -213,7 +213,7 @@ const bookingIds = [];
         'name', d.name,
         'username', d.username,
         'email', d.email,
-        'driver_rent', d.driver_rent,
+        'driver_commission', d.driver_commission,
         'pda_rent', d.pda_rent,
         'balance', d.balance,
         'subsidiary_id', d.subsidiary_id
@@ -249,7 +249,7 @@ const bookingIds = [];
         'extra_drop_charges', b.extra_drop_charges::text,
         'congestion_charges', b.congestion_charges::text,
         'total_charges', b.total_charges::text,
-        'rent', b.rent,
+        'commission', b.commission,
 
         'journey_type', 
           json_build_object('journey_type', jt.journey_type),

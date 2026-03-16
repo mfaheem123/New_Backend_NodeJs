@@ -1427,16 +1427,16 @@ ORDER BY d.id DESC
 LIMIT $${params.length - 1} OFFSET $${params.length};
 `;
 
-const result = await db.query(dataQuery, params);
+    const result = await db.query(dataQuery, params);
 
-return {
-  total,
-  drivers: result.rows.map((row) => ({
-    ...normalizeDriverDates(row),
-    subsidiary: { name: row.subsidiary_name },
-    vehicle: row.vehicle || null,
-  })),
-};
+    return {
+      total,
+      drivers: result.rows.map((row) => ({
+        ...normalizeDriverDates(row),
+        subsidiary: { name: row.subsidiary_name },
+        vehicle: row.vehicle || null,
+      })),
+    };
   },
 
   async getAvailableLoggedInDrivers() {
