@@ -699,7 +699,6 @@ const getDriverTotalEarning = async (driver_id) => {
   return rows[0];
 };
 
-
 const getBookingByDriverRent = async (
   driver_id,
   payment_type_ids,

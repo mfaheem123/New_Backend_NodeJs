@@ -15,7 +15,6 @@ const server = http.createServer(app);
 // PURE WebSocket attach
 initWebSocket(server); // IS KO DISBALE KRNA HAI
 
-
 // SOCKET.IO INIT
 // const io = new Server(server, {
 //   cors: {
@@ -23,7 +22,7 @@ initWebSocket(server); // IS KO DISBALE KRNA HAI
 //   },
 // });
 
-// initIO(io); 
+// initIO(io);
 // initSockets(io);
 
 // Prometheus (same as before)
@@ -52,6 +51,6 @@ app.get("/metrics", async (req, res) => {
 
 // 🚀 START SERVER
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ HTTP running on http://192.168.100.93:${PORT}`);
-  console.log(`🔌 WebSocket running on ws://192.168.100.93:${PORT}`);
+  console.log(`✅ HTTP running on http://192.168.110.4:${PORT}`);
+  console.log(`🔌 WebSocket running on ws://192.168.110.4:${PORT}`);
 });

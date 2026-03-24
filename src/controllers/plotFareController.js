@@ -47,21 +47,31 @@ exports.create = async (req, res) => {
   try {
     console.log(
       "🚀 INCOMING PLOT FARE ADD BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
 
     let data = req.body;
 
     // Parse if stringified arrays
-    if (typeof data.pickup_plot_id === "string" && data.pickup_plot_id.startsWith("[")) {
+    if (
+      typeof data.pickup_plot_id === "string" &&
+      data.pickup_plot_id.startsWith("[")
+    ) {
       data.pickup_plot_id = JSON.parse(data.pickup_plot_id);
     }
-    if (typeof data.dropoff_plot_id === "string" && data.dropoff_plot_id.startsWith("[")) {
+    if (
+      typeof data.dropoff_plot_id === "string" &&
+      data.dropoff_plot_id.startsWith("[")
+    ) {
       data.dropoff_plot_id = JSON.parse(data.dropoff_plot_id);
     }
 
-    const pickupArray = Array.isArray(data.pickup_plot_id) ? data.pickup_plot_id : [data.pickup_plot_id];
-    const dropoffArray = Array.isArray(data.dropoff_plot_id) ? data.dropoff_plot_id : [data.dropoff_plot_id];
+    const pickupArray = Array.isArray(data.pickup_plot_id)
+      ? data.pickup_plot_id
+      : [data.pickup_plot_id];
+    const dropoffArray = Array.isArray(data.dropoff_plot_id)
+      ? data.dropoff_plot_id
+      : [data.dropoff_plot_id];
 
     const finalPayload = [];
 
@@ -70,8 +80,10 @@ exports.create = async (req, res) => {
       for (const dropoff of dropoffArray) {
         finalPayload.push({
           vehicle_type_id: data.vehicle_type_id,
-          pickup_plot_id: typeof pickup === "object" ? Object.values(pickup)[0] : pickup,
-          dropoff_plot_id: typeof dropoff === "object" ? Object.values(dropoff)[0] : dropoff,
+          pickup_plot_id:
+            typeof pickup === "object" ? Object.values(pickup)[0] : pickup,
+          dropoff_plot_id:
+            typeof dropoff === "object" ? Object.values(dropoff)[0] : dropoff,
           fares: data.fares,
         });
       }

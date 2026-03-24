@@ -3,7 +3,7 @@ const SubsBank = require("../models/subsidiaryBankModel");
 
 const path = require("path");
 
-const BASE_URL = process.env.BASE_URL || "http://192.168.100.93:5000/uploads/";
+const BASE_URL = process.env.BASE_URL || "http://192.168.110.4:5000/uploads/";
 
 //  Basic validation
 const validateSubsidiaryPayload = (payload) => {
