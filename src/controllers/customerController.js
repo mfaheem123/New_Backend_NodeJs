@@ -3,7 +3,7 @@ const sendEmail = require("../config/emailConfig");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const bcrypt = require("bcrypt");
-const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
+const BASE_URL = process.env.BASE_URL || "http://192.168.110.6:5000/uploads/";
 const {
   generateSecurityCode,
   validateSecurityCode,
