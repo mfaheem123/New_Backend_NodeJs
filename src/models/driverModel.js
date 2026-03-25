@@ -1100,12 +1100,12 @@ const Driver = {
   //Update Driver Login Status With Location
   // async updateDriverLoginStatus(driverId, latitude, longitude) {
   //   const query = `
-  //       UPDATE drivers 
-  //       SET 
+  //       UPDATE drivers
+  //       SET
   //         session_status = 'logged_in',
   //         driver_status = 'Available',
   //         booking_status = 'Available',
-  //         latitude = $1, 
+  //         latitude = $1,
   //         longitude = $2
   //       WHERE id = $3
   //     `;

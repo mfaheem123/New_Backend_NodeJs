@@ -216,47 +216,74 @@ exports.getBookingByTabs = async (req, res) => {
       case 3:
         tabName = "RECENT BOOKINGS";
         tabWhere = `b.booking_status_id NOT IN (1, 11) AND b.trash = false`;
+        orderBy = `
+  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+`;
         break;
 
       case 4:
         tabName = "COMPLETED BOOKINGS";
         tabWhere = `b.booking_status_id = 11 AND b.trash = false`;
+        orderBy = `
+  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+`;
         break;
 
       case 5:
         tabName = "QUOTED BOOKINGS";
         tabWhere = `b.quoted = true AND b.trash = false`;
+        orderBy = `
+  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+`;
         break;
 
       case 6:
         tabName = "IVR BOOKINGS";
         tabWhere = `b.booking_source = 'ivr' AND b.trash = false`;
+        orderBy = `
+  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+`;
         break;
 
       case 7:
         tabName = "WEB BOOKINGS";
         tabWhere = `b.booking_source = 'web' AND b.trash = false`;
+        orderBy = `
+  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+`;
         break;
 
       case 8:
         tabName = "APP BOOKINGS";
         tabWhere = `b.booking_source = 'app'AND b.trash = false`;
+        orderBy = `
+  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+`;
         break;
 
       case 9:
         tabName = "MULTI BOOKINGS";
         tabWhere = `b.booking_type_id = 2 AND b.trash = false`;
+        orderBy = `
+  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+`;
         break;
 
       case 10:
         tabName = "PENDING BOOKINGS";
         tabWhere = `b.booking_status_id != 11`;
+        orderBy = `
+  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+`;
         break;
 
       case 11:
         tabName = "TRASH BOOKINGS";
         tabWhere = `b.trash = true`;
-        break;
+        orderBy = `
+  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+`;
+        break; 
 
       default:
         return res.status(400).json({ success: false, message: "Invalid tab" });

@@ -285,7 +285,9 @@ const getBookingsByTab = async ({
   offset = 0,
   limit = 20,
   filters = {},
-  orderBy = "b.id ASC", // default
+ orderBy = `
+  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+`, // default
 }) => {
   const conditions = [];
   const params = [];

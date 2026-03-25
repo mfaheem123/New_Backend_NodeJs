@@ -42,7 +42,7 @@ const PlotFare = {
   // },
 
   // MULTIPLE DATA INSERT
-    async create(plotFares) {
+  async create(plotFares) {
     const insertQuery = `
       INSERT INTO plot_fares (vehicle_type_id, pickup_plot_id, dropoff_plot_id, fares)
       VALUES ($1, $2, $3, $4)
