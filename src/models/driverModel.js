@@ -1,4 +1,3 @@
-const { getLoginDrivers } = require("../controllers/driverController");
 const db = require("../db");
 const bcrypt = require("bcrypt");
 
@@ -1557,6 +1556,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   const result = await db.query(query);
   return result.rows;
 },
+
  async getBusyDrivers() {
   const query = `
     SELECT 
