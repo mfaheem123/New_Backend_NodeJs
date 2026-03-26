@@ -63,20 +63,31 @@ const isDateInRange = (date, from, to) =>
 const normalize = (str = "") => str.toLowerCase().replace(/\s+/g, " ").trim();
 
 /* ---------------- CACHE ---------------- */
+const CACHE_TTL = 60 * 1000; // 1 minute
 
 let fareByVehicleCache = {};
 
 /* ---------------- FARE BY VEHICLE FUNCTION ---------------- */
 const applyFareByVehicle = async (fare, vehicle_type_id) => {
-  if (!fareByVehicleCache[vehicle_type_id]) {
+  const now = Date.now();
+
+  if (
+    !fareByVehicleCache[vehicle_type_id] ||
+    now - fareByVehicleCache[vehicle_type_id].timestamp > CACHE_TTL
+  ) {
     const { rows } = await db.query(
       `SELECT * FROM fare_by_vehicles WHERE vehicle_type_id=$1`,
       [vehicle_type_id]
     );
-    fareByVehicleCache[vehicle_type_id] = rows;
+
+    fareByVehicleCache[vehicle_type_id] = {
+      data: rows,
+      timestamp: now,
+    };
   }
 
-  const rows = fareByVehicleCache[vehicle_type_id];
+  const rows = fareByVehicleCache[vehicle_type_id].data;
+
   if (!rows.length) return fare;
 
   let baseFare = fare;
