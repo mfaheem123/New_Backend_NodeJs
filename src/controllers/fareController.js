@@ -62,8 +62,41 @@ const isDateInRange = (date, from, to) =>
 
 const normalize = (str = "") => str.toLowerCase().replace(/\s+/g, " ").trim();
 
-/* ---------------- CORE FARE ---------------- */
+/* ---------------- CACHE ---------------- */
 
+let fareByVehicleCache = {};
+
+/* ---------------- FARE BY VEHICLE FUNCTION ---------------- */
+const applyFareByVehicle = async (fare, vehicle_type_id) => {
+  if (!fareByVehicleCache[vehicle_type_id]) {
+    const { rows } = await db.query(
+      `SELECT * FROM fare_by_vehicles WHERE vehicle_type_id=$1`,
+      [vehicle_type_id]
+    );
+    fareByVehicleCache[vehicle_type_id] = rows;
+  }
+
+  const rows = fareByVehicleCache[vehicle_type_id];
+  if (!rows.length) return fare;
+
+  let baseFare = fare;
+  let totalAddition = 0;
+
+  for (const r of rows) {
+    const operator = (r.operator || "").toLowerCase();
+    const value = Number(r.value || 0);
+
+    if (operator === "percentage") {
+      totalAddition += (baseFare * value) / 100;
+    } else if (operator === "amount") {
+      totalAddition += value;
+    }
+  }
+
+  return baseFare + totalAddition;
+};
+
+/* ---------------- CORE FARE ---------------- */
 const calculateSingleFare = async (payload) => {
   let {
     miles = 0,
@@ -76,6 +109,10 @@ const calculateSingleFare = async (payload) => {
     pickup,
     dropoff,
   } = payload;
+
+// safe miles
+  miles = Number(miles);
+  if (isNaN(miles) || miles < 0) miles = 0;
 
   pickup_time = normalizeTime(pickup_time);
   const resolvedDay = getDayName(pickup_date);
@@ -154,10 +191,19 @@ const calculateSingleFare = async (payload) => {
       let extraMiles = miles - minMiles;
       if (extraMiles < 0) extraMiles = 0;
 
-      baseFare = minFare + extraMiles * 2; // 👈 miles already doubled
+      baseFare = minFare + extraMiles * 2; 
       fareType = rule.from_date ? "SPECIAL" : "NORMAL";
     }
   }
+
+  /* -------- FALLBACK DEFAULT -------- */
+if (!baseFare) {
+  let extraMiles = miles - 0.9;
+  if (extraMiles < 0) extraMiles = 0;
+
+  baseFare = 4.9 + extraMiles * 2;
+  fareType = "DEFAULT";
+}
 
   /* -------- AIRPORT -------- */
   let airportPickup = 0;
@@ -181,17 +227,34 @@ const calculateSingleFare = async (payload) => {
     if (a) airportDropoff = Number(a.dropoff_charges || 0) * multiplier;
   }
 
-  /* -------- EXTRA CHARGES (ALWAYS ADD) -------- */
+
+/* -------- FARE BY VEHICLE -------- */
+let vehicleAdjustedFare = await applyFareByVehicle(
+    baseFare,
+    vehicle_type_id
+  );
+
+   /* -------- EXTRA -------- */
   const extraChargesTotal = sumExtraCharges(payload);
 
-  const totalFare =
-    baseFare + airportPickup + airportDropoff + extraChargesTotal;
+const fareWithoutExtras =
+    vehicleAdjustedFare + airportPickup + airportDropoff;
 
-  const fareWithoutExtras = baseFare + airportPickup + airportDropoff;
-console.log("Fares: ", Number(fareWithoutExtras.toFixed(2)))
-console.log("PICKUP AIRPORT CHARGES: ", airportPickup)
-console.log("DROPOFF AIRPORT CHARGES: ", airportDropoff)
-console.log("TOTAL Fares: ", Number(totalFare.toFixed(2)))
+  const totalFare = fareWithoutExtras + extraChargesTotal;
+
+  // const totalFare =
+  //   baseFare + airportPickup + airportDropoff + extraChargesTotal;
+
+  // const fareWithoutExtras = baseFare + airportPickup + airportDropoff;
+
+console.log("fareType: ", fareType)
+console.log("baseFare: ", baseFare)
+console.log("vehicleAdjustedFare: ", vehicleAdjustedFare)
+console.log("airportPickup: ", airportPickup)
+console.log("airportDropoff: ", airportDropoff)
+console.log("extraChargesTotal: ", extraChargesTotal)
+console.log("totalFare: ", totalFare)
+
 
   return {
     fare: Number(fareWithoutExtras.toFixed(2)),
@@ -287,7 +350,7 @@ exports.calculateFare = async (req, res) => {
 
     journey_type_id = Number(journey_type_id || 1);
 
-    if (typeof multi_reservation === "string") {
+    if (typeof multi_reservation === "string") { 
       multi_reservation = JSON.parse(multi_reservation);
     }
 

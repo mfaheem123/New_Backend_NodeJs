@@ -1,3 +1,4 @@
+const { getLoginDrivers } = require("../controllers/driverController");
 const db = require("../db");
 const bcrypt = require("bcrypt");
 
@@ -1516,6 +1517,86 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     await db.query(query, [booking_status, driver_status, driverId]);
     return true;
   },
+
+  async getLoginDrivers() {
+  const query = `
+    SELECT 
+      d.id,
+      d.name,
+      d.username,
+      d.zone,
+      
+      -- vehicle type name (dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN vt_cv.name
+        ELSE vt_v.name
+      END AS vehicle_type
+
+    FROM drivers d
+
+    -- company vehicle
+    LEFT JOIN company_vehicles cv 
+      ON cv.id = d.company_vehicle_id
+
+    LEFT JOIN vehicle_types vt_cv 
+      ON vt_cv.id = cv.vehicle_type_id
+
+    -- personal vehicle
+    LEFT JOIN vehicles v 
+      ON v.id = d.vehicle_id
+
+    LEFT JOIN vehicle_types vt_v 
+      ON vt_v.id = v.vehicle_type_id
+
+    WHERE 
+      d.session_status = 'logged_in'
+      AND d.driver_status = 'Available'
+      AND d.booking_status = 'Available'
+  `;
+
+  const result = await db.query(query);
+  return result.rows;
+},
+ async getBusyDrivers() {
+  const query = `
+    SELECT 
+      d.id,
+      d.name,
+      d.username,
+      d.zone,
+      
+      -- vehicle type name (dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN vt_cv.name
+        ELSE vt_v.name
+      END AS vehicle_type
+
+    FROM drivers d
+
+    -- company vehicle
+    LEFT JOIN company_vehicles cv 
+      ON cv.id = d.company_vehicle_id
+
+    LEFT JOIN vehicle_types vt_cv 
+      ON vt_cv.id = cv.vehicle_type_id
+
+    -- personal vehicle
+    LEFT JOIN vehicles v 
+      ON v.id = d.vehicle_id
+
+    LEFT JOIN vehicle_types vt_v 
+      ON vt_v.id = v.vehicle_type_id
+
+    WHERE 
+      d.session_status = 'logged_in'
+      AND d.driver_status = 'Unvailable'
+      AND d.booking_status = 'Unvailable'
+  `;
+
+  const result = await db.query(query);
+  return result.rows;
+},
+
 };
 
 module.exports = Driver;

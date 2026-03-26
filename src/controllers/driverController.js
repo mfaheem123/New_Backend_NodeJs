@@ -919,3 +919,22 @@ exports.onPanicDriver = async (req, res) => {
     });
   }
 };
+
+exports.getLoginDrivers = async (req, res) => {
+  try {
+    const login_drivers = await Driver.getLoginDrivers();
+    const busy_drivers = await Driver.getBusyDrivers();
+
+    res.status(200).json({
+      status: true,
+      login_drivers: login_drivers,
+      busy_drivers: busy_drivers,
+    });
+  } catch (err) {
+    console.error("Error fetching login drivers:", err);
+    res.status(500).json({
+      status: false,
+      message: "Server error",
+    });
+  }
+};
