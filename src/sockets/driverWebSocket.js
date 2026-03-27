@@ -11,6 +11,17 @@ const busyDashboardClients = new Set();
 // Logged-in drivers list (memory)
 const loggedInDrivers = new Map();
 
+function formatDriverData(driver) {
+  return {
+    id: driver.id,
+    name: driver.name,
+    username: driver.username,
+    zone: driver.zone,
+    vehicle_type: driver.vehicle?.vehicle_type?.name || null,
+    last_login_at: driver.last_login_at,
+  };
+}
+
 //Driver Login Socket
 function handleDriverLoginSocket(ws) {
   dashboardClients.add(ws);
@@ -55,6 +66,41 @@ function handleDriverLoginSocket(ws) {
   });
 }
 
+//OLD CODE
+// async function handleBusyDriverSocket(ws) {
+//   busyDashboardClients.add(ws);
+
+//   logger.info("ws:busy-dashboard-connected", {
+//     socketId: ws.id,
+//   });
+
+//   try {
+//     const drivers = await getBusyLoggedInDrivers();
+
+//     ws.send(
+//       JSON.stringify({
+//         event: "BUSY_DRIVER_LIST",
+//         data: drivers,
+//       }),
+//     );
+//   } catch (error) {
+//     logger.error("ws:busy-driver-list-error", {
+//       error: error.message,
+//     });
+//   }
+
+//   ws.on("close", () => {
+//     busyDashboardClients.delete(ws);
+//   });
+
+//   ws.on("error", (err) => {
+//     logger.error("ws:error", {
+//       socketId: ws.id,
+//       error: err.message,
+//     });
+//   });
+// }
+
 async function handleBusyDriverSocket(ws) {
   busyDashboardClients.add(ws);
 
@@ -65,12 +111,15 @@ async function handleBusyDriverSocket(ws) {
   try {
     const drivers = await getBusyLoggedInDrivers();
 
-    ws.send(
-      JSON.stringify({
-        event: "BUSY_DRIVER_LIST",
-        data: drivers,
-      }),
-    );
+    // 🔥 LIST ko UPDATE events me convert karo
+    drivers.forEach((driver) => {
+      const payload = JSON.stringify({
+        event: "BUSY_DRIVER_UPDATE",
+        data: formatDriverData(driver),
+      });
+
+      ws.send(payload);
+    });
   } catch (error) {
     logger.error("ws:busy-driver-list-error", {
       error: error.message,
@@ -108,6 +157,7 @@ function notifyDriverLogin(driver) {
     username: driver.username,
     zone: driver.zone,
     vehicle_type: driver.vehicle?.vehicle_type?.name || null,
+    last_login_at: driver.last_login_at,
   };
 
   const payload = JSON.stringify({
@@ -141,17 +191,85 @@ function notifyDriverLogout(driverId) {
     driverId,
   });
 }
+function notifyBusyDriverUpdate(driver) {
+  console.log("BUSY CLIENTS:", busyDashboardClients.size);
 
+  if (driver.session_status !== "logged_in") return;
+
+  // 🟢 DRIVER AVAILABLE → REMOVE FROM BUSY
+  if (
+    driver.booking_status === "Available" &&
+    driver.driver_status === "Available"
+  ) {
+    // available dashboard ke liye (existing logic)
+    loggedInDrivers.set(driver.id, driver);
+
+    const availablePayload = JSON.stringify({
+      event: "DRIVER_LOGIN",
+      data: formatDriverData(driver),
+    });
+
+    dashboardClients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(availablePayload);
+      }
+    });
+
+    // 🔥 BUSY SOCKET → REMOVE (important for Flutter)
+    const busyPayload = JSON.stringify({
+      event: "BUSY_DRIVER_REMOVE", // ⚠️ Flutter me else hit karega
+      data: { id: driver.id },
+    });
+
+    busyDashboardClients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(busyPayload);
+      }
+    });
+
+    return;
+  }
+
+  // 🔴 DRIVER BUSY → ADD
+  const payload = JSON.stringify({
+    event: "BUSY_DRIVER_UPDATE",
+    data: formatDriverData(driver), // ✅ only required fields
+  });
+
+  busyDashboardClients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(payload);
+    }
+  });
+}
+
+//OLD CODE
 // function notifyBusyDriverUpdate(driver) {
+//   console.log("BUSY CLIENTS:", busyDashboardClients.size);
 //   if (driver.session_status !== "logged_in") return;
 
+//   // Agar driver available ho gaya to login dashboard pe bhejo
 //   if (
 //     driver.booking_status === "Available" &&
 //     driver.driver_status === "Available"
 //   ) {
+//     loggedInDrivers.set(driver.id, driver);
+
+//     const payload = JSON.stringify({
+//       event: "DRIVER_LOGIN",
+//       data: driver,
+//     });
+
+//     dashboardClients.forEach((client) => {
+//       if (client.readyState === WebSocket.OPEN) {
+//         client.send(payload);
+//       }
+//     });
+
 //     return;
 //   }
 
+//   // Warna busy dashboard ko bhejo
 //   const payload = JSON.stringify({
 //     event: "BUSY_DRIVER_UPDATE",
 //     data: driver,
@@ -163,44 +281,6 @@ function notifyDriverLogout(driverId) {
 //     }
 //   });
 // }
-
-function notifyBusyDriverUpdate(driver) {
-  console.log("BUSY CLIENTS:", busyDashboardClients.size);
-  if (driver.session_status !== "logged_in") return;
-
-  // Agar driver available ho gaya to login dashboard pe bhejo
-  if (
-    driver.booking_status === "Available" &&
-    driver.driver_status === "Available"
-  ) {
-    loggedInDrivers.set(driver.id, driver);
-
-    const payload = JSON.stringify({
-      event: "DRIVER_LOGIN",
-      data: driver,
-    });
-
-    dashboardClients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(payload);
-      }
-    });
-
-    return;
-  }
-
-  // Warna busy dashboard ko bhejo
-  const payload = JSON.stringify({
-    event: "BUSY_DRIVER_UPDATE",
-    data: driver,
-  });
-
-  busyDashboardClients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(payload);
-    }
-  });
-}
 
 module.exports = {
   handleDriverLoginSocket,

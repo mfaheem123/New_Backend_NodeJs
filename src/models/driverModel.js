@@ -1091,7 +1091,8 @@ const Driver = {
         SET 
           session_status = 'logged_in',
           driver_status = 'Available',
-          booking_status = 'Available'
+          booking_status = 'Available',
+          last_login_at = NOW()
         WHERE id = $1
       `;
     return db.query(query, [driverId]);
@@ -1105,6 +1106,7 @@ const Driver = {
   //         session_status = 'logged_in',
   //         driver_status = 'Available',
   //         booking_status = 'Available',
+  //         last_login_at = NOW(),
   //         latitude = $1,
   //         longitude = $2
   //       WHERE id = $3
@@ -1524,6 +1526,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.name,
       d.username,
       d.zone,
+      d.last_login_at,
       
       -- vehicle type name (dynamic)
       CASE 
@@ -1564,6 +1567,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.name,
       d.username,
       d.zone,
+      d.last_login_at,
       
       -- vehicle type name (dynamic)
       CASE 
@@ -1589,8 +1593,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
 
     WHERE 
       d.session_status = 'logged_in'
-      AND d.driver_status = 'Unvailable'
-      AND d.booking_status = 'Unvailable'
+      AND d.driver_status = 'Unavailable'
+      AND d.booking_status = 'Unavailable'
   `;
 
   const result = await db.query(query);
