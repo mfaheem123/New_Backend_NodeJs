@@ -283,7 +283,7 @@ exports.getBookingByTabs = async (req, res) => {
         orderBy = `
   (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
 `;
-        break; 
+        break;
 
       default:
         return res.status(400).json({ success: false, message: "Invalid tab" });

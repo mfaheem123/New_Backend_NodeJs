@@ -1520,7 +1520,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   },
 
   async getLoginDrivers() {
-  const query = `
+    const query = `
     SELECT 
       d.id,
       d.name,
@@ -1556,12 +1556,12 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       AND d.booking_status = 'Available'
   `;
 
-  const result = await db.query(query);
-  return result.rows;
-},
+    const result = await db.query(query);
+    return result.rows;
+  },
 
- async getBusyDrivers() {
-  const query = `
+  async getBusyDrivers() {
+    const query = `
     SELECT 
       d.id,
       d.name,
@@ -1597,10 +1597,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       AND d.booking_status = 'Unavailable'
   `;
 
-  const result = await db.query(query);
-  return result.rows;
-},
-
+    const result = await db.query(query);
+    return result.rows;
+  },
 };
 
 module.exports = Driver;

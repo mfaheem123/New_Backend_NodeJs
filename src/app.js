@@ -154,7 +154,6 @@ app.use("/api/sms", smsRoutes);
 app.use("/api/fare-meter", fareMeterDetailsRoutes);
 app.use("/api/driver_rent", driverRentRoutes);
 
-
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {
   stack.forEach((r) => {
