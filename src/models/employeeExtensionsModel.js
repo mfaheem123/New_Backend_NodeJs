@@ -16,6 +16,14 @@ const addEmployeeExtension = async (
     extension_number,
     permanent_flag,
   ]);
+  const employee_query = `UPDATE employees
+    SET extension_number = $1
+    WHERE id = $2`;
+    
+     await db.query(employee_query, [
+    extension_number,
+    employee_id,
+  ]);
   return result.rows[0];
 };
 
@@ -71,7 +79,18 @@ const updateEmployeeExtension = async (id, fields) => {
   values.push(id);
 
   const result = await db.query(query, values);
-  return result.rows[0];
+
+  const updatedRow = result.rows[0];
+
+  // ✅ OPTIONAL: sync with employees table
+  if (updatedRow && fields.extension_number !== undefined) {
+    await db.query(
+      `UPDATE employees SET extension_number = $1 WHERE id = $2`,
+      [fields.extension_number, updatedRow.employee_id]
+    );
+  }
+
+  return updatedRow;
 };
 
 // DELETE EMPLOYEE EXTENSION
@@ -99,7 +118,7 @@ const getByEmployeeId = async (employee_id) => {
       LEFT JOIN employees e ON e.id = ee.employee_id
       WHERE ee.employee_id = $1
     `;
-  const { rows } = await pool.query(q, [employee_id]);
+  const { rows } = await db.query(q, [employee_id]);
   return rows;
 };
 module.exports = {
