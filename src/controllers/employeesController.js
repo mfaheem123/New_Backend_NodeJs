@@ -363,6 +363,11 @@ const login = async (req, res) => {
         .json({ status: false, message: "Invalid username or password" });
     }
 
+    if(employee.active == false || employee.active == "false"){
+      return res
+        .status(400)
+        .json({ status: false, message: "You Are Inactive" });
+    }
     // Compare passwords
     const match = await bcrypt.compare(password, employee.password);
     if (!match) {
@@ -415,7 +420,7 @@ const login = async (req, res) => {
 
     res.status(200).json({
       status: true,
-      message: "Login successful",
+      message: "Login Successful",
       token,
       employee: fullEmployee,
     });
@@ -425,4 +430,31 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getById, create, update, remove, login };
+const logout = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+    return res.status(400).json({ message: "Employee ID is required" });
+  }
+
+
+    // Find user
+    const employee = await Employee.getById(id);
+    if (!employee) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Employee Not Found" });
+    }
+
+
+    res.status(200).json({
+      status: true,
+      message: "Logout Successful",
+    });
+  } catch (err) {
+    console.error("Error logging in:", err);
+    res.status(500).json({ status: false, message: "Server error" });
+  }
+};
+
+module.exports = { getAll, getById, create, update, remove, login, logout };

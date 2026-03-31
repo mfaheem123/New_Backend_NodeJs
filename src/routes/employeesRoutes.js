@@ -27,4 +27,5 @@ router.post("/add", upload.single("image"), employeesController.create);
 router.post("/update/:id", upload.single("image"), employeesController.update);
 router.delete("/delete/:id", employeesController.remove);
 router.post("/login", upload.none(), employeesController.login);
+router.post("/logout/:id", upload.none(), employeesController.logout);
 module.exports = router;

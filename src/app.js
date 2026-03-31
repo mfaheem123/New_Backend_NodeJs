@@ -53,6 +53,7 @@ const ivrRoutes = require("./routes/ivrRoutes");
 const smsRoutes = require("./routes/smsRoutes");
 const fareMeterDetailsRoutes = require("./routes/fareMeterDetailsRoutes");
 const driverRentRoutes = require("./routes/driverRentRoutes");
+const lostPropertyRoutes = require("./routes/lostPropertyRoutes");
 
 const app = express();
 
@@ -153,6 +154,7 @@ app.use("/api/ivr", ivrRoutes);
 app.use("/api/sms", smsRoutes);
 app.use("/api/fare-meter", fareMeterDetailsRoutes);
 app.use("/api/driver_rent", driverRentRoutes);
+app.use("/api/lost-property", lostPropertyRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {
