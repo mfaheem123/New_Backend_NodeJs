@@ -10,6 +10,7 @@ const { sendBookingNotification } = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
 const driverAppFeatureModel = require("../models/driverAppFeaturesModel");
+
 const DEFAULT_EMPLOYEE_ID = 28;
 
 const parseJSONFields = (row) => {
@@ -1325,11 +1326,32 @@ async function cloneOneWayBookingService(payload) {
   return clean;
 }
 
+async function assignDriverService(bookingId, driverId) {
+  // 1️ Update booking with driver
+  const updated = await updateBooking(bookingId, {
+    driver_id: driverId,
+    booking_status_id: 1,
+  });
+
+  if (!updated) return null;
+
+  // 2️ Get enriched booking
+  const enriched = await getBookingByIdEnriched(bookingId);
+
+  // 3️ Send notification to driver
+  await sendBookingNotification(driverId, enriched);
+
+  return enriched;
+}
+
+
+
 // EXPORTS
 module.exports = {
   create,
   genRef,
   normalizeBookingPayload,
   updateBookingService,
+  assignDriverService,
   cloneOneWayBookingService,
 };

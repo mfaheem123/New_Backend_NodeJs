@@ -92,6 +92,7 @@ const create = async (req, res) => {
       callreceiver,
       allowtransferbookings,
     } = req.body;
+    
     // 🖼️ Image handling
     const imageUrl = req.file ? `${BASE_URL}${req.file.filename}` : null;
     req.body.image = imageUrl;
