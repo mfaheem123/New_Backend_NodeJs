@@ -1120,7 +1120,8 @@ const Driver = {
     SET 
       session_status = 'logged_out',
       driver_status = 'Unavailable',
-      booking_status = 'Unavailable'
+      booking_status = 'Unavailable',
+      last_login_at = NULL
     WHERE id = $1
   `;
     await db.query(query, [id]);

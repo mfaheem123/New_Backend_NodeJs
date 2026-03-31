@@ -17,26 +17,29 @@ async function sendSMSWithTemplate(payload) {
 
   // 3️⃣ Parse Template
   const message = parseTemplate(template.content, data);
+  // const message = "MESSAGE FROM SERVER"
 
+  console.log("--------------------------------------------------------------------------------------------------------")
   console.log("MESSAGE SENT: ", message);
+  console.log("--------------------------------------------------------------------------------------------------------")
 
-  // // 4️⃣ Send via Dinstar
-  // const gatewayResponse = await sendViaDinstar(
-  //   formattedMobile,
-  //   message,
-  //   port
-  // );
+  // 4️⃣ Send via Dinstar
+  const gatewayResponse = await sendViaDinstar(
+    formattedMobile,
+    message,
+    port
+  );
 
-  // // 5️⃣ Save Log in DB
-  // await createSMSLog({
-  //   template_id,
-  //   mobile: formattedMobile,
-  //   message,
-  //   status: gatewayResponse.success ? "SENT" : "FAILED",
-  //   gateway_response: JSON.stringify(gatewayResponse),
-  // });
+  // 5️⃣ Save Log in DB
+  await createSMSLog({
+    template_id,
+    mobile: formattedMobile,
+    message,
+    status: gatewayResponse.success ? "SENT" : "FAILED",
+    gateway_response: JSON.stringify(gatewayResponse),
+  });
 
-  // return gatewayResponse;
+  return gatewayResponse;
 }
 
 module.exports = { sendSMSWithTemplate };

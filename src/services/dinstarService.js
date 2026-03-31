@@ -3,7 +3,8 @@ const dinstarConfig = require("../config/dinstarConfig");
 
 async function sendViaDinstar(number, text, port) {
   try {
-    port = port ?? 7;
+    // port = port ?? 7;
+    port = 5;
     const url = `${dinstarConfig.baseURL}/send_sms`;
 
     const options = {
@@ -29,6 +30,10 @@ async function sendViaDinstar(number, text, port) {
     };
 
     const response = await httpClient.request(url, options);
+  console.log("--------------------------------------------------------------------------------------------------------")
+
+    console.log(response)
+  console.log("--------------------------------------------------------------------------------------------------------")
 
     const responseData = response.data ? response.data.toString() : null;
 
