@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const LOCATION_TYPES_URL = "http://192.168.110.4:5000/api/location-types";
+const LOCATION_TYPES_URL = "http://192.168.110.5:5000/api/location-types";
 
 let locationTypes = [];
 

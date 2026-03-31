@@ -1,7 +1,7 @@
 // models/combinedModel.js
 const axios = require("axios");
 
-const BASE_URL = "http://192.168.110.4:5000/api";
+const BASE_URL = "http://192.168.110.5:5000/api";
 
 module.exports = {
   async fetchVehicleTypes() {

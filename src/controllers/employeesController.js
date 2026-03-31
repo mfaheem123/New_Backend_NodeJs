@@ -6,7 +6,7 @@ const EmployeeExtension = require("../models/employeeExtensionsModel");
 const Role = require("../models/roleModel");
 const pool = require("../db");
 const path = require("path");
-const BASE_URL = process.env.BASE_URL || "http://192.168.110.4:5000/uploads/";
+const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 const JWT_SECRET = process.env.JWT_SECRET || "NexusTaxiDispatchSystem";
 
 // Helper for password hashing
