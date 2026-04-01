@@ -35,13 +35,13 @@ function handleDriverLoginSocket(ws) {
       driver.driver_status === "Available",
   );
 
-  // 1️⃣ Current state bhej do
-  ws.send(
-    JSON.stringify({
-      event: "DRIVER_LIST",
-      data: availableDrivers,
-    }),
-  );
+  // // 1️⃣ Current state bhej do
+  // ws.send(
+  //   JSON.stringify({
+  //     event: "DRIVER_LIST",
+  //     data: availableDrivers,
+  //   }),
+  // );
 
   // 2️⃣ Subscribe future updates
   const driverLoginListener = (driver) => {

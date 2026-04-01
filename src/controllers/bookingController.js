@@ -27,6 +27,7 @@ const {
   getDriverCurrentJob,
   updateBookingFareCharges,
   getDriverTotalEarning,
+  getBookingByCustomerId,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -584,8 +585,7 @@ exports.updateBookingStatus = async (req, res) => {
     // ARRIVED
     if (booking_status_id == 6) {
       await updateBookingonRoute(bookingId, false, false, true);
-    await sendBookingSMS(updatedBooking.rows[0]);
-
+      await sendBookingSMS(updatedBooking.rows[0]);
     }
 
     // COMPLETED
@@ -1046,6 +1046,13 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
+    if (booking.rows[0].booking_status_id === "11" || booking.rows[0].booking_status_id === 11 ) {
+      return res.status(400).json({
+        status: false,
+        message: "Booking Already Completed",
+      });
+    }
+
     const driver = await Driver.getById(driver_id);
 
     if (driver.session_status === "logged_out") {
@@ -1084,4 +1091,26 @@ exports.assignDriverToBooking = async (req, res) => {
       message: "Internal Server Error",
     });
   }
+};
+
+exports.getBookingByCustomerId = async (req, res) => {
+  const customer_id = parseInt(req.params.id);
+  // const lastdays = req.query.lastdays ? parseInt(req.query.lastdays) : null;
+
+  const bookings = await getBookingByCustomerId(customer_id);
+
+  if (!bookings || bookings.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "Booking Not Found",
+    });
+  }
+
+  const data = bookings.map((b) => parseJSONFields(b));
+
+  res.status(200).json({
+    success: true,
+    count: bookings.length,
+    bookings: data,
+  });
 };

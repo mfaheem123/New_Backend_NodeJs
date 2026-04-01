@@ -727,6 +727,22 @@ const getBookingByDriverRent = async (
   return res.rows;
 };
 
+const getBookingByCustomerId = async (customer_id) => {
+  let whereClause = `WHERE b.customer_id = $1 AND b.booking_status_id = 11`;
+  const values = [customer_id];
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    ${whereClause}
+    ORDER BY 
+      b.pickup_date DESC,
+      b.pickup_time DESC
+  `;
+
+  const res = await pool.query(sql, values);
+  return res.rows;
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -761,4 +777,6 @@ module.exports = {
   getDriverCurrentJob,
   updateBookingFareCharges,
   getDriverTotalEarning,
+  getBookingByDriverRent,
+  getBookingByCustomerId
 };

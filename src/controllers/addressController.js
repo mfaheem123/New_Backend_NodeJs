@@ -25,7 +25,7 @@ const searchAddresses = async (req, res) => {
 
     // 🧠 Detect if input is a postcode or prefix of one
     const isPostcodeLike = /^[A-Z]{1,2}\d{0,2}[A-Z]?\s*\d?[A-Z]{0,2}$/i.test(
-      search
+      search,
     );
 
     const response = await client.search({
@@ -94,7 +94,8 @@ const searchAddresses = async (req, res) => {
     // 🧹 Clean duplicates
     const unique = hits.filter(
       (v, i, a) =>
-        a.findIndex((t) => t.name === v.name && t.postcode === v.postcode) === i
+        a.findIndex((t) => t.name === v.name && t.postcode === v.postcode) ===
+        i,
     );
 
     res.status(200).json(unique);
