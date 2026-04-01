@@ -30,10 +30,14 @@ async function sendViaDinstar(number, text, port) {
     };
 
     const response = await httpClient.request(url, options);
-  console.log("--------------------------------------------------------------------------------------------------------")
+    console.log(
+      "--------------------------------------------------------------------------------------------------------",
+    );
 
-    console.log(response)
-  console.log("--------------------------------------------------------------------------------------------------------")
+    console.log(response);
+    console.log(
+      "--------------------------------------------------------------------------------------------------------",
+    );
 
     const responseData = response.data ? response.data.toString() : null;
 

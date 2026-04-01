@@ -1344,8 +1344,6 @@ async function assignDriverService(bookingId, driverId) {
   return enriched;
 }
 
-
-
 // EXPORTS
 module.exports = {
   create,

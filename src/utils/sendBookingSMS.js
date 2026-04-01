@@ -4,9 +4,9 @@ const sendBookingSMS = async (clean) => {
   try {
     if (!clean?.sms) return;
 
-    const viapointsStr = clean?.viapoints?.length
-      ? clean.viapoints.map((v) => ` via ${v}`).join("")
-      : "";
+    // const viapointsStr = clean?.viapoints?.length
+    //   ? clean.viapoints.map((v) => ` via ${v}`).join("")
+    //   : "";
 
     const totalFare = clean?.total_charges ?? "0.00";
 
@@ -14,7 +14,13 @@ const sendBookingSMS = async (clean) => {
     // BOOKING STATUS = 1
     // ------------------------------------------------
     if (clean.booking_status_id === 1) {
+      let viapointsStr = "";
 
+if (Array.isArray(clean?.viapoints)) {
+  viapointsStr = clean.viapoints.map((v) => ` via ${v}`).join("");
+} else if (typeof clean?.viapoints === "string") {
+  viapointsStr = ` via ${clean.viapoints}`;
+}
       // TEMPLATE 6 (ALWAYS WHEN STATUS 1)
       const template6Data = {
         pickup_door_number: clean.pickup_door_number
@@ -38,7 +44,7 @@ const sendBookingSMS = async (clean) => {
       await sendSMSWithTemplate({
         template_id: 6,
         mobile: clean.mobile,
-        port: 1,
+        port: 5,
         data: template6Data,
       });
 
@@ -60,7 +66,7 @@ const sendBookingSMS = async (clean) => {
         await sendSMSWithTemplate({
           template_id: 3,
           mobile: clean.mobile,
-          port: 1,
+          port: 5,
           data: template3Data,
         });
       }
@@ -77,11 +83,10 @@ const sendBookingSMS = async (clean) => {
       await sendSMSWithTemplate({
         template_id: 4,
         mobile: clean.mobile,
-        port: 1,
+        port: 5,
         data: template4Data,
       });
     }
-
   } catch (error) {
     console.error("❌ SMS Sending Error:", error);
   }

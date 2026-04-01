@@ -574,6 +574,7 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const driverId = booking.rows[0].driver_id;
+    const updatedBooking = await findBookingById(bookingId);
 
     // ON ROUTE
     if (booking_status_id == 3) {
@@ -583,6 +584,8 @@ exports.updateBookingStatus = async (req, res) => {
     // ARRIVED
     if (booking_status_id == 6) {
       await updateBookingonRoute(bookingId, false, false, true);
+    await sendBookingSMS(updatedBooking.rows[0]);
+
     }
 
     // COMPLETED
@@ -617,10 +620,6 @@ exports.updateBookingStatus = async (req, res) => {
       console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
       notifyBusyDriverUpdate(driver);
     }
-
-    const updatedBooking = await findBookingById(bookingId);
-
-    // await sendBookingSMS(updatedBooking.rows[0]);
 
     return res.status(200).json({
       status: true,
@@ -1017,7 +1016,6 @@ exports.getDriverEarning = async (req, res) => {
   }
 };
 
-
 exports.assignDriverToBooking = async (req, res) => {
   try {
     const { booking_id, driver_id } = req.body;
@@ -1042,33 +1040,35 @@ exports.assignDriverToBooking = async (req, res) => {
     }
 
     if (booking.rows[0].driver_id) {
-  return res.status(400).json({
+      return res.status(400).json({
         status: false,
         message: "Driver already assigned",
       });
-  
-}
+    }
 
-const driver = await Driver.getById(driver_id);
+    const driver = await Driver.getById(driver_id);
 
-if(driver.session_status === "logged_out"){
-  return res.status(400).json({
+    if (driver.session_status === "logged_out") {
+      return res.status(400).json({
         status: false,
         message: "Driver is Logged Out",
       });
-}
+    }
 
-if (driver.booking_status === "Unavailable" || driver.driver_status === "Unavailable") {
-  return res.status(400).json({
+    if (
+      driver.booking_status === "Unavailable" ||
+      driver.driver_status === "Unavailable"
+    ) {
+      return res.status(400).json({
         status: false,
         message: "Driver is already busy",
       });
-}
+    }
 
     // Call service
     const updatedBooking = await bookingService.assignDriverService(
       booking_id,
-      driver_id
+      driver_id,
     );
 
     return res.status(200).json({

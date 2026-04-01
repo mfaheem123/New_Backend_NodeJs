@@ -92,7 +92,7 @@ const create = async (req, res) => {
       callreceiver,
       allowtransferbookings,
     } = req.body;
-    
+
     // 🖼️ Image handling
     const imageUrl = req.file ? `${BASE_URL}${req.file.filename}` : null;
     req.body.image = imageUrl;
@@ -364,7 +364,7 @@ const login = async (req, res) => {
         .json({ status: false, message: "Invalid username or password" });
     }
 
-    if(employee.active == false || employee.active == "false"){
+    if (employee.active == false || employee.active == "false") {
       return res
         .status(400)
         .json({ status: false, message: "You Are Inactive" });
@@ -435,9 +435,8 @@ const logout = async (req, res) => {
   try {
     const { id } = req.params;
     if (!id) {
-    return res.status(400).json({ message: "Employee ID is required" });
-  }
-
+      return res.status(400).json({ message: "Employee ID is required" });
+    }
 
     // Find user
     const employee = await Employee.getById(id);
@@ -446,7 +445,6 @@ const logout = async (req, res) => {
         .status(404)
         .json({ status: false, message: "Employee Not Found" });
     }
-
 
     res.status(200).json({
       status: true,
