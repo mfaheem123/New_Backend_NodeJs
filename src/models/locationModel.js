@@ -87,18 +87,7 @@ const getAll = async ({
         'background_color', lt.background_color,
         'foreground_color', lt.foreground_color
       ) AS location_type,
-      CASE WHEN z.id IS NOT NULL THEN
-        jsonb_build_object(
-          'id', z.id,
-          'name', z.name,
-          'secondary_name', z.secondary_name,
-          'type', z.type,
-          'category', z.category,
-          'vertices', z.vertices,
-          'base', z.base,
-          'overlay', z.overlay
-        )
-      ELSE NULL END AS zone
+      z.name AS zone
     FROM locations l
     LEFT JOIN location_types lt ON l.location_type_id = lt.id
     LEFT JOIN zones z ON l.zone_id = z.id

@@ -9,7 +9,7 @@ function validateSecurityCode(code) {
   return typeof code === "string" && /^\d{4}$/.test(code); // strictly 4-digit numeric string
 }
 
-module.exports= {
-    generateSecurityCode,
-    validateSecurityCode
-}
+module.exports = {
+  generateSecurityCode,
+  validateSecurityCode,
+};
