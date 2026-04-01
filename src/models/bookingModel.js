@@ -778,5 +778,5 @@ module.exports = {
   updateBookingFareCharges,
   getDriverTotalEarning,
   getBookingByDriverRent,
-  getBookingByCustomerId
+  getBookingByCustomerId,
 };

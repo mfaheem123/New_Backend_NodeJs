@@ -139,7 +139,7 @@ const create = async (data) => {
   const values = cols.map((c) => data[c]);
   const params = values.map((_, i) => `$${i + 1}`).join(",");
   const q = `INSERT INTO locations (${cols.join(
-    ","
+    ",",
   )}) VALUES (${params}) RETURNING *`;
   const { rows } = await pool.query(q, values);
   return rows[0];
