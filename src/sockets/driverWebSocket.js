@@ -8,6 +8,7 @@ const {
 // Sirf dashboard sockets
 const dashboardClients = new Set();
 const busyDashboardClients = new Set();
+
 // Logged-in drivers list (memory)
 const loggedInDrivers = new Map();
 
@@ -108,23 +109,23 @@ async function handleBusyDriverSocket(ws) {
     socketId: ws.id,
   });
 
-  try {
-    const drivers = await getBusyLoggedInDrivers();
+  // try {
+  //   const drivers = await getBusyLoggedInDrivers();
 
-    // 🔥 LIST ko UPDATE events me convert karo
-    drivers.forEach((driver) => {
-      const payload = JSON.stringify({
-        event: "BUSY_DRIVER_UPDATE",
-        data: formatDriverData(driver),
-      });
+  //   // 🔥 LIST ko UPDATE events me convert karo
+  //   drivers.forEach((driver) => {
+  //     const payload = JSON.stringify({
+  //       event: "BUSY_DRIVER_UPDATE",
+  //       data: formatDriverData(driver),
+  //     });
 
-      ws.send(payload);
-    });
-  } catch (error) {
-    logger.error("ws:busy-driver-list-error", {
-      error: error.message,
-    });
-  }
+  //     ws.send(payload);
+  //   });
+  // } catch (error) {
+  //   logger.error("ws:busy-driver-list-error", {
+  //     error: error.message,
+  //   });
+  // }
 
   ws.on("close", () => {
     busyDashboardClients.delete(ws);
