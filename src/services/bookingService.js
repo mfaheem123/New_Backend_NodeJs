@@ -1331,7 +1331,7 @@ async function assignDriverService(bookingId, driverId) {
   const updated = await updateBooking(bookingId, {
     driver_id: driverId,
     booking_status_id: 1,
-    dispatched_at: new Date(),
+    // dispatched_at: new Date(),
   });
 
   if (!updated) return null;
