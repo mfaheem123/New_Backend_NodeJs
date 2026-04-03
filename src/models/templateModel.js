@@ -3,7 +3,7 @@ const db = require("../db");
 const TemplateModel = {
   getAllTemplateTypes: async () => {
     const { rows } = await db.query(
-      `SELECT id, name FROM template_types ORDER BY id ASC`
+      `SELECT id, name FROM template_types ORDER BY id ASC`,
     );
     return rows;
   },
@@ -14,7 +14,7 @@ const TemplateModel = {
        FROM templates 
        WHERE template_type_id = $1
        ORDER BY id ASC`,
-      [templateTypeId]
+      [templateTypeId],
     );
     return rows;
   },
@@ -33,7 +33,7 @@ const TemplateModel = {
        FROM templates t
        JOIN template_types tt ON t.template_type_id = tt.id
        WHERE t.id = $1`,
-      [id]
+      [id],
     );
     return rows[0];
   },
@@ -48,7 +48,7 @@ const TemplateModel = {
         tt.name as template_type_name
        FROM templates t
        JOIN template_types tt ON t.template_type_id = tt.id
-       ORDER BY t.id ASC`
+       ORDER BY t.id ASC`,
     );
     return rows;
   },
@@ -60,7 +60,7 @@ const TemplateModel = {
         (template_type_id, name, subject, content, body) 
        VALUES ($1, $2, $3, $4, $5) 
        RETURNING *`,
-      [template_type_id, name, subject, content, body]
+      [template_type_id, name, subject, content, body],
     );
     return rows[0];
   },
@@ -77,7 +77,7 @@ const TemplateModel = {
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $6
        RETURNING *`,
-      [template_type_id, name, subject, content, body, id]
+      [template_type_id, name, subject, content, body, id],
     );
     return rows[0];
   },
@@ -85,7 +85,7 @@ const TemplateModel = {
   deleteTemplate: async (id) => {
     const { rows } = await db.query(
       `DELETE FROM templates WHERE id = $1 RETURNING id`,
-      [id]
+      [id],
     );
     return rows[0];
   },

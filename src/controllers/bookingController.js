@@ -58,6 +58,9 @@ function parseJSONFields(row) {
   return parsed;
 }
 
+// ---------------------------------------------------------
+// CREATE BOOKINGS CONTROLLER
+// ---------------------------------------------------------
 exports.createBooking = async (req, res) => {
   try {
     console.log(
@@ -85,6 +88,9 @@ exports.createBooking = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET BOOKINGS SECTIONS
+// ---------------------------------------------------------
 exports.getBookingSections = async (req, res) => {
   try {
     const tabId = parseInt(req.params.id);
@@ -346,7 +352,9 @@ exports.getBookingByTabs = async (req, res) => {
   }
 };
 
-// Get Booking By ID
+// ---------------------------------------------------------
+// GET BOOKING BY ID (PAGINATION + SEARCHING)
+// ---------------------------------------------------------
 exports.getBookingById = async (req, res) => {
   const booking_id = parseInt(req.params.id);
   console.log(
@@ -371,7 +379,9 @@ exports.getBookingById = async (req, res) => {
   });
 };
 
-// Update Booking
+// ---------------------------------------------------------
+// UPDATE BOOKINGS BY ID (PAGINATION + SEARCHING)
+// ---------------------------------------------------------
 exports.updateBooking = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -411,7 +421,9 @@ exports.updateBooking = async (req, res) => {
   }
 };
 
-// Delete Booking To Trash
+// ---------------------------------------------------------
+// DELETE SINGLE BOOKING BY ID (TRASH MOVE) (PAGINATION + SEARCHING)
+// ---------------------------------------------------------
 exports.deleteBooking = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -608,39 +620,39 @@ exports.updateBookingStatus = async (req, res) => {
     await updateBookingStatus(bookingId, booking_status_id);
 
     // DRIVER UNAVAILABLE FOR THESE STATUS
-    // const booking_status_ids = Number(req.body.booking_status_id);
-    // console.log(booking_status_ids);
-
-    // const unavailableStatuses = [15, 10, 9, 6, 3];
-
-    // if (unavailableStatuses.includes(booking_status_ids)) {
-    //   await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
-
-    //   const driver = await Driver.getById(driverId);
-    //   console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
-    //   notifyBusyDriverUpdate(driver);
-    // }
-
     const booking_status_ids = Number(req.body.booking_status_id);
+    console.log(booking_status_ids);
 
-const unavailableStatuses = [15, 10, 9, 6, 3];
+    const unavailableStatuses = [15];
 
-if (unavailableStatuses.includes(booking_status_ids)) {
+    if (unavailableStatuses.includes(booking_status_ids)) {
+      await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
 
-  const driver = await Driver.getById(driverId);
+      const driver = await Driver.getById(driverId);
+      console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+      notifyBusyDriverUpdate(driver);
+    }
 
-  // ✅ sirf pehli dafa busy karo
-  if (driver.status === "Available") {
+//     const booking_status_ids = Number(req.body.booking_status_id);
 
-    await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
+// const unavailableStatuses = [15, 10, 9, 6, 3];
 
-    console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
-    notifyBusyDriverUpdate(driver);
+// if (unavailableStatuses.includes(booking_status_ids)) {
 
-  } else {
-    console.log("⏭️ Already busy, skipping...");
-  }
-}
+//   const driver = await Driver.getById(driverId);
+
+//   // ✅ sirf pehli dafa busy karo
+//   if (driver.status === "Available") {
+
+//     await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
+
+//     console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+//     notifyBusyDriverUpdate(driver);
+
+//   } else {
+//     console.log("⏭️ Already busy, skipping...");
+//   }
+// }
 
     return res.status(200).json({
       status: true,
