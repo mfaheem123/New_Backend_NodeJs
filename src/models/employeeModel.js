@@ -29,6 +29,7 @@ const getAll = async ({
   fax,
   role,
   subsidiary,
+  active,
 } = {}) => {
   const offset = (page - 1) * limit;
 
@@ -60,6 +61,10 @@ const getAll = async ({
     conditions.push(`s.name ILIKE $${idx++}`);
     params.push(`%${subsidiary}%`);
   }
+  if (active !== undefined) {
+  conditions.push(`e.active = $${idx++}`);
+  params.push(active === "true"); // string → boolean
+}
 
   const whereClause = conditions.length
     ? `WHERE ${conditions.join(" AND ")}`

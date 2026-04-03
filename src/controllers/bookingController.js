@@ -32,6 +32,7 @@ const {
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
 
+
 function parseJSONFields(row) {
   if (!row) return row;
 
@@ -633,26 +634,26 @@ exports.updateBookingStatus = async (req, res) => {
       notifyBusyDriverUpdate(driver);
     }
 
-//     const booking_status_ids = Number(req.body.booking_status_id);
+    //     const booking_status_ids = Number(req.body.booking_status_id);
 
-// const unavailableStatuses = [15, 10, 9, 6, 3];
+    // const unavailableStatuses = [15, 10, 9, 6, 3];
 
-// if (unavailableStatuses.includes(booking_status_ids)) {
+    // if (unavailableStatuses.includes(booking_status_ids)) {
 
-//   const driver = await Driver.getById(driverId);
+    //   const driver = await Driver.getById(driverId);
 
-//   // ✅ sirf pehli dafa busy karo
-//   if (driver.status === "Available") {
+    //   // ✅ sirf pehli dafa busy karo
+    //   if (driver.status === "Available") {
 
-//     await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
+    //     await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
 
-//     console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
-//     notifyBusyDriverUpdate(driver);
+    //     console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+    //     notifyBusyDriverUpdate(driver);
 
-//   } else {
-//     console.log("⏭️ Already busy, skipping...");
-//   }
-// }
+    //   } else {
+    //     console.log("⏭️ Already busy, skipping...");
+    //   }
+    // }
 
     return res.status(200).json({
       status: true,
@@ -1079,7 +1080,10 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
-    if (booking.rows[0].booking_status_id === "11" || booking.rows[0].booking_status_id === 11 ) {
+    if (
+      booking.rows[0].booking_status_id === "11" ||
+      booking.rows[0].booking_status_id === 11
+    ) {
       return res.status(400).json({
         status: false,
         message: "Booking Already Completed",

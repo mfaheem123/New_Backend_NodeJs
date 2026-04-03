@@ -26,6 +26,7 @@ const getAll = async (req, res) => {
       fax,
       role,
       subsidiary,
+      active
     } = req.query;
 
     const { employees, total } = await Employee.getAll({
@@ -37,6 +38,7 @@ const getAll = async (req, res) => {
       fax,
       role,
       subsidiary,
+      active,
     });
 
     res.status(200).json({
@@ -272,75 +274,6 @@ const remove = async (req, res) => {
   }
 };
 
-// const login = async (req, res) => {
-//   try {
-//     const { username, password } = req.body;
-//     console.log(
-//       "🚀 INCOMING EMPLOYEE LOGIN BODY:",
-//       JSON.stringify(req.body, null, 2)
-//     );
-//     if (!username || !password) {
-//       return res.status(400).json({
-//         status: false,
-//         message: "Username and password are required",
-//       });
-//     }
-
-//     // Find user
-//     const employee = await Employee.getByUsername(username.toLowerCase());
-//     if (!employee) {
-//       return res
-//         .status(401)
-//         .json({ status: false, message: "Invalid username or password" });
-//     }
-
-//     // Compare passwords
-//     const match = await bcrypt.compare(password, employee.password);
-//     if (!match) {
-//       return res
-//         .status(401)
-//         .json({ status: false, message: "Invalid username or password" });
-//     }
-
-//     // Fetch role + subsidiary
-//     const roleResult = await pool.query(
-//       "SELECT name FROM roles WHERE id = $1",
-//       [employee.role_id]
-//     );
-//     const subResult = await pool.query(
-//       "SELECT name FROM subsidiaries WHERE id = $1",
-//       [employee.subsidiary_id]
-//     );
-
-//     const fullEmployee = {
-//       ...employee,
-//       role: roleResult.rows[0] ? { name: roleResult.rows[0].name } : null,
-//       subsidiary: subResult.rows[0] ? { name: subResult.rows[0].name } : null,
-//     };
-
-//     // Generate token
-//     const token = jwt.sign(
-//       {
-//         id: employee.id,
-//         username: employee.username,
-//         role_id: employee.role_id,
-//       },
-//       JWT_SECRET,
-//       { expiresIn: "7d" }
-//     );
-
-//     res.status(200).json({
-//       status: true,
-//       message: "Login successful",
-//       token,
-//       employee: fullEmployee,
-//     });
-//   } catch (err) {
-//     console.error("Error logging in:", err);
-//     res.status(500).json({ status: false, message: "Server error" });
-//   }
-// };
-
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -456,4 +389,12 @@ const logout = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getById, create, update, remove, login, logout };
+module.exports = { 
+  getAll, 
+  getById, 
+  create, 
+  update, 
+  remove, 
+  login, 
+  logout 
+};

@@ -15,6 +15,7 @@ const FareConfiguration = {
       from_date,
       to_date,
       title,
+      per_mile_fares,
     } = data;
 
     const query = `
@@ -29,8 +30,9 @@ const FareConfiguration = {
       minimum_miles,
       from_date,
       to_date,
-      title
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      title,
+      per_mile_fares
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     RETURNING *;
   `;
 
@@ -46,6 +48,7 @@ const FareConfiguration = {
       from_date || null,
       to_date || null,
       title,
+      per_mile_fares || 0.00,
     ];
 
     const result = await db.query(query, values);
@@ -94,6 +97,7 @@ const FareConfiguration = {
       from_date: row.from_date,
       to_date: row.to_date,
       title: row.title,
+      per_mile_fares:Number(row.per_mile_fares),
       vehicle_type: row.vehicle_type_id
         ? {
             minimum_fares: Number(row.vehicle_minimum_fare),
@@ -141,6 +145,7 @@ const FareConfiguration = {
       from_date: row.from_date,
       to_date: row.to_date,
       title: row.title,
+      per_mile_fares:Number(row.per_mile_fares),
       vehicle_type: row.vehicle_type_id
         ? {
             minimum_fares: Number(row.vehicle_minimum_fare),
@@ -231,6 +236,7 @@ async getByVehicleTypeId(vehicle_type_id) {
     from_date: row.from_date,
     to_date: row.to_date,
     title: row.title,
+    per_mile_fares:Number(row.per_mile_fares),
     vehicle_type: row.vehicle_type_id
       ? {
           minimum_fares: Number(row.vehicle_minimum_fare),

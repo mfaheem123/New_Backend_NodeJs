@@ -63,7 +63,7 @@ function toNullableFloat(value) {
   return parseFloat(value);
 }
 
-// UNIQUE REFERENCE GENERATOR
+// UNIQUE REFERENCE NUMBER GENERATOR
 async function genRef() {
   let ref;
   let exists = true;
