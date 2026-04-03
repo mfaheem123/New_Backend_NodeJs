@@ -1524,8 +1524,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     const query = `
     SELECT 
       d.id,
-      d.name,
-      d.username,
+      d.name AS username,
+      d.username AS name,
       d.zone,
       d.last_login_at,
       
@@ -1565,8 +1565,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     const query = `
     SELECT 
       d.id,
-      d.name,
-      d.username,
+      d.name AS username,
+      d.username AS name,
       d.zone,
       d.last_login_at,
       

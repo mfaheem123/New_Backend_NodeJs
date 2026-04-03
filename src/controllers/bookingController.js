@@ -608,18 +608,39 @@ exports.updateBookingStatus = async (req, res) => {
     await updateBookingStatus(bookingId, booking_status_id);
 
     // DRIVER UNAVAILABLE FOR THESE STATUS
+    // const booking_status_ids = Number(req.body.booking_status_id);
+    // console.log(booking_status_ids);
+
+    // const unavailableStatuses = [15, 10, 9, 6, 3];
+
+    // if (unavailableStatuses.includes(booking_status_ids)) {
+    //   await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
+
+    //   const driver = await Driver.getById(driverId);
+    //   console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+    //   notifyBusyDriverUpdate(driver);
+    // }
+
     const booking_status_ids = Number(req.body.booking_status_id);
-    console.log(booking_status_ids);
 
-    const unavailableStatuses = [15, 10, 9, 6, 3];
+const unavailableStatuses = [15, 10, 9, 6, 3];
 
-    if (unavailableStatuses.includes(booking_status_ids)) {
-      await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
+if (unavailableStatuses.includes(booking_status_ids)) {
 
-      const driver = await Driver.getById(driverId);
-      console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
-      notifyBusyDriverUpdate(driver);
-    }
+  const driver = await Driver.getById(driverId);
+
+  // ✅ sirf pehli dafa busy karo
+  if (driver.status === "Available") {
+
+    await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
+
+    console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+    notifyBusyDriverUpdate(driver);
+
+  } else {
+    console.log("⏭️ Already busy, skipping...");
+  }
+}
 
     return res.status(200).json({
       status: true,
