@@ -37,6 +37,7 @@ const getAll = async ({
   telephone_number,
   fax,
   address,
+  company_id,
 } = {}) => {
   const offset = (page - 1) * limit;
 
@@ -63,6 +64,11 @@ const getAll = async ({
   if (address) {
     conditions.push(`s.address ILIKE $${idx++}`);
     params.push(`%${address}%`);
+  }
+  
+  if (company_id) {
+    conditions.push(`s.company_id = $${idx++}`);
+    params.push(company_id);
   }
 
   const whereClause = conditions.length

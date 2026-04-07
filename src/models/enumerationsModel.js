@@ -38,8 +38,46 @@ const EnumerationsModel = {
     );
 
     // LIST OF LOGGED IN DRIVERS
-    const sql = `SELECT id, username, name, email FROM drivers WHERE session_status = $1 AND active = $2 ORDER BY id ASC`;
-    const drivers = await db.query(sql, ["logged_in", true]);
+    // const sql = `SELECT id, username, name, email FROM drivers WHERE session_status = $1 AND active = $2 ORDER BY id ASC`;
+    // const drivers = await db.query(sql, ["logged_in", true]);
+
+    const query = `
+        SELECT 
+          d.id,
+          d.name AS username,
+          d.username AS name,
+          d.zone,
+          d.last_login_at,
+          
+          -- vehicle type name (dynamic)
+          CASE 
+            WHEN d.use_company_vehicle = true THEN vt_cv.name
+            ELSE vt_v.name
+          END AS vehicle_type
+    
+        FROM drivers d
+    
+        -- company vehicle
+        LEFT JOIN company_vehicles cv 
+          ON cv.id = d.company_vehicle_id
+    
+        LEFT JOIN vehicle_types vt_cv 
+          ON vt_cv.id = cv.vehicle_type_id
+    
+        -- personal vehicle
+        LEFT JOIN vehicles v 
+          ON v.id = d.vehicle_id
+    
+        LEFT JOIN vehicle_types vt_v 
+          ON vt_v.id = v.vehicle_type_id
+    
+        WHERE 
+          d.session_status = 'logged_in'
+          AND d.driver_status = 'Available'
+          AND d.booking_status = 'Available'
+      `;
+    
+        const drivers = await db.query(query);
 
     // BOOKING TABS WITH COUNTS
     const booking_tabs = await db.query(`

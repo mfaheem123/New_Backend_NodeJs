@@ -25,6 +25,7 @@ const getAll = async (req, res) => {
       telephone_number,
       fax,
       address,
+      company_id
     } = req.query;
 
     const { subsidiaries, total } = await Subs.getAll({
@@ -35,6 +36,7 @@ const getAll = async (req, res) => {
       telephone_number,
       fax,
       address,
+      company_id
     });
 
     res.status(200).json({

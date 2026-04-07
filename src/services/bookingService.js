@@ -1324,10 +1324,20 @@ async function cloneOneWayBookingService(payload) {
 
 // ASSIGN DRIVER TO BOOKINGS 
 async function assignDriverService(bookingId, driverId) {
+  let fare_meter = false;
+  if (driverId) {
+    const driverFeatures = await driverAppFeatureModel.getByDriverId(driverId);
+
+    if (driverFeatures) {
+      fare_meter = !!driverFeatures.fare_meter; 
+    }
+  }
+  
   // 1️ Update booking with driver
   const updated = await updateBooking(bookingId, {
     driver_id: driverId,
     booking_status_id: 1,
+    fare_meter: fare_meter,
     // dispatched_at: new Date(),
   });
 
