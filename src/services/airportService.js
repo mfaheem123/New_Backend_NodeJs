@@ -1,14 +1,15 @@
 const pool = require("../db");
 
 class AirportService {
+  
   // GET ALL AIRPORTS
   static async getAllAirports() {
     const query = `
             SELECT l.*,
-                   to_json(lt) AS location_type
+            to_json(lt) AS location_type
             FROM locations l
             LEFT JOIN location_types lt
-              ON lt.id = l.location_type_id
+            ON lt.id = l.location_type_id
             WHERE l.location_type_id = 2
             ORDER BY l.id ASC
         `;

@@ -1,20 +1,20 @@
 const db = require("../db");
 
 module.exports = {
+  // ADD CUSTOMER
   create: async (data) => {
     const query = `
       INSERT INTO customers (
-  name, email, mobile, telephone, fax, door_number, address1, address2,
-  blacklist, blacklist_reason, notes, username, password, web_device_id,
-  mobile_device_id, email_verification_code, mobile_verification_code,
-  email_verified, mobile_verified, email_verified_at, mobile_verified_at,
-  sms_flag, otp_created_at
-)
-VALUES (
-  $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23
-)
+        name, email, mobile, telephone, fax, door_number, address1, address2,
+        blacklist, blacklist_reason, notes, username, password, web_device_id,
+        mobile_device_id, email_verification_code, mobile_verification_code,
+        email_verified, mobile_verified, email_verified_at, mobile_verified_at,
+        sms_flag, otp_created_at
+      )
+      VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23
+      )
 RETURNING id
-
     `;
 
     const values = [

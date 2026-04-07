@@ -193,7 +193,7 @@ const getTodayBookings = async () => {
     ${ENRICHED_SELECT}
     WHERE 
       DATE(b.pickup_date) = CURRENT_DATE
-      AND b.booking_status_id = 1
+      AND b.booking_status_id = 1 AND trash = false
     ORDER BY 
       TRIM(b.pickup_time)::time ASC
   `;
@@ -213,7 +213,7 @@ const getAllBookings = async () => {
 const getPreBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
-    WHERE DATE(b.pickup_date) > CURRENT_DATE
+    WHERE DATE(b.pickup_date) > CURRENT_DATE AND trash = false
     ORDER BY b.pickup_date ASC
   `;
   return (await pool.query(sql)).rows;
@@ -223,7 +223,7 @@ const getPreBookings = async () => {
 const getRecentBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
-    WHERE b.booking_status_id != 11 AND b.booking_status_id != 1
+    WHERE b.booking_status_id != 11 AND b.booking_status_id != 1 AND trash = false
     ORDER BY b.id DESC
   `;
   return (await pool.query(sql)).rows;
@@ -233,7 +233,7 @@ const getRecentBookings = async () => {
 const getCompletedBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
-    WHERE b.booking_status_id = 11
+    WHERE b.booking_status_id = 11 AND trash = false
     ORDER BY b.id DESC
   `;
   return (await pool.query(sql)).rows;
@@ -243,7 +243,7 @@ const getCompletedBookings = async () => {
 const getWebBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
-    WHERE b.booking_source = 'web'
+    WHERE b.booking_source = 'web' AND trash = false
     ORDER BY b.id DESC
   `;
   return (await pool.query(sql)).rows;
@@ -253,7 +253,7 @@ const getWebBookings = async () => {
 const getAppBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
-    WHERE b.booking_source = 'app'
+    WHERE b.booking_source = 'app' AND trash = false
     ORDER BY b.id DESC
   `;
   return (await pool.query(sql)).rows;
@@ -263,7 +263,7 @@ const getAppBookings = async () => {
 const getIvrBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
-    WHERE b.booking_source = 'ivr'
+    WHERE b.booking_source = 'ivr' AND trash = false
     ORDER BY b.id DESC
   `;
   return (await pool.query(sql)).rows;
@@ -273,7 +273,7 @@ const getIvrBookings = async () => {
 const getQuotedBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
-    WHERE b.quoted = true
+    WHERE b.quoted = true AND trash = false
     ORDER BY b.id DESC
   `;
   return (await pool.query(sql)).rows;
@@ -388,7 +388,7 @@ const getBookingsByTab = async ({
   // 📦 DATA QUERY
   const dataSql = `
   ${ENRICHED_SELECT}
-  ${whereClause}
+  ${whereClause} AND trash = false
   ORDER BY ${orderBy}
   OFFSET $${idx++} LIMIT $${idx++}
 `;
@@ -425,7 +425,7 @@ const findBookingById = async (id) => {
     LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id
     LEFT JOIN drivers d ON b.driver_id = d.id
     LEFT JOIN vehicles v ON d.vehicle_id = v.id
-    WHERE b.id = $1
+    WHERE b.id = $1 AND trash = false
   `;
 
   return pool.query(query, [id]);
@@ -715,6 +715,7 @@ const getBookingByDriverRent = async (
     AND b.commission_status = 'open'
     AND b.commission = true
     AND b.pickup_date::date BETWEEN $3::date AND $4::date
+    AND trash = false
   `;
 
   const res = await pool.query(sql, [
@@ -728,7 +729,7 @@ const getBookingByDriverRent = async (
 };
 
 const getBookingByCustomerId = async (customer_id) => {
-  let whereClause = `WHERE b.customer_id = $1 AND b.booking_status_id = 11`;
+  let whereClause = `WHERE b.customer_id = $1 AND b.booking_status_id = 11 AND trash = false`;
   const values = [customer_id];
 
   const sql = `
@@ -737,6 +738,44 @@ const getBookingByCustomerId = async (customer_id) => {
     ORDER BY 
       b.pickup_date DESC,
       b.pickup_time DESC
+  `;
+
+  const res = await pool.query(sql, values);
+  return res.rows;
+};
+
+const getBookingByCustomerMobile = async (mobile) => {
+  let whereClause = `WHERE b.mobile = $1 AND trash = false`;
+  const values = [mobile];
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    ${whereClause}
+    ORDER BY 
+      b.pickup_date DESC,
+      b.pickup_time DESC
+  `;
+
+  const res = await pool.query(sql, values);
+  return res.rows;
+};
+
+const getScheduleBookingByCustomerId = async (customer_id) => {
+  let whereClause = `
+    WHERE b.customer_id = $1 
+    AND b.booking_status_id = 1 
+    AND trash = false
+    AND (b.pickup_date::date + b.pickup_time::time) > NOW()
+  `;
+
+  const values = [customer_id];
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    ${whereClause}
+    ORDER BY 
+      b.pickup_date ASC,
+      b.pickup_time ASC
   `;
 
   const res = await pool.query(sql, values);
@@ -779,4 +818,6 @@ module.exports = {
   getDriverTotalEarning,
   getBookingByDriverRent,
   getBookingByCustomerId,
+  getBookingByCustomerMobile,
+  getScheduleBookingByCustomerId
 };

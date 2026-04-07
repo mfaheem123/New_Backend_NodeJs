@@ -381,6 +381,7 @@ exports.getById = async (id) => {
                 'pickup_time', b.pickup_time,
                 'viapoints', b.viapoints,
                 'name', b.name,
+                'fares', b.fares,
                 'company_price', b.company_price,
                 'parking_charges', b.parking_charges,
                 'waiting_charges', b.waiting_charges,

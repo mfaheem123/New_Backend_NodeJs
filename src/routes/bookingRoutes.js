@@ -13,6 +13,7 @@ router.get("/driver-total-earning/:id", bookingController.getDriverEarning);
 router.get("/check-status/:booking_id", bookingController.checkBookingStatus);
 router.get("/driver-rent", bookingController.getBookingByDriverCommission);
 router.get("/customer-bookings/:id", bookingController.getBookingByCustomerId);
+router.get("/customer-schedule/:id", bookingController.getScheduleBookingByCustomerId);
 router.get(
   "/check-active-booking",
   bookingController.checkDriverActiveBookingToday,
@@ -30,6 +31,7 @@ router.post("/fares/:id", bookingController.updateBookingFares);
 router.post("/fare-charges/:id", bookingController.updateBookingFareCharges);
 router.post("/cli", bookingController.cloneOneWayBooking);
 router.post("/assign-driver", bookingController.assignDriverToBooking);
+router.post("/customer-jobs", bookingController.getBookingByCustomerMobile);
 router.post(
   "/booking-history-driver",
   bookingController.getBookingByDriverIdAndStatus,

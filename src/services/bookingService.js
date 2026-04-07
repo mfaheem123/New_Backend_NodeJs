@@ -177,7 +177,6 @@ async function normalizeBookingPayload(src) {
 }
 
 // INSERT BOOKING ROW
-
 async function createBookingRow(pool, bookingObj) {
   // List of allowed DB columns
   const allowed = [
@@ -296,7 +295,6 @@ async function createBookingRow(pool, bookingObj) {
 }
 
 // CREATE SIMPLE BOOKING
-
 async function createSimpleBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -369,7 +367,6 @@ async function createSimpleBooking(payload) {
 }
 
 // CREATE TWO-WAY BOOKING
-
 async function createTwoWayBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -439,7 +436,6 @@ async function createTwoWayBooking(payload) {
 }
 
 // RETURN WAY BOOKING (Journey Type = 3)
-
 async function createReturnWayBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -544,7 +540,6 @@ async function createReturnWayBooking(payload) {
 }
 
 // MULTI VEHICLE booking
-
 async function createMultiVehicleBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -626,12 +621,12 @@ async function createMultiVehicleBooking(payload) {
   }
 }
 
+// CREATE MULTI BOOKINGS  
 async function createMultiBookings(payload) {
   return createMultiVehicleBooking(payload);
 }
 
 // NEW: MULTI RESERVATION BOOKING
-
 // async function createMultiReservationBooking(payload) {
 //   try {
 //     await pool.query("BEGIN");
@@ -959,7 +954,6 @@ async function createMultiReservationBooking(payload) {
 }
 
 // MAIN CONTROLLER
-
 async function create(payload) {
   // Force parse multi_reservation if string
   if (typeof payload.multi_reservation === "string") {
@@ -1028,15 +1022,16 @@ async function create(payload) {
     return createReturnWayBooking(payload);
   }
 
-  // Two-way
+  // Two-way Bookings
   if (payload.journey_type_id === 2 || payload.journey_type_id == "2") {
     return createSimpleBooking(payload);
   }
 
-  // Simple
+  // Simple Bookings
   return createSimpleBooking(payload);
 }
 
+// UPDATE BOOKINGS BY ID
 async function updateBookingService(bookingId, payload) {
   //  COMPLETED STATUS
   const COMPLETED_STATUS_ID = 11;
@@ -1253,6 +1248,7 @@ async function updateBookingService(bookingId, payload) {
   return clean;
 }
 
+//CREATE CLI BOOKINg
 async function cloneOneWayBookingService(payload) {
   const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id } =
     payload;
@@ -1326,6 +1322,7 @@ async function cloneOneWayBookingService(payload) {
   return clean;
 }
 
+// ASSIGN DRIVER TO BOOKINGS 
 async function assignDriverService(bookingId, driverId) {
   // 1️ Update booking with driver
   const updated = await updateBooking(bookingId, {

@@ -28,6 +28,8 @@ const {
   updateBookingFareCharges,
   getDriverTotalEarning,
   getBookingByCustomerId,
+  getBookingByCustomerMobile,
+  getScheduleBookingByCustomerId
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1151,3 +1153,47 @@ exports.getBookingByCustomerId = async (req, res) => {
     bookings: data,
   });
 };
+
+
+exports.getScheduleBookingByCustomerId = async (req, res) => {
+  const customer_id = parseInt(req.params.id);
+
+  const bookings = await getScheduleBookingByCustomerId(customer_id);
+
+  if (!bookings || bookings.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "Booking Not Found",
+    });
+  }
+
+  const data = bookings.map((b) => parseJSONFields(b));
+
+  res.status(200).json({
+    success: true,
+    count: bookings.length,
+    bookings: data,
+  });
+};
+
+exports.getBookingByCustomerMobile = async (req, res) => {
+  const {mobile} = req.body;
+
+
+  const bookings = await getBookingByCustomerMobile(mobile);
+
+  if (!bookings || bookings.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "Booking Not Found",
+    });
+  }
+
+  const data = bookings.map((b) => parseJSONFields(b));
+
+  res.status(200).json({
+    success: true,
+    count: bookings.length,
+    bookings: data,
+  });
+}
