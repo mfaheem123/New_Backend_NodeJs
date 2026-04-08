@@ -13,7 +13,10 @@ router.get("/driver-total-earning/:id", bookingController.getDriverEarning);
 router.get("/check-status/:booking_id", bookingController.checkBookingStatus);
 router.get("/driver-rent", bookingController.getBookingByDriverCommission);
 router.get("/customer-bookings/:id", bookingController.getBookingByCustomerId);
-router.get("/customer-schedule/:id", bookingController.getScheduleBookingByCustomerId);
+router.get(
+  "/customer-schedule/:id",
+  bookingController.getScheduleBookingByCustomerId,
+);
 router.get("/customer-jobs", bookingController.getBookingByCustomerMobile);
 
 router.get(

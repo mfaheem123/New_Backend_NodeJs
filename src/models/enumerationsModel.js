@@ -76,8 +76,8 @@ const EnumerationsModel = {
           AND d.driver_status = 'Available'
           AND d.booking_status = 'Available'
       `;
-    
-        const drivers = await db.query(query);
+
+    const drivers = await db.query(query);
 
     // BOOKING TABS WITH COUNTS
     const booking_tabs = await db.query(`

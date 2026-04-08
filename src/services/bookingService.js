@@ -621,7 +621,7 @@ async function createMultiVehicleBooking(payload) {
   }
 }
 
-// CREATE MULTI BOOKINGS  
+// CREATE MULTI BOOKINGS
 async function createMultiBookings(payload) {
   return createMultiVehicleBooking(payload);
 }
@@ -1322,17 +1322,17 @@ async function cloneOneWayBookingService(payload) {
   return clean;
 }
 
-// ASSIGN DRIVER TO BOOKINGS 
+// ASSIGN DRIVER TO BOOKINGS
 async function assignDriverService(bookingId, driverId) {
   let fare_meter = false;
   if (driverId) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(driverId);
 
     if (driverFeatures) {
-      fare_meter = !!driverFeatures.fare_meter; 
+      fare_meter = !!driverFeatures.fare_meter;
     }
   }
-  
+
   // 1️ Update booking with driver
   const updated = await updateBooking(bookingId, {
     driver_id: driverId,

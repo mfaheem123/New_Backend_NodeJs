@@ -744,7 +744,7 @@ const getBookingByCustomerId = async (customer_id) => {
   return res.rows;
 };
 
-const getBookingByCustomerMobile = async (mobile,name) => {
+const getBookingByCustomerMobile = async (mobile, name) => {
   let whereClause = `WHERE (b.mobile = $1 OR b.name = $2) AND trash = false`;
   const values = [mobile, name];
 
@@ -819,5 +819,5 @@ module.exports = {
   getBookingByDriverRent,
   getBookingByCustomerId,
   getBookingByCustomerMobile,
-  getScheduleBookingByCustomerId
+  getScheduleBookingByCustomerId,
 };

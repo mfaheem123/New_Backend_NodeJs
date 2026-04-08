@@ -520,8 +520,8 @@ exports.handleFallbackIvr = async (body) => {
           miles,
         });
 
-        const fares = fareData?.fare || 0;
-const total_charges = fareData?.total_fare || fares;
+        const fares = fareData?.fare || 0.00;
+        const total_charges = fareData?.total_fare || fares;
 
         await pool.query(
           `UPDATE bookings

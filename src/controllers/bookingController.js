@@ -29,11 +29,10 @@ const {
   getDriverTotalEarning,
   getBookingByCustomerId,
   getBookingByCustomerMobile,
-  getScheduleBookingByCustomerId
+  getScheduleBookingByCustomerId,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
-
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -1154,7 +1153,6 @@ exports.getBookingByCustomerId = async (req, res) => {
   });
 };
 
-
 exports.getScheduleBookingByCustomerId = async (req, res) => {
   const customer_id = parseInt(req.params.id);
 
@@ -1177,10 +1175,9 @@ exports.getScheduleBookingByCustomerId = async (req, res) => {
 };
 
 exports.getBookingByCustomerMobile = async (req, res) => {
-  const {mobile, name} = req.query;
+  const { mobile, name } = req.query;
 
-
-  const bookings = await getBookingByCustomerMobile(mobile,name);
+  const bookings = await getBookingByCustomerMobile(mobile, name);
 
   if (!bookings || bookings.length === 0) {
     return res.status(404).json({
@@ -1196,4 +1193,4 @@ exports.getBookingByCustomerMobile = async (req, res) => {
     count: bookings.length,
     bookings: data,
   });
-}
+};

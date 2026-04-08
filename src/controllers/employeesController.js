@@ -26,7 +26,7 @@ const getAll = async (req, res) => {
       fax,
       role,
       subsidiary,
-      active
+      active,
     } = req.query;
 
     const { employees, total } = await Employee.getAll({
@@ -389,12 +389,12 @@ const logout = async (req, res) => {
   }
 };
 
-module.exports = { 
-  getAll, 
-  getById, 
-  create, 
-  update, 
-  remove, 
-  login, 
-  logout 
+module.exports = {
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
+  login,
+  logout,
 };

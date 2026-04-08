@@ -18,7 +18,6 @@ exports.getAllEnumerations = async (req, res) => {
   }
 };
 
-
 exports.getAllPaymentTypes = async (req, res) => {
   try {
     const data = await EnumerationsModel.getPaymentTypes();

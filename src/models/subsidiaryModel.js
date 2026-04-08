@@ -65,7 +65,7 @@ const getAll = async ({
     conditions.push(`s.address ILIKE $${idx++}`);
     params.push(`%${address}%`);
   }
-  
+
   if (company_id) {
     conditions.push(`s.company_id = $${idx++}`);
     params.push(company_id);

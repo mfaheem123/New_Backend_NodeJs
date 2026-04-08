@@ -50,7 +50,6 @@
 //   }
 // };
 
-
 const FareConfiguration = require("../models/fareConfigurationModel");
 const FareMeter = require("../models/fareMeterModel");
 const VehicleType = require("../models/vehicleTypeModel");
@@ -136,43 +135,26 @@ exports.getByVehicleType = async (req, res) => {
 
     // 🔥 FILTER FARE CONFIGS
     const filteredConfigs = allConfigs.filter((f) => {
-      const dayMatch = isDayInRange(
-        f.from_day,
-        f.to_day,
-        currentDay
-      );
+      const dayMatch = isDayInRange(f.from_day, f.to_day, currentDay);
 
-      const timeMatch = isTimeInRange(
-        f.from_time,
-        f.to_time,
-        currentTime
-      );
+      const timeMatch = isTimeInRange(f.from_time, f.to_time, currentTime);
 
       return dayMatch && timeMatch;
     });
 
     // 🔹 2. Get fare meters
-    const meterResult =
-      await FareMeter.getByVehicleTypeId(vehicle_type_id);
+    const meterResult = await FareMeter.getByVehicleTypeId(vehicle_type_id);
 
     // 🔥 FILTER WAITING CHARGES
     const filteredMeters = meterResult.rows.map((meter) => {
-      const filteredCharges = (meter.waiting_charges || []).filter(
-        (wc) => {
-          const dayMatch =
-            wc.day &&
-            wc.day.toLowerCase().trim() ===
-              currentDay.toLowerCase();
+      const filteredCharges = (meter.waiting_charges || []).filter((wc) => {
+        const dayMatch =
+          wc.day && wc.day.toLowerCase().trim() === currentDay.toLowerCase();
 
-          const timeMatch = isTimeInRange(
-            wc.from_time,
-            wc.to_time,
-            currentTime
-          );
+        const timeMatch = isTimeInRange(wc.from_time, wc.to_time, currentTime);
 
-          return dayMatch && timeMatch;
-        }
-      );
+        return dayMatch && timeMatch;
+      });
 
       return {
         ...meter,
@@ -191,7 +173,6 @@ exports.getByVehicleType = async (req, res) => {
         fare_meter: filteredMeters,
       },
     });
-
   } catch (error) {
     console.error("ERROR:", error);
     return res.status(500).json({

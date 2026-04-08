@@ -62,9 +62,9 @@ const getAll = async ({
     params.push(`%${subsidiary}%`);
   }
   if (active !== undefined) {
-  conditions.push(`e.active = $${idx++}`);
-  params.push(active === "true"); // string → boolean
-}
+    conditions.push(`e.active = $${idx++}`);
+    params.push(active === "true"); // string → boolean
+  }
 
   const whereClause = conditions.length
     ? `WHERE ${conditions.join(" AND ")}`
