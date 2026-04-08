@@ -1177,10 +1177,10 @@ exports.getScheduleBookingByCustomerId = async (req, res) => {
 };
 
 exports.getBookingByCustomerMobile = async (req, res) => {
-  const {mobile} = req.body;
+  const {mobile, name} = req.query;
 
 
-  const bookings = await getBookingByCustomerMobile(mobile);
+  const bookings = await getBookingByCustomerMobile(mobile,name);
 
   if (!bookings || bookings.length === 0) {
     return res.status(404).json({
