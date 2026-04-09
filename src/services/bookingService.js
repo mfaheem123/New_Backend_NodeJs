@@ -349,6 +349,7 @@ async function createSimpleBooking(payload) {
     const enriched = await getBookingByIdEnriched(inserted.id);
     const clean = parseJSONFields(enriched);
 
+    console.log("BOOKING DATA FOR SENDING SMS: ", clean)
     //  SEND SMS
     await sendBookingSMS(clean);
 
@@ -1353,7 +1354,7 @@ async function assignDriverService(bookingId, driverId) {
   console.log("ENRICHED BOOKING DATA", enriched)
 
   // 3️ Send notification to driver
-  // await sendBookingNotification(driverId, enriched);
+  await sendBookingNotification(driverId, enriched);
 // -------------------------------
   // 📩 DISPATCH SMS (TEMPLATE 3)
   // -------------------------------
