@@ -129,7 +129,7 @@ const calculateSingleFare = async (payload) => {
   const resolvedDay = getDayName(pickup_date);
   journey_type_id = Number(journey_type_id);
 
-  // 🔁 only for FIXED / PLOT / AIRPORT
+  // Only for FIXED / PLOT / AIRPORT
   const multiplier = journey_type_id === 2 ? 2 : 1;
 
   let baseFare = 0;
@@ -157,7 +157,7 @@ const calculateSingleFare = async (payload) => {
     }
   }
 
-  /* -------- PLOT -------- */
+  /* -------- PLOT FARE -------- */
   if (!baseFare && pickup_plot_id && dropoff_plot_id) {
     const { rows } = await db.query(
       `SELECT * FROM plot_fares
@@ -216,7 +216,7 @@ const calculateSingleFare = async (payload) => {
     fareType = "DEFAULT";
   }
 
-  /* -------- AIRPORT -------- */
+  /* -------- AIRPORT CHARGES -------- */
   let airportPickup = 0;
   let airportDropoff = 0;
 
@@ -238,10 +238,10 @@ const calculateSingleFare = async (payload) => {
     if (a) airportDropoff = Number(a.dropoff_charges || 0) * multiplier;
   }
 
-  /* -------- FARE BY VEHICLE -------- */
+  /* -------- FARE BY VEHICLE CHARGES -------- */
   let vehicleAdjustedFare = await applyFareByVehicle(baseFare, vehicle_type_id);
 
-  /* -------- EXTRA -------- */
+  /* -------- EXTRA CHARGES -------- */
   const extraChargesTotal = sumExtraCharges(payload);
 
   const fareWithoutExtras =
@@ -249,11 +249,7 @@ const calculateSingleFare = async (payload) => {
 
   const totalFare = fareWithoutExtras + extraChargesTotal;
 
-  // const totalFare =
-  //   baseFare + airportPickup + airportDropoff + extraChargesTotal;
-
-  // const fareWithoutExtras = baseFare + airportPickup + airportDropoff;
-
+  console.log("FARE CALCULATION DETAILS")
   console.log("fareType: ", fareType);
   console.log("baseFare: ", baseFare);
   console.log("vehicleAdjustedFare: ", vehicleAdjustedFare);

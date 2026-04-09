@@ -520,7 +520,7 @@ exports.handleFallbackIvr = async (body) => {
           miles,
         });
 
-        const fares = fareData?.fare || 0.00;
+        const fares = fareData?.fare || 0.0;
         const total_charges = fareData?.total_fare || fares;
 
         await pool.query(

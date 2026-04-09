@@ -589,8 +589,7 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const driverId = booking.rows[0].driver_id;
-    const updatedBooking = await findBookingById(bookingId);
-
+    
     // ON ROUTE
     if (booking_status_id == 3) {
       await updateBookingonRoute(bookingId, true, false, false);
@@ -599,15 +598,9 @@ exports.updateBookingStatus = async (req, res) => {
     // ARRIVED
     if (booking_status_id == 6) {
       await updateBookingonRoute(bookingId, false, false, true);
-      await sendBookingSMS(updatedBooking.rows[0]);
     }
 
     // COMPLETED
-    // if (booking_status_id == 11) {
-    //   await updateBookingonRoute(bookingId, false, true, true);
-    //   await Driver.updateDriverStatus(driverId, "Available", "Available");
-    // }
-
     if (booking_status_id == 11) {
       await updateBookingonRoute(bookingId, false, true, true);
 
@@ -620,6 +613,18 @@ exports.updateBookingStatus = async (req, res) => {
 
     // UPDATE BOOKING STATUS
     await updateBookingStatus(bookingId, booking_status_id);
+
+    //GET FRESH DATA AFTER UPDATE
+    const freshBooking = await findBookingById(bookingId);
+console.log("📦 Fresh Booking:", freshBooking.rows[0]);
+
+// -------------------------------
+    // 📩 SEND SMS (AFTER UPDATE)
+    // -------------------------------
+    if (booking_status_id == 6) {
+      console.log("📩 Sending ARRIVED SMS...");
+      await sendBookingSMS(freshBooking.rows[0]);
+    }
 
     // DRIVER UNAVAILABLE FOR THESE STATUS
     const booking_status_ids = Number(req.body.booking_status_id);
@@ -634,32 +639,12 @@ exports.updateBookingStatus = async (req, res) => {
       console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
       notifyBusyDriverUpdate(driver);
     }
-
-    //     const booking_status_ids = Number(req.body.booking_status_id);
-
-    // const unavailableStatuses = [15, 10, 9, 6, 3];
-
-    // if (unavailableStatuses.includes(booking_status_ids)) {
-
-    //   const driver = await Driver.getById(driverId);
-
-    //   // ✅ sirf pehli dafa busy karo
-    //   if (driver.status === "Available") {
-
-    //     await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
-
-    //     console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
-    //     notifyBusyDriverUpdate(driver);
-
-    //   } else {
-    //     console.log("⏭️ Already busy, skipping...");
-    //   }
-    // }
-
+    
     return res.status(200).json({
       status: true,
       message: "Booking status updated successfully",
     });
+
   } catch (error) {
     console.error("Update Booking Status Error:", error);
 

@@ -10,6 +10,7 @@ const { sendBookingNotification } = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
 const driverAppFeatureModel = require("../models/driverAppFeaturesModel");
+const { sendSMSWithTemplate } = require("../services/smsService");
 
 const DEFAULT_EMPLOYEE_ID = 28;
 
@@ -354,6 +355,9 @@ async function createSimpleBooking(payload) {
     // SEND NOTIFICATION
     if (clean.driver_id) {
       await sendBookingNotification(clean.driver_id, clean);
+  //     await updateBooking(clean.id, {
+  //   dispatched_at: new Date(),
+  // });
     }
 
     await pool.query("COMMIT");
@@ -837,7 +841,7 @@ async function createMultiReservationBooking(payload) {
     // }
 
     /* ==========================
-     MULTI RESERVATION WITHOUT FARE
+     MULTI RESERVATION WITH FARE
   ========================== */
     for (const mr of payload.multi_reservation) {
       if (mr.exclude === true) continue;
@@ -1346,9 +1350,42 @@ async function assignDriverService(bookingId, driverId) {
   // 2️ Get enriched booking
   const enriched = await getBookingByIdEnriched(bookingId);
 
-  // 3️ Send notification to driver
-  await sendBookingNotification(driverId, enriched);
+  console.log("ENRICHED BOOKING DATA", enriched)
 
+  // 3️ Send notification to driver
+  // await sendBookingNotification(driverId, enriched);
+// -------------------------------
+  // 📩 DISPATCH SMS (TEMPLATE 3)
+  // -------------------------------
+  try {
+    if (enriched?.mobile && enriched?.driver_id) {
+      const totalFare = enriched?.total_charges ?? "0.00";
+
+      const template3Data = {
+        company_name: enriched?.subsidiary?.name ?? "",
+        company_telephone: enriched?.subsidiary?.telephone_number ?? "",
+        company_email: enriched?.subsidiary?.email ?? "",
+        vehicle_type: enriched?.vehicle_type?.name ?? "",
+        vehicle_color: enriched?.driver?.vehicle?.color ?? "",
+        vehicle_make: enriched?.driver?.vehicle?.make ?? "",
+        vehicle_model: enriched?.driver?.vehicle?.model ?? "",
+        vehicle_number: enriched?.driver?.vehicle?.vehicle_number ?? "",
+        driver_name: enriched?.driver?.name ?? "",
+        fares: totalFare,
+      };
+
+      console.log("📩 Sending DISPATCH SMS...");
+
+      await sendSMSWithTemplate({
+        template_id: 3,
+        mobile: enriched.mobile,
+        port: 5,
+        data: template3Data,
+      });
+    }
+  } catch (err) {
+    console.error("❌ Dispatch SMS Error:", err);
+  }
   return enriched;
 }
 

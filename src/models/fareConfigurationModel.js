@@ -48,7 +48,7 @@ const FareConfiguration = {
       from_date || null,
       to_date || null,
       title,
-      per_mile_fares || 0.00,
+      per_mile_fares || 0.0,
     ];
 
     const result = await db.query(query, values);
@@ -97,7 +97,7 @@ const FareConfiguration = {
       from_date: row.from_date,
       to_date: row.to_date,
       title: row.title,
-      per_mile_fares:Number(row.per_mile_fares),
+      per_mile_fares: Number(row.per_mile_fares),
       vehicle_type: row.vehicle_type_id
         ? {
             minimum_fares: Number(row.vehicle_minimum_fare),
@@ -126,7 +126,7 @@ const FareConfiguration = {
     LEFT JOIN accounts a ON a.id = f.account_id
     WHERE f.id = $1
     `,
-      [id]
+      [id],
     );
 
     const row = result.rows[0];
@@ -145,7 +145,7 @@ const FareConfiguration = {
       from_date: row.from_date,
       to_date: row.to_date,
       title: row.title,
-      per_mile_fares:Number(row.per_mile_fares),
+      per_mile_fares: Number(row.per_mile_fares),
       vehicle_type: row.vehicle_type_id
         ? {
             minimum_fares: Number(row.vehicle_minimum_fare),
@@ -161,54 +161,54 @@ const FareConfiguration = {
   },
 
   // ✅ UPDATE
- async update(id, data) {
-  const fields = [];
-  const values = [];
-  let index = 1;
+  async update(id, data) {
+    const fields = [];
+    const values = [];
+    let index = 1;
 
-  for (const [key, value] of Object.entries(data)) {
-    if (value !== undefined) {
-      fields.push(`${key} = $${index}`);
-      values.push(value);
-      index++;
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== undefined) {
+        fields.push(`${key} = $${index}`);
+        values.push(value);
+        index++;
+      }
     }
-  }
 
-  if (fields.length === 0) {
-    throw new Error("No valid fields provided for update");
-  }
+    if (fields.length === 0) {
+      throw new Error("No valid fields provided for update");
+    }
 
-  values.push(id);
+    values.push(id);
 
-  const query = `
+    const query = `
     UPDATE fare_configurations
     SET ${fields.join(", ")}
     WHERE id = $${index}
     RETURNING *;
   `;
 
-  const { rows } = await db.query(query, values);
+    const { rows } = await db.query(query, values);
 
-  // 🔴 IMPORTANT CHECK
-  if (rows.length === 0) {
-    throw new Error("Fare configuration not found");
-  }
+    // 🔴 IMPORTANT CHECK
+    if (rows.length === 0) {
+      throw new Error("Fare configuration not found");
+    }
 
-  return rows[0];
-},
+    return rows[0];
+  },
 
   // ✅ DELETE
   async delete(id) {
     const result = await db.query(
       `DELETE FROM fare_configurations WHERE id = $1`,
-      [id]
+      [id],
     );
     return result.rowCount > 0; // true if a row was deleted
   },
 
   // ✅ GET BY VEHICLE TYPE ID
-async getByVehicleTypeId(vehicle_type_id) {
-  const query = `
+  async getByVehicleTypeId(vehicle_type_id) {
+    const query = `
     SELECT 
       f.*, 
       vt.name AS vehicle_type_name, 
@@ -221,36 +221,35 @@ async getByVehicleTypeId(vehicle_type_id) {
     ORDER BY f.id DESC;
   `;
 
-  const result = await db.query(query, [vehicle_type_id]);
+    const result = await db.query(query, [vehicle_type_id]);
 
-  return result.rows.map((row) => ({
-    id: row.id,
-    vehicle_type_id: row.vehicle_type_id,
-    account_id: row.account_id,
-    from_day: row.from_day,
-    to_day: row.to_day,
-    from_time: row.from_time,
-    to_time: row.to_time,
-    minimum_fares: Number(row.minimum_fares),
-    minimum_miles: Number(row.minimum_miles),
-    from_date: row.from_date,
-    to_date: row.to_date,
-    title: row.title,
-    per_mile_fares:Number(row.per_mile_fares),
-    vehicle_type: row.vehicle_type_id
-      ? {
-          minimum_fares: Number(row.vehicle_minimum_fare),
-          name: row.vehicle_type_name,
-        }
-      : null,
-    account: row.account_id
-      ? {
-          name: row.account_name,
-        }
-      : null,
-  }));
-},
-
+    return result.rows.map((row) => ({
+      id: row.id,
+      vehicle_type_id: row.vehicle_type_id,
+      account_id: row.account_id,
+      from_day: row.from_day,
+      to_day: row.to_day,
+      from_time: row.from_time,
+      to_time: row.to_time,
+      minimum_fares: Number(row.minimum_fares),
+      minimum_miles: Number(row.minimum_miles),
+      from_date: row.from_date,
+      to_date: row.to_date,
+      title: row.title,
+      per_mile_fares: Number(row.per_mile_fares),
+      vehicle_type: row.vehicle_type_id
+        ? {
+            minimum_fares: Number(row.vehicle_minimum_fare),
+            name: row.vehicle_type_name,
+          }
+        : null,
+      account: row.account_id
+        ? {
+            name: row.account_name,
+          }
+        : null,
+    }));
+  },
 };
 
 module.exports = FareConfiguration;

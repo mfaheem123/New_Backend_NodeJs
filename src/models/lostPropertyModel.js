@@ -37,22 +37,85 @@ const createLostProperty = async (data) => {
 };
 
 /* GET ALL */
-const getAllLostProperties = async () => {
-  const query = `
+const getAllLostProperties = async ({
+  page = 1,
+  limit = 100,
+  lost_number,
+  report_date,
+  lost_date,
+  item_description,
+  name, // customer name
+} = {}) => {
+  const offset = (page - 1) * limit;
+
+  const conditions = [];
+  const params = [];
+  let idx = 1;
+
+  if (lost_number) {
+    conditions.push(`lp.lost_number ILIKE $${idx++}`);
+    params.push(`%${lost_number}%`);
+  }
+
+  if (report_date) {
+    conditions.push(`lp.report_date = $${idx++}`);
+    params.push(report_date);
+  }
+
+  if (lost_date) {
+    conditions.push(`lp.lost_date = $${idx++}`);
+    params.push(lost_date);
+  }
+
+  if (item_description) {
+    conditions.push(`lp.item_description ILIKE $${idx++}`);
+    params.push(`%${item_description}%`);
+  }
+
+  if (name) {
+    conditions.push(`c.name ILIKE $${idx++}`);
+    params.push(`%${name}%`);
+  }
+
+  const whereClause = conditions.length
+    ? `WHERE ${conditions.join(" AND ")}`
+    : "";
+
+  // 🔢 COUNT QUERY
+  const countQuery = `
+    SELECT COUNT(*) AS total
+    FROM lost_properties lp
+    LEFT JOIN customers c ON lp.customer_id = c.id
+    ${whereClause}
+  `;
+
+  const countResult = await db.query(countQuery, params);
+  const total = Number(countResult.rows[0].total) || 0;
+
+  // 📦 DATA QUERY
+  params.push(limit, offset);
+
+  const dataQuery = `
     SELECT 
       lp.id,
       lp.lost_number,
       lp.report_date,
       lp.lost_date,
       lp.item_description,
-      c.name as customer_name
+      c.name AS customer_name
     FROM lost_properties lp
     LEFT JOIN customers c ON lp.customer_id = c.id
+    ${whereClause}
     ORDER BY lp.id DESC
+    LIMIT $${params.length - 1} OFFSET $${params.length}
   `;
 
-  const { rows } = await db.query(query);
-  return rows;
+  const { rows } = await db.query(dataQuery, params);
+
+  return {
+    lost_properties: rows,
+    total,
+  };
 };
 
 /* GET BY ID */

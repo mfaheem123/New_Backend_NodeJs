@@ -77,7 +77,9 @@ const sendBookingSMS = async (clean) => {
     // ------------------------------------------------
     if (clean.booking_status_id === 6 && clean.driver_id) {
       const template4Data = {
-        vehicle_type: clean.vehicle_type?.name ?? "",
+        // vehicle_type: clean.vehicle_type?.name ?? "",
+        vehicle_type: clean.vehicle_type_name ?? "",
+
       };
 
       await sendSMSWithTemplate({

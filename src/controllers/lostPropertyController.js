@@ -3,6 +3,10 @@ const model = require("../models/lostPropertyModel");
 /* CREATE */
 exports.create = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING ADD CUSTOMER LOST PROPERTY BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const lostProperty = await model.createLostProperty(req.body);
 
     res.json({
@@ -17,12 +21,35 @@ exports.create = async (req, res) => {
 /* GET ALL */
 exports.getAll = async (req, res) => {
   try {
-    const data = await model.getAllLostProperties();
+    const {
+      page = 1,
+      limit = 100,
+      lost_number,
+      report_date,
+      lost_date,
+      item_description,
+      name,
+    } = req.query;
+
+    const { lost_properties, total } =
+      await model.getAllLostProperties({
+        page: Number(page),
+        limit: Math.min(1000, Number(limit)),
+        lost_number,
+        report_date,
+        lost_date,
+        item_description,
+        name,
+      });
 
     res.json({
       status: true,
-      count: data.length,
-      lost_properties: data.map((item) => ({
+      page: Number(page),
+      limit: Math.min(1000, Number(limit)),
+      total,
+      total_pages: Math.ceil(total / limit),
+      count: lost_properties.length,
+      lost_properties: lost_properties.map((item) => ({
         id: item.id,
         lost_number: item.lost_number,
         report_date: item.report_date,
