@@ -4,7 +4,7 @@ const controller = require("../controllers/lostPropertyController");
 
 router.post("/add", controller.create);
 router.get("/get", controller.getAll);
-router.get("/getbyid", controller.getById);
+router.get("/getbyid/:id", controller.getById);
 router.post("/update/:id", controller.update);
 router.delete("/delete/:id", controller.delete);
 

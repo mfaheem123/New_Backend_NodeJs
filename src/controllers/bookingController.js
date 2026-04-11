@@ -589,7 +589,7 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const driverId = booking.rows[0].driver_id;
-    
+
     // ON ROUTE
     if (booking_status_id == 3) {
       await updateBookingonRoute(bookingId, true, false, false);
@@ -616,9 +616,9 @@ exports.updateBookingStatus = async (req, res) => {
 
     //GET FRESH DATA AFTER UPDATE
     const freshBooking = await findBookingById(bookingId);
-console.log("📦 Fresh Booking:", freshBooking.rows[0]);
+    console.log("📦 Fresh Booking:", freshBooking.rows[0]);
 
-// -------------------------------
+    // -------------------------------
     // 📩 SEND SMS (AFTER UPDATE)
     // -------------------------------
     if (booking_status_id == 6) {
@@ -639,12 +639,11 @@ console.log("📦 Fresh Booking:", freshBooking.rows[0]);
       console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
       notifyBusyDriverUpdate(driver);
     }
-    
+
     return res.status(200).json({
       status: true,
       message: "Booking status updated successfully",
     });
-
   } catch (error) {
     console.error("Update Booking Status Error:", error);
 

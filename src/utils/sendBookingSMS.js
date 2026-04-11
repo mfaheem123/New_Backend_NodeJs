@@ -16,13 +16,14 @@ const sendBookingSMS = async (clean) => {
     if (clean.booking_status_id === 1) {
       let viapointsStr = "";
 
-if (Array.isArray(clean?.viapoints)) {
-  viapointsStr = clean.viapoints
-    .map((v) => ` via ${v.viapoint}`)
-    .join("");
-} else if (typeof clean?.viapoints === "string") {
-  viapointsStr = ` via ${clean.viapoints}`;
-}
+      if (Array.isArray(clean?.viapoints)) {
+        viapointsStr = clean.viapoints
+          .map((v) => ` via ${v.viapoint}`)
+          .join("");
+      } else if (typeof clean?.viapoints === "string") {
+        viapointsStr = ` via ${clean.viapoints}`;
+      }
+
       // TEMPLATE 6 (ALWAYS WHEN STATUS 1)
       const template6Data = {
         pickup_door_number: clean.pickup_door_number
@@ -81,7 +82,6 @@ if (Array.isArray(clean?.viapoints)) {
       const template4Data = {
         // vehicle_type: clean.vehicle_type?.name ?? "",
         vehicle_type: clean.vehicle_type_name ?? "",
-
       };
 
       await sendSMSWithTemplate({

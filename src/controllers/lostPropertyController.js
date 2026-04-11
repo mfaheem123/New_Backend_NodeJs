@@ -68,7 +68,7 @@ exports.getAll = async (req, res) => {
 /* GET BY ID */
 exports.getById = async (req, res) => {
   try {
-    const data = await model.getLostPropertyById(req.query.id);
+    const data = await model.getLostPropertyById(req.params.id);
 
     res.json({
       status: true,

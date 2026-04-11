@@ -249,7 +249,7 @@ const calculateSingleFare = async (payload) => {
 
   const totalFare = fareWithoutExtras + extraChargesTotal;
 
-  console.log("FARE CALCULATION DETAILS")
+  console.log("FARE CALCULATION DETAILS");
   console.log("fareType: ", fareType);
   console.log("baseFare: ", baseFare);
   console.log("vehicleAdjustedFare: ", vehicleAdjustedFare);
