@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const bcrypt = require("bcrypt");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
+
 const {
   generateSecurityCode,
   validateSecurityCode,
@@ -704,6 +705,34 @@ const userId = req.params.id;
       res.status(500).json({
         status: false,
         error: err.message,
+      });
+    }
+  },
+
+  searchCustomerDataByMobile: async (req, res) => {
+    try {
+      const { mobile } = req.query;
+
+      if (!mobile) {
+        return res.status(400).json({
+          status: false,
+          message: "Mobile number is required",
+        });
+      }
+
+      const customer = await Customer.searchCustomerByMobile(mobile);
+
+      return res.status(200).json({
+        status: true,
+        count: customer.length,
+
+        customer: customer || [],
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        status: false,
+        message: "Internal Server Error",
       });
     }
   },

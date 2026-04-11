@@ -19,6 +19,7 @@ router.post("/add", upload.none(), CustomerController.createCustomer);
 router.get("/get", CustomerController.getAllCustomers);
 router.get("/getbyid/:id", CustomerController.getCustomerById);
 router.get("/search", CustomerController.searchCustomerByMobile);
+router.get("/search-data", CustomerController.searchCustomerDataByMobile);
 router.post("/edit/:id", upload.none(), CustomerController.updateCustomer);
 router.post("/verify-otp", upload.none(), CustomerController.verifyEmailOTP);
 router.post("/resend-otp", upload.none(), CustomerController.resendEmailOTP);

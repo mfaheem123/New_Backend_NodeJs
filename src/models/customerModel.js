@@ -472,4 +472,16 @@ RETURNING id
       [image, id],
     );
   },
+
+  searchCustomerByMobile: async (mobile) => {
+    const query = `
+        SELECT 
+            id, sms_flag, name, mobile, email, telephone, address1, address2
+        FROM customers
+        WHERE mobile LIKE $1
+    `;
+
+    const result = await db.query(query, [`%${mobile}%`]);
+    return result.rows;
+  },
 };

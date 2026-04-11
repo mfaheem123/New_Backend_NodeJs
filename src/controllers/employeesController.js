@@ -27,6 +27,7 @@ const getAll = async (req, res) => {
       role,
       subsidiary,
       active,
+      company_id,
     } = req.query;
 
     const { employees, total } = await Employee.getAll({
@@ -39,6 +40,7 @@ const getAll = async (req, res) => {
       role,
       subsidiary,
       active,
+      company_id,
     });
 
     res.status(200).json({
@@ -93,6 +95,7 @@ const create = async (req, res) => {
       allaccounts,
       callreceiver,
       allowtransferbookings,
+      company_id
     } = req.body;
 
     // 🖼️ Image handling
@@ -141,6 +144,7 @@ const create = async (req, res) => {
       allaccounts,
       callreceiver,
       allowtransferbookings,
+      company_id
     });
 
     // Fetch role and subsidiary info

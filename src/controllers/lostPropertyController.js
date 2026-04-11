@@ -68,7 +68,11 @@ exports.getAll = async (req, res) => {
 /* GET BY ID */
 exports.getById = async (req, res) => {
   try {
-    const data = await model.getLostPropertyById(req.params.id);
+const id = req.params.id;
+if(!id){
+  res.status(400).json({status: false, message:"ID is Required"})
+}
+    const data = await model.getLostPropertyById(id);
 
     res.json({
       status: true,

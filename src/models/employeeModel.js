@@ -17,6 +17,7 @@ const COLUMNS = [
   "allaccounts",
   "callreceiver",
   "allowtransferbookings",
+  "company_id"
 ];
 
 // Get all employees with role + subsidiary info
@@ -30,6 +31,7 @@ const getAll = async ({
   role,
   subsidiary,
   active,
+  company_id,
 } = {}) => {
   const offset = (page - 1) * limit;
 
@@ -64,6 +66,11 @@ const getAll = async ({
   if (active !== undefined) {
     conditions.push(`e.active = $${idx++}`);
     params.push(active === "true"); // string → boolean
+  }
+
+  if (company_id) {
+    conditions.push(`e.company_id = $${idx++}`);
+    params.push(company_id);
   }
 
   const whereClause = conditions.length
