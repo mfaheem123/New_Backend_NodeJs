@@ -31,16 +31,15 @@ exports.getAll = async (req, res) => {
       name,
     } = req.query;
 
-    const { lost_properties, total } =
-      await model.getAllLostProperties({
-        page: Number(page),
-        limit: Math.min(1000, Number(limit)),
-        lost_number,
-        report_date,
-        lost_date,
-        item_description,
-        name,
-      });
+    const { lost_properties, total } = await model.getAllLostProperties({
+      page: Number(page),
+      limit: Math.min(1000, Number(limit)),
+      lost_number,
+      report_date,
+      lost_date,
+      item_description,
+      name,
+    });
 
     res.json({
       status: true,
@@ -68,10 +67,10 @@ exports.getAll = async (req, res) => {
 /* GET BY ID */
 exports.getById = async (req, res) => {
   try {
-const id = req.params.id;
-if(!id){
-  res.status(400).json({status: false, message:"ID is Required"})
-}
+    const id = req.params.id;
+    if (!id) {
+      res.status(400).json({ status: false, message: "ID is Required" });
+    }
     const data = await model.getLostPropertyById(id);
 
     res.json({

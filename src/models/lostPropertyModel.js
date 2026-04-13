@@ -180,9 +180,8 @@ const updateLostProperty = async (id, data) => {
 /* DELETE */
 const deleteLostProperty = async (id) => {
   const q = `DELETE FROM lost_properties WHERE id = $1 RETURNING *`;
-    const { rows } = await db.query(q, [id]);
-    return rows[0] || null;
-  
+  const { rows } = await db.query(q, [id]);
+  return rows[0] || null;
 };
 
 module.exports = {
