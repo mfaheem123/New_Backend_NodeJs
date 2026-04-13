@@ -147,31 +147,31 @@ const getLostPropertyById = async (id) => {
 
 /* UPDATE */
 const updateLostProperty = async (id, data) => {
+  const fields = [];
+  const values = [];
+  let index = 1;
+
+  for (const key in data) {
+    if (data[key] !== undefined) {
+      fields.push(`${key} = $${index}`);
+      values.push(data[key]);
+      index++;
+    }
+  }
+
+  // Agar koi field hi nahi bheji
+  if (fields.length === 0) {
+    throw new Error("No fields provided to update");
+  }
+
   const query = `
-    UPDATE lost_properties SET
-      booking_id=$1,
-      customer_id=$2,
-      item_description=$3,
-      inquiry=$4,
-      checked_by=$5,
-      method_desposition=$6,
-      result=$7,
-      lost_date=$8
-    WHERE id=$9
+    UPDATE lost_properties
+    SET ${fields.join(", ")}
+    WHERE id = $${index}
     RETURNING *
   `;
 
-  const values = [
-    data.booking_id,
-    data.customer_id,
-    data.item_description,
-    data.inquiry,
-    data.checked_by,
-    data.method_desposition,
-    data.result,
-    data.lost_date,
-    id,
-  ];
+  values.push(id);
 
   const { rows } = await db.query(query, values);
   return rows[0];
@@ -179,8 +179,10 @@ const updateLostProperty = async (id, data) => {
 
 /* DELETE */
 const deleteLostProperty = async (id) => {
-  await db.query(`DELETE FROM lost_properties WHERE id=$1`, [id]);
-  return true;
+  const q = `DELETE FROM lost_properties WHERE id = $1 RETURNING *`;
+    const { rows } = await db.query(q, [id]);
+    return rows[0] || null;
+  
 };
 
 module.exports = {

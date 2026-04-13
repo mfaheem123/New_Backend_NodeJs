@@ -677,13 +677,13 @@ This code will expire in 15 minutes.
 
   updateProfileImage: async (req, res) => {
     try {
-const userId = req.params.id;
+      const userId = req.params.id;
       const { image } = req.file;
-    
+
       if (req.file) {
-      const imageUrl = `${BASE_URL}${req.file.filename}`;
-      req.body.image = imageUrl;
-    }
+        const imageUrl = `${BASE_URL}${req.file.filename}`;
+        req.body.image = imageUrl;
+      }
       const customer = await Customer.findById(userId);
 
       if (!customer) {
@@ -699,7 +699,6 @@ const userId = req.params.id;
         status: true,
         message: "Profile Image Updated Successfully",
       });
-
     } catch (err) {
       console.error("❌ Profile Image Error:", err);
       res.status(500).json({
@@ -736,5 +735,4 @@ const userId = req.params.id;
       });
     }
   },
-
 };

@@ -23,10 +23,22 @@ router.get("/search-data", CustomerController.searchCustomerDataByMobile);
 router.post("/edit/:id", upload.none(), CustomerController.updateCustomer);
 router.post("/verify-otp", upload.none(), CustomerController.verifyEmailOTP);
 router.post("/resend-otp", upload.none(), CustomerController.resendEmailOTP);
-router.post("/forgot-password", upload.none(), CustomerController.forgotPassword);
+router.post(
+  "/forgot-password",
+  upload.none(),
+  CustomerController.forgotPassword,
+);
 router.post("/reset-password", upload.none(), CustomerController.resetPassword);
-router.post("/change-password/:id", upload.none(), CustomerController.changePassword);
-router.post("/profile-image/:id", upload.single("image"), CustomerController.updateProfileImage);
+router.post(
+  "/change-password/:id",
+  upload.none(),
+  CustomerController.changePassword,
+);
+router.post(
+  "/profile-image/:id",
+  upload.single("image"),
+  CustomerController.updateProfileImage,
+);
 router.post("/login", upload.none(), CustomerController.customerLogin);
 router.delete("/delete/:id", CustomerController.deleteCustomer);
 

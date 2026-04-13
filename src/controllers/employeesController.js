@@ -95,7 +95,7 @@ const create = async (req, res) => {
       allaccounts,
       callreceiver,
       allowtransferbookings,
-      company_id
+      company_id,
     } = req.body;
 
     // 🖼️ Image handling
@@ -144,7 +144,7 @@ const create = async (req, res) => {
       allaccounts,
       callreceiver,
       allowtransferbookings,
-      company_id
+      company_id,
     });
 
     // Fetch role and subsidiary info

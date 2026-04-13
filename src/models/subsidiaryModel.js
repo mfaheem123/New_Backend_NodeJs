@@ -26,7 +26,7 @@ const COLUMNS = [
   "active_drivers",
   "address_latitude",
   "address_longitude",
-  "company_id"
+  "company_id",
 ];
 
 // Get All Subsidiary With Pagination + Searching

@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// 🚀 Routes
+// Routes
 router.get("/get", subsidiaryController.getAll);
 router.get("/getbyid/:id", subsidiaryController.getById);
 router.post("/add", upload.single("logo"), subsidiaryController.create);

@@ -119,7 +119,13 @@ exports.update = async (req, res) => {
 /* DELETE */
 exports.delete = async (req, res) => {
   try {
-    await model.deleteLostProperty(req.params.id);
+    const id = parseInt(req.params.id);
+    const deleted = await model.deleteLostProperty(id);
+    if (!deleted) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Customer Lost Property not found" });
+    }
 
     res.json({
       status: true,
