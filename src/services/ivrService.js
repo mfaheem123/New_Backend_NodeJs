@@ -267,15 +267,15 @@ exports.handleFallbackIvr = async (body) => {
       // Unique pickup filtering
       const seenPickups = new Set();
       const uniqueJobs = [];
-jobsRes.rows.forEach((j) => {
-  if (!seenPickups.has(j.pickup) && uniqueJobs.length < 3) {
-    seenPickups.add(j.pickup);
-    uniqueJobs.push(j);
-  }
-});
-if (!uniqueJobs.length) {
-  return hangup("No pickup locations found.");
-}
+      jobsRes.rows.forEach((j) => {
+        if (!seenPickups.has(j.pickup) && uniqueJobs.length < 3) {
+          seenPickups.add(j.pickup);
+          uniqueJobs.push(j);
+        }
+      });
+      if (!uniqueJobs.length) {
+        return hangup("No pickup locations found.");
+      }
       session.jobs = uniqueJobs;
       session.step = 2;
 
@@ -314,12 +314,12 @@ if (!uniqueJobs.length) {
     const seenDropoffs = new Set();
     const uniqueDropJobs = [];
 
-session.jobs.forEach((j) => {
-  if (!seenDropoffs.has(j.dropoff) && uniqueDropJobs.length < 3) {
-    seenDropoffs.add(j.dropoff);
-    uniqueDropJobs.push(j);
-  }
-});
+    session.jobs.forEach((j) => {
+      if (!seenDropoffs.has(j.dropoff) && uniqueDropJobs.length < 3) {
+        seenDropoffs.add(j.dropoff);
+        uniqueDropJobs.push(j);
+      }
+    });
     session.jobs = uniqueDropJobs;
     session.step = 3;
 
