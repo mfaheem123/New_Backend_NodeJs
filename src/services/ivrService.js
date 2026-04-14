@@ -10,6 +10,24 @@ const {
 } = require("../utils/calculateDistance&Time");
 const { calculateSingleFare } = require("../controllers/fareController");
 
+const genRef = async () => {
+  let ref;
+  let exists = true;
+
+  while (exists) {
+    const digits = Math.floor(10000 + Math.random() * 90000).toString();
+    ref = "NTG" + digits;
+
+    const result = await pool.query(
+      `SELECT reference_number FROM bookings WHERE reference_number = $1 LIMIT 1`,
+      [ref],
+    );
+
+    if (result.rows.length === 0) exists = false;
+  }
+
+  return ref;
+};
 
 const SYSTEM_TOKEN = process.env.SYSTEM_TOKEN;
 const OFFICE_NUMBER = process.env.OFFICE_NUMBER || "401";
@@ -30,12 +48,11 @@ exports.handleMainIvr = async (body) => {
   if (systemToken !== SYSTEM_TOKEN) return hangup("Unauthorized");
 
   const formattedNumber = formatMobile(callerNumber);
-  const attemptKey = uniqueCallId || formattedNumber;
+  const ACTIVE_STATUS = [3, 6, 10, 15];
 
-  if (!attempts.has(attemptKey)) attempts.set(attemptKey, 0);
-
-  /* ---------------- CHECK DRIVER ---------------- */
-
+  /* =====================================================
+     CHECK DRIVER
+  ===================================================== */
   const driverRes = await pool.query(
     `SELECT id FROM drivers WHERE mobile = $1`,
     [formattedNumber],
@@ -43,98 +60,147 @@ exports.handleMainIvr = async (body) => {
 
   const isDriver = driverRes.rows.length > 0;
 
-  /* ================= DRIVER FLOW ================= */
+  /* =====================================================
+     CHECK CUSTOMER
+  ===================================================== */
+  const customerRes = await pool.query(
+    `SELECT id FROM customers WHERE mobile = $1`,
+    [formattedNumber],
+  );
 
+  const isCustomer = customerRes.rows.length > 0;
+
+  /* =====================================================
+     CASE 1: UNKNOWN NUMBER
+  ===================================================== */
+  if (!isDriver && !isCustomer) {
+    console.log("FLOW: UNKNOWN USER → DIRECT TRANSFER");
+
+    return transfer(
+      OFFICE_NUMBER,
+      "Welcome to SeaCarz. Thank you for using our service. Please hold while we transfer your call to an operator.",
+    );
+  }
+
+  /* =====================================================
+     DRIVER FLOW
+  ===================================================== */
   if (isDriver) {
-    if (!text)
-      return waitForKeypress(
-        "Press 1 to connect your latest customer. Press 2 for operator.",
+    const driverId = driverRes.rows[0].id;
+
+    const bookingRes = await pool.query(
+      `SELECT b.booking_status_id, c.mobile
+       FROM bookings b
+       JOIN customers c ON b.customer_id = c.id
+       WHERE b.driver_id = $1
+       ORDER BY b.id DESC
+       LIMIT 1`,
+      [driverId],
+    );
+
+    console.log("FLOW:", {
+      type: "DRIVER",
+      status: bookingRes?.rows[0]?.booking_status_id,
+    });
+
+    // 🔹 CASE 5: NO BOOKING OR NOT ACTIVE
+    if (
+      !bookingRes.rows.length ||
+      !ACTIVE_STATUS.includes(bookingRes.rows[0].booking_status_id)
+    ) {
+      console.log("FLOW: DRIVER NO ACTIVE BOOKING → OPERATOR");
+
+      return transfer(
+        OFFICE_NUMBER,
+        "Welcome Back to SeaCarz. Please hold while we transfer your call to an operator.",
       );
-
-    if (text === "1") {
-      const bookingRes = await pool.query(
-        `SELECT c.mobile
-         FROM bookings b
-         JOIN customers c ON b.customer_id = c.id
-         WHERE b.driver_id = $1
-         ORDER BY b.id DESC
-         LIMIT 1`,
-        [driverRes.rows[0].id],
-      );
-
-      if (bookingRes.rows.length) return transfer(bookingRes.rows[0].mobile);
-
-      return waitForKeypress("No recent customer found. Press 2 for operator.");
     }
 
-    if (text === "2") return transfer(OFFICE_NUMBER);
+    // 🔹 CASE 4: DRIVER WITH ACTIVE BOOKING
+    if (!text) {
+      console.log("FLOW: DRIVER MENU");
+
+      return waitForKeypress(
+        "Welcome Back to Sea Carz. Press 1 for your Customer. Press 0 for Operator",
+      );
+    }
+
+    if (text === "1") {
+      console.log("FLOW: DRIVER → CUSTOMER CONNECT");
+
+      return transfer(bookingRes.rows[0].mobile);
+    }
+
+    if (text === "0") {
+      console.log("FLOW: DRIVER → OPERATOR");
+
+      return transfer(OFFICE_NUMBER);
+    }
 
     return hangup();
   }
 
-  /* ================= CUSTOMER FLOW ================= */
-
-  const bookingRes = await pool.query(
-    `SELECT d.mobile
-     FROM bookings b
-     JOIN drivers d ON b.driver_id = d.id
-     WHERE b.mobile = $1
-     ORDER BY b.id DESC
-     LIMIT 1`,
-    [formattedNumber],
-  );
-  const GREETING = process.env.IVR_GREETING || "Nexus Tech Groups.";
-  if (!text) {
-    console.log("Mobile Number", formattedNumber);
-    console.log("Booking Found", bookingRes.rows.length);
-
-    if (!bookingRes.rows.length) {
-      // ✅ NEW CUSTOMER (no previous booking)
-      return waitForKeypress(
-        `Welcome to ${GREETING} Press 1 to connect the operator.`,
-      );
-    }
-
-    // ✅ EXISTING CUSTOMER
-    return waitForKeypress(
-      `Welcome back to ${GREETING} Press 1 to connect your driver. Press 2 for operator.`,
+  /* =====================================================
+     CUSTOMER FLOW
+  ===================================================== */
+  if (isCustomer) {
+    const bookingRes = await pool.query(
+      `SELECT b.booking_status_id, d.mobile
+       FROM bookings b
+       JOIN drivers d ON b.driver_id = d.id
+       WHERE b.mobile = $1
+       ORDER BY b.id DESC
+       LIMIT 1`,
+      [formattedNumber],
     );
-  }
 
-  if (text === "1") {
-    // 🔹 NEW CUSTOMER → connect operator
-    if (!bookingRes.rows.length) {
-      return transfer(OFFICE_NUMBER);
+    const hasActiveBooking =
+      bookingRes.rows.length &&
+      ACTIVE_STATUS.includes(bookingRes.rows[0].booking_status_id);
+
+    console.log("FLOW:", {
+      type: "CUSTOMER",
+      status: bookingRes?.rows[0]?.booking_status_id,
+      hasActiveBooking,
+    });
+
+    // 🔹 CASE 3: CUSTOMER WITH ACTIVE BOOKING
+    if (hasActiveBooking) {
+      if (!text) {
+        console.log("FLOW: CUSTOMER ACTIVE BOOKING MENU");
+
+        return waitForKeypress(
+          "Welcome Back to Sea Carz. Press 1 for your Driver. Press 0 for Operator",
+        );
+      }
+
+      if (text === "1") {
+        console.log("FLOW: CUSTOMER → DRIVER CONNECT");
+
+        return transfer(bookingRes.rows[0].mobile);
+      }
+
+      if (text === "0") {
+        console.log("FLOW: CUSTOMER → OPERATOR");
+
+        return transfer(OFFICE_NUMBER);
+      }
+
+      return hangup();
     }
 
-    // 🔹 EXISTING CUSTOMER → connect driver
-    return transfer(bookingRes.rows[0].mobile);
-  }
+    // 🔹 CASE 2: CUSTOMER WITHOUT BOOKING → FALLBACK FLOW
+    console.log("FLOW: CUSTOMER → FALLBACK FLOW");
 
-  if (text === "2") return transfer(OFFICE_NUMBER);
+    // 🔥 IMPORTANT: DIRECTLY CALL FALLBACK SERVICE
+    return await exports.handleFallbackIvr({
+      ...body,
+      systemToken: SYSTEM_TOKEN_FALLBACK, // override token
+    });
+  }
 
   return hangup();
 };
-
-/* =====================================================
-   FALLBACK IVR (Dynamic Booking Create - PostgreSQL)
-===================================================== */
-
-async function genRef() {
-  let ref;
-  let exists = true;
-
-  while (exists) {
-    const digits = Math.floor(10000 + Math.random() * 90000).toString();
-    ref = "NTG" + digits;
-
-    const checkQuery = `SELECT reference_number FROM bookings WHERE reference_number = $1 LIMIT 1`;
-    const result = await pool.query(checkQuery, [ref]);
-
-    if (result.rows.length === 0) exists = false;
-  }
-  return ref;
-}
 
 exports.handleFallbackIvr = async (body) => {
   const { systemToken, uniqueCallId, callerNumber, text } = body;
@@ -167,10 +233,10 @@ exports.handleFallbackIvr = async (body) => {
   if (session.step === 1) {
     if (!text)
       return waitForKeypress(
-        "Thank you for calling. Press 1 to book a cab. Press 2 to contact the operator.",
+        "Welcome Back to SeaCarz. Thank you for calling. Press 1 to book a cab. Press 0 to contact the operator.",
       );
 
-    if (text === "2") return transfer(OFFICE_NUMBER);
+    if (text === "0") return transfer(OFFICE_NUMBER);
 
     if (text === "1") {
       const jobsRes = await pool.query(
@@ -201,13 +267,15 @@ exports.handleFallbackIvr = async (body) => {
       // Unique pickup filtering
       const seenPickups = new Set();
       const uniqueJobs = [];
-      jobsRes.rows.forEach((j) => {
-        if (!seenPickups.has(j.pickup)) {
-          seenPickups.add(j.pickup);
-          uniqueJobs.push(j);
-        }
-      });
-
+jobsRes.rows.forEach((j) => {
+  if (!seenPickups.has(j.pickup) && uniqueJobs.length < 3) {
+    seenPickups.add(j.pickup);
+    uniqueJobs.push(j);
+  }
+});
+if (!uniqueJobs.length) {
+  return hangup("No pickup locations found.");
+}
       session.jobs = uniqueJobs;
       session.step = 2;
 
@@ -244,13 +312,14 @@ exports.handleFallbackIvr = async (body) => {
 
     // Unique dropoff filtering
     const seenDropoffs = new Set();
-    const uniqueDropJobs = session.jobs.filter((j) => {
-      if (!seenDropoffs.has(j.dropoff)) {
-        seenDropoffs.add(j.dropoff);
-        return true;
-      }
-      return false;
-    });
+    const uniqueDropJobs = [];
+
+session.jobs.forEach((j) => {
+  if (!seenDropoffs.has(j.dropoff) && uniqueDropJobs.length < 3) {
+    seenDropoffs.add(j.dropoff);
+    uniqueDropJobs.push(j);
+  }
+});
     session.jobs = uniqueDropJobs;
     session.step = 3;
 
