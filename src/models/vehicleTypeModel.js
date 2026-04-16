@@ -111,8 +111,8 @@ const VehicleType = {
         passengers,
         luggages,
         hand_luggages,
-        minimum_fares,
-        minimum_miles,
+        minimum_fares ?? 0,
+        minimum_miles ?? 0,
         background_color,
         foreground_color,
         driver_waiting_charges,
@@ -184,10 +184,12 @@ const VehicleType = {
   async exists(id) {
     const result = await pool.query(
       `SELECT id FROM vehicle_types WHERE id = $1`,
-      [id],
+      [id]
     );
     return result.rowCount > 0;
   },
+
+
 };
 
 module.exports = VehicleType;

@@ -1,5 +1,5 @@
 const { sendSMSWithTemplate } = require("../services/smsService");
-
+const subsidiaryModel = require("../models/subsidiaryModel");
 const sendBookingSMS = async (clean) => {
   try {
     if (!clean?.sms) return;
@@ -53,17 +53,22 @@ const sendBookingSMS = async (clean) => {
 
       // TEMPLATE 3 (ONLY IF DRIVER EXISTS)
       if (clean.driver_id) {
+         let subsidiaryEmail = "";
+
+  if (clean.subsidiary_id) {
+    const subsidiary = await subsidiaryModel.getById(clean.subsidiary_id);
+    subsidiaryEmail = subsidiary?.email || "";
+  }
         const template3Data = {
           company_name: clean.subsidiary?.name ?? "",
           company_telephone: clean.subsidiary?.telephone_number ?? "",
-          company_email: clean.subsidiary?.email ?? "",
+          company_email: subsidiaryEmail,
           vehicle_type: clean.vehicle_type?.name ?? "",
           vehicle_color: clean.driver?.vehicle?.color ?? "",
           vehicle_make: clean.driver?.vehicle?.make ?? "",
           vehicle_model: clean.driver?.vehicle?.model ?? "",
           vehicle_number: clean.driver?.vehicle?.vehicle_number ?? "",
           driver_name: clean.driver?.name ?? "",
-          fares: totalFare,
         };
 
         await sendSMSWithTemplate({
