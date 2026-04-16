@@ -1524,8 +1524,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     const query = `
     SELECT 
       d.id,
-      d.name AS username,
-      d.username AS name,
+      d.name,
+      d.username,
       d.zone,
       d.last_login_at,
       
@@ -1565,8 +1565,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     const query = `
     SELECT 
       d.id,
-      d.name AS username,
-      d.username AS name,
+      d.name,
+      d.username,
       d.zone,
       d.last_login_at,
       
@@ -1596,6 +1596,25 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status = 'logged_in'
       AND d.driver_status = 'Unavailable'
       AND d.booking_status = 'Unavailable'
+  `;
+
+    const result = await db.query(query);
+    return result.rows;
+  },
+  async getLoginDriverTracking() {
+    const query = `
+    SELECT 
+      d.id,
+      d.username,
+      d.zone,
+      d.latitude,
+      d.longitude,
+      d.last_login_at
+
+    FROM drivers d
+
+    WHERE 
+      d.session_status = 'logged_in'
   `;
 
     const result = await db.query(query);

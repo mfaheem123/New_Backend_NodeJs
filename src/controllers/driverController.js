@@ -944,3 +944,20 @@ exports.getLoginDrivers = async (req, res) => {
     });
   }
 };
+
+exports.getLoginDriverTracking = async (req, res) => {
+  try {
+    const login_drivers = await Driver.getLoginDriverTracking();
+
+    res.status(200).json({
+      status: true,
+      tracking_drivers: login_drivers,
+    });
+  } catch (err) {
+    console.error("Error fetching login drivers:", err);
+    res.status(500).json({
+      status: false,
+      message: "Server error",
+    });
+  }
+};

@@ -34,7 +34,7 @@ function handleTrackingDashboardSocket(ws) {
 }
 
 // ==============================
-// 🔴 DRIVER TRACKING SOCKET (NO TOKEN)
+// 🔴 DRIVER TRACKING SOCKET
 // ==============================
 function handleDriverTrackingSocket(ws) {
   logger.info("ws:driver-tracking-connected", {
@@ -51,10 +51,10 @@ function handleDriverTrackingSocket(ws) {
       if (!driverId || !lat || !lng) return;
 
       // ==============================
-      // 1️⃣ DRIVER FETCH (ENRICH DATA)
+      // 1️⃣ DRIVER FETCH (ALL REQUIRED FIELDS)
       // ==============================
       const result = await db.query(
-        `SELECT id, name, username, driver_status 
+        `SELECT id, name, username, driver_status, booking_status, session_status
          FROM drivers WHERE id=$1`,
         [driverId]
       );
@@ -90,19 +90,19 @@ function handleDriverTrackingSocket(ws) {
       }
 
       // ==============================
-      // 4️⃣ PREPARE DATA FOR DASHBOARD
+      // 4️⃣ PREPARE DASHBOARD DATA
       // ==============================
       const driverData = {
         id: driver.id,
-        name: driver.name,
-        username: driver.username,
-        driver_status: driver.driver_status,
         lat,
         lng,
+        booking_status: driver.booking_status,
+        session_status: driver.session_status,
+        driver_status: driver.driver_status,
       };
 
       // ==============================
-      // 5️⃣ BROADCAST
+      // 5️⃣ BROADCAST TRACKING
       // ==============================
       const payload = JSON.stringify({
         event: "DRIVER_LOCATION_UPDATE",
@@ -137,9 +137,54 @@ function handleDriverTrackingSocket(ws) {
 }
 
 // ==============================
+// 🟡 BOOKING STATUS EVENT (API SE CALL HOGA)
+// ==============================
+async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
+  try {
+    const result = await db.query(
+      `SELECT id, booking_status, session_status, driver_status, latitude, longitude
+       FROM drivers WHERE id=$1`,
+      [driverId]
+    );
+
+    if (!result.rows.length) return;
+
+    const driver = result.rows[0];
+
+    const payload = JSON.stringify({
+      event: "DRIVER_BOOKING_STATUS_UPDATE",
+      data: {
+        id: driver.id,
+        lat: lat ?? driver.latitude,
+        lng: lng ?? driver.longitude,
+        booking_status: driver.booking_status,
+        session_status: driver.session_status,
+        driver_status: driver.driver_status,
+      },
+    });
+
+    trackingDashboardClients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(payload);
+      }
+    });
+
+    logger.info("ws:booking-status-broadcast", {
+      driverId: driver.id,
+    });
+
+  } catch (err) {
+    logger.error("ws:booking-status-error", {
+      error: err.message,
+    });
+  }
+}
+
+// ==============================
 // EXPORTS
 // ==============================
 module.exports = {
   handleDriverTrackingSocket,
   handleTrackingDashboardSocket,
+  notifyDriverBookingStatus,
 };
