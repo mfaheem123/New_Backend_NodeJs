@@ -95,26 +95,30 @@ exports.getByVehicleType = async (req, res) => {
 
     // 🔥 FILTER WAITING CHARGES
     // 🔥 FILTER WAITING CHARGES
-const filteredMeters = meterResult.rows.map((meter) => {
-  const filteredCharges = (meter.waiting_charges || [])
-    .filter((wc) => {
-      const dayMatch =
-        wc.day && wc.day.toLowerCase().trim() === currentDay.toLowerCase();
+    const filteredMeters = meterResult.rows.map((meter) => {
+      const filteredCharges = (meter.waiting_charges || [])
+        .filter((wc) => {
+          const dayMatch =
+            wc.day && wc.day.toLowerCase().trim() === currentDay.toLowerCase();
 
-      const timeMatch = isTimeInRange(wc.from_time, wc.to_time, currentTime);
+          const timeMatch = isTimeInRange(
+            wc.from_time,
+            wc.to_time,
+            currentTime,
+          );
 
-      return dayMatch && timeMatch;
-    })
-    .map((wc) => ({
-      ...wc,
-      charge: (Number(wc.charge) / 100).toFixed(2), // 🔥 UPDATED HERE
-    }));
+          return dayMatch && timeMatch;
+        })
+        .map((wc) => ({
+          ...wc,
+          charge: (Number(wc.charge) / 100).toFixed(2), // 🔥 UPDATED HERE
+        }));
 
-  return {
-    ...meter,
-    waiting_charges: filteredCharges,
-  };
-});
+      return {
+        ...meter,
+        waiting_charges: filteredCharges,
+      };
+    });
 
     // ✅ RESPONSE
     return res.status(200).json({

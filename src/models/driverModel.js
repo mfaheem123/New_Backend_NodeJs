@@ -1085,34 +1085,34 @@ const Driver = {
   },
 
   // Update driver login session
-  async updateDriverLoginStatus(driverId) {
-    const query = `
-        UPDATE drivers 
-        SET 
-          session_status = 'logged_in',
-          driver_status = 'Available',
-          booking_status = 'Available',
-          last_login_at = NOW()
-        WHERE id = $1
-      `;
-    return db.query(query, [driverId]);
-  },
-
-  //Update Driver Login Status With Location
-  // async updateDriverLoginStatus(driverId, latitude, longitude) {
+  // async updateDriverLoginStatus(driverId) {
   //   const query = `
-  //       UPDATE drivers
-  //       SET
+  //       UPDATE drivers 
+  //       SET 
   //         session_status = 'logged_in',
   //         driver_status = 'Available',
   //         booking_status = 'Available',
-  //         last_login_at = NOW(),
-  //         latitude = $1,
-  //         longitude = $2
-  //       WHERE id = $3
+  //         last_login_at = NOW()
+  //       WHERE id = $1
   //     `;
-  //   return db.query(query, [latitude, longitude, driverId]);
+  //   return db.query(query, [driverId]);
   // },
+
+  //Update Driver Login Status With Location
+  async updateDriverLoginStatus(driverId, latitude, longitude) {
+    const query = `
+        UPDATE drivers
+        SET
+          session_status = 'logged_in',
+          driver_status = 'Available',
+          booking_status = 'Available',
+          last_login_at = NOW(),
+          latitude = $1,
+          longitude = $2
+        WHERE id = $3
+      `;
+    return db.query(query, [latitude, longitude, driverId]);
+  },
 
   async updateDriverLogoutStatus(id) {
     const query = `

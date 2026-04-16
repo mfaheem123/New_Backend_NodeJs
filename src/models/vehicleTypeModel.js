@@ -184,12 +184,10 @@ const VehicleType = {
   async exists(id) {
     const result = await pool.query(
       `SELECT id FROM vehicle_types WHERE id = $1`,
-      [id]
+      [id],
     );
     return result.rowCount > 0;
   },
-
-
 };
 
 module.exports = VehicleType;
