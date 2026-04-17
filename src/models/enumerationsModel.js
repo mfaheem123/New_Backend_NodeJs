@@ -88,35 +88,35 @@ const EnumerationsModel = {
           WHEN 1 THEN (
             SELECT COUNT(*) FROM bookings 
             WHERE DATE(pickup_date) = CURRENT_DATE 
-            AND booking_status_id = 1
+            AND booking_status_id = 1 AND trash = false
           )
           WHEN 2 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE DATE(pickup_date) > CURRENT_DATE
+            WHERE DATE(pickup_date) > CURRENT_DATE AND trash = false
           )
           WHEN 3 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_status_id != 11 AND booking_status_id != 1
+            WHERE booking_status_id != 11 AND booking_status_id != 1 AND trash = false
           )
           WHEN 4 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_status_id = 11
+            WHERE booking_status_id = 11 AND trash = false
           )
           WHEN 5 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE quoted = true
+            WHERE quoted = true AND trash = false
           )
           WHEN 6 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_source = 'ivr'
+            WHERE booking_source = 'ivr' AND trash = false
           )
           WHEN 7 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_source = 'web'
+            WHERE booking_source = 'web' AND trash = false
           )
           WHEN 8 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_source = 'app'
+            WHERE booking_source = 'app' AND trash = false
           )
         END::int AS booking_count
       FROM booking_tabs bt

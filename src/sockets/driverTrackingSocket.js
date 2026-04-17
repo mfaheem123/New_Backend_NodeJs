@@ -56,7 +56,7 @@ function handleDriverTrackingSocket(ws) {
       const result = await db.query(
         `SELECT id, name, username, driver_status, booking_status, session_status
          FROM drivers WHERE id=$1`,
-        [driverId]
+        [driverId],
       );
 
       if (!result.rows.length) return;
@@ -70,7 +70,7 @@ function handleDriverTrackingSocket(ws) {
         `UPDATE drivers 
          SET latitude=$1, longitude=$2 
          WHERE id=$3`,
-        [lat, lng, driverId]
+        [lat, lng, driverId],
       );
 
       // ==============================
@@ -83,7 +83,7 @@ function handleDriverTrackingSocket(ws) {
         await db.query(
           `INSERT INTO driver_location_logs (driver_id, latitude, longitude)
            VALUES ($1,$2,$3)`,
-          [driverId, lat, lng]
+          [driverId, lat, lng],
         );
 
         lastSavedAt.set(driverId, now);
@@ -114,7 +114,6 @@ function handleDriverTrackingSocket(ws) {
           client.send(payload);
         }
       });
-
     } catch (err) {
       logger.error("ws:tracking-message-error", {
         error: err.message,
@@ -144,7 +143,7 @@ async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
     const result = await db.query(
       `SELECT id, booking_status, session_status, driver_status, latitude, longitude
        FROM drivers WHERE id=$1`,
-      [driverId]
+      [driverId],
     );
 
     if (!result.rows.length) return;
@@ -172,7 +171,6 @@ async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
     logger.info("ws:booking-status-broadcast", {
       driverId: driver.id,
     });
-
   } catch (err) {
     logger.error("ws:booking-status-error", {
       error: err.message,

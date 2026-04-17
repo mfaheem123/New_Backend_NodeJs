@@ -120,11 +120,11 @@ function initWebSockets(server) {
         handleCLISocket(ws, req);
       } else if (url.startsWith("/websocket/booking-status")) {
         handleBookingStatusSocket(ws, req);
-      }else if (url.startsWith("/websocket/driver-tracking-dashboard")) {
-  handleTrackingDashboardSocket(ws, req);
-} else if (url.startsWith("/websocket/driver-tracking")) {
-  handleDriverTrackingSocket(ws, req);
-} else {
+      } else if (url.startsWith("/websocket/driver-tracking-dashboard")) {
+        handleTrackingDashboardSocket(ws, req);
+      } else if (url.startsWith("/websocket/driver-tracking")) {
+        handleDriverTrackingSocket(ws, req);
+      } else {
         logger.warn("ws:rejected", { url });
         ws.close();
       }

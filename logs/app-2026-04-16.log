@@ -8616,3 +8616,22 @@
 {"level":"info","message":"GET /api/location-types 200 25.895 ms","timestamp":"2026-04-16T18:37:36.908Z"}
 {"duration":60,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-16T18:37:36.948Z"}
 {"level":"info","message":"GET /api/location-types 200 62.097 ms","timestamp":"2026-04-16T18:37:36.950Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-16T18:38:39.455Z"}
+{"level":"info","message":"GET /api/location-types 200 12.985 ms","timestamp":"2026-04-16T18:38:39.463Z"}
+{"duration":61,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-16T18:38:39.513Z"}
+{"level":"info","message":"GET /api/location-types 200 61.753 ms","timestamp":"2026-04-16T18:38:39.514Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-04-16T18:38:46.755Z","url":"/websocket/driver-tracking-dashboard"}
+{"level":"info","message":"ws:tracking-dashboard-connected","socketId":"33a4351d-54cd-40ba-8544-0b350796abf4","timestamp":"2026-04-16T18:38:46.757Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-04-16T18:38:48.645Z","url":"/websocket/driver-tracking"}
+{"level":"info","message":"ws:driver-tracking-connected","socketId":"ab00d08a-aeef-457a-b3d3-0c8cf4ffc4da","timestamp":"2026-04-16T18:38:48.647Z"}
+{"duration":48,"level":"info","message":"db-query","rows":1,"text":"SELECT id, name, username, driver_status, booking_status, session_status\n         FROM drivers WHERE id=$1","timestamp":"2026-04-16T18:38:49.789Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"UPDATE drivers \n         SET latitude=$1, longitude=$2 \n         WHERE id=$3","timestamp":"2026-04-16T18:38:49.792Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"INSERT INTO driver_location_logs (driver_id, latitude, longitude)\n           VALUES ($1,$2,$3)","timestamp":"2026-04-16T18:38:49.795Z"}
+{"id":"33a4351d-54cd-40ba-8544-0b350796abf4","level":"info","message":"ws:closed","timestamp":"2026-04-16T18:41:22.206Z"}
+{"level":"info","message":"ws:tracking-dashboard-disconnected","socketId":"33a4351d-54cd-40ba-8544-0b350796abf4","timestamp":"2026-04-16T18:41:22.207Z"}
+{"id":"ab00d08a-aeef-457a-b3d3-0c8cf4ffc4da","level":"info","message":"ws:closed","timestamp":"2026-04-16T18:41:23.766Z"}
+{"level":"info","message":"ws:driver-tracking-disconnected","socketId":"ab00d08a-aeef-457a-b3d3-0c8cf4ffc4da","timestamp":"2026-04-16T18:41:23.767Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-16T18:54:14.910Z"}
+{"level":"info","message":"GET /api/location-types 200 11.499 ms","timestamp":"2026-04-16T18:54:14.917Z"}
+{"duration":46,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-16T18:54:14.952Z"}
+{"level":"info","message":"GET /api/location-types 200 47.139 ms","timestamp":"2026-04-16T18:54:14.953Z"}
