@@ -1,0 +1,13 @@
+{"id":"75dd79fd-9186-404d-a467-28fae4178b46","level":"info","message":"ws:closed","timestamp":"2026-04-17T19:00:04.506Z"}
+{"extension":"200","level":"info","message":"ws:cli-disconnected","socketId":"75dd79fd-9186-404d-a467-28fae4178b46","timestamp":"2026-04-17T19:00:04.516Z"}
+{"id":"7143285a-b67e-421b-b0dd-491b4e24c1fe","level":"info","message":"ws:closed","timestamp":"2026-04-17T19:00:04.522Z"}
+{"level":"info","message":"ws:dashboard-disconnect","socketId":"7143285a-b67e-421b-b0dd-491b4e24c1fe","timestamp":"2026-04-17T19:00:04.523Z"}
+{"id":"9e2a7942-68fc-4cf6-9ee3-dc39b408173a","level":"info","message":"ws:closed","timestamp":"2026-04-17T19:00:04.526Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-04-17T19:00:55.628Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"4df30076-194e-42e9-9a03-6fc95b80ec75","timestamp":"2026-04-17T19:00:55.633Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-04-17T19:00:55.657Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"4e2f9c71-cac3-4d9b-840d-ce46b66e83dc","timestamp":"2026-04-17T19:00:55.658Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-17T19:00:55.733Z"}
+{"level":"info","message":"GET /api/location-types 200 8.349 ms","timestamp":"2026-04-17T19:00:55.737Z"}
+{"duration":45,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-17T19:00:55.775Z"}
+{"level":"info","message":"GET /api/location-types 200 46.764 ms","timestamp":"2026-04-17T19:00:55.777Z"}

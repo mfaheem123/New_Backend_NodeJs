@@ -65,7 +65,7 @@ const getAll = async ({
   }
   if (active !== undefined) {
     conditions.push(`e.active = $${idx++}`);
-    params.push(active === "true"); // string → boolean
+    params.push(active === "true");
   }
 
   if (company_id) {
@@ -102,14 +102,21 @@ const getAll = async ({
     ORDER BY e.id ASC
     LIMIT $${params.length - 1} OFFSET $${params.length};
   `;
+
   const { rows } = await pool.query(dataQuery, params);
 
   return {
-    employees: rows.map((emp) => ({
-      ...emp,
-      role: emp.role_name ? { name: emp.role_name } : null,
-      subsidiary: emp.subsidiary_name ? { name: emp.subsidiary_name } : null,
-    })),
+    employees: rows.map((emp) => {
+      const { company_id, ...rest } = emp; // 🔥 only remove company_id
+
+      return {
+        ...rest,
+        role: emp.role_name ? { name: emp.role_name } : null,
+        subsidiary: emp.subsidiary_name
+          ? { name: emp.subsidiary_name }
+          : null,
+      };
+    }),
     total,
   };
 };
@@ -146,13 +153,24 @@ const getByUsername = async (username) => {
 // Create new employee
 const create = async (data) => {
   const cols = COLUMNS.filter((c) => data[c] !== undefined);
+
   const values = cols.map((c) =>
-    c === "username" ? data[c].toLowerCase() : data[c],
+    c === "username" ? data[c].toLowerCase() : data[c]
   );
+
   const params = values.map((_, i) => `$${i + 1}`).join(",");
-  const q = `INSERT INTO employees (${cols.join(
-    ",",
-  )}) VALUES (${params}) RETURNING *`;
+
+  // ❌ exclude company_id, password, confirmpassword
+  const returningCols = COLUMNS.filter(
+    (c) => !["company_id"].includes(c)
+  );
+
+  const q = `
+    INSERT INTO employees (${cols.join(",")})
+    VALUES (${params})
+    RETURNING ${returningCols.join(",")}
+  `;
+
   const { rows } = await pool.query(q, values);
   return rows[0];
 };

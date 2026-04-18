@@ -54,6 +54,11 @@
             "date": 1776406747923,
             "name": "logs\\error-2026-04-17.log",
             "hash": "ab6468616e186fd0f5cd57849fd19506c1b614bbe1c496c3cc69e6ef173544aa"
+        },
+        {
+            "date": 1776452454095,
+            "name": "logs\\error-2026-04-18.log",
+            "hash": "9af1d497a2d4c40a4e8291c4e57d5c59a251539f11b8aeb2a79799de36872374"
         }
     ],
     "hashType": "sha256"

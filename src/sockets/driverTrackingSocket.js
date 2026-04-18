@@ -46,6 +46,10 @@ function handleDriverTrackingSocket(ws) {
       const data = JSON.parse(message);
 
       const { driverId, lat, lng } = data;
+      console.log(
+      "🚀 INCOMING DRIVER APP TRACKING BODY:",
+      JSON.stringify(data, null, 2),
+    );
 
       // ❗ validation
       if (!driverId || !lat || !lng) return;

@@ -61,10 +61,16 @@ const app = express();
 app.use(
   cors({
     origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+app.options("*", cors());
+
+app.use((req, res, next) => {
+  res.setHeader("Connection", "keep-alive");
+  next();
+});
 
 // ✅ Ensure uploads folder exists
 const uploadDir = path.join(__dirname, "uploads");

@@ -590,14 +590,26 @@ exports.updateBookingStatus = async (req, res) => {
 
     const driverId = booking.rows[0].driver_id;
 
+    //RIDE ACCEPTED
+    if (booking_status_id == 15) {
+      await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
+    }
+
     // ON ROUTE
     if (booking_status_id == 3) {
       await updateBookingonRoute(bookingId, true, false, false);
+      await Driver.updateDriverStatus(driverId, "On Route", "Unavailable");
     }
 
     // ARRIVED
     if (booking_status_id == 6) {
       await updateBookingonRoute(bookingId, false, false, true);
+      await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
+    }
+
+    // SOON TO CLEAR
+    if (booking_status_id == 10) {
+      await Driver.updateDriverStatus(driverId, "STC", "Unavailable");
     }
 
     // COMPLETED
