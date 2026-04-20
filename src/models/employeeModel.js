@@ -112,9 +112,7 @@ const getAll = async ({
       return {
         ...rest,
         role: emp.role_name ? { name: emp.role_name } : null,
-        subsidiary: emp.subsidiary_name
-          ? { name: emp.subsidiary_name }
-          : null,
+        subsidiary: emp.subsidiary_name ? { name: emp.subsidiary_name } : null,
       };
     }),
     total,
@@ -155,15 +153,13 @@ const create = async (data) => {
   const cols = COLUMNS.filter((c) => data[c] !== undefined);
 
   const values = cols.map((c) =>
-    c === "username" ? data[c].toLowerCase() : data[c]
+    c === "username" ? data[c].toLowerCase() : data[c],
   );
 
   const params = values.map((_, i) => `$${i + 1}`).join(",");
 
   // ❌ exclude company_id, password, confirmpassword
-  const returningCols = COLUMNS.filter(
-    (c) => !["company_id"].includes(c)
-  );
+  const returningCols = COLUMNS.filter((c) => !["company_id"].includes(c));
 
   const q = `
     INSERT INTO employees (${cols.join(",")})

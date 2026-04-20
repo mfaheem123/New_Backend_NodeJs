@@ -1087,8 +1087,8 @@ const Driver = {
   // Update driver login session
   // async updateDriverLoginStatus(driverId) {
   //   const query = `
-  //       UPDATE drivers 
-  //       SET 
+  //       UPDATE drivers
+  //       SET
   //         session_status = 'logged_in',
   //         driver_status = 'Available',
   //         booking_status = 'Available',

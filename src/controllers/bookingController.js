@@ -33,6 +33,8 @@ const {
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
+const { notifyDriverBookingStatus } = require("../sockets/driverTrackingSocket");
+
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -593,23 +595,27 @@ exports.updateBookingStatus = async (req, res) => {
     //RIDE ACCEPTED
     if (booking_status_id == 15) {
       await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
+      await notifyDriverBookingStatus(driverId);
     }
 
     // ON ROUTE
     if (booking_status_id == 3) {
       await updateBookingonRoute(bookingId, true, false, false);
       await Driver.updateDriverStatus(driverId, "On Route", "Unavailable");
+      await notifyDriverBookingStatus(driverId);
     }
 
     // ARRIVED
     if (booking_status_id == 6) {
       await updateBookingonRoute(bookingId, false, false, true);
       await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
+      await notifyDriverBookingStatus(driverId);
     }
 
     // SOON TO CLEAR
     if (booking_status_id == 10) {
       await Driver.updateDriverStatus(driverId, "STC", "Unavailable");
+      await notifyDriverBookingStatus(driverId);
     }
 
     // COMPLETED
@@ -618,6 +624,8 @@ exports.updateBookingStatus = async (req, res) => {
 
       await Driver.updateDriverStatus(driverId, "Available", "Available");
 
+      await notifyDriverBookingStatus(driverId);
+      
       const driver = await Driver.getById(driverId);
 
       notifyBusyDriverUpdate(driver);

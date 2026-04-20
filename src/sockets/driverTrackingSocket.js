@@ -2,6 +2,31 @@ const WebSocket = require("ws");
 const logger = require("../utils/logger");
 const db = require("../db");
 
+// ==============================
+// 📏 DISTANCE CALCULATION
+// ==============================
+function getDistanceInMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const toRad = (value) => (value * Math.PI) / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// ==============================
+// 🧠 MEMORY STORE
+// ==============================
+const lastDriverLocation = new Map(); // driverId -> { lat, lng }
+
 // Dashboard clients
 const trackingDashboardClients = new Set();
 
@@ -44,23 +69,19 @@ function handleDriverTrackingSocket(ws) {
   ws.on("message", async (message) => {
     try {
       const data = JSON.parse(message);
-
       const { driverId, lat, lng } = data;
-      console.log(
-      "🚀 INCOMING DRIVER APP TRACKING BODY:",
-      JSON.stringify(data, null, 2),
-    );
 
-      // ❗ validation
+      console.log("🚀 TRACKING:", data);
+
       if (!driverId || !lat || !lng) return;
 
       // ==============================
-      // 1️⃣ DRIVER FETCH (ALL REQUIRED FIELDS)
+      // 1️⃣ DRIVER FETCH
       // ==============================
       const result = await db.query(
-        `SELECT id, name, username, driver_status, booking_status, session_status
+        `SELECT id, driver_status, booking_status, session_status, latitude, longitude
          FROM drivers WHERE id=$1`,
-        [driverId],
+        [driverId]
       );
 
       if (!result.rows.length) return;
@@ -68,17 +89,55 @@ function handleDriverTrackingSocket(ws) {
       const driver = result.rows[0];
 
       // ==============================
-      // 2️⃣ UPDATE LATEST LOCATION
+      // 2️⃣ PREVIOUS LOCATION
+      // ==============================
+      let prevLocation = lastDriverLocation.get(driverId);
+
+      // 🔥 fallback (server restart case)
+      if (!prevLocation && driver.latitude && driver.longitude) {
+        prevLocation = {
+          lat: parseFloat(driver.latitude),
+          lng: parseFloat(driver.longitude),
+        };
+      }
+
+      // ==============================
+      // 3️⃣ DISTANCE CHECK
+      // ==============================
+      let shouldBroadcast = false;
+
+      if (!prevLocation) {
+        shouldBroadcast = true;
+      } else {
+        const distance = getDistanceInMeters(
+          prevLocation.lat,
+          prevLocation.lng,
+          lat,
+          lng
+        );
+
+        console.log(
+          `📏 Driver ${driverId} moved: ${distance.toFixed(2)} meters`
+        );
+
+        if (distance >= 50) {
+          shouldBroadcast = true;
+        }
+      }
+
+      // update memory
+      lastDriverLocation.set(driverId, { lat, lng });
+
+      // ==============================
+      // 4️⃣ UPDATE DB
       // ==============================
       await db.query(
-        `UPDATE drivers 
-         SET latitude=$1, longitude=$2 
-         WHERE id=$3`,
-        [lat, lng, driverId],
+        `UPDATE drivers SET latitude=$1, longitude=$2 WHERE id=$3`,
+        [lat, lng, driverId]
       );
 
       // ==============================
-      // 3️⃣ INSERT LOG (THROTTLED)
+      // 5️⃣ INSERT LOG (THROTTLED)
       // ==============================
       const now = Date.now();
       const last = lastSavedAt.get(driverId) || 0;
@@ -87,37 +146,35 @@ function handleDriverTrackingSocket(ws) {
         await db.query(
           `INSERT INTO driver_location_logs (driver_id, latitude, longitude)
            VALUES ($1,$2,$3)`,
-          [driverId, lat, lng],
+          [driverId, lat, lng]
         );
 
         lastSavedAt.set(driverId, now);
       }
 
       // ==============================
-      // 4️⃣ PREPARE DASHBOARD DATA
+      // 6️⃣ BROADCAST (ONLY IF MOVED)
       // ==============================
-      const driverData = {
-        id: driver.id,
-        lat,
-        lng,
-        booking_status: driver.booking_status,
-        session_status: driver.session_status,
-        driver_status: driver.driver_status,
-      };
+      if (shouldBroadcast) {
+        const payload = JSON.stringify({
+          event: "DRIVER_LOCATION_UPDATE",
+          data: {
+            id: driver.id,
+            lat,
+            lng,
+            booking_status: driver.booking_status,
+            session_status: driver.session_status,
+            driver_status: driver.driver_status,
+          },
+        });
 
-      // ==============================
-      // 5️⃣ BROADCAST TRACKING
-      // ==============================
-      const payload = JSON.stringify({
-        event: "DRIVER_LOCATION_UPDATE",
-        data: driverData,
-      });
+        trackingDashboardClients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(payload);
+          }
+        });
+      }
 
-      trackingDashboardClients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(payload);
-        }
-      });
     } catch (err) {
       logger.error("ws:tracking-message-error", {
         error: err.message,
@@ -140,14 +197,14 @@ function handleDriverTrackingSocket(ws) {
 }
 
 // ==============================
-// 🟡 BOOKING STATUS EVENT (API SE CALL HOGA)
+// 🟡 BOOKING STATUS EVENT
 // ==============================
 async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
   try {
     const result = await db.query(
       `SELECT id, booking_status, session_status, driver_status, latitude, longitude
        FROM drivers WHERE id=$1`,
-      [driverId],
+      [driverId]
     );
 
     if (!result.rows.length) return;
@@ -175,6 +232,7 @@ async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
     logger.info("ws:booking-status-broadcast", {
       driverId: driver.id,
     });
+
   } catch (err) {
     logger.error("ws:booking-status-error", {
       error: err.message,

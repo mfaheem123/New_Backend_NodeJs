@@ -578,7 +578,7 @@ exports.getByCompany = async (req, res) => {
   }
 };
 
-// DRIVER LOGIN WITHOUT LOCATION 
+// DRIVER LOGIN WITHOUT LOCATION
 // exports.driverLogin = async (req, res) => {
 //   const { username, password, fcm_token } = req.body;
 //   try {
@@ -618,14 +618,13 @@ exports.getByCompany = async (req, res) => {
 //   }
 // };
 
-
 //DRIVER LOGIN WITH LOCATION
 exports.driverLogin = async (req, res) => {
   const { username, password, fcm_token, latitude, longitude } = req.body;
   console.log(
-      "🚀 INCOMING DRIVER LOGIN BODY:",
-      JSON.stringify(req.body, null, 2),
-    );
+    "🚀 INCOMING DRIVER LOGIN BODY:",
+    JSON.stringify(req.body, null, 2),
+  );
   try {
     const driver = await Driver.findDriverByUsername(username);
     if (!driver) {
