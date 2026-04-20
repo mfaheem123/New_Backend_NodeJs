@@ -14,9 +14,7 @@ function getDistanceInMeters(lat1, lon1, lat2, lon2) {
 
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
@@ -79,10 +77,24 @@ function handleDriverTrackingSocket(ws) {
       // 1️⃣ DRIVER FETCH
       // ==============================
       const result = await db.query(
-        `SELECT id, driver_status, booking_status, session_status, latitude, longitude
-         FROM drivers WHERE id=$1`,
-        [driverId]
-      );
+  `SELECT 
+      d.id,
+      d.name,
+      d.zone,
+      d.username,
+      d.driver_status,
+      d.booking_status,
+      d.session_status,
+      d.latitude,
+      d.longitude,
+      d.last_login_at,
+      vt.name AS vehicle_type
+   FROM drivers d
+   LEFT JOIN vehicles v ON d.vehicle_id = v.id
+   LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
+   WHERE d.id = $1`,
+  [driverId]
+);
 
       if (!result.rows.length) return;
 
@@ -113,11 +125,11 @@ function handleDriverTrackingSocket(ws) {
           prevLocation.lat,
           prevLocation.lng,
           lat,
-          lng
+          lng,
         );
 
         console.log(
-          `📏 Driver ${driverId} moved: ${distance.toFixed(2)} meters`
+          `📏 Driver ${driverId} moved: ${distance.toFixed(2)} meters`,
         );
 
         if (distance >= 50) {
@@ -133,7 +145,7 @@ function handleDriverTrackingSocket(ws) {
       // ==============================
       await db.query(
         `UPDATE drivers SET latitude=$1, longitude=$2 WHERE id=$3`,
-        [lat, lng, driverId]
+        [lat, lng, driverId],
       );
 
       // ==============================
@@ -146,7 +158,7 @@ function handleDriverTrackingSocket(ws) {
         await db.query(
           `INSERT INTO driver_location_logs (driver_id, latitude, longitude)
            VALUES ($1,$2,$3)`,
-          [driverId, lat, lng]
+          [driverId, lat, lng],
         );
 
         lastSavedAt.set(driverId, now);
@@ -156,25 +168,29 @@ function handleDriverTrackingSocket(ws) {
       // 6️⃣ BROADCAST (ONLY IF MOVED)
       // ==============================
       if (shouldBroadcast) {
-        const payload = JSON.stringify({
-          event: "DRIVER_LOCATION_UPDATE",
-          data: {
-            id: driver.id,
-            lat,
-            lng,
-            booking_status: driver.booking_status,
-            session_status: driver.session_status,
-            driver_status: driver.driver_status,
-          },
-        });
+  const payload = JSON.stringify({
+    event: "DRIVER_LOCATION_UPDATE",
+    data: {
+      id: driver.id,
+      username: driver.username,
+      name: driver.name,
+      zone: driver.zone,
+      latitude: lat,
+      longitude: lng,
+      booking_status: driver.booking_status,
+      session_status: driver.session_status,
+      driver_status: driver.driver_status,
+      last_login_at: driver.last_login_at,
+      vehicle_type: driver.vehicle_type,
+    },
+  });
 
-        trackingDashboardClients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(payload);
-          }
-        });
-      }
-
+  trackingDashboardClients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(payload);
+    }
+  });
+}
     } catch (err) {
       logger.error("ws:tracking-message-error", {
         error: err.message,
@@ -202,26 +218,45 @@ function handleDriverTrackingSocket(ws) {
 async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
   try {
     const result = await db.query(
-      `SELECT id, booking_status, session_status, driver_status, latitude, longitude
-       FROM drivers WHERE id=$1`,
-      [driverId]
-    );
+  `SELECT 
+      d.id,
+      d.name,
+      d.username,
+      d.zone,
+      d.driver_status,
+      d.booking_status,
+      d.session_status,
+      d.latitude,
+      d.longitude,
+      d.last_login_at,
+      vt.name AS vehicle_type
+   FROM drivers d
+   LEFT JOIN vehicles v ON d.vehicle_id = v.id
+   LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
+   WHERE d.id = $1`,
+  [driverId],
+);
 
     if (!result.rows.length) return;
 
     const driver = result.rows[0];
 
     const payload = JSON.stringify({
-      event: "DRIVER_BOOKING_STATUS_UPDATE",
-      data: {
-        id: driver.id,
-        lat: lat ?? driver.latitude,
-        lng: lng ?? driver.longitude,
-        booking_status: driver.booking_status,
-        session_status: driver.session_status,
-        driver_status: driver.driver_status,
-      },
-    });
+  event: "DRIVER_BOOKING_STATUS_UPDATE",
+  data: {
+    id: driver.id,
+    username: driver.username,
+    name: driver.name,
+    zone: driver.zone,
+    latitude: lat ?? driver.latitude,
+    longitude: lng ?? driver.longitude,
+    booking_status: driver.booking_status,
+    session_status: driver.session_status,
+    driver_status: driver.driver_status,
+    last_login_at: driver.last_login_at,
+    vehicle_type: driver.vehicle_type,
+  },
+});
 
     trackingDashboardClients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
@@ -232,7 +267,6 @@ async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
     logger.info("ws:booking-status-broadcast", {
       driverId: driver.id,
     });
-
   } catch (err) {
     logger.error("ws:booking-status-error", {
       error: err.message,

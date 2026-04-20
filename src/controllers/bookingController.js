@@ -33,8 +33,9 @@ const {
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
-const { notifyDriverBookingStatus } = require("../sockets/driverTrackingSocket");
-
+const {
+  notifyDriverBookingStatus,
+} = require("../sockets/driverTrackingSocket");
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -625,7 +626,7 @@ exports.updateBookingStatus = async (req, res) => {
       await Driver.updateDriverStatus(driverId, "Available", "Available");
 
       await notifyDriverBookingStatus(driverId);
-      
+
       const driver = await Driver.getById(driverId);
 
       notifyBusyDriverUpdate(driver);

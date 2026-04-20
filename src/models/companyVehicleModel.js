@@ -96,14 +96,14 @@ const CompanyVehicle = {
         vehicle_type_id, log_book_number, phc_vehicle_number, mot_number,
         mot2_number, insurance_number, phc_vehicle_expiry, mot_expiry,
         mot2_expiry, insurance_expiry, log_book_document, phc_vehicle_document,
-        mot_document, mot2_document, insurance_document, start_date, end_date, phc_vehicle_expiry_time, mot_expiry_time, mot2_expiry_time, insurance_expiry_time
+        mot_document, mot2_document, insurance_document, start_date, end_date, phc_vehicle_expiry_time, mot_expiry_time, mot2_expiry_time, insurance_expiry_time, company_id
       )
       VALUES (
         $1,$2,$3,$4,$5,$6,$7,
         $8,$9,$10,$11,
         $12,$13,$14,$15,
         $16,$17,$18,$19,
-        $20,$21,$22,$23,$24,$25,$26,$27,$28
+        $20,$21,$22,$23,$24,$25,$26,$27,$28,$29
       )
       RETURNING *;
     `;
@@ -136,9 +136,12 @@ const CompanyVehicle = {
       data.mot_expiry_time,
       data.mot2_expiry_time,
       data.insurance_expiry_time,
+      data.company_id,
     ];
     const { rows } = await db.query(query, values);
-    return rows[0];
+    const { company_id, ...vehicle } = rows[0]; // ❌ remove only company_id
+
+return vehicle;
   },
 
   // 🔹 Get all vehicles
@@ -151,6 +154,7 @@ const CompanyVehicle = {
     make,
     model,
     color,
+    company_id,
   }) {
     const offset = (page - 1) * limit;
 
@@ -183,6 +187,10 @@ const CompanyVehicle = {
       conditions.push(`cv.color ILIKE $${idx++}`);
       values.push(`%${color}%`);
     }
+    if (company_id) {
+    conditions.push(`cv.company_id = $${idx++}`);
+    values.push(company_id);
+  }
 
     const whereClause = conditions.length
       ? `WHERE ${conditions.join(" AND ")}`
@@ -210,13 +218,17 @@ const CompanyVehicle = {
   `;
     const { rows } = await db.query(query, values);
 
-    const vehicles = rows.map((r) => ({
-      ...r,
-      vehicle_type: {
-        id: r.vehicle_type_id,
-        name: r.vehicle_type_name,
-      },
-    }));
+    const vehicles = rows.map((r) => {
+  const { company_id, ...rest } = r; // ❌ remove only company_id
+
+  return {
+    ...rest,
+    vehicle_type: {
+      id: r.vehicle_type_id,
+      name: r.vehicle_type_name,
+    },
+  };
+});
 
     return { vehicles, total };
   },

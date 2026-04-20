@@ -38,10 +38,6 @@ const create = async (req, res) => {
         });
       }
     }
-    console.log(
-      "🚀 INCOMING COMPANY VEHICLE ADD BODY:",
-      JSON.stringify(req.body, null, 2),
-    );
     // ✅ Create new vehicle
     const vehicle = await CompanyVehicle.create(req.body);
     res.status(200).json({ status: true, vehicle });
@@ -82,6 +78,7 @@ const getAll = async (req, res) => {
       make,
       model,
       color,
+      company_id,
     } = req.query;
 
     const { vehicles, total } = await CompanyVehicle.findAll({
@@ -93,6 +90,7 @@ const getAll = async (req, res) => {
       make,
       model,
       color,
+      company_id,
     });
 
     res.json({
