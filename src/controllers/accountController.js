@@ -3,11 +3,14 @@ const Account = require("../models/accountModel");
 // CREATE ACCOUNT
 exports.createAccount = async (req, res) => {
   try {
-    const account = await Account.createAccountWithRelations(req.body);
+    
     console.log(
       "🚀 INCOMING ACCOUNT ADD BODY:",
       JSON.stringify(req.body, null, 2),
     );
+
+    const account = await Account.createAccountWithRelations(req.body);
+    
     res.status(200).json({
       status: true,
       account,
@@ -32,6 +35,7 @@ exports.getAccounts = async (req, res) => {
       telephone,
       contact_name,
       subsidiary,
+      company_id,
     } = req.query;
 
     page = parseInt(page);
@@ -50,6 +54,7 @@ exports.getAccounts = async (req, res) => {
         telephone,
         contact_name,
         subsidiary,
+        company_id,
       },
     });
 

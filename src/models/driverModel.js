@@ -1612,7 +1612,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return result.rows;
   },
   async getLoginDriverTracking() {
-     const query = `
+    const query = `
     SELECT 
       d.id,
       d.name,

@@ -15,7 +15,7 @@ const create = async (req, res) => {
         req.body[key] = `${BASE_URL}${file.filename}`;
       });
     }
-     console.log(
+    console.log(
       "🚀 INCOMING COMPANY VEHICLE ADD BODY:",
       JSON.stringify(req.body, null, 2),
     );
@@ -138,9 +138,11 @@ const update = async (req, res) => {
     }
 
     if (Object.keys(dataToUpdate).length === 0) {
-      return res.status(400).json({ status: false, message: "No fields to update" });
+      return res
+        .status(400)
+        .json({ status: false, message: "No fields to update" });
     }
-console.log(
+    console.log(
       "🚀 INCOMING COMPANY VEHICLE UPDATE BODY:",
       JSON.stringify(req.body, null, 2),
     );
@@ -153,7 +155,6 @@ console.log(
     res.status(500).json({ status: false, message: "Server Error" });
   }
 };
-
 
 const remove = async (req, res) => {
   try {

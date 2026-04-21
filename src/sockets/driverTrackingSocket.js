@@ -77,7 +77,7 @@ function handleDriverTrackingSocket(ws) {
       // 1️⃣ DRIVER FETCH
       // ==============================
       const result = await db.query(
-  `SELECT 
+        `SELECT 
       d.id,
       d.name,
       d.zone,
@@ -93,8 +93,8 @@ function handleDriverTrackingSocket(ws) {
    LEFT JOIN vehicles v ON d.vehicle_id = v.id
    LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
    WHERE d.id = $1`,
-  [driverId]
-);
+        [driverId],
+      );
 
       if (!result.rows.length) return;
 
@@ -168,29 +168,29 @@ function handleDriverTrackingSocket(ws) {
       // 6️⃣ BROADCAST (ONLY IF MOVED)
       // ==============================
       if (shouldBroadcast) {
-  const payload = JSON.stringify({
-    event: "DRIVER_LOCATION_UPDATE",
-    data: {
-      id: driver.id,
-      username: driver.username,
-      name: driver.name,
-      zone: driver.zone,
-      latitude: lat,
-      longitude: lng,
-      booking_status: driver.booking_status,
-      session_status: driver.session_status,
-      driver_status: driver.driver_status,
-      last_login_at: driver.last_login_at,
-      vehicle_type: driver.vehicle_type,
-    },
-  });
+        const payload = JSON.stringify({
+          event: "DRIVER_LOCATION_UPDATE",
+          data: {
+            id: driver.id,
+            username: driver.username,
+            name: driver.name,
+            zone: driver.zone,
+            latitude: lat,
+            longitude: lng,
+            booking_status: driver.booking_status,
+            session_status: driver.session_status,
+            driver_status: driver.driver_status,
+            last_login_at: driver.last_login_at,
+            vehicle_type: driver.vehicle_type,
+          },
+        });
 
-  trackingDashboardClients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(payload);
-    }
-  });
-}
+        trackingDashboardClients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(payload);
+          }
+        });
+      }
     } catch (err) {
       logger.error("ws:tracking-message-error", {
         error: err.message,
@@ -218,7 +218,7 @@ function handleDriverTrackingSocket(ws) {
 async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
   try {
     const result = await db.query(
-  `SELECT 
+      `SELECT 
       d.id,
       d.name,
       d.username,
@@ -234,29 +234,29 @@ async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
    LEFT JOIN vehicles v ON d.vehicle_id = v.id
    LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
    WHERE d.id = $1`,
-  [driverId],
-);
+      [driverId],
+    );
 
     if (!result.rows.length) return;
 
     const driver = result.rows[0];
 
     const payload = JSON.stringify({
-  event: "DRIVER_BOOKING_STATUS_UPDATE",
-  data: {
-    id: driver.id,
-    username: driver.username,
-    name: driver.name,
-    zone: driver.zone,
-    latitude: lat ?? driver.latitude,
-    longitude: lng ?? driver.longitude,
-    booking_status: driver.booking_status,
-    session_status: driver.session_status,
-    driver_status: driver.driver_status,
-    last_login_at: driver.last_login_at,
-    vehicle_type: driver.vehicle_type,
-  },
-});
+      event: "DRIVER_BOOKING_STATUS_UPDATE",
+      data: {
+        id: driver.id,
+        username: driver.username,
+        name: driver.name,
+        zone: driver.zone,
+        latitude: lat ?? driver.latitude,
+        longitude: lng ?? driver.longitude,
+        booking_status: driver.booking_status,
+        session_status: driver.session_status,
+        driver_status: driver.driver_status,
+        last_login_at: driver.last_login_at,
+        vehicle_type: driver.vehicle_type,
+      },
+    });
 
     trackingDashboardClients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {

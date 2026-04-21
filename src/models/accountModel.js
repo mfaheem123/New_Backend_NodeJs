@@ -29,12 +29,12 @@ exports.createAccountWithRelations = async (data) => {
           has_booked_by, fare_controller, has_escort, has_vat,
           admin_fees_vat, account_fees_vat, has_order_number,
           dispatch_customer_text, confirmation_text, arrival_text,
-          clear_job_text, bank_information
+          clear_job_text, bank_information, company_id
         )
         VALUES (
           $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
           $13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,
-          $27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38
+          $27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39
         )
         RETURNING *;
       `;
@@ -78,6 +78,7 @@ exports.createAccountWithRelations = async (data) => {
       data.arrival_text,
       data.clear_job_text,
       data.bank_information,
+      data.company_id,
     ];
 
     const accountRes = await db.query(accountQuery, values);
@@ -163,7 +164,8 @@ exports.createAccountWithRelations = async (data) => {
     }
 
     await db.query("COMMIT");
-    return account;
+    const { company_id, ...cleanAccount } = account;
+return cleanAccount;
   } catch (err) {
     await db.query("ROLLBACK");
     throw err;
@@ -181,6 +183,7 @@ exports.getAccounts = async ({ offset = 0, limit = 100, filters = {} }) => {
     telephone,
     contact_name,
     subsidiary,
+    company_id,
   } = filters;
 
   const conditions = [];
@@ -220,7 +223,10 @@ exports.getAccounts = async ({ offset = 0, limit = 100, filters = {} }) => {
     conditions.push(`s.name ILIKE $${idx++}`);
     params.push(`%${subsidiary}%`);
   }
-
+if (company_id) {
+    conditions.push(`a.company_id = $${idx++}`);
+    params.push(company_id);
+  }
   const whereClause = conditions.length
     ? `WHERE ${conditions.join(" AND ")}`
     : "";
@@ -323,7 +329,10 @@ OFFSET $${idx++} LIMIT $${idx++};
   params.push(offset, limit);
   const result = await db.query(dataQuery, params);
 
-  return { accounts: result.rows, total };
+  return {
+  accounts: result.rows.map(({ company_id, ...rest }) => rest),
+  total,
+};
 };
 
 // --- GET SINGLE ACCOUNT WITH RELATIONS ---

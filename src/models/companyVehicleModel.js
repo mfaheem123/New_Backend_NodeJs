@@ -141,7 +141,7 @@ const CompanyVehicle = {
     const { rows } = await db.query(query, values);
     const { company_id, ...vehicle } = rows[0]; // ❌ remove only company_id
 
-return vehicle;
+    return vehicle;
   },
 
   // 🔹 Get all vehicles
@@ -188,9 +188,9 @@ return vehicle;
       values.push(`%${color}%`);
     }
     if (company_id) {
-    conditions.push(`cv.company_id = $${idx++}`);
-    values.push(company_id);
-  }
+      conditions.push(`cv.company_id = $${idx++}`);
+      values.push(company_id);
+    }
 
     const whereClause = conditions.length
       ? `WHERE ${conditions.join(" AND ")}`
@@ -219,16 +219,16 @@ return vehicle;
     const { rows } = await db.query(query, values);
 
     const vehicles = rows.map((r) => {
-  const { company_id, ...rest } = r; // ❌ remove only company_id
+      const { company_id, ...rest } = r; // ❌ remove only company_id
 
-  return {
-    ...rest,
-    vehicle_type: {
-      id: r.vehicle_type_id,
-      name: r.vehicle_type_name,
-    },
-  };
-});
+      return {
+        ...rest,
+        vehicle_type: {
+          id: r.vehicle_type_id,
+          name: r.vehicle_type_name,
+        },
+      };
+    });
 
     return { vehicles, total };
   },
