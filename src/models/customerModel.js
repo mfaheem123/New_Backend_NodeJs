@@ -484,4 +484,15 @@ RETURNING id
     const result = await db.query(query, [`%${mobile}%`]);
     return result.rows;
   },
+   updateCustomerFcmToken: async (customerId, fcmToken) => {
+      const query = `
+      UPDATE customers
+      SET 
+        fcm_token = $1,
+        fcm_updated_at = NOW()
+      WHERE id = $2
+    `;
+      await db.query(query, [fcmToken, customerId]);
+      return true;
+    },
 };

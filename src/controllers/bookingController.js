@@ -36,6 +36,7 @@ const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
 const {
   notifyDriverBookingStatus,
 } = require("../sockets/driverTrackingSocket");
+const { sendBookingNotification } = require("../services/notificationService");
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -592,11 +593,16 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const driverId = booking.rows[0].driver_id;
+    // const customerId = booking.rows[0].customer_id;
+    // const booking_source = booking.rows[0].booking_source;
 
     //RIDE ACCEPTED
     if (booking_status_id == 15) {
       await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
       await notifyDriverBookingStatus(driverId);
+      // if(booking_source == "app"){
+      // await sendRideAcceptedNotification(customerId, booking);
+      // }
     }
 
     // ON ROUTE
