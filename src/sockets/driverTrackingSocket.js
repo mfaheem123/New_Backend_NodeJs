@@ -69,7 +69,7 @@ function handleDriverTrackingSocket(ws) {
       const data = JSON.parse(message);
       const { driverId, lat, lng } = data;
 
-      console.log("🚀 TRACKING:", data);
+      console.log("🚀 DRIVER TRACKING DATA:", data);
 
       if (!driverId || !lat || !lng) return;
 
@@ -89,10 +89,10 @@ function handleDriverTrackingSocket(ws) {
       d.longitude,
       d.last_login_at,
       vt.name AS vehicle_type
-   FROM drivers d
-   LEFT JOIN vehicles v ON d.vehicle_id = v.id
-   LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
-   WHERE d.id = $1`,
+      FROM drivers d
+      LEFT JOIN vehicles v ON d.vehicle_id = v.id
+      LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
+      WHERE d.id = $1`,
         [driverId],
       );
 
@@ -230,10 +230,10 @@ async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
       d.longitude,
       d.last_login_at,
       vt.name AS vehicle_type
-   FROM drivers d
-   LEFT JOIN vehicles v ON d.vehicle_id = v.id
-   LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
-   WHERE d.id = $1`,
+      FROM drivers d
+      LEFT JOIN vehicles v ON d.vehicle_id = v.id
+      LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
+      WHERE d.id = $1`,
       [driverId],
     );
 

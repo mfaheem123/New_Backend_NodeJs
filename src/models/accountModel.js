@@ -165,7 +165,7 @@ exports.createAccountWithRelations = async (data) => {
 
     await db.query("COMMIT");
     const { company_id, ...cleanAccount } = account;
-return cleanAccount;
+    return cleanAccount;
   } catch (err) {
     await db.query("ROLLBACK");
     throw err;
@@ -223,7 +223,7 @@ exports.getAccounts = async ({ offset = 0, limit = 100, filters = {} }) => {
     conditions.push(`s.name ILIKE $${idx++}`);
     params.push(`%${subsidiary}%`);
   }
-if (company_id) {
+  if (company_id) {
     conditions.push(`a.company_id = $${idx++}`);
     params.push(company_id);
   }
@@ -330,9 +330,9 @@ OFFSET $${idx++} LIMIT $${idx++};
   const result = await db.query(dataQuery, params);
 
   return {
-  accounts: result.rows.map(({ company_id, ...rest }) => rest),
-  total,
-};
+    accounts: result.rows.map(({ company_id, ...rest }) => rest),
+    total,
+  };
 };
 
 // --- GET SINGLE ACCOUNT WITH RELATIONS ---

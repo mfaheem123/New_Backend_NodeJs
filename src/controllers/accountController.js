@@ -3,14 +3,13 @@ const Account = require("../models/accountModel");
 // CREATE ACCOUNT
 exports.createAccount = async (req, res) => {
   try {
-    
     console.log(
       "🚀 INCOMING ACCOUNT ADD BODY:",
       JSON.stringify(req.body, null, 2),
     );
 
     const account = await Account.createAccountWithRelations(req.body);
-    
+
     res.status(200).json({
       status: true,
       account,
