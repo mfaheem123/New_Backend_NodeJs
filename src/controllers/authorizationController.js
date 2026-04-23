@@ -47,7 +47,10 @@ const getByRole = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { role_id } = req.params;
-
+    console.log(
+      "🚀 INCOMING AUTHORIZATION UPDATE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const update = await AuthModel.updateAuthorization(role_id, req.body);
 
     const data = await AuthModel.getByRoleId(role_id);

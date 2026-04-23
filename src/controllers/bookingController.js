@@ -660,7 +660,7 @@ exports.updateBookingStatus = async (req, res) => {
     const unavailableStatuses = [15];
 
     if (unavailableStatuses.includes(booking_status_ids)) {
-      await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
+      await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
 
       const driver = await Driver.getById(driverId);
       console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
