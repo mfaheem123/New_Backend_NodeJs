@@ -56,7 +56,6 @@ const driverRentRoutes = require("./routes/driverRentRoutes");
 const lostPropertyRoutes = require("./routes/lostPropertyRoutes");
 const authorizationRoutes = require("./routes/authorizationRoutes");
 
-
 const app = express();
 
 // ✅ CORS configuration
@@ -164,7 +163,6 @@ app.use("/api/fare-meter", fareMeterDetailsRoutes);
 app.use("/api/driver_rent", driverRentRoutes);
 app.use("/api/lost-property", lostPropertyRoutes);
 app.use("/api/authorizations", authorizationRoutes);
-
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

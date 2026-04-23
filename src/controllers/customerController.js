@@ -484,8 +484,8 @@ This code will expire in 15 minutes.
       );
 
       if (fcm_token) {
-      await Customer.updateCustomerFcmToken(customer.id, fcm_token);
-    } 
+        await Customer.updateCustomerFcmToken(customer.id, fcm_token);
+      }
 
       res.status(200).json({
         status: true,

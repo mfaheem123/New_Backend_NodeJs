@@ -646,7 +646,7 @@ exports.driverLogin = async (req, res) => {
     await Driver.updateDriverLoginStatus(driver.id, latitude, longitude);
     if (fcm_token) {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
-    } 
+    }
     // ONLY IMPORTANT FIX
     const updatedDriver = await Driver.getLoginDriverById(driver.id);
     const updatedDriverSocket = await Driver.getById(driver.id);

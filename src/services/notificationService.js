@@ -38,7 +38,7 @@ async function sendRideAcceptedNotification(customerId, booking) {
   // 1️⃣ Customer ka FCM token lao
   const res = await pool.query(
     `SELECT fcm_token FROM customers WHERE id = $1`,
-    [customerId]
+    [customerId],
   );
 
   const fcmToken = res.rows[0]?.fcm_token;
