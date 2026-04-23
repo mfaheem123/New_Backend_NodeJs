@@ -523,3 +523,13 @@
 {"level":"info","message":"GET /api/location-types 200 8.076 ms","timestamp":"2026-04-23T15:24:48.700Z"}
 {"duration":57,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-23T15:24:48.749Z"}
 {"level":"info","message":"GET /api/location-types 200 58.619 ms","timestamp":"2026-04-23T15:24:48.751Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-04-23T15:24:55.166Z","url":"/websocket/driver-login"}
+{"level":"info","message":"ws:dashboard-connected","socketId":"58f63d8f-8075-4f64-9ac7-b3ad8b70ab85","timestamp":"2026-04-23T15:24:55.175Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-04-23T15:24:55.193Z","url":"/websocket/driver-busy"}
+{"level":"info","message":"ws:busy-dashboard-connected","socketId":"bb4def51-0a0d-4157-89c3-ad3b2e39b3da","timestamp":"2026-04-23T15:24:55.195Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-23T15:24:55.383Z"}
+{"level":"info","message":"GET /api/location-types 200 16.358 ms","timestamp":"2026-04-23T15:24:55.391Z"}
+{"duration":56,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-23T15:24:55.432Z"}
+{"level":"info","message":"GET /api/location-types 200 58.083 ms","timestamp":"2026-04-23T15:24:55.434Z"}
+{"duration":8,"level":"info","message":"db-query","rows":1,"text":"\n      INSERT INTO escorts (\n        name, dob, email, mobile, address, active,\n        image, safeguarding_document, pat_document, firstaid_document, dbs_document,\n        safeguarding_number, pat_number, firstaid_number, dbs_number,\n        safeguarding_expiry, pat_expiry, firstaid_expiry, dbs_expiry, company_id\n      )\n      VALUES (\n        $1,$2,$3,$4,$5,$6,\n        $7,$8,$9,$10,$11,\n        $12,$13,$14,$15,\n        $16,$17,$18,$19,$20\n      )\n      RETURNING *;\n    ","timestamp":"2026-04-23T15:24:56.066Z"}
+{"level":"info","message":"POST /api/escorts/add 200 15.795 ms","timestamp":"2026-04-23T15:24:56.068Z"}
