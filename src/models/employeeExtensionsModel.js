@@ -4,7 +4,7 @@ const db = require("../db");
 const addEmployeeExtension = async (
   employee_id,
   extension_number,
-  permanent_flag
+  permanent_flag,
 ) => {
   const query = `
     INSERT INTO employee_extensions (employee_id, extension_number, permanent_flag)
@@ -19,11 +19,8 @@ const addEmployeeExtension = async (
   const employee_query = `UPDATE employees
     SET extension_number = $1
     WHERE id = $2`;
-    
-     await db.query(employee_query, [
-    extension_number,
-    employee_id,
-  ]);
+
+  await db.query(employee_query, [extension_number, employee_id]);
   return result.rows[0];
 };
 
@@ -84,10 +81,10 @@ const updateEmployeeExtension = async (id, fields) => {
 
   // ✅ OPTIONAL: sync with employees table
   if (updatedRow && fields.extension_number !== undefined) {
-    await db.query(
-      `UPDATE employees SET extension_number = $1 WHERE id = $2`,
-      [fields.extension_number, updatedRow.employee_id]
-    );
+    await db.query(`UPDATE employees SET extension_number = $1 WHERE id = $2`, [
+      fields.extension_number,
+      updatedRow.employee_id,
+    ]);
   }
 
   return updatedRow;
