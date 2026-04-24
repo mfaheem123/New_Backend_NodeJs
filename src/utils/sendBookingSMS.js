@@ -53,12 +53,12 @@ const sendBookingSMS = async (clean) => {
 
       // TEMPLATE 3 (ONLY IF DRIVER EXISTS)
       if (clean.driver_id) {
-         let subsidiaryEmail = "";
+        let subsidiaryEmail = "";
 
-  if (clean.subsidiary_id) {
-    const subsidiary = await subsidiaryModel.getById(clean.subsidiary_id);
-    subsidiaryEmail = subsidiary?.email || "";
-  }
+        if (clean.subsidiary_id) {
+          const subsidiary = await subsidiaryModel.getById(clean.subsidiary_id);
+          subsidiaryEmail = subsidiary?.email || "";
+        }
         const template3Data = {
           company_name: clean.subsidiary?.name ?? "",
           company_telephone: clean.subsidiary?.telephone_number ?? "",

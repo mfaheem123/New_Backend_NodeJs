@@ -9,13 +9,14 @@ const VehicleType = {
       hand_luggages,
       minimum_fares,
       minimum_miles,
+      company_id,
     } = filters;
 
     const conditions = [];
     const params = [];
     let idx = 1;
 
-    // 🔹 Build dynamic WHERE filters
+    // 🔹 Filters
     if (name) {
       conditions.push(`vt.name ILIKE $${idx++}`);
       params.push(`%${name}%`);
@@ -40,12 +41,16 @@ const VehicleType = {
       conditions.push(`CAST(vt.minimum_miles AS TEXT) ILIKE $${idx++}`);
       params.push(`%${minimum_miles}%`);
     }
+    if (company_id) {
+      conditions.push(`vt.company_id = $${idx++}`);
+      params.push(company_id);
+    }
 
     const whereClause = conditions.length
       ? `WHERE ${conditions.join(" AND ")}`
       : "";
 
-    // 🔹 Count all matching records (without pagination)
+    // 🔹 Count Query
     const countQuery = `
     SELECT COUNT(*) AS total
     FROM vehicle_types vt
@@ -54,14 +59,33 @@ const VehicleType = {
     const countResult = await pool.query(countQuery, params);
     const total = parseInt(countResult.rows[0].total) || 0;
 
-    // 🔹 Paginated query (only subset of matched records)
+    // 🔥 MAIN FIX: company_id exclude
     const dataQuery = `
-    SELECT vt.*
+    SELECT 
+      vt.id,
+      vt.name,
+      vt.passengers,
+      vt.luggages,
+      vt.hand_luggages,
+      vt.minimum_fares,
+      vt.minimum_miles,
+      vt.waiting_time,
+      vt.waiting_time_duration,
+      vt.default_vehicle,
+      vt.vehicle_type_minimum_fares,
+      vt.image,
+      vt.created_at,
+      vt.updated_at,
+      vt.background_color,
+      vt.foreground_color,
+      vt.driver_waiting_charges,
+      vt.account_waiting_charges
     FROM vehicle_types vt
     ${whereClause}
     ORDER BY vt.id ASC
     OFFSET $${idx++} LIMIT $${idx++};
   `;
+
     params.push(offset, limit);
 
     const result = await pool.query(dataQuery, params);
@@ -94,18 +118,37 @@ const VehicleType = {
       default_vehicle,
       vehicle_type_minimum_fares,
       image,
+      company_id,
     } = data;
 
     const result = await pool.query(
       `INSERT INTO vehicle_types (
-        name, passengers, luggages, hand_luggages,
-        minimum_fares, minimum_miles, background_color, foreground_color,
-        driver_waiting_charges, account_waiting_charges,
-        waiting_time, waiting_time_duration,
-        default_vehicle, vehicle_type_minimum_fares, image
-      )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
-      RETURNING *`,
+    name, passengers, luggages, hand_luggages,
+    minimum_fares, minimum_miles, background_color, foreground_color,
+    driver_waiting_charges, account_waiting_charges,
+    waiting_time, waiting_time_duration,
+    default_vehicle, vehicle_type_minimum_fares, image, company_id
+  )
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15, $16)
+  RETURNING 
+    id,
+    name,
+    passengers,
+    luggages,
+    hand_luggages,
+    minimum_fares,
+    minimum_miles,
+    waiting_time,
+    waiting_time_duration,
+    default_vehicle,
+    vehicle_type_minimum_fares,
+    image,
+    created_at,
+    updated_at,
+    background_color,
+    foreground_color,
+    driver_waiting_charges,
+    account_waiting_charges`,
       [
         name,
         passengers,
@@ -122,6 +165,7 @@ const VehicleType = {
         default_vehicle,
         vehicle_type_minimum_fares,
         image,
+        company_id,
       ],
     );
     const vehicle = result.rows[0];
@@ -184,12 +228,10 @@ const VehicleType = {
   async exists(id) {
     const result = await pool.query(
       `SELECT id FROM vehicle_types WHERE id = $1`,
-      [id]
+      [id],
     );
     return result.rowCount > 0;
   },
-
-
 };
 
 module.exports = VehicleType;

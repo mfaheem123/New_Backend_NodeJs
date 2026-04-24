@@ -58,6 +58,10 @@ const {
 } = require("./driverWebSocket");
 const { handleCLISocket } = require("./cliWebSocket");
 const { handleBookingStatusSocket } = require("./bookingStatusSocket");
+const {
+  handleDriverTrackingSocket,
+  handleTrackingDashboardSocket,
+} = require("./driverTrackingSocket");
 
 function initWebSockets(server) {
   const wss = new WebSocket.Server({ noServer: true });
@@ -116,6 +120,10 @@ function initWebSockets(server) {
         handleCLISocket(ws, req);
       } else if (url.startsWith("/websocket/booking-status")) {
         handleBookingStatusSocket(ws, req);
+      } else if (url.startsWith("/websocket/driver-tracking-dashboard")) {
+        handleTrackingDashboardSocket(ws, req);
+      } else if (url.startsWith("/websocket/driver-tracking")) {
+        handleDriverTrackingSocket(ws, req);
       } else {
         logger.warn("ws:rejected", { url });
         ws.close();

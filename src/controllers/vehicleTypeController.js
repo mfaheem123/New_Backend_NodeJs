@@ -14,6 +14,7 @@ const getAll = async (req, res) => {
       hand_luggages,
       minimum_fares,
       minimum_miles,
+      company_id,
     } = req.query;
 
     page = parseInt(page);
@@ -30,6 +31,7 @@ const getAll = async (req, res) => {
         hand_luggages,
         minimum_fares,
         minimum_miles,
+        company_id,
       },
     });
 

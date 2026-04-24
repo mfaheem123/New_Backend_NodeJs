@@ -18,6 +18,11 @@ function formatDriverData(driver) {
     name: driver.name,
     username: driver.username,
     zone: driver.zone,
+    latitude: driver.latitude,
+    longitude: driver.longitude,
+    booking_status: driver.booking_status,
+    session_status: driver.session_status,
+    driver_status: driver.driver_status,
     vehicle_type: driver.vehicle?.vehicle_type?.name || null,
     last_login_at: driver.last_login_at,
   };
@@ -157,6 +162,11 @@ function notifyDriverLogin(driver) {
     name: driver.name,
     username: driver.username,
     zone: driver.zone,
+    latitude: driver.latitude,
+    longitude: driver.longitude,
+    booking_status: driver.booking_status,
+    session_status: driver.session_status,
+    driver_status: driver.driver_status,
     vehicle_type: driver.vehicle?.vehicle_type?.name || null,
     last_login_at: driver.last_login_at,
   };

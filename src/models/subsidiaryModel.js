@@ -84,12 +84,40 @@ const getAll = async ({
   // --- Data query ---
   params.push(limit, offset);
   const dataQuery = `
-    SELECT *
-    FROM subsidiaries s
-    ${whereClause}
-    ORDER BY s.id ASC
-    LIMIT $${params.length - 1} OFFSET $${params.length};
-  `;
+  SELECT 
+    s.id,
+    s.logo,
+    s.background_color,
+    s.foreground_color,
+    s.name,
+    s.telephone_number,
+    s.emergency_contact_number,
+    s.email,
+    s.fax,
+    s.website,
+    s.address,
+    s.sort_code,
+    s.account_number,
+    s.account_title,
+    s.bank,
+    s.company_number,
+    s.vat_number,
+    s.iban,
+    s.balance,
+    s.currency,
+    s.web_access_token,
+    s.mobile_access_token,
+    s.maximum_drivers,
+    s.active_drivers,
+    s.address_latitude,
+    s.address_longitude,
+    s.created_at,
+    s.updated_at
+  FROM subsidiaries s
+  ${whereClause}
+  ORDER BY s.id ASC
+  LIMIT $${params.length - 1} OFFSET $${params.length};
+`;
 
   const { rows } = await pool.query(dataQuery, params);
   return { subsidiaries: rows, total };
@@ -103,11 +131,19 @@ const getById = async (id) => {
 
 const create = async (data) => {
   const cols = COLUMNS.filter((c) => data[c] !== undefined);
+
   const values = cols.map((c) => data[c]);
   const params = values.map((_, i) => `$${i + 1}`).join(",");
-  const q = `INSERT INTO subsidiaries (${cols.join(
-    ",",
-  )}) VALUES (${params}) RETURNING *`;
+
+  // ❌ remove company_id from returning
+  const returningCols = COLUMNS.filter((c) => c !== "company_id");
+
+  const q = `
+    INSERT INTO subsidiaries (${cols.join(",")})
+    VALUES (${params})
+    RETURNING ${returningCols.join(",")}
+  `;
+
   const { rows } = await pool.query(q, values);
   return rows[0];
 };

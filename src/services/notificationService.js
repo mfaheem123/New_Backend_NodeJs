@@ -34,6 +34,38 @@ async function sendBookingNotification(driverId, booking) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+async function sendRideAcceptedNotification(customerId, booking) {
+  // 1️⃣ Customer ka FCM token lao
+  const res = await pool.query(
+    `SELECT fcm_token FROM customers WHERE id = $1`,
+    [customerId],
+  );
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for customer:", customerId);
+    return;
+  }
+
+  // 2️⃣ Payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Ride Accepted 🚗",
+      body: `Driver is on the way. Pickup: ${booking.pickup}`,
+    },
+    data: {
+      booking: JSON.stringify(booking),
+      booking_id: booking.id,
+      type: "RIDE_ACCEPTED",
+    },
+  };
+
+  // 3️⃣ Send
+  await admin.messaging().send(message);
+  console.log("✅ Notification sent to customer:", customerId);
+}
+
 module.exports = {
   sendBookingNotification,
 };

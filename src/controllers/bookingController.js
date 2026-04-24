@@ -33,6 +33,10 @@ const {
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
+const {
+  notifyDriverBookingStatus,
+} = require("../sockets/driverTrackingSocket");
+const { sendBookingNotification } = require("../services/notificationService");
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -589,15 +593,36 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const driverId = booking.rows[0].driver_id;
+    // const customerId = booking.rows[0].customer_id;
+    // const booking_source = booking.rows[0].booking_source;
+
+    //RIDE ACCEPTED
+    if (booking_status_id == 15) {
+      await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
+      await notifyDriverBookingStatus(driverId);
+      // if(booking_source == "app"){
+      // await sendRideAcceptedNotification(customerId, booking);
+      // }
+    }
 
     // ON ROUTE
     if (booking_status_id == 3) {
       await updateBookingonRoute(bookingId, true, false, false);
+      await Driver.updateDriverStatus(driverId, "On Route", "Unavailable");
+      await notifyDriverBookingStatus(driverId);
     }
 
     // ARRIVED
     if (booking_status_id == 6) {
       await updateBookingonRoute(bookingId, false, false, true);
+      await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
+      await notifyDriverBookingStatus(driverId);
+    }
+
+    // SOON TO CLEAR
+    if (booking_status_id == 10) {
+      await Driver.updateDriverStatus(driverId, "STC", "Unavailable");
+      await notifyDriverBookingStatus(driverId);
     }
 
     // COMPLETED
@@ -605,6 +630,8 @@ exports.updateBookingStatus = async (req, res) => {
       await updateBookingonRoute(bookingId, false, true, true);
 
       await Driver.updateDriverStatus(driverId, "Available", "Available");
+
+      await notifyDriverBookingStatus(driverId);
 
       const driver = await Driver.getById(driverId);
 
@@ -633,7 +660,7 @@ exports.updateBookingStatus = async (req, res) => {
     const unavailableStatuses = [15];
 
     if (unavailableStatuses.includes(booking_status_ids)) {
-      await Driver.updateDriverStatus(driverId, "Unavailable", "Unavailable");
+      await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
 
       const driver = await Driver.getById(driverId);
       console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);

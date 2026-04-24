@@ -50,6 +50,7 @@ const getAll = async (req, res) => {
       pat_expiry,
       firstaid_expiry,
       dbs_expiry,
+      company_id,
     } = req.query;
 
     const { escorts, total } = await Escort.findAll({
@@ -60,6 +61,7 @@ const getAll = async (req, res) => {
       pat_expiry,
       firstaid_expiry,
       dbs_expiry,
+      company_id,
     });
 
     res.json({

@@ -439,7 +439,7 @@ This code will expire in 15 minutes.
 
   customerLogin: async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, fcm_token } = req.body;
 
       if (!email || !password) {
         return res.status(400).json({
@@ -482,6 +482,10 @@ This code will expire in 15 minutes.
         process.env.JWT_SECRET || "yourSecretKey",
         { expiresIn: "7d" },
       );
+
+      if (fcm_token) {
+        await Customer.updateCustomerFcmToken(customer.id, fcm_token);
+      }
 
       res.status(200).json({
         status: true,

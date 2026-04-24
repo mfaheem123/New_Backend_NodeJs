@@ -7,13 +7,13 @@ const Escort = {
         name, dob, email, mobile, address, active,
         image, safeguarding_document, pat_document, firstaid_document, dbs_document,
         safeguarding_number, pat_number, firstaid_number, dbs_number,
-        safeguarding_expiry, pat_expiry, firstaid_expiry, dbs_expiry
+        safeguarding_expiry, pat_expiry, firstaid_expiry, dbs_expiry, company_id
       )
       VALUES (
         $1,$2,$3,$4,$5,$6,
         $7,$8,$9,$10,$11,
         $12,$13,$14,$15,
-        $16,$17,$18,$19
+        $16,$17,$18,$19,$20
       )
       RETURNING *;
     `;
@@ -37,9 +37,11 @@ const Escort = {
       data.pat_expiry,
       data.firstaid_expiry,
       data.dbs_expiry,
+      data.company_id,
     ];
     const { rows } = await db.query(query, values);
-    return rows[0];
+    const { company_id, ...escort } = rows[0];
+    return escort;
   },
 
   async findAll({
@@ -50,6 +52,7 @@ const Escort = {
     pat_expiry,
     firstaid_expiry,
     dbs_expiry,
+    company_id,
   }) {
     const offset = (page - 1) * limit;
 
@@ -78,7 +81,10 @@ const Escort = {
       conditions.push(`dbs_expiry ILIKE $${idx++}`);
       values.push(`%${dbs_expiry}%`);
     }
-
+    if (company_id) {
+      conditions.push(`company_id = $${idx++}`);
+      values.push(company_id);
+    }
     const whereClause = conditions.length
       ? `WHERE ${conditions.join(" AND ")}`
       : "";
@@ -103,14 +109,18 @@ const Escort = {
   `;
     const { rows } = await db.query(query, values);
 
-    return { escorts: rows, total };
+    return {
+      escorts: rows.map(({ company_id, ...rest }) => rest),
+      total,
+    };
   },
 
   async findById(id) {
     const { rows } = await db.query(`SELECT * FROM escorts WHERE id = $1`, [
       id,
     ]);
-    return rows[0];
+    const { company_id, ...escort } = rows[0];
+    return escort;
   },
 
   async update(id, data) {

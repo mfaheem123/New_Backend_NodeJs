@@ -29,6 +29,8 @@ router.get("/commission", driverController.getDriversByCommissionType);
 router.get("/rent", driverController.getDriversByCommissionType);
 router.get("/session", driverController.getBySessionStatus);
 router.get("/login-busy", driverController.getLoginDrivers);
+router.get("/tracking-drivers", driverController.getLoginDriverTracking);
+
 router.post("/on-break", upload.any(), driverController.onBreakDriver);
 router.post("/panic", upload.any(), driverController.onPanicDriver);
 

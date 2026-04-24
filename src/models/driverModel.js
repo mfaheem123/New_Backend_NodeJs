@@ -1085,34 +1085,34 @@ const Driver = {
   },
 
   // Update driver login session
-  async updateDriverLoginStatus(driverId) {
-    const query = `
-        UPDATE drivers 
-        SET 
-          session_status = 'logged_in',
-          driver_status = 'Available',
-          booking_status = 'Available',
-          last_login_at = NOW()
-        WHERE id = $1
-      `;
-    return db.query(query, [driverId]);
-  },
-
-  //Update Driver Login Status With Location
-  // async updateDriverLoginStatus(driverId, latitude, longitude) {
+  // async updateDriverLoginStatus(driverId) {
   //   const query = `
   //       UPDATE drivers
   //       SET
   //         session_status = 'logged_in',
   //         driver_status = 'Available',
   //         booking_status = 'Available',
-  //         last_login_at = NOW(),
-  //         latitude = $1,
-  //         longitude = $2
-  //       WHERE id = $3
+  //         last_login_at = NOW()
+  //       WHERE id = $1
   //     `;
-  //   return db.query(query, [latitude, longitude, driverId]);
+  //   return db.query(query, [driverId]);
   // },
+
+  //Update Driver Login Status With Location
+  async updateDriverLoginStatus(driverId, latitude, longitude) {
+    const query = `
+        UPDATE drivers
+        SET
+          session_status = 'logged_in',
+          driver_status = 'Available',
+          booking_status = 'Available',
+          last_login_at = NOW(),
+          latitude = $1,
+          longitude = $2
+        WHERE id = $3
+      `;
+    return db.query(query, [latitude, longitude, driverId]);
+  },
 
   async updateDriverLogoutStatus(id) {
     const query = `
@@ -1524,9 +1524,14 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     const query = `
     SELECT 
       d.id,
-      d.name AS username,
-      d.username AS name,
+      d.name,
+      d.username,
       d.zone,
+      d.latitude,
+      d.longitude,
+      d.booking_status,
+      d.session_status,
+      d.driver_status,
       d.last_login_at,
       
       -- vehicle type name (dynamic)
@@ -1565,9 +1570,14 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     const query = `
     SELECT 
       d.id,
-      d.name AS username,
-      d.username AS name,
+      d.name,
+      d.username,
       d.zone,
+      d.latitude,
+      d.longitude,
+      d.booking_status,
+      d.session_status,
+      d.driver_status,
       d.last_login_at,
       
       -- vehicle type name (dynamic)
@@ -1595,7 +1605,50 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     WHERE 
       d.session_status = 'logged_in'
       AND d.driver_status = 'Unavailable'
-      AND d.booking_status = 'Unavailable'
+      AND d.booking_status IS DISTINCT FROM 'Available'
+  `;
+
+    const result = await db.query(query);
+    return result.rows;
+  },
+  async getLoginDriverTracking() {
+    const query = `
+    SELECT 
+      d.id,
+      d.name,
+      d.username,
+      d.zone,
+      d.latitude,
+      d.longitude,
+      d.booking_status,
+      d.session_status,
+      d.driver_status,
+      d.last_login_at,
+      
+      -- vehicle type name (dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN vt_cv.name
+        ELSE vt_v.name
+      END AS vehicle_type
+
+    FROM drivers d
+
+    -- company vehicle
+    LEFT JOIN company_vehicles cv 
+      ON cv.id = d.company_vehicle_id
+
+    LEFT JOIN vehicle_types vt_cv 
+      ON vt_cv.id = cv.vehicle_type_id
+
+    -- personal vehicle
+    LEFT JOIN vehicles v 
+      ON v.id = d.vehicle_id
+
+    LEFT JOIN vehicle_types vt_v 
+      ON vt_v.id = v.vehicle_type_id
+
+    WHERE 
+      d.session_status = 'logged_in'
   `;
 
     const result = await db.query(query);
