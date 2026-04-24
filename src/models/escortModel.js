@@ -81,10 +81,10 @@ const Escort = {
       conditions.push(`dbs_expiry ILIKE $${idx++}`);
       values.push(`%${dbs_expiry}%`);
     }
-if (company_id) {
-    conditions.push(`company_id = $${idx++}`);
-    values.push(company_id);
-  }
+    if (company_id) {
+      conditions.push(`company_id = $${idx++}`);
+      values.push(company_id);
+    }
     const whereClause = conditions.length
       ? `WHERE ${conditions.join(" AND ")}`
       : "";
@@ -109,9 +109,9 @@ if (company_id) {
   `;
     const { rows } = await db.query(query, values);
 
-    return { 
+    return {
       escorts: rows.map(({ company_id, ...rest }) => rest),
-      total 
+      total,
     };
   },
 
