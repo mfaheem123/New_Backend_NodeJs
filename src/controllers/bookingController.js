@@ -36,7 +36,10 @@ const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
 const {
   notifyDriverBookingStatus,
 } = require("../sockets/driverTrackingSocket");
-const { sendBookingNotification, sendRideAcceptedNotification } = require("../services/notificationService");
+const {
+  sendBookingNotification,
+  sendRideAcceptedNotification,
+} = require("../services/notificationService");
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -1207,7 +1210,6 @@ exports.getBookingByCustomerMobile = async (req, res) => {
   });
 };
 
-
 exports.assignFOBBookingToDriver = async (req, res) => {
   try {
     const { booking_id, driver_id } = req.body;
@@ -1258,8 +1260,9 @@ exports.assignFOBBookingToDriver = async (req, res) => {
     }
 
     if (
-      driver.session_status === "logged_in" && (driver.booking_status === "Available" ||
-      driver.driver_status === "Available")
+      driver.session_status === "logged_in" &&
+      (driver.booking_status === "Available" ||
+        driver.driver_status === "Available")
     ) {
       return res.status(400).json({
         status: false,

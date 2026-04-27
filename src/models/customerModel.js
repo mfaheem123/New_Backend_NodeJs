@@ -48,7 +48,6 @@ RETURNING id
     return rows[0].id;
   },
 
-  
   setRestrictedDrivers: async (customerId, drivers) => {
     console.log("🚀 Updating restricted drivers for customer:", customerId);
 
@@ -175,11 +174,11 @@ RETURNING id
         idx++;
       }
       // ✅ COMPANY_ID FILTER (exact match)
-    if (key === "company_id") {
-      conditions.push(`c.company_id = $${idx}`);
-      params.push(parseInt(value));
-      idx++;
-    }
+      if (key === "company_id") {
+        conditions.push(`c.company_id = $${idx}`);
+        params.push(parseInt(value));
+        idx++;
+      }
     }
 
     // 🧩 Build WHERE clause

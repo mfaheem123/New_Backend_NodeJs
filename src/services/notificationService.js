@@ -104,5 +104,5 @@ async function sendFOBBookingNotification(driverId, booking) {
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
-  sendRideAcceptedNotification
+  sendRideAcceptedNotification,
 };

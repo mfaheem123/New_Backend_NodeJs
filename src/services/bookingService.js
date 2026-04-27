@@ -6,7 +6,10 @@ const {
   findBookingsById,
   getBookingByIdEnriched,
 } = require("../models/bookingModel");
-const { sendBookingNotification, sendFOBBookingNotification } = require("./notificationService");
+const {
+  sendBookingNotification,
+  sendFOBBookingNotification,
+} = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
 const driverAppFeatureModel = require("../models/driverAppFeaturesModel");
