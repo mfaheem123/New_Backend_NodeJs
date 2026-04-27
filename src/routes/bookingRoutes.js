@@ -37,6 +37,8 @@ router.post("/fares/:id", bookingController.updateBookingFares);
 router.post("/fare-charges/:id", bookingController.updateBookingFareCharges);
 router.post("/cli", bookingController.cloneOneWayBooking);
 router.post("/assign-driver", bookingController.assignDriverToBooking);
+router.post("/fob-driver", bookingController.assignFOBBookingToDriver);
+
 router.post(
   "/booking-history-driver",
   bookingController.getBookingByDriverIdAndStatus,

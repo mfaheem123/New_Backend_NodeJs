@@ -36,7 +36,7 @@ const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
 const {
   notifyDriverBookingStatus,
 } = require("../sockets/driverTrackingSocket");
-const { sendBookingNotification } = require("../services/notificationService");
+const { sendBookingNotification, sendRideAcceptedNotification } = require("../services/notificationService");
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -603,6 +603,7 @@ exports.updateBookingStatus = async (req, res) => {
       // if(booking_source == "app"){
       // await sendRideAcceptedNotification(customerId, booking);
       // }
+      // await sendRideAcceptedNotification(customerId, booking)
     }
 
     // ON ROUTE
@@ -1204,4 +1205,85 @@ exports.getBookingByCustomerMobile = async (req, res) => {
     count: bookings.length,
     bookings: data,
   });
+};
+
+
+exports.assignFOBBookingToDriver = async (req, res) => {
+  try {
+    const { booking_id, driver_id } = req.body;
+
+    console.log("🚀 ASSIGN FOB BOOKING TO DRIVER BODY:", req.body);
+
+    if (!booking_id || !driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "booking_id and driver_id are required",
+      });
+    }
+
+    // Check booking exists
+    const booking = await findBookingById(booking_id);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    if (booking.rows[0].driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver already assigned",
+      });
+    }
+
+    if (
+      booking.rows[0].booking_status_id === "11" ||
+      booking.rows[0].booking_status_id === 11
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Booking Already Completed",
+      });
+    }
+
+    const driver = await Driver.getById(driver_id);
+
+    if (driver.session_status === "logged_out") {
+      return res.status(400).json({
+        status: false,
+        message: "Driver is Logged Out",
+      });
+    }
+
+    if (
+      driver.session_status === "logged_in" && (driver.booking_status === "Available" ||
+      driver.driver_status === "Available")
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "FOB can only be assigned to a busy driver",
+      });
+    }
+
+    // Assign FOB Booking to Driver
+    const updatedBooking = await bookingService.assignFOBDriverService(
+      booking_id,
+      driver_id,
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver Assigned Successfully",
+      booking: updatedBooking,
+    });
+  } catch (error) {
+    console.error("Assign Driver Error:", error);
+
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
 };
