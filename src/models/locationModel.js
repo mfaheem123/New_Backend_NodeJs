@@ -62,9 +62,9 @@ const getAll = async ({
     params.push(`%${zone}%`);
   }
   if (company_id) {
-      conditions.push(`l.company_id = $${idx++}`);
-      params.push(company_id);
-    }
+    conditions.push(`l.company_id = $${idx++}`);
+    params.push(company_id);
+  }
 
   const whereClause = conditions.length
     ? `WHERE ${conditions.join(" AND ")}`
@@ -163,7 +163,7 @@ const create = async (data) => {
   )}) VALUES (${params}) RETURNING *`;
   const { rows } = await pool.query(q, values);
   const location = rows[0];
-   // ❌ Remove company_id
+  // ❌ Remove company_id
   const { company_id, ...rest } = location;
 
   return rest;

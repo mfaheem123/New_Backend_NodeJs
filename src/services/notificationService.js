@@ -46,8 +46,8 @@ async function sendRideAcceptedNotification(customerId, booking) {
     console.log("⚠️ No FCM token for customer:", customerId);
     return;
   }
-console.log("Booking_ID: ", booking.id)
-console.log("Driver_ID: ", booking.driver_id)
+  console.log("Booking_ID: ", booking.id);
+  console.log("Driver_ID: ", booking.driver_id);
 
   // 2️⃣ Payload
   const message = {
