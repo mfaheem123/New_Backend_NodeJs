@@ -22,8 +22,8 @@ exports.createFareConfiguration = async (req, res) => {
 
 exports.getAllFareConfigurations = async (req, res) => {
   try {
-    const { title } = req.query;
-    const data = await FareConfiguration.getAll(title);
+    const { title, company_id } = req.query;
+    const data = await FareConfiguration.getAll(title, company_id);
     res.json({
       status: true,
       count: data.length,
