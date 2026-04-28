@@ -2,10 +2,11 @@ const CombinedModel = require("../models/combinedVehicleTypeAccountModel");
 
 exports.getVehicleTypeAndAccounts = async (req, res) => {
   try {
+     const{company_id} = req.query;
     // Parallel API calls for better performance 🚀
     const [vehicleTypes, accounts] = await Promise.all([
-      CombinedModel.fetchVehicleTypes(),
-      CombinedModel.fetchAccounts(),
+      CombinedModel.fetchVehicleTypes(company_id),
+      CombinedModel.fetchAccounts(company_id),
     ]);
 
     // Filtered fields (you can adjust as needed)
