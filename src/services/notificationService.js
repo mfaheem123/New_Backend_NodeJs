@@ -46,18 +46,20 @@ async function sendRideAcceptedNotification(customerId, booking) {
     console.log("⚠️ No FCM token for customer:", customerId);
     return;
   }
+console.log("Booking_ID: ", booking.id)
+console.log("Driver_ID: ", booking.driver_id)
 
   // 2️⃣ Payload
   const message = {
     token: fcmToken,
     notification: {
-      title: "Ride Accepted 🚗",
+      title: "Ride Accepted",
       body: `Driver is on the way. Pickup: ${booking.pickup}`,
     },
     data: {
-      booking: JSON.stringify(booking),
-      booking_id: booking.id,
-      driver_id: booking.driver_id,
+      // booking: JSON.stringify(booking),
+      booking_id: booking.id.toString(),
+      driver_id: booking.driver_id.toString(),
       type: "RIDE_ACCEPTED",
     },
   };

@@ -587,7 +587,7 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const booking = await findBookingById(bookingId);
-
+    console.log("Booking Details: ", booking.rows[0])
     if (booking.rowCount === 0) {
       return res.status(404).json({
         status: false,
@@ -596,17 +596,18 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const driverId = booking.rows[0].driver_id;
-    // const customerId = booking.rows[0].customer_id;
-    // const booking_source = booking.rows[0].booking_source;
+    const customerId = booking.rows[0].customer_id;
+    const booking_source = booking.rows[0].booking_source;
+    console.log("Booking Source: ", booking_source)
 
     //RIDE ACCEPTED
     if (booking_status_id == 15) {
       await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
-      await notifyDriverBookingStatus(driverId);
-      // if(booking_source == "app"){
-      // await sendRideAcceptedNotification(customerId, booking);
-      // }
-      // await sendRideAcceptedNotification(customerId, booking)
+      // await notifyDriverBookingStatus(driverId);
+      if(booking_source == "app"){
+      await sendRideAcceptedNotification(customerId, booking.rows[0]);
+      }
+      
     }
 
     // ON ROUTE

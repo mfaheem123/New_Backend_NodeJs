@@ -2,7 +2,8 @@ const Localization = require("../models/localizationModel");
 
 exports.getAll = async (req, res) => {
   try {
-    const localizations = await Localization.getAll();
+    const {company_id} = req.query;
+    const localizations = await Localization.getAll(company_id);
     res.json({
       status: true,
       count: localizations.length,

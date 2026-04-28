@@ -15,6 +15,7 @@ const COLUMNS = [
   "blacklist",
   "latitude",
   "longitude",
+  "company_id",
 ];
 
 // Get all locations with location_type + zone details
@@ -27,6 +28,7 @@ const getAll = async ({
   address,
   location_type,
   zone,
+  company_id,
 }) => {
   const offset = (page - 1) * limit;
 
@@ -59,6 +61,10 @@ const getAll = async ({
     conditions.push(`z.name ILIKE $${idx++}`);
     params.push(`%${zone}%`);
   }
+  if (company_id) {
+      conditions.push(`l.company_id = $${idx++}`);
+      params.push(company_id);
+    }
 
   const whereClause = conditions.length
     ? `WHERE ${conditions.join(" AND ")}`
@@ -79,7 +85,21 @@ const getAll = async ({
   params.push(limit, offset);
   const dataQuery = `
     SELECT 
-      l.*, 
+      l.id,
+l.name,
+l.location_type_id,
+l.address,
+l.postcode,
+l.zone_id,
+l.shortcut,
+l.background_color,
+l.foreground_color,
+l.extra_charges,
+l.pickup_charges,
+l.dropoff_charges,
+l.blacklist,
+l.latitude,
+l.longitude, 
       jsonb_build_object(
         'id', lt.id,
         'name', lt.name,
@@ -142,7 +162,11 @@ const create = async (data) => {
     ",",
   )}) VALUES (${params}) RETURNING *`;
   const { rows } = await pool.query(q, values);
-  return rows[0];
+  const location = rows[0];
+   // ❌ Remove company_id
+  const { company_id, ...rest } = location;
+
+  return rest;
 };
 
 // Update location

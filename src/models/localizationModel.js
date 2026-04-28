@@ -1,9 +1,10 @@
 const pool = require("../db");
 
 const Localization = {
-  getAll: async () => {
+  getAll: async (company_id) => {
     const result = await pool.query(
-      "SELECT * FROM localizations ORDER BY id DESC",
+      "SELECT id, postcode, localization_order_no FROM localizations WHERE company_id = $1 ORDER BY id DESC",
+      [company_id],
     );
     return result.rows;
   },
@@ -17,12 +18,12 @@ const Localization = {
   },
 
   create: async (data) => {
-    const { postcode, localization_order_no } = data;
+    const { postcode, localization_order_no, company_id } = data;
     const result = await pool.query(
-      `INSERT INTO localizations (postcode, localization_order_no)
-       VALUES ($1, $2)
-       RETURNING *`,
-      [postcode, localization_order_no],
+      `INSERT INTO localizations (postcode, localization_order_no, company_id)
+       VALUES ($1, $2, $3)
+       RETURNING id, postcode, localization_order_no`,
+      [postcode, localization_order_no, company_id],
     );
     return result.rows[0];
   },
