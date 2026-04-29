@@ -1292,7 +1292,6 @@ exports.assignFOBBookingToDriver = async (req, res) => {
   }
 };
 
-
 exports.getBookingByDriverIdAndFob = async (req, res) => {
   const driverId = parseInt(req.params.id);
 
@@ -1302,20 +1301,25 @@ exports.getBookingByDriverIdAndFob = async (req, res) => {
       message: "Driver ID Required",
     });
   }
-  const bookings = await checkDriverFobBooking(driverId);
 
-  if (!bookings || bookings.length === 0) {
-    return res.status(404).json({
-      success: false,
-      message: "No bookings found for this driver",
+  const booking = await checkDriverFobBooking(driverId);
+
+  // ❌ No active FOB booking
+  if (!booking) {
+    return res.status(200).json({
+      success: true,
+      fob: false,
+      booking_id: null,
     });
   }
 
-  const data = bookings.map((b) => parseJSONFields(b));
+  // ✅ Active FOB booking found
+  const data = parseJSONFields(booking);
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
-    count: bookings.length,
-    bookings: data,
+    fob: true,
+    booking_id: booking.id,
+    // booking: data,
   });
 };
