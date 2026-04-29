@@ -51,6 +51,6 @@ app.get("/metrics", async (req, res) => {
 
 // 🚀 START SERVER
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ HTTP running on http://192.168.110.6:${PORT}`);
-  console.log(`🔌 WebSocket running on ws://192.168.110.6:${PORT}`);
+  console.log(`✅ HTTP running on http://192.168.110.5:${PORT}`);
+  console.log(`🔌 WebSocket running on ws://192.168.110.5:${PORT}`);
 });

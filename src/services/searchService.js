@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { getLocationTypes } = require("../utils/locationTypeCache");
 
-const BASE_URL = "http://192.168.110.6:5000/api";
+const BASE_URL = "http://192.168.110.5:5000/api";
 const LOCATIONS_URL = `${BASE_URL}/locations/get`;
 const ADDRESS_SEARCH_URL = `${BASE_URL}/addresses/search?search=`;
 
