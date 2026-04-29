@@ -6,7 +6,7 @@ const combinedController = require("../controllers/combinedVehicleTypeAccountCon
 // GET /api/combined/vehicle-type-accounts
 router.get(
   "/vehicle-type-accounts",
-  combinedController.getVehicleTypeAndAccounts
+  combinedController.getVehicleTypeAndAccounts,
 );
 
 module.exports = router;

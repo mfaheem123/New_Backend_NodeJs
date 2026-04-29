@@ -60,7 +60,7 @@ const FareConfiguration = {
 
   // ✅ READ ALL
   async getAll(title, company_id) {
-  let query = `
+    let query = `
     SELECT 
       f.*, 
       vt.name AS vehicle_type_name, 
@@ -71,60 +71,60 @@ const FareConfiguration = {
     LEFT JOIN accounts a ON a.id = f.account_id
   `;
 
-  const conditions = [];
-  const params = [];
+    const conditions = [];
+    const params = [];
 
-  // 🔹 Title filter
-  if (title) {
-    if (title.toLowerCase() === "normal") {
-      conditions.push(`(f.title IS NULL OR TRIM(f.title) = '')`);
-    } else if (title.toLowerCase() === "special") {
-      conditions.push(`(f.title IS NOT NULL AND TRIM(f.title) <> '')`);
+    // 🔹 Title filter
+    if (title) {
+      if (title.toLowerCase() === "normal") {
+        conditions.push(`(f.title IS NULL OR TRIM(f.title) = '')`);
+      } else if (title.toLowerCase() === "special") {
+        conditions.push(`(f.title IS NOT NULL AND TRIM(f.title) <> '')`);
+      }
     }
-  }
 
-  // 🔹 Company filter
-  if (company_id) {
-    params.push(company_id);
-    conditions.push(`f.company_id = $${params.length}`);
-  }
+    // 🔹 Company filter
+    if (company_id) {
+      params.push(company_id);
+      conditions.push(`f.company_id = $${params.length}`);
+    }
 
-  // 🔹 Apply WHERE only once
-  if (conditions.length > 0) {
-    query += ` WHERE ` + conditions.join(" AND ");
-  }
+    // 🔹 Apply WHERE only once
+    if (conditions.length > 0) {
+      query += ` WHERE ` + conditions.join(" AND ");
+    }
 
-  query += " ORDER BY f.id DESC";
+    query += " ORDER BY f.id DESC";
 
-  const result = await db.query(query, params);
+    const result = await db.query(query, params);
 
-  return result.rows.map((row) => ({
-    id: row.id,
-    vehicle_type_id: row.vehicle_type_id,
-    account_id: row.account_id,
-    from_day: row.from_day,
-    to_day: row.to_day,
-    from_time: row.from_time,
-    to_time: row.to_time,
-    minimum_fares: Number(row.minimum_fares),
-    minimum_miles: Number(row.minimum_miles),
-    from_date: row.from_date,
-    to_date: row.to_date,
-    title: row.title,
-    per_mile_fares: Number(row.per_mile_fares),
-    vehicle_type: row.vehicle_type_id
-      ? {
-          minimum_fares: Number(row.vehicle_minimum_fare),
-          name: row.vehicle_type_name,
-        }
-      : null,
-    account: row.account_id
-      ? {
-          name: row.account_name,
-        }
-      : null,
-  }));
-},
+    return result.rows.map((row) => ({
+      id: row.id,
+      vehicle_type_id: row.vehicle_type_id,
+      account_id: row.account_id,
+      from_day: row.from_day,
+      to_day: row.to_day,
+      from_time: row.from_time,
+      to_time: row.to_time,
+      minimum_fares: Number(row.minimum_fares),
+      minimum_miles: Number(row.minimum_miles),
+      from_date: row.from_date,
+      to_date: row.to_date,
+      title: row.title,
+      per_mile_fares: Number(row.per_mile_fares),
+      vehicle_type: row.vehicle_type_id
+        ? {
+            minimum_fares: Number(row.vehicle_minimum_fare),
+            name: row.vehicle_type_name,
+          }
+        : null,
+      account: row.account_id
+        ? {
+            name: row.account_name,
+          }
+        : null,
+    }));
+  },
 
   // ✅ GET BY ID
   async getById(id) {
