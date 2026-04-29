@@ -30,6 +30,7 @@ const {
   getBookingByCustomerId,
   getBookingByCustomerMobile,
   getScheduleBookingByCustomerId,
+  checkDriverFobBooking,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1289,4 +1290,32 @@ exports.assignFOBBookingToDriver = async (req, res) => {
       message: "Internal Server Error",
     });
   }
+};
+
+
+exports.getBookingByDriverIdAndFob = async (req, res) => {
+  const driverId = parseInt(req.params.id);
+
+  if (!driverId) {
+    return res.status(400).json({
+      status: false,
+      message: "Driver ID Required",
+    });
+  }
+  const bookings = await checkDriverFobBooking(driverId);
+
+  if (!bookings || bookings.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "No bookings found for this driver",
+    });
+  }
+
+  const data = bookings.map((b) => parseJSONFields(b));
+
+  res.status(200).json({
+    success: true,
+    count: bookings.length,
+    bookings: data,
+  });
 };

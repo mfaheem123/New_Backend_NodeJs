@@ -1408,7 +1408,8 @@ async function assignFOBDriverService(bookingId, driverId) {
     driver_id: driverId,
     booking_status_id: 13,
     fare_meter: fare_meter,
-    // dispatched_at: new Date(),
+    fob:true,
+    dispatched_at: new Date(),
   });
 
   if (!updated) return null;
