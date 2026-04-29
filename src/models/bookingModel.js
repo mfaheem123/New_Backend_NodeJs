@@ -783,23 +783,19 @@ const getScheduleBookingByCustomerId = async (customer_id) => {
 };
 
 const checkDriverFobBooking = async (driver_id) => {
-  const whereClause = `
+  const sql = `
+    ${ENRICHED_SELECT}
     WHERE b.driver_id = $1 
     AND b.fob = true
+    AND b.booking_status_id NOT IN (11, 12)
+    ORDER BY b.dispatched_at DESC
+    LIMIT 1
   `;
 
   const values = [driver_id];
 
-  const sql = `
-    ${ENRICHED_SELECT}
-    ${whereClause}
-    ORDER BY 
-      b.pickup_date DESC,
-      b.pickup_time DESC
-  `;
-
   const res = await pool.query(sql, values);
-  return res.rows;
+  return res.rows[0]; // 👈 only one booking
 };
 
 module.exports = {
