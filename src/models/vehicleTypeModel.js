@@ -175,9 +175,9 @@ const VehicleType = {
       `INSERT INTO fare_meters (
         vehicle_type_id, has_meter, autostart_wait,
         autostart_waiting_speed_limit, autostart_waiting_time,
-        autostop_waiting_speed_limit, waiting_charges, waiting_intervals
+        autostop_waiting_speed_limit, waiting_charges, waiting_intervals, company_id
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
       [
         vehicleTypeId, // new vehicle ID
         false, // has_meter
@@ -187,6 +187,7 @@ const VehicleType = {
         0, // autostop_waiting_speed_limit
         JSON.stringify([]), // waiting_charges
         0, // waiting_intervals
+        company_id ?? 1,
       ],
     );
     return result.rows[0];
