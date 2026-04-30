@@ -53,7 +53,8 @@ module.exports = {
 
   async getAll(req, res) {
     try {
-      const data = await Surcharge.getAll();
+      const {company_id} = req.query;
+      const data = await Surcharge.getAll(company_id);
 
       return res.json({
         status: true,

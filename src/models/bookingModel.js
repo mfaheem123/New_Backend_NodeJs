@@ -787,7 +787,7 @@ const checkDriverFobBooking = async (driver_id) => {
     ${ENRICHED_SELECT}
     WHERE b.driver_id = $1 
     AND b.fob = true
-    AND b.booking_status_id NOT IN (11, 12)
+    AND b.booking_status_id = 15 
     ORDER BY b.dispatched_at DESC
     LIMIT 1
   `;
