@@ -2,10 +2,11 @@ const CombinedModel = require("../models/combinedPlotFareListModel");
 
 exports.getVehicleTypeAndZones = async (req, res) => {
   try {
+    const { company_id } = req.query;
     // Parallel API calls for better performance 🚀
     const [vehicleTypes, zones] = await Promise.all([
-      CombinedModel.fetchVehicleTypes(),
-      CombinedModel.fetchZones(),
+      CombinedModel.fetchVehicleTypes(company_id),
+      CombinedModel.fetchZones(company_id),
     ]);
 
     // Filtered fields (you can adjust as needed)
