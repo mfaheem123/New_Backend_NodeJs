@@ -35,6 +35,7 @@ exports.createFixedFares = async (req, res) => {
           fares: data.fares,
           from_location_id: data.from_location_id,
           to_location_id: data.to_location_id,
+          company_id: data.company_id,
         });
       }
     }
@@ -64,6 +65,7 @@ exports.getAllFixedFares = async (req, res) => {
       fares,
       area1,
       area2,
+      company_id,
     } = req.query;
 
     const offset = (page - 1) * limit;
@@ -75,6 +77,7 @@ exports.getAllFixedFares = async (req, res) => {
       fares,
       area1,
       area2,
+      company_id,
     });
 
     const totalPages = Math.ceil(result.totalRecords / limit);

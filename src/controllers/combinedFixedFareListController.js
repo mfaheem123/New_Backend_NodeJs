@@ -2,10 +2,11 @@ const CombinedModel = require("../models/combinedFixedFareListModel");
 
 exports.getVehicleTypeAndLocationTypes = async (req, res) => {
   try {
+    const { company_id } = req.query;
     // Parallel API calls for better performance 🚀
     const [vehicleTypes, locationTypes] = await Promise.all([
-      CombinedModel.fetchVehicleTypes(),
-      CombinedModel.fetchLocationTypes(),
+      CombinedModel.fetchVehicleTypes(company_id),
+      CombinedModel.fetchLocationTypes(company_id),
     ]);
 
     // Filtered fields (you can adjust as needed)
