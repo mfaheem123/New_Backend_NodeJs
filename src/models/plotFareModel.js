@@ -2,7 +2,7 @@ const pool = require("../db");
 
 const PlotFare = {
   //  Get All
-  async getAll(offset = 0, limit = 100) {
+  async getAll(offset = 0, limit = 100, company_id) {
     const query = `
       SELECT 
         pf.*, 
@@ -13,10 +13,11 @@ const PlotFare = {
       JOIN vehicle_types vt ON vt.id = pf.vehicle_type_id
       JOIN zones p1 ON p1.id = pf.pickup_plot_id
       JOIN zones p2 ON p2.id = pf.dropoff_plot_id
+      WHERE pf.company_id=$3
       ORDER BY pf.id DESC
       OFFSET $1 LIMIT $2
     `;
-    const { rows } = await pool.query(query, [offset, limit]);
+    const { rows } = await pool.query(query, [offset, limit,company_id]);
     return rows;
   },
 
@@ -45,8 +46,8 @@ const PlotFare = {
 
   async create(plotFares) {
     const insertQuery = `
-      INSERT INTO plot_fares (vehicle_type_id, pickup_plot_id, dropoff_plot_id, fares)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO plot_fares (vehicle_type_id, pickup_plot_id, dropoff_plot_id, fares, company_id)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING id;
     `;
 
@@ -58,6 +59,7 @@ const PlotFare = {
         fare.pickup_plot_id,
         fare.dropoff_plot_id,
         fare.fares,
+        fare.company_id,
       ];
 
       const insertResult = await pool.query(insertQuery, values);
@@ -78,7 +80,9 @@ const PlotFare = {
       `;
 
       const { rows } = await pool.query(selectQuery, [insertedId]);
-      createdFares.push(rows[0]);
+       const { company_id, ...rest } = rows[0];
+
+    createdFares.push(rest);
     }
 
     return createdFares;
