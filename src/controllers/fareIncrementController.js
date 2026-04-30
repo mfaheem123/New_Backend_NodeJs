@@ -3,7 +3,8 @@ const FareIncrement = require("../models/fareIncrementModel");
 // GET ALL
 exports.getAll = async (req, res) => {
   try {
-    const data = await FareIncrement.getAll();
+      const {company_id} = req.query;
+    const data = await FareIncrement.getAll(company_id);
     res.json({ status: true, count: data.length, fareIncrement: data });
   } catch (err) {
     res.status(500).json({ status: false, message: err.message });

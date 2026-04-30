@@ -1,7 +1,7 @@
 const pool = require("../db");
 
 // GET ALL
-exports.getAll = async () => {
+exports.getAll = async (company_id) => {
   const query = `
     SELECT id,
            start_date,
@@ -11,9 +11,10 @@ exports.getAll = async () => {
            fix_fare,
            mileage
     FROM fare_increments
+    WHERE company_id=$1
     ORDER BY id DESC;
   `;
-  const result = await pool.query(query);
+  const result = await pool.query(query,[company_id]);
   return result.rows;
 };
 
@@ -28,19 +29,22 @@ exports.getById = async (id) => {
 
 // CREATE
 exports.create = async (data) => {
-  const { start_date, end_date, operator, amount, fix_fare, mileage } = data;
+  const { start_date, end_date, operator, amount, fix_fare, mileage, company_id } = data;
 
   const query = `
-    INSERT INTO fare_increments (start_date, end_date, operator, amount, fix_fare, mileage)
+    INSERT INTO fare_increments (start_date, end_date, operator, amount, fix_fare, mileage, company_id)
     VALUES (
-    $1,$2,$3, $4, $5, $6)
+    $1,$2,$3, $4, $5, $6, $7)
     RETURNING id,
               start_date,
               end_date,
-              operator, amount, fix_fare, mileage;
+              operator,
+              amount,
+              fix_fare,
+              mileage;
   `;
 
-  const values = [start_date, end_date, operator, amount, fix_fare, mileage];
+  const values = [start_date, end_date, operator, amount, fix_fare, mileage, company_id];
   const result = await pool.query(query, values);
   return result.rows[0];
 };
