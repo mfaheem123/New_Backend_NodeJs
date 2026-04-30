@@ -3,8 +3,9 @@ const fareByVehicleModel = require("../models/fareByVehicleModel");
 // GET ALL
 exports.getAll = async (req, res) => {
   try {
-    const fareByVehicles = await fareByVehicleModel.getAll();
-    const count = await fareByVehicleModel.getCount();
+    const {company_id} = req.query;
+    const fareByVehicles = await fareByVehicleModel.getAll(company_id);
+    const count = await fareByVehicleModel.getCount(company_id);
 
     res.json({
       status: true,
