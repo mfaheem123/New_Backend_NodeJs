@@ -659,3 +659,13 @@
 {"level":"info","message":"GET /api/location-types 200 10.792 ms","timestamp":"2026-04-30T17:08:56.080Z"}
 {"duration":47,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-30T17:08:56.117Z"}
 {"level":"info","message":"GET /api/location-types 200 48.289 ms","timestamp":"2026-04-30T17:08:56.118Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-30T17:09:06.681Z"}
+{"level":"info","message":"GET /api/location-types 200 11.593 ms","timestamp":"2026-04-30T17:09:06.688Z"}
+{"duration":47,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-04-30T17:09:06.725Z"}
+{"level":"info","message":"GET /api/location-types 200 48.847 ms","timestamp":"2026-04-30T17:09:06.727Z"}
+{"duration":57,"level":"info","message":"db-query","rows":1,"text":"\n    INSERT INTO fare_increments (start_date, end_date, operator, amount, fix_fare, mileage, company_id)\n    VALUES (\n    $1,$2,$3, $4, $5, $6, $7)\n    RETURNING id,\n              start_date,\n              end_date,\n              operator,\n              amount,\n              fix_fare,\n              mileage;\n  ","timestamp":"2026-04-30T17:09:25.108Z"}
+{"level":"info","message":"POST /api/fareincrement/add 200 59.164 ms","timestamp":"2026-04-30T17:09:25.110Z"}
+{"duration":49,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT id,\n           start_date,\n           end_date,\n           operator,\n           amount,\n           fix_fare,\n           mileage\n    FROM fare_increments\n    WHERE company_id=$1\n    ORDER BY id DESC;\n  ","timestamp":"2026-04-30T17:09:36.488Z"}
+{"level":"info","message":"GET /api/fareincrement/get?company_id=2 200 50.597 ms","timestamp":"2026-04-30T17:09:36.490Z"}
+{"duration":75,"level":"info","message":"db-query","rows":1,"text":"SELECT id, postcode, localization_order_no FROM localizations WHERE company_id = $1 ORDER BY id DESC","timestamp":"2026-04-30T17:09:47.227Z"}
+{"level":"info","message":"GET /api/localizations/getlocalization?company_id=1 200 77.454 ms","timestamp":"2026-04-30T17:09:47.229Z"}
