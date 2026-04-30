@@ -274,6 +274,7 @@ exports.getAll = async (req, res) => {
       vehicle_type,
       subsidiary,
       active = true,
+      company_id,
     } = req.query;
 
     const { total, drivers } = await Driver.getAll({
@@ -291,6 +292,7 @@ exports.getAll = async (req, res) => {
       vehicle_type,
       subsidiary,
       active,
+      company_id,
     });
 
     res.json({

@@ -179,7 +179,7 @@ const Driver = {
       // Hash password
       const hashedPassword = await bcrypt.hash(data.password, 10);
       const driverAccessToken = await generateUniqueDriverAccessToken(db);
-      const company_id = 1;
+      // const company_id = 1;
       // Normalize empty fields
       Object.keys(data).forEach((key) => {
         if (data[key] === "" || data[key] === undefined) data[key] = null;
@@ -326,7 +326,7 @@ const Driver = {
         driver.road_tax_expiry_time,
         driver.rental_agreement_expiry_time,
         driverAccessToken,
-        company_id,
+        driver.company_id ?? 1,
       ]);
 
       const driverId = driverRes.rows[0].id;
@@ -596,6 +596,7 @@ const Driver = {
     vehicle_type,
     subsidiary,
     active = true,
+    company_id,
   } = {}) {
     const offset = (page - 1) * limit;
 
@@ -656,6 +657,10 @@ const Driver = {
       conditions.push(`s.name ILIKE $${idx++}`);
       params.push(`%${subsidiary}%`);
     }
+    if (company_id) {
+    conditions.push(`d.company_id = $${idx++}`);
+    params.push(company_id);
+  }
 
     const whereClause = conditions.length
       ? `WHERE ${conditions.join(" AND ")}`
