@@ -4,7 +4,8 @@ class AirportController {
   // GET LIST
   static async getAirports(req, res) {
     try {
-      const data = await AirportService.getAllAirports();
+      const {company_id} = req.query;
+      const data = await AirportService.getAllAirports(company_id);
 
       res.json({
         status: true,
