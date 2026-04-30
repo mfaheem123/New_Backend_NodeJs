@@ -14,6 +14,7 @@ router.get("/check-status/:booking_id", bookingController.checkBookingStatus);
 router.get("/driver-rent", bookingController.getBookingByDriverCommission);
 router.get("/customer-bookings/:id", bookingController.getBookingByCustomerId);
 router.get("/customer-jobs", bookingController.getBookingByCustomerMobile);
+router.get("/driver-fob/:id", bookingController.getBookingByDriverIdAndFob);
 
 router.get(
   "/customer-schedule/:id",
