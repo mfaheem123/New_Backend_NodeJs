@@ -963,3 +963,20 @@ exports.getLoginDriverTracking = async (req, res) => {
     });
   }
 };
+
+exports.getFOBDrivers = async (req, res) => {
+  try {
+    const busy_drivers = await Driver.getFOBDrivers();
+
+    res.status(200).json({
+      status: true,
+      drivers: busy_drivers,
+    });
+  } catch (err) {
+    console.error("Error fetching login drivers:", err);
+    res.status(500).json({
+      status: false,
+      message: "Server error",
+    });
+  }
+};

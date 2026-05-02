@@ -56,9 +56,9 @@ const Zone = {
       params.push(`%${category}%`);
     }
     if (company_id) {
-    conditions.push(`z.company_id = $${idx++}`);
-    params.push(company_id);
-  }
+      conditions.push(`z.company_id = $${idx++}`);
+      params.push(company_id);
+    }
 
     const whereClause = conditions.length
       ? `WHERE ${conditions.join(" AND ")}`
