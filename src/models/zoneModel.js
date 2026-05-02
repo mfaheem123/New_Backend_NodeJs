@@ -4,9 +4,9 @@ const pool = require("../db");
 const Zone = {
   create: async (data) => {
     const query = `
-      INSERT INTO zones (name, secondary_name, type, category, vertices, base, overlay)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING *;
+      INSERT INTO zones (name, secondary_name, type, category, vertices, base, overlay, company_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING id, name, secondary_name, type, category, vertices, base, overlay, created_at, updated_at;
     `;
     const values = [
       data.name,
@@ -16,6 +16,7 @@ const Zone = {
       JSON.stringify(data.vertices),
       data.base,
       data.overlay,
+      data.company_id,
     ];
     const { rows } = await pool.query(query, values);
     return rows[0];
@@ -29,6 +30,7 @@ const Zone = {
     secondary_name,
     type,
     category,
+    company_id,
   }) => {
     const offset = (page - 1) * limit;
 
@@ -53,6 +55,10 @@ const Zone = {
       conditions.push(`z.category ILIKE $${idx++}`);
       params.push(`%${category}%`);
     }
+    if (company_id) {
+    conditions.push(`z.company_id = $${idx++}`);
+    params.push(company_id);
+  }
 
     const whereClause = conditions.length
       ? `WHERE ${conditions.join(" AND ")}`

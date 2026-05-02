@@ -26,6 +26,7 @@ const zoneController = {
         secondary_name,
         type,
         category,
+        company_id,
       } = req.query;
 
       const { zones, total } = await Zone.getAll({
@@ -35,6 +36,7 @@ const zoneController = {
         secondary_name,
         type,
         category,
+        company_id,
       });
 
       res.json({
