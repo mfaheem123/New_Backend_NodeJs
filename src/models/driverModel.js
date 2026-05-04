@@ -1305,6 +1305,7 @@ const Driver = {
     vehicle_type,
     subsidiary,
     active = true,
+    company_id,
   } = {}) {
     const offset = (page - 1) * limit;
 
@@ -1379,6 +1380,10 @@ const Driver = {
     if (subsidiary) {
       conditions.push(`s.name ILIKE $${idx++}`);
       params.push(`%${subsidiary}%`);
+    }
+    if (company_id) {
+      conditions.push(`d.company_id = $${idx++}`);
+      params.push(company_id);
     }
 
     const whereClause = conditions.length

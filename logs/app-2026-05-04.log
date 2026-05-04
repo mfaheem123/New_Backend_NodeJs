@@ -262,3 +262,51 @@
 {"level":"info","message":"GET /api/location-types 200 17.987 ms","timestamp":"2026-05-04T14:48:09.759Z"}
 {"duration":55,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T14:48:09.799Z"}
 {"level":"info","message":"GET /api/location-types 200 57.273 ms","timestamp":"2026-05-04T14:48:09.801Z"}
+{"duration":15,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T14:50:14.828Z"}
+{"level":"info","message":"GET /api/location-types 200 30.221 ms","timestamp":"2026-05-04T14:50:14.840Z"}
+{"duration":64,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T14:50:14.882Z"}
+{"level":"info","message":"GET /api/location-types 200 66.129 ms","timestamp":"2026-05-04T14:50:14.884Z"}
+{"duration":51,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T16:10:13.982Z"}
+{"level":"info","message":"GET /api/location-types 200 51.909 ms","timestamp":"2026-05-04T16:10:13.984Z"}
+{"duration":15,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T16:44:09.936Z"}
+{"level":"info","message":"GET /api/location-types 200 26.558 ms","timestamp":"2026-05-04T16:44:09.946Z"}
+{"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T16:44:09.989Z"}
+{"level":"info","message":"GET /api/location-types 200 65.872 ms","timestamp":"2026-05-04T16:44:09.992Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T16:44:16.661Z"}
+{"level":"info","message":"GET /api/location-types 200 15.832 ms","timestamp":"2026-05-04T16:44:16.669Z"}
+{"duration":54,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T16:44:16.711Z"}
+{"level":"info","message":"GET /api/location-types 200 55.480 ms","timestamp":"2026-05-04T16:44:16.712Z"}
+{"duration":487,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T16:53:37.311Z"}
+{"level":"info","message":"GET /api/location-types 200 492.286 ms","timestamp":"2026-05-04T16:53:37.317Z"}
+{"duration":494,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T16:53:37.319Z"}
+{"level":"info","message":"GET /api/location-types 200 496.252 ms","timestamp":"2026-05-04T16:53:37.323Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:05:22.669Z"}
+{"level":"info","message":"GET /api/location-types 200 18.610 ms","timestamp":"2026-05-04T18:05:22.683Z"}
+{"duration":89,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:05:22.756Z"}
+{"level":"info","message":"GET /api/location-types 200 90.915 ms","timestamp":"2026-05-04T18:05:22.758Z"}
+{"duration":16,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:05:25.938Z"}
+{"level":"info","message":"GET /api/location-types 200 22.485 ms","timestamp":"2026-05-04T18:05:25.946Z"}
+{"duration":78,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:05:26.003Z"}
+{"level":"info","message":"GET /api/location-types 200 80.172 ms","timestamp":"2026-05-04T18:05:26.005Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:05:34.829Z"}
+{"level":"info","message":"GET /api/location-types 200 13.266 ms","timestamp":"2026-05-04T18:05:34.837Z"}
+{"duration":68,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:05:34.894Z"}
+{"level":"info","message":"GET /api/location-types 200 69.614 ms","timestamp":"2026-05-04T18:05:34.896Z"}
+{"duration":12,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:06:18.609Z"}
+{"level":"info","message":"GET /api/location-types 200 24.101 ms","timestamp":"2026-05-04T18:06:18.621Z"}
+{"duration":65,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:06:18.668Z"}
+{"level":"info","message":"GET /api/location-types 200 67.470 ms","timestamp":"2026-05-04T18:06:18.670Z"}
+{"duration":13,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:06:29.568Z"}
+{"level":"info","message":"GET /api/location-types 200 26.863 ms","timestamp":"2026-05-04T18:06:29.582Z"}
+{"duration":75,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:06:29.636Z"}
+{"level":"info","message":"GET /api/location-types 200 76.655 ms","timestamp":"2026-05-04T18:06:29.637Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:06:32.517Z"}
+{"level":"info","message":"GET /api/location-types 200 11.547 ms","timestamp":"2026-05-04T18:06:32.524Z"}
+{"duration":48,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:06:32.561Z"}
+{"level":"info","message":"GET /api/location-types 200 49.541 ms","timestamp":"2026-05-04T18:06:32.563Z"}
+{"duration":75,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM drivers d\n    LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n    LEFT JOIN vehicles v ON v.id = d.vehicle_id\n    LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id\n    LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id\n    LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id\n    WHERE d.active = $1 AND d.session_status = $2 AND d.company_id = $3;\n  ","timestamp":"2026-05-04T18:06:55.539Z"}
+{"duration":5,"level":"info","message":"db-query","rows":0,"text":"\nSELECT \n  d.*,\n  s.name AS subsidiary_name,\n  CASE \n    WHEN d.use_company_vehicle = true THEN\n      json_build_object(\n        'vehicle_number', cv.vehicle_number,\n        'make', cv.make,\n        'model', cv.model,\n        'color', cv.color,\n        'end_date', cv.end_date,\n        'vehicle_type', json_build_object(\n          'id', vt_cv.id,\n          'name', vt_cv.name,\n          'passengers', vt_cv.passengers,\n          'luggages', vt_cv.luggages,\n          'driver_waiting_charges', vt_cv.driver_waiting_charges\n        )\n      )\n    ELSE\n      json_build_object(\n        'vehicle_number', v.vehicle_number,\n        'make', v.make,\n        'model', v.model,\n        'color', v.color,\n        'end_date', v.end_date,\n        'vehicle_type', json_build_object(\n          'id', vt_v.id,\n          'name', vt_v.name,\n          'passengers', vt_v.passengers,\n          'luggages', vt_v.luggages,\n          'driver_waiting_charges', vt_v.driver_waiting_charges\n        )\n      )\n  END AS vehicle\nFROM drivers d\nLEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\nLEFT JOIN vehicles v ON v.id = d.vehicle_id\nLEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id\nLEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id\nLEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id\nWHERE d.active = $1 AND d.session_status = $2 AND d.company_id = $3\nORDER BY d.id DESC\nLIMIT $4 OFFSET $5;\n","timestamp":"2026-05-04T18:06:55.545Z"}
+{"level":"info","message":"GET /api/drivers/session?session_status=logged_in&company_id=2 200 86.010 ms","timestamp":"2026-05-04T18:06:55.549Z"}
+{"duration":61,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM drivers d\n    LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n    LEFT JOIN vehicles v ON v.id = d.vehicle_id\n    LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id\n    LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id\n    LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id\n    WHERE d.active = $1 AND d.session_status = $2 AND d.company_id = $3;\n  ","timestamp":"2026-05-04T18:10:15.133Z"}
+{"duration":15,"level":"info","message":"db-query","rows":2,"text":"\nSELECT \n  d.*,\n  s.name AS subsidiary_name,\n  CASE \n    WHEN d.use_company_vehicle = true THEN\n      json_build_object(\n        'vehicle_number', cv.vehicle_number,\n        'make', cv.make,\n        'model', cv.model,\n        'color', cv.color,\n        'end_date', cv.end_date,\n        'vehicle_type', json_build_object(\n          'id', vt_cv.id,\n          'name', vt_cv.name,\n          'passengers', vt_cv.passengers,\n          'luggages', vt_cv.luggages,\n          'driver_waiting_charges', vt_cv.driver_waiting_charges\n        )\n      )\n    ELSE\n      json_build_object(\n        'vehicle_number', v.vehicle_number,\n        'make', v.make,\n        'model', v.model,\n        'color', v.color,\n        'end_date', v.end_date,\n        'vehicle_type', json_build_object(\n          'id', vt_v.id,\n          'name', vt_v.name,\n          'passengers', vt_v.passengers,\n          'luggages', vt_v.luggages,\n          'driver_waiting_charges', vt_v.driver_waiting_charges\n        )\n      )\n  END AS vehicle\nFROM drivers d\nLEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\nLEFT JOIN vehicles v ON v.id = d.vehicle_id\nLEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id\nLEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id\nLEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id\nWHERE d.active = $1 AND d.session_status = $2 AND d.company_id = $3\nORDER BY d.id DESC\nLIMIT $4 OFFSET $5;\n","timestamp":"2026-05-04T18:10:15.149Z"}
+{"level":"info","message":"GET /api/drivers/session?session_status=logged_in&company_id=1 200 80.118 ms","timestamp":"2026-05-04T18:10:15.152Z"}
