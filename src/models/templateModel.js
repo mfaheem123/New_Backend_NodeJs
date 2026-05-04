@@ -1,20 +1,20 @@
 const db = require("../db");
 
 const TemplateModel = {
-  getAllTemplateTypes: async () => {
+  getAllTemplateTypes: async (company_id) => {
     const { rows } = await db.query(
-      `SELECT id, name FROM template_types ORDER BY id ASC`,
+      `SELECT id, name FROM template_types WHERE company_id = $1 ORDER BY id ASC`,[company_id]
     );
     return rows;
   },
 
-  getTemplatesByTypeId: async (templateTypeId) => {
+  getTemplatesByTypeId: async (templateTypeId, company_id) => {
     const { rows } = await db.query(
       `SELECT id, name 
        FROM templates 
-       WHERE template_type_id = $1
+       WHERE template_type_id = $1 AND company_id = $2
        ORDER BY id ASC`,
-      [templateTypeId],
+      [templateTypeId, company_id],
     );
     return rows;
   },
@@ -54,13 +54,13 @@ const TemplateModel = {
   },
 
   createTemplate: async (templateData) => {
-    const { template_type_id, name, subject, content, body } = templateData;
+    const { template_type_id, name, subject, content, body, company_id } = templateData;
     const { rows } = await db.query(
       `INSERT INTO templates 
-        (template_type_id, name, subject, content, body) 
-       VALUES ($1, $2, $3, $4, $5) 
+        (template_type_id, name, subject, content, body, company_id) 
+       VALUES ($1, $2, $3, $4, $5, $6) 
        RETURNING *`,
-      [template_type_id, name, subject, content, body],
+      [template_type_id, name, subject, content, body, company_id],
     );
     return rows[0];
   },
