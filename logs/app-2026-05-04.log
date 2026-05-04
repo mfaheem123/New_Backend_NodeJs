@@ -310,3 +310,37 @@
 {"duration":61,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM drivers d\n    LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\n    LEFT JOIN vehicles v ON v.id = d.vehicle_id\n    LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id\n    LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id\n    LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id\n    WHERE d.active = $1 AND d.session_status = $2 AND d.company_id = $3;\n  ","timestamp":"2026-05-04T18:10:15.133Z"}
 {"duration":15,"level":"info","message":"db-query","rows":2,"text":"\nSELECT \n  d.*,\n  s.name AS subsidiary_name,\n  CASE \n    WHEN d.use_company_vehicle = true THEN\n      json_build_object(\n        'vehicle_number', cv.vehicle_number,\n        'make', cv.make,\n        'model', cv.model,\n        'color', cv.color,\n        'end_date', cv.end_date,\n        'vehicle_type', json_build_object(\n          'id', vt_cv.id,\n          'name', vt_cv.name,\n          'passengers', vt_cv.passengers,\n          'luggages', vt_cv.luggages,\n          'driver_waiting_charges', vt_cv.driver_waiting_charges\n        )\n      )\n    ELSE\n      json_build_object(\n        'vehicle_number', v.vehicle_number,\n        'make', v.make,\n        'model', v.model,\n        'color', v.color,\n        'end_date', v.end_date,\n        'vehicle_type', json_build_object(\n          'id', vt_v.id,\n          'name', vt_v.name,\n          'passengers', vt_v.passengers,\n          'luggages', vt_v.luggages,\n          'driver_waiting_charges', vt_v.driver_waiting_charges\n        )\n      )\n  END AS vehicle\nFROM drivers d\nLEFT JOIN subsidiaries s ON s.id = d.subsidiary_id\nLEFT JOIN vehicles v ON v.id = d.vehicle_id\nLEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id\nLEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id\nLEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id\nWHERE d.active = $1 AND d.session_status = $2 AND d.company_id = $3\nORDER BY d.id DESC\nLIMIT $4 OFFSET $5;\n","timestamp":"2026-05-04T18:10:15.149Z"}
 {"level":"info","message":"GET /api/drivers/session?session_status=logged_in&company_id=1 200 80.118 ms","timestamp":"2026-05-04T18:10:15.152Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:29:26.586Z"}
+{"level":"info","message":"GET /api/location-types 200 15.008 ms","timestamp":"2026-05-04T18:29:26.593Z"}
+{"duration":47,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:29:26.630Z"}
+{"level":"info","message":"GET /api/location-types 200 48.719 ms","timestamp":"2026-05-04T18:29:26.632Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:45:34.930Z"}
+{"level":"info","message":"GET /api/location-types 200 15.964 ms","timestamp":"2026-05-04T18:45:34.940Z"}
+{"duration":54,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:45:34.980Z"}
+{"level":"info","message":"GET /api/location-types 200 56.528 ms","timestamp":"2026-05-04T18:45:34.982Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:45:41.495Z"}
+{"level":"info","message":"GET /api/location-types 200 17.694 ms","timestamp":"2026-05-04T18:45:41.506Z"}
+{"duration":62,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:45:41.552Z"}
+{"level":"info","message":"GET /api/location-types 200 63.819 ms","timestamp":"2026-05-04T18:45:41.554Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:45:52.494Z"}
+{"level":"info","message":"GET /api/location-types 200 18.191 ms","timestamp":"2026-05-04T18:45:52.502Z"}
+{"duration":57,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:45:52.544Z"}
+{"level":"info","message":"GET /api/location-types 200 57.915 ms","timestamp":"2026-05-04T18:45:52.545Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:46:05.301Z"}
+{"level":"info","message":"GET /api/location-types 200 12.334 ms","timestamp":"2026-05-04T18:46:05.307Z"}
+{"duration":154,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:46:05.450Z"}
+{"level":"info","message":"GET /api/location-types 200 155.567 ms","timestamp":"2026-05-04T18:46:05.452Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:47:37.861Z"}
+{"level":"info","message":"GET /api/location-types 200 20.328 ms","timestamp":"2026-05-04T18:47:37.884Z"}
+{"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:47:37.920Z"}
+{"level":"info","message":"GET /api/location-types 200 66.188 ms","timestamp":"2026-05-04T18:47:37.923Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:47:41.220Z"}
+{"level":"info","message":"GET /api/location-types 200 12.243 ms","timestamp":"2026-05-04T18:47:41.229Z"}
+{"duration":56,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-04T18:47:41.273Z"}
+{"level":"info","message":"GET /api/location-types 200 56.838 ms","timestamp":"2026-05-04T18:47:41.274Z"}
+{"duration":51,"level":"info","message":"db-query","rows":0,"text":"SELECT * FROM driver_app_features WHERE driver_id = $1 AND company_id = $2","timestamp":"2026-05-04T18:48:31.863Z"}
+{"level":"info","message":"GET /api/drivers-app/app_features?driver_id=167 404 53.691 ms","timestamp":"2026-05-04T18:48:31.865Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"SELECT * FROM driver_app_features WHERE driver_id = $1 AND company_id = $2","timestamp":"2026-05-04T18:48:36.264Z"}
+{"level":"info","message":"GET /api/drivers-app/app_features?driver_id=172 404 3.157 ms","timestamp":"2026-05-04T18:48:36.266Z"}
+{"duration":141,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM driver_app_features WHERE driver_id = $1 AND company_id = $2","timestamp":"2026-05-04T18:49:13.539Z"}
+{"level":"info","message":"GET /api/drivers-app/app_features?driver_id=172&company_id=1 200 143.558 ms","timestamp":"2026-05-04T18:49:13.542Z"}
