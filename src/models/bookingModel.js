@@ -798,6 +798,26 @@ const checkDriverFobBooking = async (driver_id) => {
   return res.rows[0]; // 👈 only one booking
 };
 
+const getFOBBookingHIstoryByDriverId = async (driver_id) => {
+  const whereClause = `
+    WHERE b.driver_id = $1 
+    AND b.fob = true
+  `;
+
+  const values = [driver_id];
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    ${whereClause}
+    ORDER BY 
+      b.pickup_date DESC,
+      b.pickup_time DESC
+  `;
+
+  const res = await pool.query(sql, values);
+  return res.rows;
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -837,4 +857,5 @@ module.exports = {
   getBookingByCustomerMobile,
   getScheduleBookingByCustomerId,
   checkDriverFobBooking,
+  getFOBBookingHIstoryByDriverId
 };
