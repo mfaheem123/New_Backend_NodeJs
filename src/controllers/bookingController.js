@@ -1090,12 +1090,12 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
-    if (booking.rows[0].driver_id) {
-      return res.status(400).json({
-        status: false,
-        message: "Driver already assigned",
-      });
-    }
+    // if (booking.rows[0].driver_id) {
+    //   return res.status(400).json({
+    //     status: false,
+    //     message: "Driver already assigned",
+    //   });
+    // }
 
     if (
       booking.rows[0].booking_status_id === "11" ||
@@ -1234,12 +1234,12 @@ exports.assignFOBBookingToDriver = async (req, res) => {
       });
     }
 
-    if (booking.rows[0].driver_id) {
-      return res.status(400).json({
-        status: false,
-        message: "Driver already assigned",
-      });
-    }
+    // if (booking.rows[0].driver_id) {
+    //   return res.status(400).json({
+    //     status: false,
+    //     message: "Driver already assigned",
+    //   });
+    // }
 
     if (
       booking.rows[0].booking_status_id === "11" ||

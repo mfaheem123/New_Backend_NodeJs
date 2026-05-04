@@ -788,7 +788,7 @@ const checkDriverFobBooking = async (driver_id) => {
     WHERE b.driver_id = $1 
     AND b.fob = true
     AND b.booking_status_id = 15 
-    ORDER BY b.dispatched_at DESC
+    ORDER BY b.dispatched_at ASC
     LIMIT 1
   `;
 
