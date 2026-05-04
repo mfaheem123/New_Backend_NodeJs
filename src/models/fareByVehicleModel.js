@@ -44,7 +44,7 @@ exports.getAll = async (company_id) => {
 exports.getCount = async (company_id) => {
   const result = await pool.query(
     `SELECT COUNT(*) FROM fare_by_vehicles WHERE company_id = $1`,
-    [company_id] // ✅ FIX
+    [company_id], // ✅ FIX
   );
   return parseInt(result.rows[0].count);
 };

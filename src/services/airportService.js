@@ -1,7 +1,6 @@
 const pool = require("../db");
 
 class AirportService {
-  
   // GET ALL AIRPORTS
   static async getAllAirports(company_id) {
     const query = `

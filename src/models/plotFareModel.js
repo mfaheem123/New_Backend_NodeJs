@@ -17,7 +17,7 @@ const PlotFare = {
       ORDER BY pf.id DESC
       OFFSET $1 LIMIT $2
     `;
-    const { rows } = await pool.query(query, [offset, limit,company_id]);
+    const { rows } = await pool.query(query, [offset, limit, company_id]);
     return rows;
   },
 
@@ -80,9 +80,9 @@ const PlotFare = {
       `;
 
       const { rows } = await pool.query(selectQuery, [insertedId]);
-       const { company_id, ...rest } = rows[0];
+      const { company_id, ...rest } = rows[0];
 
-    createdFares.push(rest);
+      createdFares.push(rest);
     }
 
     return createdFares;

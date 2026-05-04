@@ -31,7 +31,7 @@ const {
   getBookingByCustomerMobile,
   getScheduleBookingByCustomerId,
   checkDriverFobBooking,
-  getFOBBookingHIstoryByDriverId
+  getFOBBookingHIstoryByDriverId,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1325,7 +1325,6 @@ exports.getBookingByDriverIdAndFob = async (req, res) => {
   });
 };
 
-
 exports.getFOBBookingHIstoryByDriverId = async (req, res) => {
   const driver_id = req.params.id;
 
@@ -1336,9 +1335,7 @@ exports.getFOBBookingHIstoryByDriverId = async (req, res) => {
     });
   }
 
-  const bookings = await getFOBBookingHIstoryByDriverId(
-    driver_id,
-  );
+  const bookings = await getFOBBookingHIstoryByDriverId(driver_id);
 
   if (!bookings || bookings.length === 0) {
     return res.status(404).json({

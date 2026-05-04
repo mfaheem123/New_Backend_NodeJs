@@ -14,7 +14,7 @@ exports.getAll = async (company_id) => {
     WHERE company_id=$1
     ORDER BY id DESC;
   `;
-  const result = await pool.query(query,[company_id]);
+  const result = await pool.query(query, [company_id]);
   return result.rows;
 };
 
@@ -29,7 +29,15 @@ exports.getById = async (id) => {
 
 // CREATE
 exports.create = async (data) => {
-  const { start_date, end_date, operator, amount, fix_fare, mileage, company_id } = data;
+  const {
+    start_date,
+    end_date,
+    operator,
+    amount,
+    fix_fare,
+    mileage,
+    company_id,
+  } = data;
 
   const query = `
     INSERT INTO fare_increments (start_date, end_date, operator, amount, fix_fare, mileage, company_id)
@@ -44,7 +52,15 @@ exports.create = async (data) => {
               mileage;
   `;
 
-  const values = [start_date, end_date, operator, amount, fix_fare, mileage, company_id];
+  const values = [
+    start_date,
+    end_date,
+    operator,
+    amount,
+    fix_fare,
+    mileage,
+    company_id,
+  ];
   const result = await pool.query(query, values);
   return result.rows[0];
 };

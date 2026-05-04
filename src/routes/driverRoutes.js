@@ -32,7 +32,6 @@ router.get("/login-busy", driverController.getLoginDrivers);
 router.get("/tracking-drivers", driverController.getLoginDriverTracking);
 router.get("/fob-drivers", driverController.getFOBDrivers);
 
-
 router.post("/on-break", upload.any(), driverController.onBreakDriver);
 router.post("/panic", upload.any(), driverController.onPanicDriver);
 

@@ -857,5 +857,5 @@ module.exports = {
   getBookingByCustomerMobile,
   getScheduleBookingByCustomerId,
   checkDriverFobBooking,
-  getFOBBookingHIstoryByDriverId
+  getFOBBookingHIstoryByDriverId,
 };

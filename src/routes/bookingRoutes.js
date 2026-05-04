@@ -15,7 +15,10 @@ router.get("/driver-rent", bookingController.getBookingByDriverCommission);
 router.get("/customer-bookings/:id", bookingController.getBookingByCustomerId);
 router.get("/customer-jobs", bookingController.getBookingByCustomerMobile);
 router.get("/driver-fob/:id", bookingController.getBookingByDriverIdAndFob);
-router.get("/fob-history/:id", bookingController.getFOBBookingHIstoryByDriverId);
+router.get(
+  "/fob-history/:id",
+  bookingController.getFOBBookingHIstoryByDriverId,
+);
 
 router.get(
   "/customer-schedule/:id",

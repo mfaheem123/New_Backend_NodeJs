@@ -9,7 +9,7 @@ module.exports = {
       WHERE fm.company_id=$1
       ORDER BY fm.id ASC;
     `;
-    return pool.query(query,[company_id]);
+    return pool.query(query, [company_id]);
   },
 
   async getById(id) {
@@ -40,7 +40,7 @@ module.exports = {
       data.autostop_waiting_speed_limit,
       JSON.stringify(data.waiting_charges || []),
       data.waiting_intervals,
-      data.company_id
+      data.company_id,
     ];
     return pool.query(query, values);
   },
@@ -110,9 +110,9 @@ module.exports = {
     const query = `DELETE FROM fare_meters WHERE id = $1 RETURNING *;`;
     return pool.query(query, [id]);
   },
-// ✅ GET BY VEHICLE TYPE ID
-async getByVehicleTypeId(vehicle_type_id) {
-  const query = `
+  // ✅ GET BY VEHICLE TYPE ID
+  async getByVehicleTypeId(vehicle_type_id) {
+    const query = `
     SELECT fm.*, vt.name AS vehicle_type
     FROM fare_meters fm
     LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id
@@ -120,7 +120,6 @@ async getByVehicleTypeId(vehicle_type_id) {
     ORDER BY fm.id ASC;
   `;
 
-  return pool.query(query, [vehicle_type_id]);
-}
-
+    return pool.query(query, [vehicle_type_id]);
+  },
 };
