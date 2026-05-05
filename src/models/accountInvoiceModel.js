@@ -69,7 +69,7 @@ exports.create = async (data) => {
         department_id,
         order_number,
         amount.toFixed(2),
-        company_id
+        company_id,
       ],
     );
 
@@ -167,9 +167,9 @@ exports.getAll = async ({
       values.push(`%${department_name}%`);
     }
     if (company_id) {
-    conditions.push(`ai.company_id = $${idx++}`);
-    values.push(company_id);
-  }
+      conditions.push(`ai.company_id = $${idx++}`);
+      values.push(company_id);
+    }
 
     // =========================
     // 🔍 GLOBAL SEARCH
@@ -275,8 +275,8 @@ exports.getAll = async ({
     values.push(limit);
 
     const dataRes = await pool.query(dataQuery, values);
-// ❌ REMOVE company_id
-const cleanedInvoices = dataRes.rows.map(({ company_id, ...rest }) => rest);
+    // ❌ REMOVE company_id
+    const cleanedInvoices = dataRes.rows.map(({ company_id, ...rest }) => rest);
 
     return {
       status: true,

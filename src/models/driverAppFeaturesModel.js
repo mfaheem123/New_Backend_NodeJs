@@ -42,7 +42,7 @@ const ALLOWED_FIELDS = [
 exports.getByDriverId = async (driver_id, company_id) => {
   const { rows } = await db.query(
     `SELECT * FROM driver_app_features WHERE driver_id = $1 AND company_id = $2`,
-    [driver_id, company_id]
+    [driver_id, company_id],
   );
   return rows[0];
 };

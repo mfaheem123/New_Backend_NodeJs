@@ -5,7 +5,7 @@ const addEmployeeExtension = async (
   employee_id,
   extension_number,
   permanent_flag,
-  company_id
+  company_id,
 ) => {
   const query = `
     INSERT INTO employee_extensions (employee_id, extension_number, permanent_flag, company_id)
@@ -21,11 +21,8 @@ const addEmployeeExtension = async (
   const employee_query = `UPDATE employees
     SET extension_number = $1
     WHERE id = $2`;
-    
-     await db.query(employee_query, [
-    extension_number,
-    employee_id,
-  ]);
+
+  await db.query(employee_query, [extension_number, employee_id]);
   return result.rows[0];
 };
 
@@ -52,7 +49,7 @@ const getAllEmployeeExtensions = async (company_id) => {
     WHERE ee.company_id = $1
     ORDER BY ee.id DESC
   `;
-  const result = await db.query(query,[company_id]);
+  const result = await db.query(query, [company_id]);
   return result.rows;
 };
 
@@ -87,10 +84,10 @@ const updateEmployeeExtension = async (id, fields) => {
 
   // ✅ OPTIONAL: sync with employees table
   if (updatedRow && fields.extension_number !== undefined) {
-    await db.query(
-      `UPDATE employees SET extension_number = $1 WHERE id = $2`,
-      [fields.extension_number, updatedRow.employee_id]
-    );
+    await db.query(`UPDATE employees SET extension_number = $1 WHERE id = $2`, [
+      fields.extension_number,
+      updatedRow.employee_id,
+    ]);
   }
 
   return updatedRow;

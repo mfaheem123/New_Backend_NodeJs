@@ -218,9 +218,10 @@ exports.getBookingByTabs = async (req, res) => {
       case 1:
         tabName = "TODAY BOOKINGS";
         tabWhere = `
-          DATE(b.pickup_date) = CURRENT_DATE
-          AND b.booking_status_id = 1 AND b.trash = false
-        `;
+    DATE(b.pickup_date) = CURRENT_DATE
+    AND b.booking_status_id IN (1, 13)
+    AND b.trash = false
+  `;
         orderBy = `
           TRIM(b.pickup_time)::time ASC,
           b.id ASC
@@ -233,7 +234,7 @@ exports.getBookingByTabs = async (req, res) => {
 
       case 3:
         tabName = "RECENT BOOKINGS";
-        tabWhere = `b.booking_status_id NOT IN (1, 11) AND b.trash = false`;
+        tabWhere = `b.booking_status_id NOT IN (1, 11, 13) AND b.trash = false`;
         orderBy = `
   (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
 `;
