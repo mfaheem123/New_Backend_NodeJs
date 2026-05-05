@@ -32,6 +32,7 @@ const {
   getScheduleBookingByCustomerId,
   checkDriverFobBooking,
   getFOBBookingHIstoryByDriverId,
+  completeBoookingByController,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1352,4 +1353,50 @@ exports.getFOBBookingHIstoryByDriverId = async (req, res) => {
     count: bookings.length,
     bookings: data,
   });
+};
+
+exports.completeBoookingByController = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+    const {
+      driver_id,
+    } = req.body;
+    console.log(
+      "🚀 INCOMING CONTROLLER BOOKING COMPLETE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    if (
+      !driver_id
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver_ID is Required",
+      });
+    }
+
+    const booking = await findBookingById(bookingId);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    await completeBoookingByController(
+      bookingId,
+      driver_id
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Booking Completed successfully",
+    });
+  } catch (error) {
+    console.error("Error While Booking Completed:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
 };
