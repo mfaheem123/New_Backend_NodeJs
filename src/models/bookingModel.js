@@ -818,19 +818,13 @@ const getFOBBookingHIstoryByDriverId = async (driver_id) => {
   return res.rows;
 };
 
-const completeBoookingByController = async (
-  id,
-  driver_id,
-) => {
+const completeBoookingByController = async (id, driver_id) => {
   const query = `
     UPDATE bookings
     SET booking_status_id = 11, completed = true , controller_completed = true , driver_id = $1
     WHERE id = $2
   `;
-  return pool.query(query, [
-    driver_id,
-    id,
-  ]);
+  return pool.query(query, [driver_id, id]);
 };
 
 module.exports = {
@@ -873,5 +867,5 @@ module.exports = {
   getScheduleBookingByCustomerId,
   checkDriverFobBooking,
   getFOBBookingHIstoryByDriverId,
-  completeBoookingByController
+  completeBoookingByController,
 };

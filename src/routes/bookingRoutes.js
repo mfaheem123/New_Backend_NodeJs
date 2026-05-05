@@ -40,7 +40,10 @@ router.post("/update/:id", bookingController.updateBooking);
 router.post("/status/:id", bookingController.updateBookingStatus);
 router.post("/fares/:id", bookingController.updateBookingFares);
 router.post("/fare-charges/:id", bookingController.updateBookingFareCharges);
-router.post("/completed-booking/:id", bookingController.completeBoookingByController);
+router.post(
+  "/completed-booking/:id",
+  bookingController.completeBoookingByController,
+);
 router.post("/cli", bookingController.cloneOneWayBooking);
 router.post("/assign-driver", bookingController.assignDriverToBooking);
 router.post("/fob-driver", bookingController.assignFOBBookingToDriver);

@@ -1358,16 +1358,12 @@ exports.getFOBBookingHIstoryByDriverId = async (req, res) => {
 exports.completeBoookingByController = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
-    const {
-      driver_id,
-    } = req.body;
+    const { driver_id } = req.body;
     console.log(
       "🚀 INCOMING CONTROLLER BOOKING COMPLETE BODY:",
       JSON.stringify(req.body, null, 2),
     );
-    if (
-      !driver_id
-    ) {
+    if (!driver_id) {
       return res.status(400).json({
         status: false,
         message: "Driver_ID is Required",
@@ -1383,10 +1379,7 @@ exports.completeBoookingByController = async (req, res) => {
       });
     }
 
-    await completeBoookingByController(
-      bookingId,
-      driver_id
-    );
+    await completeBoookingByController(bookingId, driver_id);
 
     return res.status(200).json({
       status: true,
