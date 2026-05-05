@@ -230,7 +230,7 @@ exports.getBookingByTabs = async (req, res) => {
         break;
       case 2:
         tabName = "PRE BOOKINGS";
-        tabWhere = `DATE(b.pickup_date) > CURRENT_DATE AND b.trash = false`;
+        tabWhere = `DATE(b.pickup_date) > CURRENT_DATE AND b.booking_status_id NOT IN (11) AND b.trash = false`;
         break;
 
       case 3:

@@ -259,3 +259,18 @@
 {"duration":168,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1 AND trash = false\n  ","timestamp":"2026-05-05T09:59:08.239Z"}
 {"duration":5,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = 11, completed = true , controller_completed = true , driver_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-05-05T09:59:08.244Z"}
 {"level":"info","message":"POST /api/bookings/completed-booking/898 500 176.290 ms","timestamp":"2026-05-05T09:59:08.246Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-05T09:59:30.597Z"}
+{"level":"info","message":"GET /api/location-types 200 11.345 ms","timestamp":"2026-05-05T09:59:30.604Z"}
+{"duration":52,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-05T09:59:30.645Z"}
+{"level":"info","message":"GET /api/location-types 200 53.160 ms","timestamp":"2026-05-05T09:59:30.647Z"}
+{"duration":133,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1 AND trash = false\n  ","timestamp":"2026-05-05T09:59:48.976Z"}
+{"duration":5,"level":"info","message":"db-query","rows":1,"text":"\n    UPDATE bookings\n    SET booking_status_id = 11, completed = true , controller_completed = true , driver_id = $1\n    WHERE id = $2\n  ","timestamp":"2026-05-05T09:59:48.985Z"}
+{"level":"info","message":"POST /api/bookings/completed-booking/888 200 168.142 ms","timestamp":"2026-05-05T09:59:48.989Z"}
+{"duration":9,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-05T10:13:32.955Z"}
+{"level":"info","message":"GET /api/location-types 200 17.860 ms","timestamp":"2026-05-05T10:13:32.964Z"}
+{"duration":91,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-05T10:13:33.041Z"}
+{"level":"info","message":"GET /api/location-types 200 94.459 ms","timestamp":"2026-05-05T10:13:33.044Z"}
+{"duration":9,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-05T10:13:37.637Z"}
+{"level":"info","message":"GET /api/location-types 200 18.653 ms","timestamp":"2026-05-05T10:13:37.647Z"}
+{"duration":62,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-05T10:13:37.692Z"}
+{"level":"info","message":"GET /api/location-types 200 63.660 ms","timestamp":"2026-05-05T10:13:37.694Z"}
