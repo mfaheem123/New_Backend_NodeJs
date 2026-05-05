@@ -3,7 +3,7 @@ const EmployeeExtModel = require("../models/employeeExtensionsModel");
 module.exports = {
  add: async (req, res) => {
     try {
-      const { employee_id, extension_number, permanent_flag } = req.body;
+      const { employee_id, extension_number, permanent_flag, company_id } = req.body;
 
       console.log(
         "🚀 INCOMING EMPLOYEE EXTENSION ADD BODY:",
@@ -12,7 +12,7 @@ module.exports = {
 
       // 🔍 Check if extension already exists
       const existing = await EmployeeExtModel.getEmployeeExtensionById(
-        employee_id
+        employee_id,
       );
 
       let result;
@@ -31,7 +31,8 @@ module.exports = {
         result = await EmployeeExtModel.addEmployeeExtension(
           employee_id,
           extension_number,
-          permanent_flag
+          permanent_flag,
+          company_id
         );
       }
 
@@ -65,7 +66,8 @@ module.exports = {
   // ➤ Get All Extensions
   get: async (req, res) => {
     try {
-      const data = await EmployeeExtModel.getAllEmployeeExtensions();
+      const {company_id} = req.query
+      const data = await EmployeeExtModel.getAllEmployeeExtensions(company_id);
       res.json({ status: true, employee_extensions: data });
     } catch (error) {
       res.status(500).json({ status: false, error: error.message });
