@@ -33,7 +33,8 @@ const {
   checkDriverFobBooking,
   getFOBBookingHIstoryByDriverId,
   completeBoookingByController,
-  updateDashboardBookingFares
+  updateDashboardBookingFares,
+  recoverDashboardBooking
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1434,6 +1435,36 @@ exports.updateDashboardBookingFares = async (req, res) => {
     });
   } catch (error) {
     console.error("Update Booking Fares Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.recoverDashboardBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const booking = await findBookingById(bookingId);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    await recoverDashboardBooking(
+      bookingId
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Recover Booking Successfully",
+    });
+  } catch (error) {
+    console.error("Recover Booking Error:", error);
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",

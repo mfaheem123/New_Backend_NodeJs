@@ -842,6 +842,16 @@ const updateDashboardBookingFares = async (
   ]);
 };
 
+const recoverDashboardBooking = async (id) => {
+  const query = `
+    UPDATE bookings
+    SET booking_status_id = 1,
+        driver_id = NULL
+    WHERE id = $1
+  `;
+  return pool.query(query, [id]);
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -883,5 +893,6 @@ module.exports = {
   checkDriverFobBooking,
   getFOBBookingHIstoryByDriverId,
   completeBoookingByController,
-  updateDashboardBookingFares
+  updateDashboardBookingFares,
+  recoverDashboardBooking
 };
