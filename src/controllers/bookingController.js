@@ -33,6 +33,7 @@ const {
   checkDriverFobBooking,
   getFOBBookingHIstoryByDriverId,
   completeBoookingByController,
+  updateDashboardBookingFares
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1387,6 +1388,52 @@ exports.completeBoookingByController = async (req, res) => {
     });
   } catch (error) {
     console.error("Error While Booking Completed:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.updateDashboardBookingFares = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+    const {
+      total_charges,
+    } = req.body;
+    console.log(
+      "🚀 INCOMING UPDATE BOOKING CHARGES BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    if (
+      !total_charges
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Fare Required",
+      });
+    }
+
+    const booking = await findBookingById(bookingId);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    await updateDashboardBookingFares(
+      bookingId,
+      total_charges,
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Booking Fares updated successfully",
+    });
+  } catch (error) {
+    console.error("Update Booking Fares Error:", error);
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",

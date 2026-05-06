@@ -713,7 +713,11 @@ exports.getDriversByCommissionType = async (req, res) => {
   try {
     const { active, driver_type, company_id } = req.query;
 
-    const data = await Driver.getAllDriverByCommissionType(active, driver_type, company_id);
+    const data = await Driver.getAllDriverByCommissionType(
+      active,
+      driver_type,
+      company_id,
+    );
 
     return res.status(200).json({
       status: true,
