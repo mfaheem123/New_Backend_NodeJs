@@ -1194,7 +1194,7 @@ const Driver = {
     return rows[0] || null;
   },
 
-  async getAllDriverByCommissionType(active, driver_type) {
+  async getAllDriverByCommissionType(active, driver_type, company_id) {
     const conditions = [];
     const params = [];
     let idx = 1;
@@ -1209,6 +1209,10 @@ const Driver = {
     if (driver_type) {
       conditions.push(`d.driver_type = $${idx++}`);
       params.push(driver_type);
+    }
+    if (company_id) {
+      conditions.push(`d.company_id = $${idx++}`);
+      params.push(company_id);
     }
 
     const whereClause = conditions.length
