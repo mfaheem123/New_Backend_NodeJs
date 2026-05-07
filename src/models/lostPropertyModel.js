@@ -14,9 +14,22 @@ const createLostProperty = async (data) => {
 
   const query = `
     INSERT INTO lost_properties 
-    (booking_id, customer_id, item_description, inquiry, checked_by, method_desposition, result, lost_date, report_date, lost_number)
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-    RETURNING *
+    (booking_id, customer_id, item_description, inquiry, checked_by, method_desposition, result, lost_date, report_date, lost_number, company_id)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+    RETURNING 
+    id,
+    booking_id,
+    customer_id,
+    item_description,
+    inquiry,
+    checked_by,
+    method_desposition,
+    result,
+    lost_date,
+    report_date,
+    lost_number,
+    status,
+    created_at
   `;
 
   const values = [
@@ -30,6 +43,7 @@ const createLostProperty = async (data) => {
     data.lost_date,
     data.report_date,
     lost_number,
+    data.company_id,
   ];
 
   const { rows } = await db.query(query, values);
@@ -45,6 +59,7 @@ const getAllLostProperties = async ({
   lost_date,
   item_description,
   name, // customer name
+  company_id,
 } = {}) => {
   const offset = (page - 1) * limit;
 
@@ -75,6 +90,11 @@ const getAllLostProperties = async ({
   if (name) {
     conditions.push(`c.name ILIKE $${idx++}`);
     params.push(`%${name}%`);
+  }
+
+  if (company_id) {
+    conditions.push(`lp.company_id = $${idx++}`);
+    params.push(company_id);
   }
 
   const whereClause = conditions.length

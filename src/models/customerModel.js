@@ -443,15 +443,15 @@ RETURNING id
     );
   },
 
-  searchCustomerByMobile: async (mobile) => {
+  searchCustomerByMobile: async (mobile, company_id) => {
     const query = `
         SELECT 
             id, sms_flag, name, mobile, email, telephone, address1, address2
         FROM customers
-        WHERE mobile LIKE $1
+        WHERE mobile LIKE $1 AND company_id = $2
     `;
 
-    const result = await db.query(query, [`%${mobile}%`]);
+    const result = await db.query(query, [`%${mobile}%`,company_id]);
     return result.rows;
   },
   updateCustomerFcmToken: async (customerId, fcmToken) => {
