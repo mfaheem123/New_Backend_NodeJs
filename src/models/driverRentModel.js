@@ -140,7 +140,7 @@ class DriverRent {
 
   /* ================= DISTINCT ================= */
 
-  static async getDistinct(offset, limit,company_id) {
+  static async getDistinct(offset, limit, company_id) {
     const query = `
     SELECT 
       dc.driver_id,
@@ -210,7 +210,7 @@ class DriverRent {
       ORDER BY dc.id DESC
     `;
 
-    const result = await db.query(query, [driver_id,company_id]);
+    const result = await db.query(query, [driver_id, company_id]);
 
     return result.rows;
   }

@@ -723,7 +723,10 @@ This code will expire in 15 minutes.
         });
       }
 
-      const customer = await Customer.searchCustomerByMobile(mobile, company_id);
+      const customer = await Customer.searchCustomerByMobile(
+        mobile,
+        company_id,
+      );
 
       return res.status(200).json({
         status: true,
