@@ -827,19 +827,13 @@ const completeBoookingByController = async (id, driver_id) => {
   return pool.query(query, [driver_id, id]);
 };
 
-const updateDashboardBookingFares = async (
-  id,
-  total_charges,
-) => {
+const updateDashboardBookingFares = async (id, total_charges) => {
   const query = `
     UPDATE bookings
     SET total_charges= $1
     WHERE id = $2
   `;
-  return pool.query(query, [
-    total_charges,
-    id,
-  ]);
+  return pool.query(query, [total_charges, id]);
 };
 
 const recoverDashboardBooking = async (id) => {
@@ -894,5 +888,5 @@ module.exports = {
   getFOBBookingHIstoryByDriverId,
   completeBoookingByController,
   updateDashboardBookingFares,
-  recoverDashboardBooking
+  recoverDashboardBooking,
 };

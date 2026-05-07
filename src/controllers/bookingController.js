@@ -34,7 +34,7 @@ const {
   getFOBBookingHIstoryByDriverId,
   completeBoookingByController,
   updateDashboardBookingFares,
-  recoverDashboardBooking
+  recoverDashboardBooking,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1399,16 +1399,12 @@ exports.completeBoookingByController = async (req, res) => {
 exports.updateDashboardBookingFares = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
-    const {
-      total_charges,
-    } = req.body;
+    const { total_charges } = req.body;
     console.log(
       "🚀 INCOMING UPDATE BOOKING CHARGES BODY:",
       JSON.stringify(req.body, null, 2),
     );
-    if (
-      !total_charges
-    ) {
+    if (!total_charges) {
       return res.status(400).json({
         status: false,
         message: "Fare Required",
@@ -1424,10 +1420,7 @@ exports.updateDashboardBookingFares = async (req, res) => {
       });
     }
 
-    await updateDashboardBookingFares(
-      bookingId,
-      total_charges,
-    );
+    await updateDashboardBookingFares(bookingId, total_charges);
 
     return res.status(200).json({
       status: true,
@@ -1455,9 +1448,7 @@ exports.recoverDashboardBooking = async (req, res) => {
       });
     }
 
-    await recoverDashboardBooking(
-      bookingId
-    );
+    await recoverDashboardBooking(bookingId);
 
     return res.status(200).json({
       status: true,

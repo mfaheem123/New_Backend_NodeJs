@@ -40,7 +40,10 @@ router.post("/update/:id", bookingController.updateBooking);
 router.post("/status/:id", bookingController.updateBookingStatus);
 router.post("/fares/:id", bookingController.updateBookingFares);
 router.post("/fare-charges/:id", bookingController.updateBookingFareCharges);
-router.post("/dashboard-fares/:id", bookingController.updateDashboardBookingFares);
+router.post(
+  "/dashboard-fares/:id",
+  bookingController.updateDashboardBookingFares,
+);
 router.post("/recover-booking/:id", bookingController.recoverDashboardBooking);
 
 router.post(

@@ -104,15 +104,15 @@ class DriverCommission {
 
         // ✅ UPDATE BOOKING COMMISSION STATUS
       }
-// if (bookingIds.length) {
-//     await db.query(
-//       `UPDATE bookings
-//        SET commission = false,
-//            commission_status = 'close'
-//        WHERE id = ANY($1::int[])`,
-//       [bookingIds]
-//     );
-//   }
+      // if (bookingIds.length) {
+      //     await db.query(
+      //       `UPDATE bookings
+      //        SET commission = false,
+      //            commission_status = 'close'
+      //        WHERE id = ANY($1::int[])`,
+      //       [bookingIds]
+      //     );
+      //   }
       /* Update Driver Balance */
       await db.query(
         `UPDATE drivers
@@ -132,7 +132,7 @@ class DriverCommission {
 
   /* ================= DISTINCT ================= */
 
-  static async getDistinct(offset, limit,company_id) {
+  static async getDistinct(offset, limit, company_id) {
     const query = `
     SELECT 
       dc.driver_id,
@@ -174,7 +174,7 @@ class DriverCommission {
 
   /* ================= BY DRIVER ================= */
 
-  static async getByDriverId(driver_id,company_id) {
+  static async getByDriverId(driver_id, company_id) {
     const query = `
       SELECT dc.id,
   dc.transaction_number,
@@ -202,7 +202,7 @@ class DriverCommission {
       ORDER BY dc.id DESC
     `;
 
-    const result = await db.query(query, [driver_id,company_id]);
+    const result = await db.query(query, [driver_id, company_id]);
 
     return result.rows;
   }
