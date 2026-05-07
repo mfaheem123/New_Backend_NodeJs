@@ -16,6 +16,7 @@ const FareConfiguration = {
       to_date,
       title,
       per_mile_fares,
+      company_id,
     } = data;
 
     const query = `
@@ -31,8 +32,9 @@ const FareConfiguration = {
       from_date,
       to_date,
       title,
-      per_mile_fares
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      per_mile_fares,
+      company_id
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12 ,$13)
     RETURNING *;
   `;
 
@@ -49,6 +51,7 @@ const FareConfiguration = {
       to_date || null,
       title,
       per_mile_fares || 0.0,
+      company_id || 1,
     ];
 
     const result = await db.query(query, values);
@@ -56,7 +59,7 @@ const FareConfiguration = {
   },
 
   // ✅ READ ALL
-  async getAll(title) {
+  async getAll(title, company_id) {
     let query = `
     SELECT 
       f.*, 
@@ -67,23 +70,34 @@ const FareConfiguration = {
     LEFT JOIN vehicle_types vt ON vt.id = f.vehicle_type_id
     LEFT JOIN accounts a ON a.id = f.account_id
   `;
+
+    const conditions = [];
     const params = [];
 
+    // 🔹 Title filter
     if (title) {
       if (title.toLowerCase() === "normal") {
-        // 🟢 For NORMAL → get records where title IS NULL or ''
-        query += ` WHERE f.title IS NULL OR TRIM(f.title) = ''`;
+        conditions.push(`(f.title IS NULL OR TRIM(f.title) = '')`);
       } else if (title.toLowerCase() === "special") {
-        // 🟢 For SPECIAL → get records where title is NOT NULL and NOT empty
-        query += ` WHERE f.title IS NOT NULL AND TRIM(f.title) <> ''`;
+        conditions.push(`(f.title IS NOT NULL AND TRIM(f.title) <> '')`);
       }
+    }
+
+    // 🔹 Company filter
+    if (company_id) {
+      params.push(company_id);
+      conditions.push(`f.company_id = $${params.length}`);
+    }
+
+    // 🔹 Apply WHERE only once
+    if (conditions.length > 0) {
+      query += ` WHERE ` + conditions.join(" AND ");
     }
 
     query += " ORDER BY f.id DESC";
 
     const result = await db.query(query, params);
 
-    // 🧩 Transform flat rows into nested structure
     return result.rows.map((row) => ({
       id: row.id,
       vehicle_type_id: row.vehicle_type_id,

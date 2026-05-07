@@ -274,6 +274,7 @@ exports.getAll = async (req, res) => {
       vehicle_type,
       subsidiary,
       active = true,
+      company_id,
     } = req.query;
 
     const { total, drivers } = await Driver.getAll({
@@ -291,6 +292,7 @@ exports.getAll = async (req, res) => {
       vehicle_type,
       subsidiary,
       active,
+      company_id,
     });
 
     res.json({
@@ -709,9 +711,13 @@ exports.verifyDriverToken = async (req, res) => {
 // GET ALL DRIVER BY DRIVER TYPE
 exports.getDriversByCommissionType = async (req, res) => {
   try {
-    const { active, driver_type } = req.query;
+    const { active, driver_type, company_id } = req.query;
 
-    const data = await Driver.getAllDriverByCommissionType(active, driver_type);
+    const data = await Driver.getAllDriverByCommissionType(
+      active,
+      driver_type,
+      company_id,
+    );
 
     return res.status(200).json({
       status: true,
@@ -746,6 +752,7 @@ exports.getBySessionStatus = async (req, res) => {
       vehicle_type,
       subsidiary,
       active = true,
+      company_id,
     } = req.query;
 
     const { total, drivers } = await Driver.getBySessionStatus({
@@ -764,6 +771,7 @@ exports.getBySessionStatus = async (req, res) => {
       vehicle_type,
       subsidiary,
       active,
+      company_id,
     });
 
     res.json({
@@ -952,6 +960,23 @@ exports.getLoginDriverTracking = async (req, res) => {
     res.status(200).json({
       status: true,
       tracking_drivers: login_drivers,
+    });
+  } catch (err) {
+    console.error("Error fetching login drivers:", err);
+    res.status(500).json({
+      status: false,
+      message: "Server error",
+    });
+  }
+};
+
+exports.getFOBDrivers = async (req, res) => {
+  try {
+    const busy_drivers = await Driver.getFOBDrivers();
+
+    res.status(200).json({
+      status: true,
+      drivers: busy_drivers,
     });
   } catch (err) {
     console.error("Error fetching login drivers:", err);

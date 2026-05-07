@@ -4,7 +4,8 @@ class AirportController {
   // GET LIST
   static async getAirports(req, res) {
     try {
-      const data = await AirportService.getAllAirports();
+      const { company_id } = req.query;
+      const data = await AirportService.getAllAirports(company_id);
 
       res.json({
         status: true,
@@ -26,7 +27,7 @@ class AirportController {
       const updated = await AirportService.updateAirport(id, req.body);
       console.log(
         "🚀 INCOMING AIRPORT CHARGES UPDATE BODY:",
-        JSON.stringify(req.body, null, 2)
+        JSON.stringify(req.body, null, 2),
       );
 
       res.json({

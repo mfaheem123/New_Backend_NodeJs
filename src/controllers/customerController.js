@@ -714,7 +714,7 @@ This code will expire in 15 minutes.
 
   searchCustomerDataByMobile: async (req, res) => {
     try {
-      const { mobile } = req.query;
+      const { mobile, company_id } = req.query;
 
       if (!mobile) {
         return res.status(400).json({
@@ -723,7 +723,10 @@ This code will expire in 15 minutes.
         });
       }
 
-      const customer = await Customer.searchCustomerByMobile(mobile);
+      const customer = await Customer.searchCustomerByMobile(
+        mobile,
+        company_id,
+      );
 
       return res.status(200).json({
         status: true,

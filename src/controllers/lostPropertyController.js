@@ -29,6 +29,7 @@ exports.getAll = async (req, res) => {
       lost_date,
       item_description,
       name,
+      company_id,
     } = req.query;
 
     const { lost_properties, total } = await model.getAllLostProperties({
@@ -39,6 +40,7 @@ exports.getAll = async (req, res) => {
       lost_date,
       item_description,
       name,
+      company_id,
     });
 
     res.json({

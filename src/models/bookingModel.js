@@ -782,6 +782,70 @@ const getScheduleBookingByCustomerId = async (customer_id) => {
   return res.rows;
 };
 
+const checkDriverFobBooking = async (driver_id) => {
+  const sql = `
+    ${ENRICHED_SELECT}
+    WHERE b.driver_id = $1 
+    AND b.fob = true
+    AND b.booking_status_id = 15 
+    ORDER BY b.dispatched_at ASC
+    LIMIT 1
+  `;
+
+  const values = [driver_id];
+
+  const res = await pool.query(sql, values);
+  return res.rows[0]; // 👈 only one booking
+};
+
+const getFOBBookingHIstoryByDriverId = async (driver_id) => {
+  const whereClause = `
+    WHERE b.driver_id = $1 
+    AND b.fob = true
+  `;
+
+  const values = [driver_id];
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    ${whereClause}
+    ORDER BY 
+      b.pickup_date DESC,
+      b.pickup_time DESC
+  `;
+
+  const res = await pool.query(sql, values);
+  return res.rows;
+};
+
+const completeBoookingByController = async (id, driver_id) => {
+  const query = `
+    UPDATE bookings
+    SET booking_status_id = 11, completed = true , controller_completed = true , driver_id = $1
+    WHERE id = $2
+  `;
+  return pool.query(query, [driver_id, id]);
+};
+
+const updateDashboardBookingFares = async (id, total_charges) => {
+  const query = `
+    UPDATE bookings
+    SET total_charges= $1
+    WHERE id = $2
+  `;
+  return pool.query(query, [total_charges, id]);
+};
+
+const recoverDashboardBooking = async (id) => {
+  const query = `
+    UPDATE bookings
+    SET booking_status_id = 1,
+        driver_id = NULL
+    WHERE id = $1
+  `;
+  return pool.query(query, [id]);
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -820,4 +884,9 @@ module.exports = {
   getBookingByCustomerId,
   getBookingByCustomerMobile,
   getScheduleBookingByCustomerId,
+  checkDriverFobBooking,
+  getFOBBookingHIstoryByDriverId,
+  completeBoookingByController,
+  updateDashboardBookingFares,
+  recoverDashboardBooking,
 };

@@ -46,17 +46,20 @@ async function sendRideAcceptedNotification(customerId, booking) {
     console.log("⚠️ No FCM token for customer:", customerId);
     return;
   }
+  console.log("Booking_ID: ", booking.id);
+  console.log("Driver_ID: ", booking.driver_id);
 
   // 2️⃣ Payload
   const message = {
     token: fcmToken,
     notification: {
-      title: "Ride Accepted 🚗",
+      title: "Ride Accepted",
       body: `Driver is on the way. Pickup: ${booking.pickup}`,
     },
     data: {
-      booking: JSON.stringify(booking),
-      booking_id: booking.id,
+      // booking: JSON.stringify(booking),
+      booking_id: booking.id.toString(),
+      driver_id: booking.driver_id.toString(),
       type: "RIDE_ACCEPTED",
     },
   };
@@ -66,6 +69,42 @@ async function sendRideAcceptedNotification(customerId, booking) {
   console.log("✅ Notification sent to customer:", customerId);
 }
 
+async function sendFOBBookingNotification(driverId, booking) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  const bookingPayload = { ...booking };
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "New Follow On Booking Assigned",
+      body: `Pickup: ${booking.pickup}`,
+    },
+    data: {
+      // booking: JSON.stringify(bookingPayload),
+      booking_status: "fob",
+      booking_id: booking.id.toString(),
+      type: "FOB_BOOKING",
+    },
+  };
+
+  // 3️⃣ Send
+  await admin.messaging().send(message);
+  console.log("✅ FOB Notification sent to driver:", driverId);
+}
+
 module.exports = {
   sendBookingNotification,
+  sendFOBBookingNotification,
+  sendRideAcceptedNotification,
 };

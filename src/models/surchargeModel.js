@@ -6,9 +6,9 @@ module.exports = {
       INSERT INTO surcharges (
         surcharges_type, condition, postcode, operator, fare, parking_charges,
         extra_drop_charges, congestion_charges, duration, from_date, from_time,
-        to_date, to_time, active, day
+        to_date, to_time, active, day, company_id
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
       RETURNING id,
                 TO_CHAR(from_date, 'DD-MM-YYYY') AS from_date,
                 TO_CHAR(to_date, 'DD-MM-YYYY') AS to_date,
@@ -32,6 +32,7 @@ module.exports = {
       data.to_time,
       data.active,
       data.day,
+      data.company_id || 1
     ];
 
     const result = await pool.query(query, values);
@@ -84,13 +85,13 @@ module.exports = {
     return result.rows[0];
   },
 
-  async getAll() {
+  async getAll(company_id) {
     const result = await pool.query(
       `SELECT id,
                 TO_CHAR(from_date, 'DD-MM-YYYY') AS from_date,
                 TO_CHAR(to_date, 'DD-MM-YYYY') AS to_date,
                 surcharges_type, condition, postcode, operator, fare, parking_charges,
-                extra_drop_charges, congestion_charges, duration,from_time, to_time, active, day, created_at, updated_at FROM surcharges ORDER BY id ASC;`,
+                extra_drop_charges, congestion_charges, duration,from_time, to_time, active, day, created_at, updated_at FROM surcharges WHERE company_id=$1 ORDER BY id ASC;`,[company_id]
     );
     return result.rows;
   },

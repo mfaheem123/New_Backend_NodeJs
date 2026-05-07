@@ -5,8 +5,8 @@ const FixedFare = {
   async create(fixedFares) {
     const insertQuery = `
     INSERT INTO fixed_fares 
-    (vehicle_type_id, area1, area2, fares, from_location_id, to_location_id)
-    VALUES ($1, $2, $3, $4, $5, $6)
+    (vehicle_type_id, area1, area2, fares, from_location_id, to_location_id, company_id)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING id;
   `;
 
@@ -20,6 +20,7 @@ const FixedFare = {
         fare.fares,
         fare.from_location_id,
         fare.to_location_id,
+        fare.company_id,
       ];
 
       const insertResult = await pool.query(insertQuery, values);
@@ -40,7 +41,8 @@ const FixedFare = {
     `;
 
       const { rows } = await pool.query(selectQuery, [insertedId]);
-      createdFares.push(rows[0]);
+      const { company_id, ...rest } = rows[0];
+      createdFares.push(rest);
     }
 
     return createdFares;
@@ -54,6 +56,7 @@ const FixedFare = {
     fares,
     area1,
     area2,
+    company_id,
   }) {
     let baseQuery = `
     FROM fixed_fares f
@@ -85,6 +88,10 @@ const FixedFare = {
       conditions.push(`LOWER(f.area2) LIKE LOWER($${index++})`);
       values.push(`%${area2}%`);
     }
+    if (company_id) {
+    conditions.push(`f.company_id = $${index++}`);
+    values.push(company_id);
+  }
 
     let whereClause = "";
     if (conditions.length > 0) {
@@ -112,7 +119,9 @@ const FixedFare = {
     const dataValues = [...values, offset, limit];
     const { rows } = await pool.query(dataQuery, dataValues);
 
-    return { rows, totalRecords };
+    const cleanedRows = rows.map(({ company_id, ...rest }) => rest);
+
+  return { rows: cleanedRows, totalRecords };
   },
 
   // ✅ READ BY ID

@@ -4,33 +4,32 @@ const db = require("../db");
 const addEmployeeExtension = async (
   employee_id,
   extension_number,
-  permanent_flag
+  permanent_flag,
+  company_id,
 ) => {
   const query = `
-    INSERT INTO employee_extensions (employee_id, extension_number, permanent_flag)
-    VALUES ($1, $2, $3)
+    INSERT INTO employee_extensions (employee_id, extension_number, permanent_flag, company_id)
+    VALUES ($1, $2, $3, $4)
     RETURNING id, employee_id, extension_number, permanent_flag
   `;
   const result = await db.query(query, [
     employee_id,
     extension_number,
     permanent_flag,
+    company_id ?? 1,
   ]);
   const employee_query = `UPDATE employees
     SET extension_number = $1
     WHERE id = $2`;
-    
-     await db.query(employee_query, [
-    extension_number,
-    employee_id,
-  ]);
+
+  await db.query(employee_query, [extension_number, employee_id]);
   return result.rows[0];
 };
 
 // GET EMPLOYEE EXTENSION BY EMPLOYEE ID
 const getEmployeeExtensionById = async (employee_id) => {
   const query = `
-    SELECT ee.*, 
+    SELECT ee.id,ee.employee_id,ee.extension_number,ee.permanent_flag, 
       json_build_object('id', e.id, 'username', e.username) AS employee
     FROM employee_extensions ee
     LEFT JOIN employees e ON e.id = ee.employee_id
@@ -41,15 +40,16 @@ const getEmployeeExtensionById = async (employee_id) => {
 };
 
 // GET ALL EMPLOYEE EXTENSIONS
-const getAllEmployeeExtensions = async () => {
+const getAllEmployeeExtensions = async (company_id) => {
   const query = `
-    SELECT ee.*, 
+    SELECT ee.id,ee.employee_id,ee.extension_number,ee.permanent_flag,
       json_build_object('id', e.id, 'username', e.username) AS employee
     FROM employee_extensions ee
     LEFT JOIN employees e ON e.id = ee.employee_id
+    WHERE ee.company_id = $1
     ORDER BY ee.id DESC
   `;
-  const result = await db.query(query);
+  const result = await db.query(query, [company_id]);
   return result.rows;
 };
 
@@ -84,10 +84,10 @@ const updateEmployeeExtension = async (id, fields) => {
 
   // ✅ OPTIONAL: sync with employees table
   if (updatedRow && fields.extension_number !== undefined) {
-    await db.query(
-      `UPDATE employees SET extension_number = $1 WHERE id = $2`,
-      [fields.extension_number, updatedRow.employee_id]
-    );
+    await db.query(`UPDATE employees SET extension_number = $1 WHERE id = $2`, [
+      fields.extension_number,
+      updatedRow.employee_id,
+    ]);
   }
 
   return updatedRow;

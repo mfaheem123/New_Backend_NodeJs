@@ -3,7 +3,8 @@ const TemplateModel = require("../models/templateModel");
 const TemplateController = {
   getTemplateTypes: async (req, res) => {
     try {
-      const templateTypes = await TemplateModel.getAllTemplateTypes();
+      const { company_id } = req.query;
+      const templateTypes = await TemplateModel.getAllTemplateTypes(company_id);
       return res.json({
         status: true,
         template_types: templateTypes,
@@ -18,7 +19,7 @@ const TemplateController = {
 
   getTemplatesByType: async (req, res) => {
     try {
-      const { template_type_id } = req.query;
+      const { template_type_id, company_id } = req.query;
 
       if (!template_type_id) {
         return res.status(400).json({
@@ -27,8 +28,10 @@ const TemplateController = {
         });
       }
 
-      const templates =
-        await TemplateModel.getTemplatesByTypeId(template_type_id);
+      const templates = await TemplateModel.getTemplatesByTypeId(
+        template_type_id,
+        company_id,
+      );
 
       return res.json({
         status: true,
@@ -87,7 +90,8 @@ const TemplateController = {
 
   getAllTemplates: async (req, res) => {
     try {
-      const templates = await TemplateModel.getAllTemplates();
+      const { company_id } = req.query;
+      const templates = await TemplateModel.getAllTemplates(company_id);
       return res.json({
         status: true,
         templates,
@@ -102,7 +106,8 @@ const TemplateController = {
 
   createTemplate: async (req, res) => {
     try {
-      const { template_type_id, name, subject, content, body } = req.body;
+      const { template_type_id, name, subject, content, body, company_id } =
+        req.body;
 
       if (!template_type_id || !name || !content) {
         return res.status(400).json({
@@ -117,6 +122,7 @@ const TemplateController = {
         subject,
         content,
         body,
+        company_id,
       });
 
       return res.status(200).json({

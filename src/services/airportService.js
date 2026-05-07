@@ -1,19 +1,40 @@
 const pool = require("../db");
 
 class AirportService {
-  
   // GET ALL AIRPORTS
-  static async getAllAirports() {
+  static async getAllAirports(company_id) {
     const query = `
-            SELECT l.*,
-            to_json(lt) AS location_type
-            FROM locations l
-            LEFT JOIN location_types lt
-            ON lt.id = l.location_type_id
-            WHERE l.location_type_id = 2
-            ORDER BY l.id ASC
-        `;
-    const result = await pool.query(query);
+    SELECT 
+      l.id,
+      l.name,
+      l.location_type_id,
+      l.address,
+      l.postcode,
+      l.zone_id,
+      l.shortcut,
+      l.background_color,
+      l.foreground_color,
+      l.extra_charges,
+      l.pickup_charges,
+      l.dropoff_charges,
+      l.blacklist,
+      l.latitude,
+      l.longitude,
+      json_build_object(
+        'id', lt.id,
+        'name', lt.name,
+        'shortcut', lt.shortcut,
+        'background_color', lt.background_color,
+        'foreground_color', lt.foreground_color
+      ) AS location_type
+    FROM locations l
+    LEFT JOIN location_types lt
+      ON lt.id = l.location_type_id
+    WHERE l.location_type_id = 2 
+      AND l.company_id = $1
+    ORDER BY l.id ASC
+  `;
+    const result = await pool.query(query, [company_id]);
     return result.rows;
   }
 

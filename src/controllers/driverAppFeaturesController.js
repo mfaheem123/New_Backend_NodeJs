@@ -41,7 +41,7 @@ exports.updateDriverAppFeatures = async (req, res) => {
 
 exports.getDriverAppFeatures = async (req, res) => {
   try {
-    const { driver_id } = req.query;
+    const { driver_id, company_id } = req.query;
 
     if (!driver_id) {
       return res.status(400).json({
@@ -50,7 +50,7 @@ exports.getDriverAppFeatures = async (req, res) => {
       });
     }
 
-    const f = await driverFeatures.getByDriverId(driver_id);
+    const f = await driverFeatures.getByDriverId(driver_id, company_id);
 
     if (!f) {
       return res.status(404).json({

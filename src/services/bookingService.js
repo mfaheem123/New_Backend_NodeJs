@@ -6,7 +6,10 @@ const {
   findBookingsById,
   getBookingByIdEnriched,
 } = require("../models/bookingModel");
-const { sendBookingNotification } = require("./notificationService");
+const {
+  sendBookingNotification,
+  sendFOBBookingNotification,
+} = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
 const driverAppFeatureModel = require("../models/driverAppFeaturesModel");
@@ -1390,6 +1393,69 @@ async function assignDriverService(bookingId, driverId) {
   return enriched;
 }
 
+async function assignFOBDriverService(bookingId, driverId) {
+  let fare_meter = false;
+  if (driverId) {
+    const driverFeatures = await driverAppFeatureModel.getByDriverId(driverId);
+
+    if (driverFeatures) {
+      fare_meter = !!driverFeatures.fare_meter;
+    }
+  }
+
+  // 1️ Update booking with driver
+  const updated = await updateBooking(bookingId, {
+    driver_id: driverId,
+    booking_status_id: 13,
+    fare_meter: fare_meter,
+    fob: true,
+    dispatched_at: new Date(),
+  });
+
+  if (!updated) return null;
+
+  // 2️ Get enriched booking
+  const enriched = await getBookingByIdEnriched(bookingId);
+
+  console.log("ENRICHED BOOKING DATA", enriched);
+
+  // 3️ Send notification to driver
+  await sendFOBBookingNotification(driverId, enriched);
+  // -------------------------------
+  // 📩 DISPATCH SMS (TEMPLATE 3)
+  // -------------------------------
+  // try {
+  //   if (enriched?.mobile && enriched?.driver_id) {
+  //     const totalFare = enriched?.total_charges ?? "0.00";
+
+  //     const template3Data = {
+  //       company_name: enriched?.subsidiary?.name ?? "",
+  //       company_telephone: enriched?.subsidiary?.telephone_number ?? "",
+  //       company_email: enriched?.subsidiary?.email ?? "",
+  //       vehicle_type: enriched?.vehicle_type?.name ?? "",
+  //       vehicle_color: enriched?.driver?.vehicle?.color ?? "",
+  //       vehicle_make: enriched?.driver?.vehicle?.make ?? "",
+  //       vehicle_model: enriched?.driver?.vehicle?.model ?? "",
+  //       vehicle_number: enriched?.driver?.vehicle?.vehicle_number ?? "",
+  //       driver_name: enriched?.driver?.name ?? "",
+  //       fares: totalFare,
+  //     };
+
+  //     console.log("📩 Sending DISPATCH SMS...");
+
+  //     await sendSMSWithTemplate({
+  //       template_id: 3,
+  //       mobile: enriched.mobile,
+  //       port: 5,
+  //       data: template3Data,
+  //     });
+  //   }
+  // } catch (err) {
+  //   console.error("❌ Dispatch SMS Error:", err);
+  // }
+  return enriched;
+}
+
 // EXPORTS
 module.exports = {
   create,
@@ -1397,5 +1463,6 @@ module.exports = {
   normalizeBookingPayload,
   updateBookingService,
   assignDriverService,
+  assignFOBDriverService,
   cloneOneWayBookingService,
 };

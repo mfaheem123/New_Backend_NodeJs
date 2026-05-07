@@ -32,8 +32,13 @@ exports.getDistinct = async (req, res) => {
   try {
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 10;
+    const company_id = req.query.company_id;
 
-    const result = await DriverCommission.getDistinct(offset, limit);
+    const result = await DriverCommission.getDistinct(
+      offset,
+      limit,
+      company_id,
+    );
 
     return res.json({
       status: true,
@@ -52,7 +57,7 @@ exports.getDistinct = async (req, res) => {
 
 exports.getByDriverId = async (req, res) => {
   try {
-    const { driver_id } = req.query;
+    const { driver_id, company_id } = req.query;
 
     if (!driver_id) {
       return res.status(400).json({
@@ -61,7 +66,10 @@ exports.getByDriverId = async (req, res) => {
       });
     }
 
-    const commissions = await DriverCommission.getByDriverId(driver_id);
+    const commissions = await DriverCommission.getByDriverId(
+      driver_id,
+      company_id,
+    );
 
     return res.json({
       status: true,
@@ -120,7 +128,7 @@ exports.update = async (req, res) => {
         message: "Commission id is required",
       });
     }
-console.log(
+    console.log(
       "🚀 INCOMING UPDATE DRIVER COMMISSION BODY:",
       JSON.stringify(req.body, null, 2),
     );

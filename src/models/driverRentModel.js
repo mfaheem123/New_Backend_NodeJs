@@ -49,12 +49,28 @@ class DriverRent {
           from_date,
           to_date,
           payment_type,
-          last_modified
+          last_modified,
+          company_id
         )
         VALUES (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15
         )
-        RETURNING *;
+        RETURNING 
+        id,
+  transaction_number,
+  transaction_date,
+  driver_id,
+  jobs_total,
+  rent_total,
+  cash_jobs_total,
+  account_jobs_total,
+  owed,
+  old_balance,
+  current_balance,
+  from_date,
+  to_date,
+  payment_type,
+  last_modified;;
       `;
 
       const values = [
@@ -72,6 +88,7 @@ class DriverRent {
         data.to_date,
         null,
         data.last_modified,
+        data.company_id,
       ];
 
       const result = await db.query(insertQuery, values);
@@ -123,7 +140,7 @@ class DriverRent {
 
   /* ================= DISTINCT ================= */
 
-  static async getDistinct(offset, limit) {
+  static async getDistinct(offset, limit, company_id) {
     const query = `
     SELECT 
       dc.driver_id,
@@ -141,12 +158,13 @@ class DriverRent {
       ) AS driver
     FROM driver_rents dc
     JOIN drivers d ON dc.driver_id = d.id
+    WHERE dc.company_id = $3
     GROUP BY dc.driver_id, d.id
     ORDER BY MAX(dc.last_modified) DESC
     LIMIT $1 OFFSET $2
   `;
 
-    const result = await db.query(query, [limit, offset]);
+    const result = await db.query(query, [limit, offset, company_id]);
 
     return {
       count: result.rows.map((r) => ({
@@ -164,9 +182,23 @@ class DriverRent {
 
   /* ================= BY DRIVER ================= */
 
-  static async getByDriverId(driver_id) {
+  static async getByDriverId(driver_id, company_id) {
     const query = `
-      SELECT dc.*,
+      SELECT dc.id,
+  dc.transaction_number,
+  dc.transaction_date,
+  dc.driver_id,
+  dc.jobs_total,
+  dc.rent_total,
+  dc.cash_jobs_total,
+  dc.account_jobs_total,
+  dc.owed,
+  dc.old_balance,
+  dc.current_balance,
+  dc.from_date,
+  dc.to_date,
+  dc.payment_type,
+  dc.last_modified,
       json_build_object(
         'username', d.username,
         'email', d.email,
@@ -174,11 +206,11 @@ class DriverRent {
       ) AS driver
       FROM driver_rents dc
       JOIN drivers d ON dc.driver_id = d.id
-      WHERE dc.driver_id = $1
+      WHERE dc.driver_id = $1 AND dc.company_id = $2
       ORDER BY dc.id DESC
     `;
 
-    const result = await db.query(query, [driver_id]);
+    const result = await db.query(query, [driver_id, company_id]);
 
     return result.rows;
   }

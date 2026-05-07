@@ -14,6 +14,11 @@ router.get("/check-status/:booking_id", bookingController.checkBookingStatus);
 router.get("/driver-rent", bookingController.getBookingByDriverCommission);
 router.get("/customer-bookings/:id", bookingController.getBookingByCustomerId);
 router.get("/customer-jobs", bookingController.getBookingByCustomerMobile);
+router.get("/driver-fob/:id", bookingController.getBookingByDriverIdAndFob);
+router.get(
+  "/fob-history/:id",
+  bookingController.getFOBBookingHIstoryByDriverId,
+);
 
 router.get(
   "/customer-schedule/:id",
@@ -35,8 +40,20 @@ router.post("/update/:id", bookingController.updateBooking);
 router.post("/status/:id", bookingController.updateBookingStatus);
 router.post("/fares/:id", bookingController.updateBookingFares);
 router.post("/fare-charges/:id", bookingController.updateBookingFareCharges);
+router.post(
+  "/dashboard-fares/:id",
+  bookingController.updateDashboardBookingFares,
+);
+router.post("/recover-booking/:id", bookingController.recoverDashboardBooking);
+
+router.post(
+  "/completed-booking/:id",
+  bookingController.completeBoookingByController,
+);
 router.post("/cli", bookingController.cloneOneWayBooking);
 router.post("/assign-driver", bookingController.assignDriverToBooking);
+router.post("/fob-driver", bookingController.assignFOBBookingToDriver);
+
 router.post(
   "/booking-history-driver",
   bookingController.getBookingByDriverIdAndStatus,

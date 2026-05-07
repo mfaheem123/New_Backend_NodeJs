@@ -30,13 +30,21 @@ const {
   getBookingByCustomerId,
   getBookingByCustomerMobile,
   getScheduleBookingByCustomerId,
+  checkDriverFobBooking,
+  getFOBBookingHIstoryByDriverId,
+  completeBoookingByController,
+  updateDashboardBookingFares,
+  recoverDashboardBooking,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
 const {
   notifyDriverBookingStatus,
 } = require("../sockets/driverTrackingSocket");
-const { sendBookingNotification } = require("../services/notificationService");
+const {
+  sendBookingNotification,
+  sendRideAcceptedNotification,
+} = require("../services/notificationService");
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -213,9 +221,10 @@ exports.getBookingByTabs = async (req, res) => {
       case 1:
         tabName = "TODAY BOOKINGS";
         tabWhere = `
-          DATE(b.pickup_date) = CURRENT_DATE
-          AND b.booking_status_id = 1 AND b.trash = false
-        `;
+    DATE(b.pickup_date) = CURRENT_DATE
+    AND b.booking_status_id IN (1, 13)
+    AND b.trash = false
+  `;
         orderBy = `
           TRIM(b.pickup_time)::time ASC,
           b.id ASC
@@ -223,12 +232,12 @@ exports.getBookingByTabs = async (req, res) => {
         break;
       case 2:
         tabName = "PRE BOOKINGS";
-        tabWhere = `DATE(b.pickup_date) > CURRENT_DATE AND b.trash = false`;
+        tabWhere = `DATE(b.pickup_date) > CURRENT_DATE AND b.booking_status_id NOT IN (11) AND b.trash = false`;
         break;
 
       case 3:
         tabName = "RECENT BOOKINGS";
-        tabWhere = `b.booking_status_id NOT IN (1, 11) AND b.trash = false`;
+        tabWhere = `b.booking_status_id NOT IN (1, 11, 13) AND b.trash = false`;
         orderBy = `
   (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
 `;
@@ -584,7 +593,7 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const booking = await findBookingById(bookingId);
-
+    console.log("Booking Details: ", booking.rows[0]);
     if (booking.rowCount === 0) {
       return res.status(404).json({
         status: false,
@@ -593,16 +602,17 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const driverId = booking.rows[0].driver_id;
-    // const customerId = booking.rows[0].customer_id;
-    // const booking_source = booking.rows[0].booking_source;
+    const customerId = booking.rows[0].customer_id;
+    const booking_source = booking.rows[0].booking_source;
+    console.log("Booking Source: ", booking_source);
 
     //RIDE ACCEPTED
     if (booking_status_id == 15) {
       await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
-      await notifyDriverBookingStatus(driverId);
-      // if(booking_source == "app"){
-      // await sendRideAcceptedNotification(customerId, booking);
-      // }
+      // await notifyDriverBookingStatus(driverId);
+      if (booking_source == "app") {
+        await sendRideAcceptedNotification(customerId, booking.rows[0]);
+      }
     }
 
     // ON ROUTE
@@ -1085,12 +1095,12 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
-    if (booking.rows[0].driver_id) {
-      return res.status(400).json({
-        status: false,
-        message: "Driver already assigned",
-      });
-    }
+    // if (booking.rows[0].driver_id) {
+    //   return res.status(400).json({
+    //     status: false,
+    //     message: "Driver already assigned",
+    //   });
+    // }
 
     if (
       booking.rows[0].booking_status_id === "11" ||
@@ -1204,4 +1214,251 @@ exports.getBookingByCustomerMobile = async (req, res) => {
     count: bookings.length,
     bookings: data,
   });
+};
+
+exports.assignFOBBookingToDriver = async (req, res) => {
+  try {
+    const { booking_id, driver_id } = req.body;
+
+    console.log("🚀 ASSIGN FOB BOOKING TO DRIVER BODY:", req.body);
+
+    if (!booking_id || !driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "booking_id and driver_id are required",
+      });
+    }
+
+    // Check booking exists
+    const booking = await findBookingById(booking_id);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    // if (booking.rows[0].driver_id) {
+    //   return res.status(400).json({
+    //     status: false,
+    //     message: "Driver already assigned",
+    //   });
+    // }
+
+    if (
+      booking.rows[0].booking_status_id === "11" ||
+      booking.rows[0].booking_status_id === 11
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Booking Already Completed",
+      });
+    }
+
+    const driver = await Driver.getById(driver_id);
+
+    if (driver.session_status === "logged_out") {
+      return res.status(400).json({
+        status: false,
+        message: "Driver is Logged Out",
+      });
+    }
+
+    if (
+      driver.session_status === "logged_in" &&
+      (driver.booking_status === "Available" ||
+        driver.driver_status === "Available")
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "FOB can only be assigned to a busy driver",
+      });
+    }
+
+    // Assign FOB Booking to Driver
+    const updatedBooking = await bookingService.assignFOBDriverService(
+      booking_id,
+      driver_id,
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver Assigned Successfully",
+      booking: updatedBooking,
+    });
+  } catch (error) {
+    console.error("Assign Driver Error:", error);
+
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.getBookingByDriverIdAndFob = async (req, res) => {
+  const driverId = parseInt(req.params.id);
+
+  if (!driverId) {
+    return res.status(400).json({
+      status: false,
+      message: "Driver ID Required",
+    });
+  }
+
+  const booking = await checkDriverFobBooking(driverId);
+
+  // ❌ No active FOB booking
+  if (!booking) {
+    return res.status(200).json({
+      success: true,
+      fob: false,
+      booking_id: null,
+    });
+  }
+
+  // ✅ Active FOB booking found
+  const data = parseJSONFields(booking);
+
+  return res.status(200).json({
+    success: true,
+    fob: true,
+    booking_id: booking.id,
+    // booking: data,
+  });
+};
+
+exports.getFOBBookingHIstoryByDriverId = async (req, res) => {
+  const driver_id = req.params.id;
+
+  if (!driver_id) {
+    return res.status(400).json({
+      status: false,
+      message: "Driver ID Required",
+    });
+  }
+
+  const bookings = await getFOBBookingHIstoryByDriverId(driver_id);
+
+  if (!bookings || bookings.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "No FOB bookings found for this driver",
+    });
+  }
+
+  const data = bookings.map((b) => parseJSONFields(b));
+
+  res.status(200).json({
+    success: true,
+    count: bookings.length,
+    bookings: data,
+  });
+};
+
+exports.completeBoookingByController = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+    const { driver_id } = req.body;
+    console.log(
+      "🚀 INCOMING CONTROLLER BOOKING COMPLETE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver_ID is Required",
+      });
+    }
+
+    const booking = await findBookingById(bookingId);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    await completeBoookingByController(bookingId, driver_id);
+
+    return res.status(200).json({
+      status: true,
+      message: "Booking Completed successfully",
+    });
+  } catch (error) {
+    console.error("Error While Booking Completed:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.updateDashboardBookingFares = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+    const { total_charges } = req.body;
+    console.log(
+      "🚀 INCOMING UPDATE BOOKING CHARGES BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    if (!total_charges) {
+      return res.status(400).json({
+        status: false,
+        message: "Fare Required",
+      });
+    }
+
+    const booking = await findBookingById(bookingId);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    await updateDashboardBookingFares(bookingId, total_charges);
+
+    return res.status(200).json({
+      status: true,
+      message: "Booking Fares updated successfully",
+    });
+  } catch (error) {
+    console.error("Update Booking Fares Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.recoverDashboardBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const booking = await findBookingById(bookingId);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    await recoverDashboardBooking(bookingId);
+
+    return res.status(200).json({
+      status: true,
+      message: "Recover Booking Successfully",
+    });
+  } catch (error) {
+    console.error("Recover Booking Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
 };

@@ -12,8 +12,8 @@ const formatResponse = (pf) => ({
 
 exports.getAll = async (req, res) => {
   try {
-    const { offset = 0, limit = 100 } = req.query;
-    const plotFares = await PlotFare.getAll(offset, limit);
+    const { offset = 0, limit = 100, company_id } = req.query;
+    const plotFares = await PlotFare.getAll(offset, limit, company_id);
     res.json({
       status: true,
       count: plotFares.length,
@@ -85,6 +85,7 @@ exports.create = async (req, res) => {
           dropoff_plot_id:
             typeof dropoff === "object" ? Object.values(dropoff)[0] : dropoff,
           fares: data.fares,
+          company_id: data.company_id,
         });
       }
     }

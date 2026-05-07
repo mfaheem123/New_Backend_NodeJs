@@ -3,7 +3,8 @@ const pool = require("../db");
 module.exports = {
   async getAll(req, res) {
     try {
-      const result = await FareMeter.getAll();
+      const { company_id } = req.query;
+      const result = await FareMeter.getAll(company_id);
 
       const formatted = result.rows.map((row) => ({
         id: row.id,

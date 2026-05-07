@@ -1,14 +1,15 @@
 const pool = require("../db");
 
 module.exports = {
-  async getAll() {
+  async getAll(company_id) {
     const query = `
       SELECT fm.*, vt.name AS vehicle_type
       FROM fare_meters fm
       LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id
+      WHERE fm.company_id=$1
       ORDER BY fm.id ASC;
     `;
-    return pool.query(query);
+    return pool.query(query, [company_id]);
   },
 
   async getById(id) {
@@ -26,8 +27,8 @@ module.exports = {
       INSERT INTO fare_meters
       (vehicle_type_id, has_meter, autostart_wait, autostart_waiting_speed_limit,
        autostart_waiting_time, autostop_waiting_speed_limit, waiting_charges,
-       waiting_intervals)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       waiting_intervals,company_id)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
       RETURNING *;
     `;
     const values = [
@@ -39,6 +40,7 @@ module.exports = {
       data.autostop_waiting_speed_limit,
       JSON.stringify(data.waiting_charges || []),
       data.waiting_intervals,
+      data.company_id,
     ];
     return pool.query(query, values);
   },
@@ -108,9 +110,9 @@ module.exports = {
     const query = `DELETE FROM fare_meters WHERE id = $1 RETURNING *;`;
     return pool.query(query, [id]);
   },
-// ✅ GET BY VEHICLE TYPE ID
-async getByVehicleTypeId(vehicle_type_id) {
-  const query = `
+  // ✅ GET BY VEHICLE TYPE ID
+  async getByVehicleTypeId(vehicle_type_id) {
+    const query = `
     SELECT fm.*, vt.name AS vehicle_type
     FROM fare_meters fm
     LEFT JOIN vehicle_types vt ON vt.id = fm.vehicle_type_id
@@ -118,7 +120,6 @@ async getByVehicleTypeId(vehicle_type_id) {
     ORDER BY fm.id ASC;
   `;
 
-  return pool.query(query, [vehicle_type_id]);
-}
-
+    return pool.query(query, [vehicle_type_id]);
+  },
 };

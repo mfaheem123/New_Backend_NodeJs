@@ -9,10 +9,10 @@ module.exports = {
         blacklist, blacklist_reason, notes, username, password, web_device_id,
         mobile_device_id, email_verification_code, mobile_verification_code,
         email_verified, mobile_verified, email_verified_at, mobile_verified_at,
-        sms_flag, otp_created_at
+        sms_flag, otp_created_at, company_id
       )
       VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24
       )
 RETURNING id
     `;
@@ -41,75 +41,12 @@ RETURNING id
       null,
       data.sms_flag ?? true,
       data.otp_created_at || new Date(),
+      data.company_id || 1,
     ];
 
     const { rows } = await db.query(query, values);
     return rows[0].id;
   },
-
-  // setRestrictedDrivers: async (customerId, drivers) => {
-  //   console.log("🚀 Inserting restricted drivers for customer:", customerId);
-
-  //   // Remove existing restricted drivers for this customer
-  //   await db.query(
-  //     `DELETE FROM customer_restricted_drivers WHERE customer_id = $1`,
-  //     [customerId]
-  //   );
-
-  //   const insertQuery = `
-  //   INSERT INTO customer_restricted_drivers (customer_id, driver_id, driver_username, driver_name)
-  //   VALUES ($1, $2, $3, $4)
-  // `;
-
-  //   // Normalize drivers — ensure all are objects
-  //   const normalizedDrivers = drivers
-  //     .map((d) => {
-  //       if (typeof d === "string") {
-  //         try {
-  //           return JSON.parse(d);
-  //         } catch {
-  //           console.warn("⚠️ Skipping malformed driver:", d);
-  //           return null;
-  //         }
-  //       }
-  //       return d;
-  //     })
-  //     .filter(Boolean);
-
-  //   for (const driver of normalizedDrivers) {
-  //     console.log("🧩 Normalized driver object:", driver);
-
-  //     if (!driver || typeof driver !== "object") {
-  //       console.warn("⚠️ Skipping invalid driver:", driver);
-  //       continue;
-  //     }
-
-  //     const driverId = Number(driver.id);
-  //     const driverUsername = driver.username ?? null;
-  //     const driverName = driver.name ?? null;
-
-  //     console.log("🔢 driverId type:", typeof driverId, "value:", driverId);
-
-  //     if (!Number.isInteger(driverId)) {
-  //       console.warn("⚠️ Skipping driver with invalid ID:", driver);
-  //       continue;
-  //     }
-
-  //     console.log(
-  //       `📤 Inserting -> customer_id: ${customerId}, driver_id: ${driverId}, username: ${driverUsername}, name: ${driverName}`
-  //     );
-
-  //     // 🩵 FIX: use driverId instead of driver
-  //     await db.query(insertQuery, [
-  //       customerId,
-  //       driverId,
-  //       driverUsername,
-  //       driverName,
-  //     ]);
-  //   }
-
-  //   console.log("✅ All restricted drivers inserted successfully!");
-  // },
 
   setRestrictedDrivers: async (customerId, drivers) => {
     console.log("🚀 Updating restricted drivers for customer:", customerId);
@@ -236,6 +173,12 @@ RETURNING id
         params.push(`%${value}%`);
         idx++;
       }
+      // ✅ COMPANY_ID FILTER (exact match)
+      if (key === "company_id") {
+        conditions.push(`c.company_id = $${idx}`);
+        params.push(parseInt(value));
+        idx++;
+      }
     }
 
     // 🧩 Build WHERE clause
@@ -246,7 +189,34 @@ RETURNING id
     // 🧾 Main paginated query
     const query = `
     SELECT 
-      c.*,
+      c.id,
+  c.name,
+  c.email,
+  c.mobile,
+  c.telephone,
+  c.fax,
+  c.door_number,
+  c.address1,
+  c.address2,
+  c.blacklist,
+  c.blacklist_reason,
+  c.notes,
+  c.username,
+  c.password,
+  c.web_device_id,
+  c.mobile_device_id,
+  c.email_verification_code,
+  c.mobile_verification_code,
+  c.email_verified,
+  c.mobile_verified,
+  c.email_verified_at,
+  c.mobile_verified_at,
+  c.sms_flag,
+  c.created_at,
+  c.otp_created_at,
+  c.profile_image,
+  c.fcm_token,
+  c.fcm_updated_at,
       COALESCE(
         JSON_AGG(
           JSON_BUILD_OBJECT(
@@ -473,15 +443,15 @@ RETURNING id
     );
   },
 
-  searchCustomerByMobile: async (mobile) => {
+  searchCustomerByMobile: async (mobile, company_id) => {
     const query = `
         SELECT 
             id, sms_flag, name, mobile, email, telephone, address1, address2
         FROM customers
-        WHERE mobile LIKE $1
+        WHERE mobile LIKE $1 AND company_id = $2
     `;
 
-    const result = await db.query(query, [`%${mobile}%`]);
+    const result = await db.query(query, [`%${mobile}%`, company_id]);
     return result.rows;
   },
   updateCustomerFcmToken: async (customerId, fcmToken) => {

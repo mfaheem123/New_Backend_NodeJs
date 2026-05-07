@@ -16,6 +16,7 @@ exports.create = async (data) => {
       account_invoice_lineitems,
       invoice_number,
       amount,
+      company_id,
     } = data;
 
     // 🧹 sanitize
@@ -51,9 +52,10 @@ exports.create = async (data) => {
         invoice_type,
         department_id,
         order_number,
-        amount
+        amount,
+        company_id
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
       RETURNING *`,
       [
         subsidiary_id,
@@ -67,6 +69,7 @@ exports.create = async (data) => {
         department_id,
         order_number,
         amount.toFixed(2),
+        company_id,
       ],
     );
 
@@ -137,6 +140,7 @@ exports.getAll = async ({
   invoice_number,
   account_name,
   department_name,
+  company_id,
 }) => {
   try {
     const conditions = [];
@@ -161,6 +165,10 @@ exports.getAll = async ({
     if (department_name) {
       conditions.push(`d.name ILIKE $${idx++}`);
       values.push(`%${department_name}%`);
+    }
+    if (company_id) {
+      conditions.push(`ai.company_id = $${idx++}`);
+      values.push(company_id);
     }
 
     // =========================
@@ -267,6 +275,8 @@ exports.getAll = async ({
     values.push(limit);
 
     const dataRes = await pool.query(dataQuery, values);
+    // ❌ REMOVE company_id
+    const cleanedInvoices = dataRes.rows.map(({ company_id, ...rest }) => rest);
 
     return {
       status: true,
@@ -274,7 +284,7 @@ exports.getAll = async ({
       page,
       total_pages,
       limit,
-      account_invoices: dataRes.rows,
+      account_invoices: cleanedInvoices,
     };
   } catch (err) {
     throw err;

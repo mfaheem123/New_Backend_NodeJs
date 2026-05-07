@@ -179,7 +179,7 @@ const Driver = {
       // Hash password
       const hashedPassword = await bcrypt.hash(data.password, 10);
       const driverAccessToken = await generateUniqueDriverAccessToken(db);
-      const company_id = 1;
+      // const company_id = 1;
       // Normalize empty fields
       Object.keys(data).forEach((key) => {
         if (data[key] === "" || data[key] === undefined) data[key] = null;
@@ -326,7 +326,7 @@ const Driver = {
         driver.road_tax_expiry_time,
         driver.rental_agreement_expiry_time,
         driverAccessToken,
-        company_id,
+        driver.company_id ?? 1,
       ]);
 
       const driverId = driverRes.rows[0].id;
@@ -596,6 +596,7 @@ const Driver = {
     vehicle_type,
     subsidiary,
     active = true,
+    company_id,
   } = {}) {
     const offset = (page - 1) * limit;
 
@@ -655,6 +656,10 @@ const Driver = {
     if (subsidiary) {
       conditions.push(`s.name ILIKE $${idx++}`);
       params.push(`%${subsidiary}%`);
+    }
+    if (company_id) {
+      conditions.push(`d.company_id = $${idx++}`);
+      params.push(company_id);
     }
 
     const whereClause = conditions.length
@@ -1189,7 +1194,7 @@ const Driver = {
     return rows[0] || null;
   },
 
-  async getAllDriverByCommissionType(active, driver_type) {
+  async getAllDriverByCommissionType(active, driver_type, company_id) {
     const conditions = [];
     const params = [];
     let idx = 1;
@@ -1204,6 +1209,10 @@ const Driver = {
     if (driver_type) {
       conditions.push(`d.driver_type = $${idx++}`);
       params.push(driver_type);
+    }
+    if (company_id) {
+      conditions.push(`d.company_id = $${idx++}`);
+      params.push(company_id);
     }
 
     const whereClause = conditions.length
@@ -1300,6 +1309,7 @@ const Driver = {
     vehicle_type,
     subsidiary,
     active = true,
+    company_id,
   } = {}) {
     const offset = (page - 1) * limit;
 
@@ -1374,6 +1384,10 @@ const Driver = {
     if (subsidiary) {
       conditions.push(`s.name ILIKE $${idx++}`);
       params.push(`%${subsidiary}%`);
+    }
+    if (company_id) {
+      conditions.push(`d.company_id = $${idx++}`);
+      params.push(company_id);
     }
 
     const whereClause = conditions.length
@@ -1611,6 +1625,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     const result = await db.query(query);
     return result.rows;
   },
+
   async getLoginDriverTracking() {
     const query = `
     SELECT 
@@ -1652,6 +1667,57 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   `;
 
     const result = await db.query(query);
+    return result.rows;
+  },
+
+  async getFOBDrivers() {
+    const dataQuery = `
+SELECT 
+  d.*,
+  s.name AS subsidiary_name,
+  CASE 
+    WHEN d.use_company_vehicle = true THEN
+      json_build_object(
+        'vehicle_number', cv.vehicle_number,
+        'make', cv.make,
+        'model', cv.model,
+        'color', cv.color,
+        'end_date', cv.end_date,
+        'vehicle_type', json_build_object(
+          'id', vt_cv.id,
+          'name', vt_cv.name,
+          'passengers', vt_cv.passengers,
+          'luggages', vt_cv.luggages,
+          'driver_waiting_charges', vt_cv.driver_waiting_charges
+        )
+      )
+    ELSE
+      json_build_object(
+        'vehicle_number', v.vehicle_number,
+        'make', v.make,
+        'model', v.model,
+        'color', v.color,
+        'end_date', v.end_date,
+        'vehicle_type', json_build_object(
+          'id', vt_v.id,
+          'name', vt_v.name,
+          'passengers', vt_v.passengers,
+          'luggages', vt_v.luggages,
+          'driver_waiting_charges', vt_v.driver_waiting_charges
+        )
+      )
+  END AS vehicle
+FROM drivers d
+LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
+LEFT JOIN vehicles v ON v.id = d.vehicle_id
+LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
+LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
+LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
+WHERE d.driver_status = 'Unavailable' AND session_status = 'logged_in'
+ORDER BY d.id DESC
+`;
+
+    const result = await db.query(dataQuery);
     return result.rows;
   },
 };
