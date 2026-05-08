@@ -103,8 +103,40 @@ async function sendFOBBookingNotification(driverId, booking) {
   console.log("✅ FOB Notification sent to driver:", driverId);
 }
 
+async function sendPanicDriverNotification(employeeId,driverId) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT web_device_id FROM empolyees WHERE id = $1`, [
+    employeeId,
+  ]);
+
+  const fcmToken = res.rows[0]?.web_device_id;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for User:", employeeId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "ALERT! Driver is On Panic",
+      body: `Pickup: ${booking.pickup}`,
+    },
+    data: {
+      driver_status: "panic",
+      driver_id: driverId.toString(),
+      type: "PANIC_DRIVER",
+    },
+  };
+
+  // 3️⃣ Send
+  await admin.messaging().send(message);
+  console.log("✅ FOB Notification sent to driver:", driverId);
+}
+
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
   sendRideAcceptedNotification,
+  sendPanicDriverNotification,
 };

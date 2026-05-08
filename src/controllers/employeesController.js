@@ -324,7 +324,7 @@ const login = async (req, res) => {
         `UPDATE employees 
          SET web_device_id = $1 
          WHERE id = $2`,
-        [web_device_id, employee.id]
+        [web_device_id, employee.id],
       );
     }
 
@@ -356,12 +356,8 @@ const login = async (req, res) => {
     const fullEmployee = {
       ...employee,
       web_device_id, // optional response me bhejna ho to
-      role: roleResult.rows[0]
-        ? { name: roleResult.rows[0].name }
-        : null,
-      subsidiary: subResult.rows[0]
-        ? { name: subResult.rows[0].name }
-        : null,
+      role: roleResult.rows[0] ? { name: roleResult.rows[0].name } : null,
+      subsidiary: subResult.rows[0] ? { name: subResult.rows[0].name } : null,
       employee_extensions: extResult.rows,
     };
 
@@ -382,7 +378,6 @@ const login = async (req, res) => {
       token,
       employee: fullEmployee,
     });
-
   } catch (err) {
     console.error("Error logging in:", err);
 

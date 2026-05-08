@@ -507,13 +507,14 @@ async function createReturnWayBooking(payload) {
       notes: payload.return_notes || [],
       special_instructions: payload.return_special_instructions,
 
-      fares: payload.return_fares,
+      fares: payload.return_fare,
       company_price: payload.return_company_price,
       waiting_charges: payload.return_waiting_charges,
       parking_charges: payload.return_parking_charges,
       congestion_charges: payload.return_congestion_charges,
       extra_drop_charges: payload.return_extra_drop_charges,
       meet_and_greet: payload.return_meet_and_greet,
+      total_charges: payload.return_total_charges || payload.return_fare,
 
       vehicle_type_id: payload.return_vehicle_type_id,
       driver_id: payload.return_driver_id,
