@@ -280,7 +280,8 @@ const remove = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, web_device_id } = req.body;
+
     console.log(
       "🚀 INCOMING EMPLOYEE LOGIN BODY:",
       JSON.stringify(req.body, null, 2),
@@ -295,6 +296,7 @@ const login = async (req, res) => {
 
     // Find user
     const employee = await Employee.getByUsername(username.toLowerCase());
+
     if (!employee) {
       return res
         .status(401)
@@ -306,12 +308,24 @@ const login = async (req, res) => {
         .status(400)
         .json({ status: false, message: "You Are Inactive" });
     }
+
     // Compare passwords
     const match = await bcrypt.compare(password, employee.password);
+
     if (!match) {
       return res
         .status(401)
         .json({ status: false, message: "Invalid username or password" });
+    }
+
+    // ✅ SAVE FCM TOKEN / WEB DEVICE ID
+    if (web_device_id) {
+      await pool.query(
+        `UPDATE employees 
+         SET web_device_id = $1 
+         WHERE id = $2`,
+        [web_device_id, employee.id]
+      );
     }
 
     // Fetch role + subsidiary
@@ -325,7 +339,7 @@ const login = async (req, res) => {
       [employee.subsidiary_id],
     );
 
-    // 🔥 Fetch extensions for this employee
+    // Fetch extensions
     const extQuery = `
       SELECT ee.*, 
         json_build_object(
@@ -336,13 +350,19 @@ const login = async (req, res) => {
       LEFT JOIN employees e ON e.id = ee.employee_id
       WHERE ee.employee_id = $1
     `;
+
     const extResult = await pool.query(extQuery, [employee.id]);
 
     const fullEmployee = {
       ...employee,
-      role: roleResult.rows[0] ? { name: roleResult.rows[0].name } : null,
-      subsidiary: subResult.rows[0] ? { name: subResult.rows[0].name } : null,
-      employee_extensions: extResult.rows, // ← Added extensions here
+      web_device_id, // optional response me bhejna ho to
+      role: roleResult.rows[0]
+        ? { name: roleResult.rows[0].name }
+        : null,
+      subsidiary: subResult.rows[0]
+        ? { name: subResult.rows[0].name }
+        : null,
+      employee_extensions: extResult.rows,
     };
 
     // Generate token
@@ -362,9 +382,14 @@ const login = async (req, res) => {
       token,
       employee: fullEmployee,
     });
+
   } catch (err) {
     console.error("Error logging in:", err);
-    res.status(500).json({ status: false, message: "Server error" });
+
+    res.status(500).json({
+      status: false,
+      message: "Server error",
+    });
   }
 };
 
