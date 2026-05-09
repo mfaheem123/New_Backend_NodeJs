@@ -103,35 +103,58 @@ async function sendFOBBookingNotification(driverId, booking) {
   console.log("✅ FOB Notification sent to driver:", driverId);
 }
 
-async function sendPanicDriverNotification(employeeId,driverId) {
-  // 1️⃣ Driver ka FCM token lao
-  const res = await pool.query(`SELECT web_device_id FROM empolyees WHERE id = $1`, [
-    employeeId,
-  ]);
+async function sendPanicDriverNotification(driverId, booking) {
+  try {
+    // 1️⃣ Sare controllers ke web_device_id lao
+    const res = await pool.query(`
+      SELECT web_device_id
+      FROM empolyees
+      WHERE role_id = 1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `);
 
-  const fcmToken = res.rows[0]?.web_device_id;
-  if (!fcmToken) {
-    console.log("⚠️ No FCM token for User:", employeeId);
-    return;
+    // 2️⃣ Tokens array banao
+    const tokens = res.rows.map(row => row.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No FCM tokens found");
+      return;
+    }
+
+    const driverRes = await pool.query(`
+  SELECT name, username
+      FROM drivers
+      WHERE id = $1`, [
+    driverId,
+  ])
+
+  const driver_name = driverRes.rows[0]?.name;
+    // 3️⃣ Notification payload
+    const message = {
+      tokens: tokens,
+      notification: {
+        title: "ALERT! Driver is On Panic",
+        body: `Driver: ${driver_name}`,
+      },
+      data: {
+        driver_status: "panic",
+        driver_id: driverId.toString(),
+        type: "PANIC_DRIVER",
+      },
+    };
+
+    // 4️⃣ Send notification to all
+    const response = await admin
+      .messaging()
+      .sendEachForMulticast(message);
+
+    console.log(`✅ Notifications sent: ${response.successCount}`);
+    console.log(`❌ Failed: ${response.failureCount}`);
+
+  } catch (error) {
+    console.error("❌ Error sending panic notification:", error);
   }
-
-  // 2️⃣ Notification payload
-  const message = {
-    token: fcmToken,
-    notification: {
-      title: "ALERT! Driver is On Panic",
-      body: `Pickup: ${booking.pickup}`,
-    },
-    data: {
-      driver_status: "panic",
-      driver_id: driverId.toString(),
-      type: "PANIC_DRIVER",
-    },
-  };
-
-  // 3️⃣ Send
-  await admin.messaging().send(message);
-  console.log("✅ FOB Notification sent to driver:", driverId);
 }
 
 module.exports = {
