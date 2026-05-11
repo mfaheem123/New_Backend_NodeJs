@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const pool = require("../db");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
-
+const notification = require("../services/notificationService")
 // const io = getIO();
 
 // Helper: Recursively convert empty strings ("") to null
@@ -852,7 +852,11 @@ exports.onBreakDriver = async (req, res) => {
 
     // const data = await Driver.getAllDriverByCommissionType(active, driver_type);
     if (on_break == true || on_break == "true") {
+
       console.log("DRIVER IS ON BREAK:", on_break);
+      //Send Driver Break Notification to Web
+      await notification.sendOnBreakDriverNotification(driver_id)
+
       return res.status(200).json({
         status: true,
         message: "Driver Is On Break",
@@ -905,6 +909,7 @@ exports.onPanicDriver = async (req, res) => {
     // const data = await Driver.getAllDriverByCommissionType(active, driver_type);
     if (panic == true || panic == "true") {
       console.log("DRIVER PANIC BUTTON ACTIVE:", panic);
+      await notification.sendPanicDriverNotification(driver_id)
       return res.status(200).json({
         status: true,
         message: "Driver Enable Panic",
@@ -983,6 +988,63 @@ exports.getFOBDrivers = async (req, res) => {
     res.status(500).json({
       status: false,
       message: "Server error",
+    });
+  }
+};
+
+
+exports.breakStatusDriver = async (req, res) => {
+  try {
+    const { driver_id, on_break } = req.body;
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver ID is Required",
+      });
+    }
+    if (!on_break) {
+      return res.status(400).json({
+        status: false,
+        message: "on_break is Required",
+      });
+    }
+    console.log(
+      "🚀 INCOMING DRIVER ON BREAK BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+
+    if (on_break === "accept" || on_break === "Accept") {
+      
+      console.log("DRIVER IS ON BREAK:", on_break);
+
+      //Send Driver Break Notification to Web
+      // await notification.sendPanicDriverNotification(driver_id)
+
+      return res.status(200).json({
+        status: true,
+        message: "Driver Is On Break",
+        driver_id: driver_id,
+        on_break: on_break,
+      });
+    }
+    if (on_break == false || on_break == "false") {
+      console.log("DRIVER BREAK IS END:", on_break);
+      return res.status(200).json({
+        status: true,
+        message: "Driver Break End",
+        driver_id: driver_id,
+        on_break: false,
+      });
+    }
+    return res.status(400).json({
+      status: false,
+      message: "Invalid options",
+    });
+  } catch (error) {
+    console.error("❌ Error fetching commission drivers:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
     });
   }
 };

@@ -32,8 +32,8 @@ router.get("/login-busy", driverController.getLoginDrivers);
 router.get("/tracking-drivers", driverController.getLoginDriverTracking);
 router.get("/fob-drivers", driverController.getFOBDrivers);
 
-router.post("/on-break", upload.any(), driverController.onBreakDriver);
-router.post("/panic", upload.any(), driverController.onPanicDriver);
+router.post("/on-break", upload.none(), driverController.onBreakDriver);
+router.post("/panic", upload.none(), driverController.onPanicDriver);
 
 router.post("/test-upload", upload.any(), (req, res) => {
   console.log("Test uploaded files:", req.files);
