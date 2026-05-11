@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const pool = require("../db");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
-const notification = require("../services/notificationService")
+const notification = require("../services/notificationService");
 // const io = getIO();
 
 // Helper: Recursively convert empty strings ("") to null

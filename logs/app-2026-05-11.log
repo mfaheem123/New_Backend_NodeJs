@@ -30,3 +30,31 @@
 {"level":"info","message":"GET /api/location-types 200 53.594 ms","timestamp":"2026-05-11T08:27:27.208Z"}
 {"duration":4,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT web_device_id\n      FROM employees\n      WHERE role_id = 1\n      AND web_device_id IS NOT NULL\n      AND web_device_id != ''\n    ","timestamp":"2026-05-11T08:27:34.101Z"}
 {"level":"info","message":"POST /api/drivers/panic 200 10.038 ms","timestamp":"2026-05-11T08:27:34.102Z"}
+{"duration":9,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-11T08:30:58.728Z"}
+{"level":"info","message":"GET /api/location-types 200 16.540 ms","timestamp":"2026-05-11T08:30:58.735Z"}
+{"duration":61,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-11T08:30:58.786Z"}
+{"level":"info","message":"GET /api/location-types 200 62.741 ms","timestamp":"2026-05-11T08:30:58.787Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-11T08:34:39.000Z"}
+{"level":"info","message":"GET /api/location-types 200 11.070 ms","timestamp":"2026-05-11T08:34:39.007Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-11T08:34:39.016Z"}
+{"level":"info","message":"GET /api/location-types 200 2.797 ms","timestamp":"2026-05-11T08:34:39.018Z"}
+{"duration":14,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-11T08:38:17.933Z"}
+{"level":"info","message":"GET /api/location-types 200 29.799 ms","timestamp":"2026-05-11T08:38:17.947Z"}
+{"duration":71,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-11T08:38:17.996Z"}
+{"level":"info","message":"GET /api/location-types 200 73.538 ms","timestamp":"2026-05-11T08:38:17.997Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-11T08:38:21.874Z"}
+{"level":"info","message":"GET /api/location-types 200 14.753 ms","timestamp":"2026-05-11T08:38:21.880Z"}
+{"duration":148,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-11T08:38:22.017Z"}
+{"level":"info","message":"GET /api/location-types 200 149.799 ms","timestamp":"2026-05-11T08:38:22.018Z"}
+{"duration":55,"level":"info","message":"db-query","rows":2,"text":"\n      SELECT web_device_id\n      FROM employees\n      WHERE role_id = 1\n      AND web_device_id IS NOT NULL\n      AND web_device_id != ''\n    ","timestamp":"2026-05-11T08:38:38.287Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n  SELECT name, username\n      FROM drivers\n      WHERE id = $1","timestamp":"2026-05-11T08:38:38.290Z"}
+{"level":"info","message":"POST /api/drivers/panic 200 1189.615 ms","timestamp":"2026-05-11T08:38:39.416Z"}
+{"duration":54,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT web_device_id\n      FROM employees\n      WHERE role_id = 1\n      AND web_device_id IS NOT NULL\n      AND web_device_id != ''\n    ","timestamp":"2026-05-11T08:40:18.889Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n  SELECT name, username\n      FROM drivers\n      WHERE id = $1","timestamp":"2026-05-11T08:40:18.892Z"}
+{"level":"info","message":"POST /api/drivers/panic 200 450.262 ms","timestamp":"2026-05-11T08:40:19.283Z"}
+{"duration":55,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT web_device_id\n      FROM employees\n      WHERE role_id = 1\n      AND web_device_id IS NOT NULL\n      AND web_device_id != ''\n    ","timestamp":"2026-05-11T08:42:58.437Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n  SELECT name, username\n      FROM drivers\n      WHERE id = $1","timestamp":"2026-05-11T08:42:58.440Z"}
+{"level":"info","message":"POST /api/drivers/on-break 200 496.415 ms","timestamp":"2026-05-11T08:42:58.877Z"}
+{"duration":74,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT web_device_id\n      FROM employees\n      WHERE role_id = 1\n      AND web_device_id IS NOT NULL\n      AND web_device_id != ''\n    ","timestamp":"2026-05-11T08:43:09.991Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n  SELECT name, username\n      FROM drivers\n      WHERE id = $1","timestamp":"2026-05-11T08:43:09.995Z"}
+{"level":"info","message":"POST /api/drivers/on-break 200 467.933 ms","timestamp":"2026-05-11T08:43:10.385Z"}
