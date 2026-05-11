@@ -124,7 +124,7 @@ async function sendPanicDriverNotification(driverId) {
 
     const driverRes = await pool.query(
       `
-  SELECT name, username
+  SELECT name, username, mobile
       FROM drivers
       WHERE id = $1`,
       [driverId],
@@ -141,6 +141,8 @@ async function sendPanicDriverNotification(driverId) {
       data: {
         driver_status: "panic",
         driver_id: driverId.toString(),
+        driver_username: driverRes.rows[0]?.username,
+        driver_mobile: driverRes.rows[0]?.mobile,
         type: "PANIC_DRIVER",
       },
     };
@@ -176,7 +178,7 @@ async function sendOnBreakDriverNotification(driverId) {
 
     const driverRes = await pool.query(
       `
-  SELECT name, username
+  SELECT name, username, mobile
       FROM drivers
       WHERE id = $1`,
       [driverId],
@@ -193,7 +195,9 @@ async function sendOnBreakDriverNotification(driverId) {
       data: {
         driver_status: "on break",
         driver_id: driverId.toString(),
-        type: "DRIVER_BREAK",
+        driver_username: driverRes.rows[0]?.username,
+        driver_mobile: driverRes.rows[0]?.mobile,
+        type: "DRIVER_BREAK_WEB",
       },
     };
 
