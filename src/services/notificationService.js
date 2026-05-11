@@ -108,7 +108,7 @@ async function sendPanicDriverNotification(driverId) {
     // 1️⃣ Sare controllers ke web_device_id lao
     const res = await pool.query(`
       SELECT web_device_id
-      FROM empolyees
+      FROM employees
       WHERE role_id = 1
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
@@ -162,7 +162,7 @@ async function sendOnBreakDriverNotification(driverId) {
     // 1️⃣ Sare controllers ke web_device_id lao
     const res = await pool.query(`
       SELECT web_device_id
-      FROM empolyees
+      FROM employees
       WHERE role_id = 1
       AND web_device_id IS NOT NULL
       AND web_device_id != ''

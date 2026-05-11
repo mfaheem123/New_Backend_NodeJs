@@ -902,7 +902,7 @@ exports.onPanicDriver = async (req, res) => {
       });
     }
     console.log(
-      "🚀 INCOMING DRIVER ON BREAK BODY:",
+      "🚀 INCOMING DRIVER IN PANIC BODY:",
       JSON.stringify(req.body, null, 2),
     );
 
