@@ -402,12 +402,12 @@ const logout = async (req, res) => {
         .status(404)
         .json({ status: false, message: "Employee Not Found" });
     }
-await pool.query(
-        `UPDATE employees 
+    await pool.query(
+      `UPDATE employees 
          SET web_device_id = null
          WHERE id = $1`,
-        [employee.id],
-      );
+      [employee.id],
+    );
     res.status(200).json({
       status: true,
       message: "Logout Successful",

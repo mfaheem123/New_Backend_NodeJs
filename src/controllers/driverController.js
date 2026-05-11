@@ -852,10 +852,9 @@ exports.onBreakDriver = async (req, res) => {
 
     // const data = await Driver.getAllDriverByCommissionType(active, driver_type);
     if (on_break == true || on_break == "true") {
-
       console.log("DRIVER IS ON BREAK:", on_break);
       //Send Driver Break Notification to Web
-      await notification.sendOnBreakDriverNotification(driver_id)
+      await notification.sendOnBreakDriverNotification(driver_id);
 
       return res.status(200).json({
         status: true,
@@ -909,7 +908,7 @@ exports.onPanicDriver = async (req, res) => {
     // const data = await Driver.getAllDriverByCommissionType(active, driver_type);
     if (panic == true || panic == "true") {
       console.log("DRIVER PANIC BUTTON ACTIVE:", panic);
-      await notification.sendPanicDriverNotification(driver_id)
+      await notification.sendPanicDriverNotification(driver_id);
       return res.status(200).json({
         status: true,
         message: "Driver Enable Panic",
@@ -992,7 +991,6 @@ exports.getFOBDrivers = async (req, res) => {
   }
 };
 
-
 exports.breakStatusDriver = async (req, res) => {
   try {
     const { driver_id, on_break } = req.body;
@@ -1014,7 +1012,6 @@ exports.breakStatusDriver = async (req, res) => {
     );
 
     if (on_break === "accept" || on_break === "Accept") {
-      
       console.log("DRIVER IS ON BREAK:", on_break);
 
       //Send Driver Break Notification to Web

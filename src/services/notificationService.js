@@ -115,21 +115,22 @@ async function sendPanicDriverNotification(driverId) {
     `);
 
     // 2️⃣ Tokens array banao
-    const tokens = res.rows.map(row => row.web_device_id);
+    const tokens = res.rows.map((row) => row.web_device_id);
 
     if (tokens.length === 0) {
       console.log("⚠️ No FCM tokens found");
       return;
     }
 
-    const driverRes = await pool.query(`
+    const driverRes = await pool.query(
+      `
   SELECT name, username
       FROM drivers
-      WHERE id = $1`, [
-    driverId,
-  ])
+      WHERE id = $1`,
+      [driverId],
+    );
 
-  const driver_name = driverRes.rows[0]?.name;
+    const driver_name = driverRes.rows[0]?.name;
     // 3️⃣ Notification payload
     const message = {
       tokens: tokens,
@@ -143,15 +144,12 @@ async function sendPanicDriverNotification(driverId) {
         type: "PANIC_DRIVER",
       },
     };
-
+console.log("Notification Data:", message)
     // 4️⃣ Send notification to all
-    const response = await admin
-      .messaging()
-      .sendEachForMulticast(message);
+    const response = await admin.messaging().sendEachForMulticast(message);
 
     console.log(`✅ Notifications sent: ${response.successCount}`);
     console.log(`❌ Failed: ${response.failureCount}`);
-
   } catch (error) {
     console.error("❌ Error sending panic notification:", error);
   }
@@ -169,21 +167,22 @@ async function sendOnBreakDriverNotification(driverId) {
     `);
 
     // 2️⃣ Tokens array banao
-    const tokens = res.rows.map(row => row.web_device_id);
+    const tokens = res.rows.map((row) => row.web_device_id);
 
     if (tokens.length === 0) {
       console.log("⚠️ No FCM tokens found");
       return;
     }
 
-    const driverRes = await pool.query(`
+    const driverRes = await pool.query(
+      `
   SELECT name, username
       FROM drivers
-      WHERE id = $1`, [
-    driverId,
-  ])
+      WHERE id = $1`,
+      [driverId],
+    );
 
-  const driver_name = driverRes.rows[0]?.name;
+    const driver_name = driverRes.rows[0]?.name;
     // 3️⃣ Notification payload
     const message = {
       tokens: tokens,
@@ -199,13 +198,10 @@ async function sendOnBreakDriverNotification(driverId) {
     };
 
     // 4️⃣ Send notification to all
-    const response = await admin
-      .messaging()
-      .sendEachForMulticast(message);
+    const response = await admin.messaging().sendEachForMulticast(message);
 
     console.log(`✅ Notifications sent: ${response.successCount}`);
     console.log(`❌ Failed: ${response.failureCount}`);
-
   } catch (error) {
     console.error("❌ Error sending panic notification:", error);
   }
