@@ -9,6 +9,7 @@ const bcrypt = require("bcrypt");
 const pool = require("../db");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 const notification = require("../services/notificationService");
+const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 // const io = getIO();
 
 // Helper: Recursively convert empty strings ("") to null
@@ -580,46 +581,6 @@ exports.getByCompany = async (req, res) => {
   }
 };
 
-// DRIVER LOGIN WITHOUT LOCATION
-// exports.driverLogin = async (req, res) => {
-//   const { username, password, fcm_token } = req.body;
-//   try {
-//     const driver = await Driver.findDriverByUsername(username);
-//     if (!driver) {
-//       return res.status(404).json({ message: "Driver not found" });
-//     }
-//     if (!driver.active) {
-//       return res.status(401).json({ message: "Your account is inactive" });
-//     }
-//     const passwordMatch = await bcrypt.compare(password, driver.password);
-//     if (!passwordMatch) {
-//       return res.status(401).json({ message: "Invalid password" });
-//     }
-//     if (driver.session_status === "logged_in") {
-//       return res.status(400).json({ message: "Driver is already logged in" });
-//     }
-//     const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
-//       expiresIn: "1d",
-//     });
-//     await Driver.updateDriverLoginStatus(driver.id);
-//     if (fcm_token) {
-//       await Driver.updateDriverFcmToken(driver.id, fcm_token);
-//     } // ONLY IMPORTANT FIX
-//     const updatedDriver = await Driver.getLoginDriverById(driver.id);
-//     const updatedDriverSocket = await Driver.getById(driver.id);
-
-//     notifyDriverLogin(updatedDriverSocket);
-//     return res.status(200).json({
-//       message: "Login successful",
-//       driverInfo: updatedDriver,
-//       token: token,
-//     });
-//   } catch (error) {
-//     console.error("Login Error:", error);
-//     return res.status(500).json({ message: "An error occurred during login" });
-//   }
-// };
-
 //DRIVER LOGIN WITH LOCATION
 exports.driverLogin = async (req, res) => {
   const { username, password, fcm_token, latitude, longitude } = req.body;
@@ -646,6 +607,15 @@ exports.driverLogin = async (req, res) => {
       expiresIn: "1d",
     });
     await Driver.updateDriverLoginStatus(driver.id, latitude, longitude);
+    
+    // INSERT SHIFT HISTORY LOGIN
+    await DriverShiftHistory.createLoginShift(
+      driver.id,
+      latitude,
+      longitude
+    );
+
+    
     if (fcm_token) {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
     }

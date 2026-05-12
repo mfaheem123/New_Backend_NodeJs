@@ -142,11 +142,12 @@ async function sendPanicDriverNotification(driverId) {
         driver_status: "panic",
         driver_id: driverId.toString(),
         driver_username: driverRes.rows[0]?.username,
+        driver_name: driverRes.rows[0]?.name,
         driver_mobile: driverRes.rows[0]?.mobile,
         type: "PANIC_DRIVER",
       },
     };
-console.log("Notification Data:", message)
+    console.log("Notification Data:", message);
     // 4️⃣ Send notification to all
     const response = await admin.messaging().sendEachForMulticast(message);
 
@@ -196,6 +197,7 @@ async function sendOnBreakDriverNotification(driverId) {
         driver_status: "on break",
         driver_id: driverId.toString(),
         driver_username: driverRes.rows[0]?.username,
+        driver_name: driverRes.rows[0]?.name,
         driver_mobile: driverRes.rows[0]?.mobile,
         type: "DRIVER_BREAK_WEB",
       },

@@ -147,6 +147,104 @@ const deleteHistory = async (id) => {
   return result.rows[0];
 };
 
+// CREATE LOGIN SHIFT
+const createLoginShift = async (
+  driver_id,
+  latitude,
+  longitude
+) => {
+
+  const query = `
+    INSERT INTO driver_shift_histories (
+      driver_id,
+      login_date,
+      login_time,
+      login_latitude,
+      login_longitude
+    )
+    VALUES (
+      $1,
+
+      TO_CHAR(NOW(), 'YYYY-MM-DD'),
+      TO_CHAR(NOW(), 'HH24:MI'),
+
+      $2,
+      $3
+    )
+
+    RETURNING *;
+  `;
+
+  const values = [
+    driver_id,
+    latitude,
+    longitude,
+  ];
+
+  const result = await db.query(query, values);
+
+  return result.rows[0];
+};
+
+
+
+
+// GET ACTIVE SHIFT
+const getActiveShift = async (driver_id) => {
+
+  const query = `
+    SELECT *
+    FROM driver_shift_histories
+    WHERE driver_id = $1
+    AND logout_time IS NULL
+    ORDER BY id DESC
+    LIMIT 1
+  `;
+
+  const result = await db.query(query, [driver_id]);
+
+  return result.rows[0];
+};
+
+
+
+
+// UPDATE LOGOUT SHIFT
+const updateLogoutShift = async (
+  driver_id,
+  latitude,
+  longitude
+) => {
+
+  const activeShift = await getActiveShift(driver_id);
+
+  if (!activeShift) {
+    return null;
+  }
+
+  const query = `
+    UPDATE driver_shift_histories
+    SET
+      logout_date = CURRENT_DATE,
+      logout_time = CURRENT_TIME,
+      logout_latitude = $1,
+      logout_longitude = $2,
+      updated_at = NOW()
+    WHERE id = $3
+    RETURNING *;
+  `;
+
+  const values = [
+    latitude,
+    longitude,
+    activeShift.id,
+  ];
+
+  const result = await db.query(query, values);
+
+  return result.rows[0];
+};
+
 
 
 module.exports = {
@@ -155,4 +253,7 @@ module.exports = {
   getHistoryById,
   updateHistory,
   deleteHistory,
+  createLoginShift,
+  updateLogoutShift,
+  getActiveShift,
 };
