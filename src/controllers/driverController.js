@@ -823,6 +823,7 @@ exports.onBreakDriver = async (req, res) => {
     // const data = await Driver.getAllDriverByCommissionType(active, driver_type);
     if (on_break == true || on_break == "true") {
       console.log("DRIVER IS ON BREAK:", on_break);
+
       //Send Driver Break Notification to Web
       await notification.sendOnBreakDriverNotification(driver_id);
 
@@ -970,7 +971,7 @@ exports.breakStatusDriver = async (req, res) => {
         message: "Driver ID is Required",
       });
     }
-    if (!on_break) {
+    if (on_break === undefined || on_break === null) {
       return res.status(400).json({
         status: false,
         message: "on_break is Required",
@@ -980,27 +981,49 @@ exports.breakStatusDriver = async (req, res) => {
       "🚀 INCOMING DRIVER ON BREAK BODY:",
       JSON.stringify(req.body, null, 2),
     );
-
-    if (on_break === "accept" || on_break === "Accept") {
-      console.log("DRIVER IS ON BREAK:", on_break);
-
-      //Send Driver Break Notification to Web
-      // await notification.sendPanicDriverNotification(driver_id)
-
-      return res.status(200).json({
-        status: true,
-        message: "Driver Is On Break",
-        driver_id: driver_id,
-        on_break: on_break,
+const driver = await Driver.getById(driver_id);
+if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
       });
     }
-    if (on_break == false || on_break == "false") {
-      console.log("DRIVER BREAK IS END:", on_break);
+
+    if (on_break === "accepted" || on_break === "Accepted") {
+      console.log("DRIVER BREAK STATUS:", on_break);
+
+
+      // Driver Status Update
+      await Driver.updateDriverStatus(
+        driver_id,
+        driver.booking_status,
+        "On Break"
+      );
+
+      //Send Break Status Notification to Driver
+      await notification.sendBreakStatusNotification(driver_id,"Accepted")
+
       return res.status(200).json({
         status: true,
-        message: "Driver Break End",
+        message: "Driver Break Has Been Accepted",
         driver_id: driver_id,
-        on_break: false,
+        driver_status: "On Break",
+      });
+    }
+    if (on_break === "rejected" || on_break === "Rejected") {
+      await Driver.updateDriverStatus(
+        driver_id,
+        driver.booking_status,
+        "Available"
+      );
+      console.log("DRIVER BREAK IS END:", on_break);
+      //Send Break Status Notification to Driver
+      await notification.sendBreakStatusNotification(driver_id,on_break)
+      return res.status(200).json({
+        status: true,
+        message: "Driver Break Has Been Rejected",
+        driver_id: driver_id,
+        driver_status: "Available",
       });
     }
     return res.status(400).json({

@@ -202,6 +202,7 @@ async function sendOnBreakDriverNotification(driverId) {
         type: "DRIVER_BREAK_WEB",
       },
     };
+    console.log("Notification Data:", message);
 
     // 4️⃣ Send notification to all
     const response = await admin.messaging().sendEachForMulticast(message);
@@ -213,10 +214,63 @@ async function sendOnBreakDriverNotification(driverId) {
   }
 }
 
+async function sendBreakStatusNotification(driverId, break_status) {
+
+  // Driver Token
+  const res = await pool.query(
+    `SELECT * FROM drivers WHERE id = $1`,
+    [driverId]
+  );
+
+  const fcmToken = res.rows[0]?.fcm_token;
+
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // Dynamic Message
+  let title = "";
+  let body = "";
+
+  if (break_status === "accepted" || break_status === "Accepted") {
+    title = "Break Accepted";
+    body = "Your break request has been accepted";
+  } else {
+    title = "Break Rejected";
+    body = "Your break has been rejected";
+  }
+
+  // Notification Payload
+  const message = {
+    token: fcmToken,
+
+    notification: {
+      title,
+      body,
+    },
+
+    data: {
+      driver_id: driverId.toString(),
+      type: "BREAK_STATUS",
+      break_status: break_status,
+    },
+  };
+console.log("Notification Data:", message);
+  // Send Notification
+  await admin.messaging().send(message);
+
+  console.log(
+    "✅ Break Status Notification sent to driver:",
+    driverId
+  );
+}
+
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
   sendRideAcceptedNotification,
   sendPanicDriverNotification,
   sendOnBreakDriverNotification,
+  sendBreakStatusNotification
 };
