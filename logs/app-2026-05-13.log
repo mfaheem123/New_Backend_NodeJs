@@ -248,3 +248,51 @@
 {"level":"info","message":"GET /api/driver_shift_history/login?driver_id=172&from_date=2026-05-13&to_date=2026-05-13&from_time=12:00&to_time=16:36 200 47.812 ms","timestamp":"2026-05-13T09:14:02.707Z"}
 {"duration":59,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:15:48.695Z"}
 {"level":"info","message":"GET /api/location-types 200 62.334 ms","timestamp":"2026-05-13T09:15:48.696Z"}
+{"duration":364,"level":"info","message":"db-query","rows":2,"text":"\n    SELECT\n      dsh.id,\n      dsh.driver_id,\n\n      dsh.login_date,\n      dsh.login_latitude,\n      dsh.login_longitude,\n\n      dsh.logout_date,\n      dsh.logout_latitude,\n      dsh.logout_longitude,\n\n      dsh.booking,\n\n      dsh.login_time,\n      dsh.logout_time,\n\n      json_build_object(\n        'username',\n        d.username\n      ) AS driver\n\n    FROM driver_shift_histories dsh\n\n    LEFT JOIN drivers d\n    ON d.id = dsh.driver_id\n\n    WHERE 1=1\n  \n      AND dsh.driver_id = $1\n    \n      AND dsh.login_date\n      BETWEEN $2\n      AND $3\n    \n      AND dsh.login_time\n      BETWEEN $4\n      AND $5\n    \n    ORDER BY dsh.id DESC\n  ","timestamp":"2026-05-13T09:18:58.446Z"}
+{"level":"info","message":"GET /api/driver_shift_history/login?driver_id=172&from_date=2026-05-13&to_date=2026-05-13&from_time=12:00&to_time=16:36 200 366.265 ms","timestamp":"2026-05-13T09:18:58.448Z"}
+{"duration":13,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:19:23.589Z"}
+{"level":"info","message":"GET /api/location-types 200 30.168 ms","timestamp":"2026-05-13T09:19:23.605Z"}
+{"duration":166,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:19:23.746Z"}
+{"level":"info","message":"GET /api/location-types 200 168.792 ms","timestamp":"2026-05-13T09:19:23.748Z"}
+{"duration":11,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:20:09.598Z"}
+{"level":"info","message":"GET /api/location-types 200 23.424 ms","timestamp":"2026-05-13T09:20:09.611Z"}
+{"duration":62,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:20:09.653Z"}
+{"level":"info","message":"GET /api/location-types 200 63.242 ms","timestamp":"2026-05-13T09:20:09.655Z"}
+{"duration":18,"level":"info","message":"db-query","rows":2,"text":"\n    SELECT\n      dsh.id,\n      dsh.driver_id,\n\n      dsh.login_date,\n      dsh.login_latitude,\n      dsh.login_longitude,\n\n      dsh.logout_date,\n      dsh.logout_latitude,\n      dsh.logout_longitude,\n\n      dsh.booking,\n\n      dsh.login_time,\n      dsh.logout_time,\n\n      json_build_object(\n        'username',\n        d.username\n      ) AS driver\n\n    FROM driver_shift_histories dsh\n\n    LEFT JOIN drivers d\n    ON d.id = dsh.driver_id\n\n    WHERE 1=1\n  \n      AND dsh.driver_id = $1\n    \n      AND dsh.login_date\n      BETWEEN $2\n      AND $3\n    \n      AND dsh.login_time\n      BETWEEN $4\n      AND $5\n    \n    ORDER BY dsh.id DESC\n  ","timestamp":"2026-05-13T09:20:13.823Z"}
+{"level":"info","message":"GET /api/driver_shift_history/login?driver_id=172&from_date=2026-05-13&to_date=2026-05-13&from_time=12:00&to_time=16:36 304 25.672 ms","timestamp":"2026-05-13T09:20:13.827Z"}
+{"duration":11,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:23:38.620Z"}
+{"level":"info","message":"GET /api/location-types 200 25.042 ms","timestamp":"2026-05-13T09:23:38.634Z"}
+{"duration":62,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:23:38.675Z"}
+{"level":"info","message":"GET /api/location-types 200 63.257 ms","timestamp":"2026-05-13T09:23:38.676Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:23:45.218Z"}
+{"level":"info","message":"GET /api/location-types 200 15.390 ms","timestamp":"2026-05-13T09:23:45.226Z"}
+{"duration":50,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:23:45.263Z"}
+{"level":"info","message":"GET /api/location-types 200 52.506 ms","timestamp":"2026-05-13T09:23:45.265Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:23:50.848Z"}
+{"level":"info","message":"GET /api/location-types 200 11.950 ms","timestamp":"2026-05-13T09:23:50.854Z"}
+{"duration":148,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:23:50.992Z"}
+{"level":"info","message":"GET /api/location-types 200 150.067 ms","timestamp":"2026-05-13T09:23:50.994Z"}
+{"duration":12,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:23:56.114Z"}
+{"level":"info","message":"GET /api/location-types 200 20.996 ms","timestamp":"2026-05-13T09:23:56.122Z"}
+{"duration":64,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:23:56.174Z"}
+{"level":"info","message":"GET /api/location-types 200 65.511 ms","timestamp":"2026-05-13T09:23:56.176Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:24:27.381Z"}
+{"level":"info","message":"GET /api/location-types 200 12.170 ms","timestamp":"2026-05-13T09:24:27.389Z"}
+{"duration":57,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:24:27.434Z"}
+{"level":"info","message":"GET /api/location-types 200 58.439 ms","timestamp":"2026-05-13T09:24:27.436Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:24:59.458Z"}
+{"level":"info","message":"GET /api/location-types 200 14.359 ms","timestamp":"2026-05-13T09:24:59.465Z"}
+{"duration":83,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:24:59.536Z"}
+{"level":"info","message":"GET /api/location-types 200 93.307 ms","timestamp":"2026-05-13T09:24:59.547Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:25:05.431Z"}
+{"level":"info","message":"GET /api/location-types 200 14.602 ms","timestamp":"2026-05-13T09:25:05.439Z"}
+{"duration":57,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:25:05.484Z"}
+{"level":"info","message":"GET /api/location-types 200 59.195 ms","timestamp":"2026-05-13T09:25:05.486Z"}
+{"duration":16,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:30:49.434Z"}
+{"level":"info","message":"GET /api/location-types 200 24.273 ms","timestamp":"2026-05-13T09:30:49.443Z"}
+{"duration":70,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:30:49.498Z"}
+{"level":"info","message":"GET /api/location-types 200 73.341 ms","timestamp":"2026-05-13T09:30:49.500Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:31:02.568Z"}
+{"level":"info","message":"GET /api/location-types 200 10.720 ms","timestamp":"2026-05-13T09:31:02.575Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-13T09:31:02.583Z"}
+{"level":"info","message":"GET /api/location-types 200 2.115 ms","timestamp":"2026-05-13T09:31:02.585Z"}

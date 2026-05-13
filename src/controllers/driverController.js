@@ -1025,7 +1025,7 @@ exports.breakStatusDriver = async (req, res) => {
       );
       console.log("DRIVER BREAK IS END:", on_break);
       //Send Break Status Notification to Driver
-      await notification.sendBreakStatusNotification(driver_id, on_break);
+      await notification.sendBreakStatusNotification(driver_id, "Rejected");
       return res.status(200).json({
         status: true,
         message: "Driver Break Has Been Rejected",

@@ -420,6 +420,51 @@ const getDriverLoginHistory = async (
   return result.rows;
 };
 
+const addBookingToShift = async (
+  driver_id,
+  booking_id
+) => {
+
+  // FIND ACTIVE SHIFT
+  const activeShift =
+    await getActiveShift(driver_id);
+
+  if (!activeShift) {
+    return null;
+  }
+
+
+
+  const query = `
+    UPDATE driver_shift_histories
+
+    SET
+
+      booking = array_append(
+        COALESCE(booking, '{}'),
+        $1
+      ),
+
+      updated_at = NOW()
+
+    WHERE id = $2
+
+    RETURNING *;
+  `;
+
+  const values = [
+    booking_id,
+    activeShift.id,
+  ];
+
+  const result = await db.query(
+    query,
+    values
+  );
+
+  return result.rows[0];
+};
+
 module.exports = {
   createHistory,
   getHistories,
@@ -429,5 +474,6 @@ module.exports = {
   createLoginShift,
   updateLogoutShift,
   getActiveShift,
-  getDriverLoginHistory
+  getDriverLoginHistory,
+  addBookingToShift
 };
