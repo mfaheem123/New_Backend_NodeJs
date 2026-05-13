@@ -185,7 +185,12 @@ const getActiveShift = async (driver_id) => {
 };
 
 // UPDATE LOGOUT SHIFT
-const updateLogoutShift = async (driver_id, latitude, longitude) => {
+const updateLogoutShift = async (
+  driver_id,
+  latitude,
+  longitude
+) => {
+
   const activeShift = await getActiveShift(driver_id);
 
   if (!activeShift) {
@@ -195,16 +200,25 @@ const updateLogoutShift = async (driver_id, latitude, longitude) => {
   const query = `
     UPDATE driver_shift_histories
     SET
-      logout_date = CURRENT_DATE,
-      logout_time = CURRENT_TIME,
+
+      logout_date = TO_CHAR(NOW(), 'YYYY-MM-DD'),
+      logout_time = TO_CHAR(NOW(), 'HH24:MI'),
+
       logout_latitude = $1,
       logout_longitude = $2,
+
       updated_at = NOW()
+
     WHERE id = $3
+
     RETURNING *;
   `;
 
-  const values = [latitude, longitude, activeShift.id];
+  const values = [
+    latitude,
+    longitude,
+    activeShift.id,
+  ];
 
   const result = await db.query(query, values);
 
