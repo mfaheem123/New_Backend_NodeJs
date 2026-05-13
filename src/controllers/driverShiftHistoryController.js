@@ -107,3 +107,70 @@ exports.deleteHistory = async (req, res) => {
     });
   }
 };
+
+exports.getDriverLoginHistory = async (
+  req,
+  res
+) => {
+
+  try {
+
+    const {
+      driver_id,
+
+      from_date,
+      to_date,
+
+      from_time,
+      to_time,
+
+      username,
+      booking,
+
+      login_date,
+      logout_date,
+
+      login_time,
+      logout_time,
+    } = req.query;
+
+
+
+    const histories =
+      await model.getDriverLoginHistory({
+
+        driver_id,
+
+        from_date,
+        to_date,
+
+        from_time,
+        to_time,
+
+        username,
+        booking,
+
+        login_date,
+        logout_date,
+
+        login_time,
+        logout_time,
+      });
+
+
+
+    return res.status(200).json({
+      status: true,
+      driver_shift_histories: histories,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};

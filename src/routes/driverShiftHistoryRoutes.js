@@ -5,18 +5,21 @@ const router = express.Router();
 const controller = require("../controllers/driverShiftHistoryController");
 
 // CREATE
-router.post("/", controller.createHistory);
+router.post("/add", controller.createHistory);
 
 // GET ALL
-router.get("/", controller.getHistories);
+router.get("/get", controller.getHistories);
 
 // GET SINGLE
-router.get("/:id", controller.getHistoryById);
+router.get("/getbyid/:id", controller.getHistoryById);
 
 // UPDATE
-router.put("/:id", controller.updateHistory);
+router.post("/update/:id", controller.updateHistory);
 
 // DELETE
-router.delete("/:id", controller.deleteHistory);
+router.delete("/delete/:id", controller.deleteHistory);
+
+// LOGIN HISTORY
+router.get("/login", controller.getDriverLoginHistory);
 
 module.exports = router;
