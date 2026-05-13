@@ -759,10 +759,7 @@ exports.getBySessionStatus = async (req, res) => {
 
 exports.driverLogout = async (req, res) => {
   const { id } = req.params;
- const {
-    latitude,
-    longitude,
-  } = req.body;
+  const { latitude, longitude } = req.body;
 
   if (!id) {
     return res.status(400).json({ message: "driverId is required" });
@@ -781,11 +778,7 @@ exports.driverLogout = async (req, res) => {
     await Driver.clearDriverFcmToken(id);
 
     // UPDATE SHIFT HISTORY LOGOUT
-    await DriverShiftHistory.updateLogoutShift(
-      id,
-      latitude,
-      longitude
-    );
+    await DriverShiftHistory.updateLogoutShift(id, latitude, longitude);
 
     // REMOVE FROM WS LOGIN SOCKET
     notifyDriverLogout(Number(id));

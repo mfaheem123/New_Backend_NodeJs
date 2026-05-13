@@ -45,7 +45,7 @@ const {
   sendBookingNotification,
   sendRideAcceptedNotification,
 } = require("../services/notificationService");
-const DriverShiftHistory = require("../models/driverShiftHistoryModel")
+const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 function parseJSONFields(row) {
   if (!row) return row;
 
@@ -646,10 +646,7 @@ exports.updateBookingStatus = async (req, res) => {
       const driver = await Driver.getById(driverId);
 
       notifyBusyDriverUpdate(driver);
-      await DriverShiftHistory.addBookingToShift(
-  driverId,
-  bookingId
-);
+      await DriverShiftHistory.addBookingToShift(driverId, bookingId);
     }
 
     // UPDATE BOOKING STATUS

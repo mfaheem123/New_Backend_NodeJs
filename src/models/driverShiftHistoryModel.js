@@ -185,12 +185,7 @@ const getActiveShift = async (driver_id) => {
 };
 
 // UPDATE LOGOUT SHIFT
-const updateLogoutShift = async (
-  driver_id,
-  latitude,
-  longitude
-) => {
-
+const updateLogoutShift = async (driver_id, latitude, longitude) => {
   const activeShift = await getActiveShift(driver_id);
 
   if (!activeShift) {
@@ -214,21 +209,14 @@ const updateLogoutShift = async (
     RETURNING *;
   `;
 
-  const values = [
-    latitude,
-    longitude,
-    activeShift.id,
-  ];
+  const values = [latitude, longitude, activeShift.id];
 
   const result = await db.query(query, values);
 
   return result.rows[0];
 };
 
-const getDriverLoginHistory = async (
-  filters
-) => {
-
+const getDriverLoginHistory = async (filters) => {
   let query = `
     SELECT
       dsh.id,
@@ -264,11 +252,8 @@ const getDriverLoginHistory = async (
 
   let count = 1;
 
-
-
   // DRIVER ID FILTER
   if (filters.driver_id) {
-
     query += `
       AND dsh.driver_id = $${count}
     `;
@@ -278,55 +263,34 @@ const getDriverLoginHistory = async (
     count++;
   }
 
-
-
   // FROM DATE - TO DATE FILTER
-  if (
-    filters.from_date &&
-    filters.to_date
-  ) {
-
+  if (filters.from_date && filters.to_date) {
     query += `
       AND dsh.login_date
       BETWEEN $${count}
       AND $${count + 1}
     `;
 
-    values.push(
-      filters.from_date,
-      filters.to_date
-    );
+    values.push(filters.from_date, filters.to_date);
 
     count += 2;
   }
 
-
-
   // FROM TIME - TO TIME FILTER
-  if (
-    filters.from_time &&
-    filters.to_time
-  ) {
-
+  if (filters.from_time && filters.to_time) {
     query += `
       AND dsh.login_time
       BETWEEN $${count}
       AND $${count + 1}
     `;
 
-    values.push(
-      filters.from_time,
-      filters.to_time
-    );
+    values.push(filters.from_time, filters.to_time);
 
     count += 2;
   }
 
-
-
   // USERNAME SEARCH
   if (filters.username) {
-
     query += `
       AND d.username ILIKE $${count}
     `;
@@ -336,11 +300,8 @@ const getDriverLoginHistory = async (
     count++;
   }
 
-
-
   // BOOKING SEARCH
   if (filters.booking) {
-
     query += `
       AND dsh.booking ILIKE $${count}
     `;
@@ -350,11 +311,8 @@ const getDriverLoginHistory = async (
     count++;
   }
 
-
-
   // LOGIN DATE SEARCH
   if (filters.login_date) {
-
     query += `
       AND dsh.login_date ILIKE $${count}
     `;
@@ -364,11 +322,8 @@ const getDriverLoginHistory = async (
     count++;
   }
 
-
-
   // LOGOUT DATE SEARCH
   if (filters.logout_date) {
-
     query += `
       AND dsh.logout_date ILIKE $${count}
     `;
@@ -378,11 +333,8 @@ const getDriverLoginHistory = async (
     count++;
   }
 
-
-
   // LOGIN TIME SEARCH
   if (filters.login_time) {
-
     query += `
       AND dsh.login_time ILIKE $${count}
     `;
@@ -392,11 +344,8 @@ const getDriverLoginHistory = async (
     count++;
   }
 
-
-
   // LOGOUT TIME SEARCH
   if (filters.logout_time) {
-
     query += `
       AND dsh.logout_time ILIKE $${count}
     `;
@@ -406,34 +355,22 @@ const getDriverLoginHistory = async (
     count++;
   }
 
-
-
   query += `
     ORDER BY dsh.id DESC
   `;
 
-  const result = await db.query(
-    query,
-    values
-  );
+  const result = await db.query(query, values);
 
   return result.rows;
 };
 
-const addBookingToShift = async (
-  driver_id,
-  booking_id
-) => {
-
+const addBookingToShift = async (driver_id, booking_id) => {
   // FIND ACTIVE SHIFT
-  const activeShift =
-    await getActiveShift(driver_id);
+  const activeShift = await getActiveShift(driver_id);
 
   if (!activeShift) {
     return null;
   }
-
-
 
   const query = `
     UPDATE driver_shift_histories
@@ -452,15 +389,9 @@ const addBookingToShift = async (
     RETURNING *;
   `;
 
-  const values = [
-    booking_id,
-    activeShift.id,
-  ];
+  const values = [booking_id, activeShift.id];
 
-  const result = await db.query(
-    query,
-    values
-  );
+  const result = await db.query(query, values);
 
   return result.rows[0];
 };
@@ -475,5 +406,5 @@ module.exports = {
   updateLogoutShift,
   getActiveShift,
   getDriverLoginHistory,
-  addBookingToShift
+  addBookingToShift,
 };

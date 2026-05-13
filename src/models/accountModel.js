@@ -506,7 +506,7 @@ exports.deleteAccountWithRelations = async (id) => {
   }
 };
 
-exports.getAccountsBySubsidiary = async (subsidiary_id) => {
+exports.getAccountsBySubsidiary = async (subsidiary_id,company_id) => {
   const query = `
     SELECT
       a.id,a.subsidiary_id,a.account_type,a.name,a.email,a.mobile,a.payment_types,a.information,a.background_color,a.foreground_color,
@@ -520,11 +520,11 @@ exports.getAccountsBySubsidiary = async (subsidiary_id) => {
     FROM accounts a
     LEFT JOIN departments d ON a.id = d.account_id
     LEFT JOIN subsidiaries s ON a.subsidiary_id = s.id
-    WHERE a.subsidiary_id = $1
+    WHERE a.subsidiary_id = $1 AND a.company_id = $2
     GROUP BY a.id, s.id
     ORDER BY a.id ASC;
   `;
 
-  const result = await db.query(query, [subsidiary_id]);
+  const result = await db.query(query, [subsidiary_id,company_id]);
   return result.rows;
 };

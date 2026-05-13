@@ -3,7 +3,8 @@ const EnumerationsModel = require("../models/enumerationsModel");
 // Get All Enumerations
 exports.getAllEnumerations = async (req, res) => {
   try {
-    const data = await EnumerationsModel.getAll();
+    const {company_id} = req.query;
+    const data = await EnumerationsModel.getAll(company_id);
 
     return res.json({
       status: true,

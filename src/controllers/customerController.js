@@ -280,7 +280,7 @@ module.exports = {
 
   searchCustomerByMobile: async (req, res) => {
     try {
-      const { mobile } = req.query;
+      const { mobile, company_id } = req.query;
 
       if (!mobile) {
         return res.status(400).json({
@@ -289,7 +289,7 @@ module.exports = {
         });
       }
 
-      const customer = await Customer.searchByMobile(mobile);
+      const customer = await Customer.searchByMobile(mobile, company_id);
 
       return res.status(200).json({
         status: true,
