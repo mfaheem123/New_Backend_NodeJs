@@ -607,15 +607,10 @@ exports.driverLogin = async (req, res) => {
       expiresIn: "1d",
     });
     await Driver.updateDriverLoginStatus(driver.id, latitude, longitude);
-    
-    // INSERT SHIFT HISTORY LOGIN
-    await DriverShiftHistory.createLoginShift(
-      driver.id,
-      latitude,
-      longitude
-    );
 
-    
+    // INSERT SHIFT HISTORY LOGIN
+    await DriverShiftHistory.createLoginShift(driver.id, latitude, longitude);
+
     if (fcm_token) {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
     }
@@ -981,8 +976,8 @@ exports.breakStatusDriver = async (req, res) => {
       "🚀 INCOMING DRIVER ON BREAK BODY:",
       JSON.stringify(req.body, null, 2),
     );
-const driver = await Driver.getById(driver_id);
-if (!driver) {
+    const driver = await Driver.getById(driver_id);
+    if (!driver) {
       return res.status(404).json({
         status: false,
         message: "Driver not found",
@@ -992,16 +987,15 @@ if (!driver) {
     if (on_break === "accepted" || on_break === "Accepted") {
       console.log("DRIVER BREAK STATUS:", on_break);
 
-
       // Driver Status Update
       await Driver.updateDriverStatus(
         driver_id,
         driver.booking_status,
-        "On Break"
+        "On Break",
       );
 
       //Send Break Status Notification to Driver
-      await notification.sendBreakStatusNotification(driver_id,"Accepted")
+      await notification.sendBreakStatusNotification(driver_id, "Accepted");
 
       return res.status(200).json({
         status: true,
@@ -1014,11 +1008,11 @@ if (!driver) {
       await Driver.updateDriverStatus(
         driver_id,
         driver.booking_status,
-        "Available"
+        "Available",
       );
       console.log("DRIVER BREAK IS END:", on_break);
       //Send Break Status Notification to Driver
-      await notification.sendBreakStatusNotification(driver_id,on_break)
+      await notification.sendBreakStatusNotification(driver_id, on_break);
       return res.status(200).json({
         status: true,
         message: "Driver Break Has Been Rejected",

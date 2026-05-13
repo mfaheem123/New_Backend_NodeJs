@@ -1,10 +1,8 @@
 const model = require("../models/driverShiftHistoryModel");
 
-
 // CREATE
 exports.createHistory = async (req, res) => {
   try {
-
     const data = await model.createHistory(req.body);
 
     return res.status(201).json({
@@ -12,9 +10,7 @@ exports.createHistory = async (req, res) => {
       message: "History created successfully",
       data,
     });
-
   } catch (error) {
-
     return res.status(500).json({
       status: false,
       message: error.message,
@@ -22,21 +18,16 @@ exports.createHistory = async (req, res) => {
   }
 };
 
-
-
 // GET ALL
 exports.getHistories = async (req, res) => {
   try {
-
     const histories = await model.getHistories(req.query);
 
     return res.json({
       status: true,
       driver_shift_histories: histories,
     });
-
   } catch (error) {
-
     return res.status(500).json({
       status: false,
       message: error.message,
@@ -44,12 +35,9 @@ exports.getHistories = async (req, res) => {
   }
 };
 
-
-
 // GET SINGLE
 exports.getHistoryById = async (req, res) => {
   try {
-
     const history = await model.getHistoryById(req.params.id);
 
     if (!history) {
@@ -63,9 +51,7 @@ exports.getHistoryById = async (req, res) => {
       status: true,
       data: history,
     });
-
   } catch (error) {
-
     return res.status(500).json({
       status: false,
       message: error.message,
@@ -73,16 +59,10 @@ exports.getHistoryById = async (req, res) => {
   }
 };
 
-
-
 // UPDATE
 exports.updateHistory = async (req, res) => {
   try {
-
-    const history = await model.updateHistory(
-      req.params.id,
-      req.body
-    );
+    const history = await model.updateHistory(req.params.id, req.body);
 
     if (!history) {
       return res.status(404).json({
@@ -96,9 +76,7 @@ exports.updateHistory = async (req, res) => {
       message: "Updated successfully",
       data: history,
     });
-
   } catch (error) {
-
     return res.status(500).json({
       status: false,
       message: error.message,
@@ -106,12 +84,9 @@ exports.updateHistory = async (req, res) => {
   }
 };
 
-
-
 // DELETE
 exports.deleteHistory = async (req, res) => {
   try {
-
     const history = await model.deleteHistory(req.params.id);
 
     if (!history) {
@@ -125,9 +100,7 @@ exports.deleteHistory = async (req, res) => {
       status: true,
       message: "Deleted successfully",
     });
-
   } catch (error) {
-
     return res.status(500).json({
       status: false,
       message: error.message,

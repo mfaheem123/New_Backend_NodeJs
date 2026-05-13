@@ -215,12 +215,10 @@ async function sendOnBreakDriverNotification(driverId) {
 }
 
 async function sendBreakStatusNotification(driverId, break_status) {
-
   // Driver Token
-  const res = await pool.query(
-    `SELECT * FROM drivers WHERE id = $1`,
-    [driverId]
-  );
+  const res = await pool.query(`SELECT * FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
 
   const fcmToken = res.rows[0]?.fcm_token;
 
@@ -256,14 +254,11 @@ async function sendBreakStatusNotification(driverId, break_status) {
       break_status: break_status,
     },
   };
-console.log("Notification Data:", message);
+  console.log("Notification Data:", message);
   // Send Notification
   await admin.messaging().send(message);
 
-  console.log(
-    "✅ Break Status Notification sent to driver:",
-    driverId
-  );
+  console.log("✅ Break Status Notification sent to driver:", driverId);
 }
 
 module.exports = {
@@ -272,5 +267,5 @@ module.exports = {
   sendRideAcceptedNotification,
   sendPanicDriverNotification,
   sendOnBreakDriverNotification,
-  sendBreakStatusNotification
+  sendBreakStatusNotification,
 };

@@ -1,6 +1,5 @@
 const db = require("../db");
 
-
 // CREATE
 const createHistory = async (data) => {
   const query = `
@@ -38,8 +37,6 @@ const createHistory = async (data) => {
   return result.rows[0];
 };
 
-
-
 // GET ALL WITH FILTERS
 const getHistories = async (filters) => {
   let query = `
@@ -76,8 +73,6 @@ const getHistories = async (filters) => {
   return result.rows;
 };
 
-
-
 // GET SINGLE
 const getHistoryById = async (id) => {
   const query = `
@@ -90,8 +85,6 @@ const getHistoryById = async (id) => {
 
   return result.rows[0];
 };
-
-
 
 // UPDATE
 const updateHistory = async (id, data) => {
@@ -132,8 +125,6 @@ const updateHistory = async (id, data) => {
   return result.rows[0];
 };
 
-
-
 // DELETE
 const deleteHistory = async (id) => {
   const query = `
@@ -148,12 +139,7 @@ const deleteHistory = async (id) => {
 };
 
 // CREATE LOGIN SHIFT
-const createLoginShift = async (
-  driver_id,
-  latitude,
-  longitude
-) => {
-
+const createLoginShift = async (driver_id, latitude, longitude) => {
   const query = `
     INSERT INTO driver_shift_histories (
       driver_id,
@@ -175,23 +161,15 @@ const createLoginShift = async (
     RETURNING *;
   `;
 
-  const values = [
-    driver_id,
-    latitude,
-    longitude,
-  ];
+  const values = [driver_id, latitude, longitude];
 
   const result = await db.query(query, values);
 
   return result.rows[0];
 };
 
-
-
-
 // GET ACTIVE SHIFT
 const getActiveShift = async (driver_id) => {
-
   const query = `
     SELECT *
     FROM driver_shift_histories
@@ -206,16 +184,8 @@ const getActiveShift = async (driver_id) => {
   return result.rows[0];
 };
 
-
-
-
 // UPDATE LOGOUT SHIFT
-const updateLogoutShift = async (
-  driver_id,
-  latitude,
-  longitude
-) => {
-
+const updateLogoutShift = async (driver_id, latitude, longitude) => {
   const activeShift = await getActiveShift(driver_id);
 
   if (!activeShift) {
@@ -234,18 +204,12 @@ const updateLogoutShift = async (
     RETURNING *;
   `;
 
-  const values = [
-    latitude,
-    longitude,
-    activeShift.id,
-  ];
+  const values = [latitude, longitude, activeShift.id];
 
   const result = await db.query(query, values);
 
   return result.rows[0];
 };
-
-
 
 module.exports = {
   createHistory,
