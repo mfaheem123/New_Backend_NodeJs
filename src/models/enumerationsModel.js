@@ -186,7 +186,7 @@ const EnumerationsModel = {
             LEFT JOIN location_types lt
               ON lt.id = l.location_type_id
             WHERE l.location_type_id = 2 AND l.company_id = $1
-            ORDER BY l.id ASC`,
+            ORDER BY l.id ASC`,[company_id]
     );
 
     return {

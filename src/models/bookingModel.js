@@ -846,6 +846,130 @@ const recoverDashboardBooking = async (id) => {
   return pool.query(query, [id]);
 };
 
+const getCompletedBookingLogsByDriverId = async (
+  driver_id,
+  filters = {}
+) => {
+
+  const {
+    from_date,
+    to_date,
+    from_time,
+    to_time,
+
+    ref,
+    vehicle,
+    pickup,
+    dropoff,
+    fares,
+    datetime,
+  } = filters;
+
+  let whereClause = `
+    WHERE b.driver_id = $1
+    AND b.booking_status_id = 11
+  `;
+
+  const values = [driver_id];
+  let index = 2;
+
+  // DATE RANGE FILTER
+if (from_date && to_date) {
+  whereClause += `
+    AND b.pickup_date::DATE
+    BETWEEN $${index}::DATE AND $${index + 1}::DATE
+  `;
+
+  values.push(from_date, to_date);
+  index += 2;
+}
+
+  // TIME RANGE FILTER
+  if (from_time && to_time) {
+    whereClause += `
+      AND b.pickup_time BETWEEN $${index} AND $${index + 1}
+    `;
+
+    values.push(from_time, to_time);
+    index += 2;
+  }
+
+  // REF SEARCH
+  if (ref) {
+    whereClause += `
+      AND b.reference_number ILIKE $${index}
+    `;
+
+    values.push(`%${ref}%`);
+    index++;
+  }
+
+  // VEHICLE SEARCH
+  if (vehicle) {
+    whereClause += `
+      AND vt.name ILIKE $${index}
+    `;
+
+    values.push(`%${vehicle}%`);
+    index++;
+  }
+
+  // PICKUP SEARCH
+  if (pickup) {
+    whereClause += `
+      AND b.pickup ILIKE $${index}
+    `;
+
+    values.push(`%${pickup}%`);
+    index++;
+  }
+
+  // DROPOFF SEARCH
+  if (dropoff) {
+    whereClause += `
+      AND b.dropoff ILIKE $${index}
+    `;
+
+    values.push(`%${dropoff}%`);
+    index++;
+  }
+
+  // FARES SEARCH
+  if (fares) {
+    whereClause += `
+      AND CAST(b.fares AS TEXT) ILIKE $${index}
+    `;
+
+    values.push(`%${fares}%`);
+    index++;
+  }
+
+  // DATETIME SEARCH
+  if (datetime) {
+    whereClause += `
+      AND (
+        TO_CHAR(b.pickup_date::DATE, 'YYYY-MM-DD') || ' ' ||
+        TO_CHAR(b.pickup_time::TIME, 'HH24:MI')
+      ) ILIKE $${index}
+    `;
+
+    values.push(`%${datetime}%`);
+    index++;
+  }
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    ${whereClause}
+    ORDER BY
+      b.pickup_date DESC,
+      b.pickup_time DESC
+  `;
+
+  const res = await pool.query(sql, values);
+
+  return res.rows;
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -889,4 +1013,5 @@ module.exports = {
   completeBoookingByController,
   updateDashboardBookingFares,
   recoverDashboardBooking,
+  getCompletedBookingLogsByDriverId
 };

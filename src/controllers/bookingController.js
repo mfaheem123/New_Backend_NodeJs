@@ -35,6 +35,7 @@ const {
   completeBoookingByController,
   updateDashboardBookingFares,
   recoverDashboardBooking,
+  getCompletedBookingLogsByDriverId,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1460,6 +1461,67 @@ exports.recoverDashboardBooking = async (req, res) => {
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",
+    });
+  }
+};
+
+exports.getCompletedBookingLogsByDriverId = async (req, res) => {
+  try {
+
+    const {
+      driver_id,
+      from_date,
+      to_date,
+      from_time,
+      to_time,
+
+      // SEARCH FILTERS
+      ref,
+      vehicle,
+      pickup,
+      dropoff,
+      fares,
+      datetime,
+    } = req.query;
+
+    const bookings = await getCompletedBookingLogsByDriverId(
+      driver_id,
+      {
+        from_date,
+        to_date,
+        from_time,
+        to_time,
+
+        ref,
+        vehicle,
+        pickup,
+        dropoff,
+        fares,
+        datetime,
+      }
+    );
+
+    if (!bookings || bookings.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking Not Found",
+      });
+    }
+
+    const data = bookings.map((b) => parseJSONFields(b));
+
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      bookings: data,
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };
