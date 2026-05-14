@@ -1467,7 +1467,6 @@ exports.recoverDashboardBooking = async (req, res) => {
 
 exports.getCompletedBookingLogsByDriverId = async (req, res) => {
   try {
-
     const {
       driver_id,
       from_date,
@@ -1484,22 +1483,19 @@ exports.getCompletedBookingLogsByDriverId = async (req, res) => {
       datetime,
     } = req.query;
 
-    const bookings = await getCompletedBookingLogsByDriverId(
-      driver_id,
-      {
-        from_date,
-        to_date,
-        from_time,
-        to_time,
+    const bookings = await getCompletedBookingLogsByDriverId(driver_id, {
+      from_date,
+      to_date,
+      from_time,
+      to_time,
 
-        ref,
-        vehicle,
-        pickup,
-        dropoff,
-        fares,
-        datetime,
-      }
-    );
+      ref,
+      vehicle,
+      pickup,
+      dropoff,
+      fares,
+      datetime,
+    });
 
     if (!bookings || bookings.length === 0) {
       return res.status(404).json({
@@ -1515,7 +1511,6 @@ exports.getCompletedBookingLogsByDriverId = async (req, res) => {
       count: bookings.length,
       bookings: data,
     });
-
   } catch (error) {
     console.log(error);
 

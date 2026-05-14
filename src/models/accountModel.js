@@ -506,7 +506,7 @@ exports.deleteAccountWithRelations = async (id) => {
   }
 };
 
-exports.getAccountsBySubsidiary = async (subsidiary_id,company_id) => {
+exports.getAccountsBySubsidiary = async (subsidiary_id, company_id) => {
   const query = `
     SELECT
       a.id,a.subsidiary_id,a.account_type,a.name,a.email,a.mobile,a.payment_types,a.information,a.background_color,a.foreground_color,
@@ -525,6 +525,6 @@ exports.getAccountsBySubsidiary = async (subsidiary_id,company_id) => {
     ORDER BY a.id ASC;
   `;
 
-  const result = await db.query(query, [subsidiary_id,company_id]);
+  const result = await db.query(query, [subsidiary_id, company_id]);
   return result.rows;
 };

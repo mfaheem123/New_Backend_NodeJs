@@ -317,7 +317,7 @@ RETURNING id
         WHERE mobile LIKE $1 AND company_id = $2
     `;
 
-    const result = await db.query(query, [`%${mobile}%`,company_id]);
+    const result = await db.query(query, [`%${mobile}%`, company_id]);
     return result.rows;
   },
 

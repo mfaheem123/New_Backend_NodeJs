@@ -10,6 +10,11 @@ const pool = require("../db");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 const notification = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
+const {
+  panicDriverClients,
+} = require("../sockets/panicSocket");
+
+
 // const io = getIO();
 
 // Helper: Recursively convert empty strings ("") to null
@@ -1032,6 +1037,53 @@ exports.breakStatusDriver = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error fetching commission drivers:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
+exports.onPanicStatusDriver = async (req, res) => {
+  try {
+    const { driver_id } = req.params;
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver ID is Required",
+      });
+    }
+// Driver Socket Find
+    const driverSocket =
+      panicDriverClients.get(driver_id);
+
+    // Send False To Driver App
+    if (
+      driverSocket &&
+      driverSocket.readyState === WebSocket.OPEN
+    ) {
+
+      driverSocket.send(
+        JSON.stringify({
+          event: "PANIC_STATUS",
+          data: {
+            panic: false,
+          },
+        }),
+      );
+
+      console.log("False Sent To Driver");
+    }
+
+    return res.status(200).json({
+        status: true,
+        message: "Driver Disable Panic",
+        driver_id: driver_id,
+        panic: false,
+      });
+  } catch (error) {
+    console.error("❌ Error panic button:", error);
     return res.status(500).json({
       status: false,
       message: "Internal server error",

@@ -846,11 +846,7 @@ const recoverDashboardBooking = async (id) => {
   return pool.query(query, [id]);
 };
 
-const getCompletedBookingLogsByDriverId = async (
-  driver_id,
-  filters = {}
-) => {
-
+const getCompletedBookingLogsByDriverId = async (driver_id, filters = {}) => {
   const {
     from_date,
     to_date,
@@ -874,15 +870,15 @@ const getCompletedBookingLogsByDriverId = async (
   let index = 2;
 
   // DATE RANGE FILTER
-if (from_date && to_date) {
-  whereClause += `
+  if (from_date && to_date) {
+    whereClause += `
     AND b.pickup_date::DATE
     BETWEEN $${index}::DATE AND $${index + 1}::DATE
   `;
 
-  values.push(from_date, to_date);
-  index += 2;
-}
+    values.push(from_date, to_date);
+    index += 2;
+  }
 
   // TIME RANGE FILTER
   if (from_time && to_time) {
@@ -1013,5 +1009,5 @@ module.exports = {
   completeBoookingByController,
   updateDashboardBookingFares,
   recoverDashboardBooking,
-  getCompletedBookingLogsByDriverId
+  getCompletedBookingLogsByDriverId,
 };
