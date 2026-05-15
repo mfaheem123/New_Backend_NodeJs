@@ -261,6 +261,37 @@ async function sendBreakStatusNotification(driverId, break_status) {
   console.log("✅ Break Status Notification sent to driver:", driverId);
 }
 
+async function sendRecoverBookingNotification(driverId, booking) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Booking Recover From Dashboard",
+      // body: `Pickup: ${booking.pickup}`,
+    },
+    data: {
+      booking_id: booking.id.toString(),
+      type: "RECOVER_BOOKING",
+    },
+  };
+
+  // 3️⃣ Send
+  await admin.messaging().send(message);
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
@@ -268,4 +299,5 @@ module.exports = {
   sendPanicDriverNotification,
   sendOnBreakDriverNotification,
   sendBreakStatusNotification,
+  sendRecoverBookingNotification,
 };

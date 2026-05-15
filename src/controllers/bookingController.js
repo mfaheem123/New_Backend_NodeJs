@@ -45,6 +45,7 @@ const {
 const {
   sendBookingNotification,
   sendRideAcceptedNotification,
+  sendRecoverBookingNotification,
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 function parseJSONFields(row) {
@@ -1441,17 +1442,22 @@ exports.recoverDashboardBooking = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
 
-    const booking = await findBookingById(bookingId);
+      const bookingResult = await findBookingById(bookingId);
 
-    if (booking.rowCount === 0) {
+    if (bookingResult.rowCount === 0) {
       return res.status(404).json({
         status: false,
         message: "Booking not found",
       });
     }
+     // ✅ Actual booking object
+    const booking = bookingResult.rows[0];
 
+    console.log("BOOKING:", booking);
+    console.log(booking.id)
+    await sendRecoverBookingNotification(booking.driver_id,booking);
     await recoverDashboardBooking(bookingId);
-
+    
     return res.status(200).json({
       status: true,
       message: "Recover Booking Successfully",
