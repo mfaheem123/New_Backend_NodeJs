@@ -36,7 +36,7 @@ const {
   updateDashboardBookingFares,
   recoverDashboardBooking,
   getCompletedBookingLogsByDriverId,
-  getDriverEarningsStatistics
+  getDriverEarningsStatistics,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -371,7 +371,7 @@ exports.getBookingByTabs = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// GET BOOKING BY ID (PAGINATION + SEARCHING)
+// GET BOOKING BY ID
 // ---------------------------------------------------------
 exports.getBookingById = async (req, res) => {
   const booking_id = parseInt(req.params.id);
@@ -398,7 +398,7 @@ exports.getBookingById = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// UPDATE BOOKINGS BY ID (PAGINATION + SEARCHING)
+// UPDATE BOOKINGS BY ID
 // ---------------------------------------------------------
 exports.updateBooking = async (req, res) => {
   try {
@@ -440,7 +440,7 @@ exports.updateBooking = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// DELETE SINGLE BOOKING BY ID (TRASH MOVE) (PAGINATION + SEARCHING)
+// DELETE SINGLE BOOKING BY ID (TRASH MOVE)
 // ---------------------------------------------------------
 exports.deleteBooking = async (req, res) => {
   try {
@@ -470,7 +470,9 @@ exports.deleteBooking = async (req, res) => {
   }
 };
 
-// Bulk Delete
+// ---------------------------------------------------------
+// BULK DELETE BOOKINGS (TRASH MOVE)
+// ---------------------------------------------------------
 exports.deleteMultipleBookings = async (req, res) => {
   try {
     let { id } = req.body;
@@ -521,64 +523,9 @@ exports.deleteMultipleBookings = async (req, res) => {
   }
 };
 
-// exports.updateBookingStatus = async (req, res) => {
-//   try {
-//     const bookingId = parseInt(req.params.id);
-//     const { booking_status_id } = req.body;
-
-//     if (!booking_status_id) {
-//       return res.status(400).json({
-//         status: false,
-//         message: "booking_status_id is required",
-//       });
-//     }
-
-//     const booking = await findBookingById(bookingId);
-
-//     if (booking.rowCount === 0) {
-//       return res.status(404).json({
-//         status: false,
-//         message: "Booking not found",
-//       });
-//     }
-
-//     if (booking_status_id == 3) {
-//       await updateBookingonRoute(bookingId, true, false, false);
-//     }
-
-//     if (booking_status_id == 11) {
-//       await updateBookingonRoute(bookingId, false, true, true);
-//       await Driver.updateDriverStatus(booking.driver_id, "Available", "Available")
-//     }
-
-//     if (booking_status_id == 6) {
-//       await updateBookingonRoute(bookingId, false, false, true);
-
-//     }
-
-//     await updateBookingStatus(bookingId, booking_status_id);
-//             await Driver.updateDriverStatus(booking.driver_id, "Unavailable", "Unavailable")
-
-//     // 🔹 GET UPDATED BOOKING
-//     const updatedBooking = await findBookingById(bookingId);
-
-//     // 🔹 SEND SMS
-//     await sendBookingSMS(updatedBooking.rows[0]);
-
-//     return res.status(200).json({
-//       status: true,
-//       message: "Booking status updated successfully",
-//     });
-//   } catch (error) {
-//     console.error("Update Booking Status Error:", error);
-
-//     return res.status(500).json({
-//       status: false,
-//       message: "Internal Server Error",
-//     });
-//   }
-// };
-
+// ---------------------------------------------------------
+// UPDATE BOOKING STATUS
+// ---------------------------------------------------------
 exports.updateBookingStatus = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -695,6 +642,9 @@ exports.updateBookingStatus = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE BOOKING FARES
+// ---------------------------------------------------------
 exports.updateBookingFares = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -745,6 +695,9 @@ exports.updateBookingFares = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY DRIVER ID
+// ---------------------------------------------------------
 exports.getBookingByDriverId = async (req, res) => {
   const driver_id = parseInt(req.params.id);
   const lastdays = req.query.lastdays ? parseInt(req.query.lastdays) : null;
@@ -767,6 +720,9 @@ exports.getBookingByDriverId = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY DRIVER COMMISSION
+// ---------------------------------------------------------
 exports.getBookingByDriverCommission = async (req, res) => {
   const { driver_id, payment_type_id, from_date, to_date } = req.query;
 
@@ -814,6 +770,9 @@ exports.getBookingByDriverCommission = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// CLONE ONE WAY BOOKING
+// ---------------------------------------------------------
 exports.cloneOneWayBooking = async (req, res) => {
   try {
     const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id } =
@@ -851,6 +810,9 @@ exports.cloneOneWayBooking = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// CHECK BOOKING STATUS
+// ---------------------------------------------------------
 exports.checkBookingStatus = async (req, res) => {
   try {
     const { booking_id } = req.params;
@@ -889,6 +851,9 @@ exports.checkBookingStatus = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY DRIVER ID AND STATUS
+// ---------------------------------------------------------
 exports.getBookingByDriverIdAndStatus = async (req, res) => {
   const { driver_id, booking_status_id } = req.body;
 
@@ -926,6 +891,9 @@ exports.getBookingByDriverIdAndStatus = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// CHECK DRIVER ACTIVE BOOKING TODAY
+// ---------------------------------------------------------
 exports.checkDriverActiveBookingToday = async (req, res) => {
   try {
     const { driver_id } = req.query;
@@ -954,6 +922,9 @@ exports.checkDriverActiveBookingToday = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET CURRENT BOOKING
+// ---------------------------------------------------------
 exports.getCurrentJob = async (req, res) => {
   try {
     const { driver_id } = req.query;
@@ -981,6 +952,9 @@ exports.getCurrentJob = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE BOOKING FARES CHARGES
+// ---------------------------------------------------------
 exports.updateBookingFareCharges = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -1045,6 +1019,9 @@ exports.updateBookingFareCharges = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET DRIVER EARNING
+// ---------------------------------------------------------
 exports.getDriverEarning = async (req, res) => {
   try {
     const driver_id = req.params.id;
@@ -1076,6 +1053,9 @@ exports.getDriverEarning = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// ASSIGN DRIVER TO BOOKING (DISPATCH)
+// ---------------------------------------------------------
 exports.assignDriverToBooking = async (req, res) => {
   try {
     const { booking_id, driver_id } = req.body;
@@ -1156,6 +1136,9 @@ exports.assignDriverToBooking = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY CUSTOMER ID
+// ---------------------------------------------------------
 exports.getBookingByCustomerId = async (req, res) => {
   const customer_id = parseInt(req.params.id);
   // const lastdays = req.query.lastdays ? parseInt(req.query.lastdays) : null;
@@ -1178,6 +1161,9 @@ exports.getBookingByCustomerId = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// GET SCHEDULE BOOKING BY CUSTOMER ID
+// ---------------------------------------------------------
 exports.getScheduleBookingByCustomerId = async (req, res) => {
   const customer_id = parseInt(req.params.id);
 
@@ -1199,6 +1185,9 @@ exports.getScheduleBookingByCustomerId = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY CUSTOMER MOBILE
+// ---------------------------------------------------------
 exports.getBookingByCustomerMobile = async (req, res) => {
   const { mobile, name } = req.query;
 
@@ -1220,6 +1209,9 @@ exports.getBookingByCustomerMobile = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// ASSIGN FOLLOW ON BOOKING TO DRIVER
+// ---------------------------------------------------------
 exports.assignFOBBookingToDriver = async (req, res) => {
   try {
     const { booking_id, driver_id } = req.body;
@@ -1301,6 +1293,9 @@ exports.assignFOBBookingToDriver = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY DRIVER ID AND FOB BOOKING
+// ---------------------------------------------------------
 exports.getBookingByDriverIdAndFob = async (req, res) => {
   const driverId = parseInt(req.params.id);
 
@@ -1333,6 +1328,9 @@ exports.getBookingByDriverIdAndFob = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// GET FOB BOOKING HISTORY BY DRIVER ID
+// ---------------------------------------------------------
 exports.getFOBBookingHIstoryByDriverId = async (req, res) => {
   const driver_id = req.params.id;
 
@@ -1361,6 +1359,9 @@ exports.getFOBBookingHIstoryByDriverId = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// COMPLETE BOOKING BY CONTROLLER
+// ---------------------------------------------------------
 exports.completeBoookingByController = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -1400,6 +1401,9 @@ exports.completeBoookingByController = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE DASHBOARD BOOKING FARES
+// ---------------------------------------------------------
 exports.updateDashboardBookingFares = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -1439,6 +1443,9 @@ exports.updateDashboardBookingFares = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// RECOVER DASHBOARD BOOKING
+// ---------------------------------------------------------
 exports.recoverDashboardBooking = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -1527,7 +1534,6 @@ exports.getCompletedBookingLogsByDriverId = async (req, res) => {
     });
   }
 };
-
 
 exports.getDriverEarningsStatistics = async (req, res) => {
   try {

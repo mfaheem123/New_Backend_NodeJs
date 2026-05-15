@@ -1132,7 +1132,6 @@ const getDriverEarningsStatistics = async (filters = {}) => {
   };
 };
 
-
 module.exports = {
   pool,
   insertBookingRow,
@@ -1177,5 +1176,5 @@ module.exports = {
   updateDashboardBookingFares,
   recoverDashboardBooking,
   getCompletedBookingLogsByDriverId,
-  getDriverEarningsStatistics
+  getDriverEarningsStatistics,
 };
