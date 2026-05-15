@@ -292,6 +292,94 @@ async function sendRecoverBookingNotification(driverId, booking) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+async function sendAppBookingNotification(booking) {
+  try {
+    // ✅ Sirf APP bookings ke liye
+    if (
+      !booking.booking_source ||
+      booking.booking_source.toUpperCase() !== "APP"
+    ) {
+      return;
+    }
+
+    // ==============================
+    // ASAP YA SCHEDULE CHECK
+    // ==============================
+
+    let bookingType = "SCHEDULE";
+
+    try {
+      const now = new Date();
+
+      const pickupDateTime = new Date(
+        `${booking.pickup_date} ${booking.pickup_time}`
+      );
+
+      // Agar booking next 30 minutes ke andar hai => ASAP
+      const diffMinutes = (pickupDateTime - now) / (1000 * 60);
+
+      if (diffMinutes <= 30) {
+        bookingType = "ASAP";
+      }
+    } catch (err) {
+      console.log("❌ Error detecting booking type:", err);
+    }
+
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(`
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `);
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+    const message = {
+      tokens,
+
+      notification: {
+        title: `New ${bookingType} App Booking`,
+        body: `${booking.pickup} → ${booking.dropoff}`,
+      },
+
+      data: {
+        type: "NEW_APP_BOOKING",
+        booking_mode: bookingType,
+        booking_id: String(booking.id),
+        booking: JSON.stringify(booking),
+      },
+    };
+
+    // ==============================
+    // SEND
+    // ==============================
+
+    const response = await admin
+      .messaging()
+      .sendEachForMulticast(message);
+
+    console.log(
+      `✅ App booking notification sent: ${response.successCount} success`
+    );
+  } catch (err) {
+    console.error("❌ sendAppBookingNotification Error:", err);
+  }
+}
+
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
@@ -300,4 +388,5 @@ module.exports = {
   sendOnBreakDriverNotification,
   sendBreakStatusNotification,
   sendRecoverBookingNotification,
+  sendAppBookingNotification
 };

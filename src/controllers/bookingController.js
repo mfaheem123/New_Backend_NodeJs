@@ -36,6 +36,7 @@ const {
   updateDashboardBookingFares,
   recoverDashboardBooking,
   getCompletedBookingLogsByDriverId,
+  getBookingDriverStatistics,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1523,6 +1524,62 @@ exports.getCompletedBookingLogsByDriverId = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+exports.getBookingDriverStatistics = async (req, res) => {
+  try {
+    const {
+      // DATE FILTERS
+      from_date,
+      to_date,
+
+      // TIME FILTERS
+      from_time,
+      to_time,
+
+      // DATETIME FILTERS
+      from_datetime,
+      to_datetime,
+
+      // OTHER FILTERS
+      driver_id,
+      booking_status_id,
+      booking_source,
+      payment_type_id,
+      vehicle_type_id,
+    } = req.query;
+
+    const result = await getBookingDriverStatistics({
+      from_date,
+      to_date,
+
+      from_time,
+      to_time,
+
+      from_datetime,
+      to_datetime,
+
+      driver_id,
+      booking_status_id,
+      booking_source,
+      payment_type_id,
+      vehicle_type_id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Booking & Driver statistics fetched successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("GET BOOKING DRIVER STATISTICS ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
     });
   }
 };

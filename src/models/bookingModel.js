@@ -966,6 +966,172 @@ const getCompletedBookingLogsByDriverId = async (driver_id, filters = {}) => {
   return res.rows;
 };
 
+const getBookingDriverStatistics = async (filters = {}) => {
+  const {
+    from_date,
+    to_date,
+
+    from_time,
+    to_time,
+
+    from_datetime,
+    to_datetime,
+
+    driver_id,
+    booking_status_id,
+    booking_source,
+    payment_type_id,
+    vehicle_type_id,
+  } = filters;
+
+  let whereClause = `WHERE b.trash = false`;
+  const values = [];
+  let index = 1;
+
+  // DRIVER FILTER
+  if (driver_id) {
+    whereClause += ` AND b.driver_id = $${index}`;
+    values.push(driver_id);
+    index++;
+  }
+
+  // BOOKING STATUS FILTER
+  if (booking_status_id) {
+    whereClause += ` AND b.booking_status_id = $${index}`;
+    values.push(booking_status_id);
+    index++;
+  }
+
+  // BOOKING SOURCE FILTER
+  if (booking_source) {
+    whereClause += ` AND b.booking_source = $${index}`;
+    values.push(booking_source);
+    index++;
+  }
+
+  // PAYMENT TYPE FILTER
+  if (payment_type_id) {
+    whereClause += ` AND b.payment_type_id = $${index}`;
+    values.push(payment_type_id);
+    index++;
+  }
+
+  // VEHICLE TYPE FILTER
+  if (vehicle_type_id) {
+    whereClause += ` AND b.vehicle_type_id = $${index}`;
+    values.push(vehicle_type_id);
+    index++;
+  }
+
+  // DATE RANGE
+  if (from_date && to_date) {
+    whereClause += `
+      AND b.pickup_date::date
+      BETWEEN $${index}::date
+      AND $${index + 1}::date
+    `;
+
+    values.push(from_date, to_date);
+    index += 2;
+  }
+
+  // TIME RANGE
+  if (from_time && to_time) {
+    whereClause += `
+      AND b.pickup_time::time
+      BETWEEN $${index}::time
+      AND $${index + 1}::time
+    `;
+
+    values.push(from_time, to_time);
+    index += 2;
+  }
+
+  // DATETIME RANGE
+  if (from_datetime && to_datetime) {
+    whereClause += `
+      AND (
+        b.pickup_date::date +
+        TRIM(b.pickup_time)::time
+      )
+      BETWEEN $${index}::timestamp
+      AND $${index + 1}::timestamp
+    `;
+
+    values.push(from_datetime, to_datetime);
+    index += 2;
+  }
+
+  // MAIN STATS QUERY
+  const sql = `
+    SELECT
+      COUNT(b.id) AS total_bookings,
+
+      COUNT(
+        CASE
+          WHEN b.booking_status_id = 11
+          THEN 1
+        END
+      ) AS completed_bookings,
+
+      COUNT(
+        CASE
+          WHEN b.booking_status_id != 11
+          THEN 1
+        END
+      ) AS pending_bookings,
+
+      COALESCE(
+        SUM(
+          CASE
+            WHEN b.booking_status_id = 11
+            THEN b.fares
+            ELSE 0
+          END
+        ),
+        0
+      ) AS total_fares,
+
+      COALESCE(
+        SUM(
+          CASE
+            WHEN b.booking_status_id = 11
+            THEN b.total_charges
+            ELSE 0
+          END
+        ),
+        0
+      ) AS total_charges,
+
+      COUNT(DISTINCT b.driver_id) AS total_drivers,
+
+      COUNT(
+        DISTINCT CASE
+          WHEN d.driver_status = 'Available'
+          THEN d.id
+        END
+      ) AS available_drivers,
+
+      COUNT(
+        DISTINCT CASE
+          WHEN d.driver_status = 'Unavailable'
+          THEN d.id
+        END
+      ) AS busy_drivers
+
+    FROM bookings b
+    LEFT JOIN drivers d
+      ON b.driver_id = d.id
+
+    ${whereClause}
+  `;
+
+  const result = await pool.query(sql, values);
+
+  return result.rows[0];
+};
+
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -1010,4 +1176,5 @@ module.exports = {
   updateDashboardBookingFares,
   recoverDashboardBooking,
   getCompletedBookingLogsByDriverId,
+  getBookingDriverStatistics
 };

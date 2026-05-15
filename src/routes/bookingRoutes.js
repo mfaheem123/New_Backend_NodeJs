@@ -36,6 +36,11 @@ router.get(
   bookingController.getBookingByDriverCommission,
 );
 
+router.get(
+  "/booking-driver-statistics",
+  bookingController.getBookingDriverStatistics
+);
+
 //POST APIS
 router.post("/add", bookingController.createBooking);
 router.post("/update/:id", bookingController.updateBooking);
