@@ -38,7 +38,7 @@ router.get(
 
 router.get(
   "/booking-driver-statistics",
-  bookingController.getBookingDriverStatistics
+  bookingController.getDriverEarningsStatistics,
 );
 
 //POST APIS

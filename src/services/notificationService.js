@@ -273,7 +273,6 @@ async function sendRecoverBookingNotification(driverId, booking) {
     return;
   }
 
-
   // 2️⃣ Notification payload
   const message = {
     token: fcmToken,
@@ -312,7 +311,7 @@ async function sendAppBookingNotification(booking) {
       const now = new Date();
 
       const pickupDateTime = new Date(
-        `${booking.pickup_date} ${booking.pickup_time}`
+        `${booking.pickup_date} ${booking.pickup_time}`,
       );
 
       // Agar booking next 30 minutes ke andar hai => ASAP
@@ -368,12 +367,10 @@ async function sendAppBookingNotification(booking) {
     // SEND
     // ==============================
 
-    const response = await admin
-      .messaging()
-      .sendEachForMulticast(message);
+    const response = await admin.messaging().sendEachForMulticast(message);
 
     console.log(
-      `✅ App booking notification sent: ${response.successCount} success`
+      `✅ App booking notification sent: ${response.successCount} success`,
     );
   } catch (err) {
     console.error("❌ sendAppBookingNotification Error:", err);
@@ -388,5 +385,5 @@ module.exports = {
   sendOnBreakDriverNotification,
   sendBreakStatusNotification,
   sendRecoverBookingNotification,
-  sendAppBookingNotification
+  sendAppBookingNotification,
 };

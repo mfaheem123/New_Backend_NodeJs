@@ -63,9 +63,7 @@ const {
   handleTrackingDashboardSocket,
 } = require("./driverTrackingSocket");
 
-const {
-  handlePanicDriverSocket,
-} = require("./panicSocket");
+const { handlePanicDriverSocket } = require("./panicSocket");
 
 function initWebSockets(server) {
   const wss = new WebSocket.Server({ noServer: true });
@@ -129,9 +127,8 @@ function initWebSockets(server) {
       } else if (url.startsWith("/websocket/driver-tracking")) {
         handleDriverTrackingSocket(ws, req);
       } else if (url.startsWith("/websocket/panic-driver")) {
-  handlePanicDriverSocket(ws, req);
-}
-      else {
+        handlePanicDriverSocket(ws, req);
+      } else {
         logger.warn("ws:rejected", { url });
         ws.close();
       }

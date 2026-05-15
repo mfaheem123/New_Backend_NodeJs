@@ -966,7 +966,7 @@ const getCompletedBookingLogsByDriverId = async (driver_id, filters = {}) => {
   return res.rows;
 };
 
-const getBookingDriverStatistics = async (filters = {}) => {
+const getDriverEarningsStatistics = async (filters = {}) => {
   const {
     from_date,
     to_date,
@@ -977,7 +977,9 @@ const getBookingDriverStatistics = async (filters = {}) => {
     from_datetime,
     to_datetime,
 
+    driver_type,
     driver_id,
+
     booking_status_id,
     booking_source,
     payment_type_id,
@@ -988,7 +990,19 @@ const getBookingDriverStatistics = async (filters = {}) => {
   const values = [];
   let index = 1;
 
-  // DRIVER FILTER
+  // DRIVER TYPE FILTER
+  // login => Available
+  // logout => Unavailable
+
+  if (driver_type === "login") {
+    whereClause += ` AND d.session_status = 'logged_in'`;
+  }
+
+  if (driver_type === "logout") {
+    whereClause += ` AND d.session_status = 'logged_out'`;
+  }
+
+  // SINGLE DRIVER FILTER
   if (driver_id) {
     whereClause += ` AND b.driver_id = $${index}`;
     values.push(driver_id);
@@ -1023,7 +1037,7 @@ const getBookingDriverStatistics = async (filters = {}) => {
     index++;
   }
 
-  // DATE RANGE
+  // DATE RANGE FILTER
   if (from_date && to_date) {
     whereClause += `
       AND b.pickup_date::date
@@ -1035,7 +1049,7 @@ const getBookingDriverStatistics = async (filters = {}) => {
     index += 2;
   }
 
-  // TIME RANGE
+  // TIME RANGE FILTER
   if (from_time && to_time) {
     whereClause += `
       AND b.pickup_time::time
@@ -1047,7 +1061,7 @@ const getBookingDriverStatistics = async (filters = {}) => {
     index += 2;
   }
 
-  // DATETIME RANGE
+  // DATETIME RANGE FILTER
   if (from_datetime && to_datetime) {
     whereClause += `
       AND (
@@ -1062,35 +1076,15 @@ const getBookingDriverStatistics = async (filters = {}) => {
     index += 2;
   }
 
-  // MAIN STATS QUERY
   const sql = `
     SELECT
+      d.id AS driver_id,
+      d.username,
+      d.name,
+      d.driver_status,
+      d.session_status,
+
       COUNT(b.id) AS total_bookings,
-
-      COUNT(
-        CASE
-          WHEN b.booking_status_id = 11
-          THEN 1
-        END
-      ) AS completed_bookings,
-
-      COUNT(
-        CASE
-          WHEN b.booking_status_id != 11
-          THEN 1
-        END
-      ) AS pending_bookings,
-
-      COALESCE(
-        SUM(
-          CASE
-            WHEN b.booking_status_id = 11
-            THEN b.fares
-            ELSE 0
-          END
-        ),
-        0
-      ) AS total_fares,
 
       COALESCE(
         SUM(
@@ -1101,34 +1095,41 @@ const getBookingDriverStatistics = async (filters = {}) => {
           END
         ),
         0
-      ) AS total_charges,
-
-      COUNT(DISTINCT b.driver_id) AS total_drivers,
-
-      COUNT(
-        DISTINCT CASE
-          WHEN d.driver_status = 'Available'
-          THEN d.id
-        END
-      ) AS available_drivers,
-
-      COUNT(
-        DISTINCT CASE
-          WHEN d.driver_status = 'Unavailable'
-          THEN d.id
-        END
-      ) AS busy_drivers
+      ) AS total_earnings
 
     FROM bookings b
+
     LEFT JOIN drivers d
       ON b.driver_id = d.id
 
     ${whereClause}
+
+    GROUP BY
+      d.id,
+      d.username,
+      d.name,
+      d.driver_status
+
+    ORDER BY total_bookings DESC
   `;
 
   const result = await pool.query(sql, values);
 
-  return result.rows[0];
+  // TOTALS
+  let totalBookings = 0;
+  let totalAmount = 0;
+
+  result.rows.forEach((item) => {
+    totalBookings += Number(item.total_bookings);
+    totalAmount += Number(item.total_earnings);
+  });
+
+  return {
+    total_bookings: totalBookings,
+    total_amount: totalAmount,
+
+    drivers: result.rows,
+  };
 };
 
 
@@ -1176,5 +1177,5 @@ module.exports = {
   updateDashboardBookingFares,
   recoverDashboardBooking,
   getCompletedBookingLogsByDriverId,
-  getBookingDriverStatistics
+  getDriverEarningsStatistics
 };

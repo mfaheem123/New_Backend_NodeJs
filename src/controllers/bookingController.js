@@ -36,7 +36,7 @@ const {
   updateDashboardBookingFares,
   recoverDashboardBooking,
   getCompletedBookingLogsByDriverId,
-  getBookingDriverStatistics,
+  getDriverEarningsStatistics
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1443,7 +1443,7 @@ exports.recoverDashboardBooking = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
 
-      const bookingResult = await findBookingById(bookingId);
+    const bookingResult = await findBookingById(bookingId);
 
     if (bookingResult.rowCount === 0) {
       return res.status(404).json({
@@ -1451,14 +1451,14 @@ exports.recoverDashboardBooking = async (req, res) => {
         message: "Booking not found",
       });
     }
-     // ✅ Actual booking object
+    // ✅ Actual booking object
     const booking = bookingResult.rows[0];
 
     console.log("BOOKING:", booking);
-    console.log(booking.id)
-    await sendRecoverBookingNotification(booking.driver_id,booking);
+    console.log(booking.id);
+    await sendRecoverBookingNotification(booking.driver_id, booking);
     await recoverDashboardBooking(bookingId);
-    
+
     return res.status(200).json({
       status: true,
       message: "Recover Booking Successfully",
@@ -1528,7 +1528,8 @@ exports.getCompletedBookingLogsByDriverId = async (req, res) => {
   }
 };
 
-exports.getBookingDriverStatistics = async (req, res) => {
+
+exports.getDriverEarningsStatistics = async (req, res) => {
   try {
     const {
       // DATE FILTERS
@@ -1543,15 +1544,18 @@ exports.getBookingDriverStatistics = async (req, res) => {
       from_datetime,
       to_datetime,
 
-      // OTHER FILTERS
+      // DRIVER FILTERS
+      driver_type, // all | login | logout
       driver_id,
+
+      // OTHER FILTERS
       booking_status_id,
       booking_source,
       payment_type_id,
       vehicle_type_id,
     } = req.query;
 
-    const result = await getBookingDriverStatistics({
+    const result = await getDriverEarningsStatistics({
       from_date,
       to_date,
 
@@ -1561,7 +1565,9 @@ exports.getBookingDriverStatistics = async (req, res) => {
       from_datetime,
       to_datetime,
 
+      driver_type,
       driver_id,
+
       booking_status_id,
       booking_source,
       payment_type_id,
@@ -1570,11 +1576,11 @@ exports.getBookingDriverStatistics = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Booking & Driver statistics fetched successfully",
+      message: "Driver earnings statistics fetched successfully",
       data: result,
     });
   } catch (error) {
-    console.error("GET BOOKING DRIVER STATISTICS ERROR:", error);
+    console.error("GET DRIVER EARNINGS STATISTICS ERROR:", error);
 
     return res.status(500).json({
       success: false,

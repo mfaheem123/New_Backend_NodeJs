@@ -10,10 +10,7 @@ const pool = require("../db");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 const notification = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
-const {
-  panicDriverClients,
-} = require("../sockets/panicSocket");
-
+const { panicDriverClients } = require("../sockets/panicSocket");
 
 // const io = getIO();
 
@@ -1044,7 +1041,6 @@ exports.breakStatusDriver = async (req, res) => {
   }
 };
 
-
 exports.onPanicStatusDriver = async (req, res) => {
   try {
     const { driver_id } = req.params;
@@ -1054,16 +1050,11 @@ exports.onPanicStatusDriver = async (req, res) => {
         message: "Driver ID is Required",
       });
     }
-// Driver Socket Find
-    const driverSocket =
-      panicDriverClients.get(driver_id);
+    // Driver Socket Find
+    const driverSocket = panicDriverClients.get(driver_id);
 
     // Send False To Driver App
-    if (
-      driverSocket &&
-      driverSocket.readyState === WebSocket.OPEN
-    ) {
-
+    if (driverSocket && driverSocket.readyState === WebSocket.OPEN) {
       driverSocket.send(
         JSON.stringify({
           event: "PANIC_STATUS",
@@ -1077,11 +1068,11 @@ exports.onPanicStatusDriver = async (req, res) => {
     }
 
     return res.status(200).json({
-        status: true,
-        message: "Driver Disable Panic",
-        driver_id: driver_id,
-        panic: false,
-      });
+      status: true,
+      message: "Driver Disable Panic",
+      driver_id: driver_id,
+      panic: false,
+    });
   } catch (error) {
     console.error("❌ Error panic button:", error);
     return res.status(500).json({
