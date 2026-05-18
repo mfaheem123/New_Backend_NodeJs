@@ -276,6 +276,7 @@ async function createBookingRow(pool, bookingObj) {
     "invoice_number",
     "initial_subsidiary_id",
     "eta",
+    "company_id"
   ];
 
   // 🔥 FIX: Properly DEFINE row before using it
