@@ -276,7 +276,7 @@ async function createBookingRow(pool, bookingObj) {
     "invoice_number",
     "initial_subsidiary_id",
     "eta",
-    "company_id"
+    "company_id",
   ];
 
   // 🔥 FIX: Properly DEFINE row before using it
@@ -353,6 +353,8 @@ async function createSimpleBooking(payload) {
     const enriched = await getBookingByIdEnriched(inserted.id);
     const clean = parseJSONFields(enriched);
 
+    await pool.query("COMMIT");
+
     console.log("BOOKING DATA FOR SENDING SMS: ", clean);
     //  SEND SMS
     await sendBookingSMS(clean);
@@ -364,8 +366,6 @@ async function createSimpleBooking(payload) {
       //   dispatched_at: new Date(),
       // });
     }
-
-    await pool.query("COMMIT");
 
     // return { booking: [inserted] };
     return { bookings: [clean] };

@@ -460,9 +460,9 @@ const getBookingsByTab = async ({
   }
 
   if (filters.company_id) {
-  conditions.push(`b.company_id = $${idx++}`);
-  params.push(filters.company_id);
-}
+    conditions.push(`b.company_id = $${idx++}`);
+    params.push(filters.company_id);
+  }
 
   const whereClause = `
     WHERE ${tabWhere}
