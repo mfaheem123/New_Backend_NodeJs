@@ -1486,6 +1486,9 @@ exports.recoverDashboardBooking = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET COMPLETED BOOKING LOGS BY DRIVER ID
+// ---------------------------------------------------------
 exports.getCompletedBookingLogsByDriverId = async (req, res) => {
   try {
     const {
@@ -1542,6 +1545,9 @@ exports.getCompletedBookingLogsByDriverId = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET DRIVER EARNNG AND INFO
+// ---------------------------------------------------------
 exports.getDriverEarningsStatistics = async (req, res) => {
   try {
     const {
@@ -1599,6 +1605,81 @@ exports.getDriverEarningsStatistics = async (req, res) => {
       success: false,
       message: "Internal Server Error",
       error: error.message,
+    });
+  }
+};
+
+
+// ---------------------------------------------------------
+// ASSIGN FUTURR BOOKING TO DRIVER
+// ---------------------------------------------------------
+exports.assignFutureBookingToDriver = async (req, res) => {
+  try {
+    const { booking_id, driver_id } = req.body;
+
+    console.log("🚀 ASSIGN FUTURE BOOKING TO DRIVER BODY:", req.body);
+
+    if (!booking_id || !driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "booking_id and driver_id are required",
+      });
+    }
+
+    // Check booking exists
+    const booking = await findBookingById(booking_id);
+
+    if (booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    // if (booking.rows[0].driver_id) {
+    //   return res.status(400).json({
+    //     status: false,
+    //     message: "Driver already assigned",
+    //   });
+    // }
+
+    if (
+      booking.rows[0].booking_status_id === "11" ||
+      booking.rows[0].booking_status_id === 11
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Booking Already Completed",
+      });
+    }
+
+    const driver = await Driver.getById(driver_id);
+
+    if (driver.session_status === "logged_out") {
+      return res.status(400).json({
+        status: false,
+        message: "Driver is Logged Out",
+      });
+    }
+
+
+    // Assign FOB Booking to Driver
+    const updatedBooking = await bookingService.assignFutureBookingDriverService(
+      booking_id,
+      driver_id,
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver Assigned Successfully",
+      booking: updatedBooking,
+    });
+  } catch (error) {
+    console.error("Assign Driver Error:", error);
+
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
     });
   }
 };
