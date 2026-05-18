@@ -209,6 +209,7 @@ exports.getBookingByTabs = async (req, res) => {
       booking_status,
       journey_type,
       payment_type,
+      company_id,
     } = req.query;
 
     page = parseInt(page);
@@ -348,6 +349,7 @@ exports.getBookingByTabs = async (req, res) => {
         booking_status,
         journey_type,
         payment_type,
+        company_id
       },
     });
 
@@ -1465,6 +1467,7 @@ exports.recoverDashboardBooking = async (req, res) => {
     console.log(booking.id);
     await sendRecoverBookingNotification(booking.driver_id, booking);
     await recoverDashboardBooking(bookingId);
+    await Driver.updateDriverStatus(booking.driver_id, "Available", "Available");
 
     return res.status(200).json({
       status: true,

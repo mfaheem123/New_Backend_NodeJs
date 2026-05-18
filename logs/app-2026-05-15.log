@@ -704,3 +704,7 @@
 {"level":"info","message":"GET /api/location-types 200 15.943 ms","timestamp":"2026-05-15T11:45:33.794Z"}
 {"duration":67,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-15T11:45:33.849Z"}
 {"level":"info","message":"GET /api/location-types 200 69.196 ms","timestamp":"2026-05-15T11:45:33.851Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-15T11:45:48.040Z"}
+{"level":"info","message":"GET /api/location-types 200 12.128 ms","timestamp":"2026-05-15T11:45:48.047Z"}
+{"duration":54,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-05-15T11:45:48.090Z"}
+{"level":"info","message":"GET /api/location-types 200 55.919 ms","timestamp":"2026-05-15T11:45:48.092Z"}
