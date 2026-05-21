@@ -1,5 +1,8 @@
 const pool = require("../db");
 
+// ---------------------------------------------------------
+// CREATE BOOKING 
+// ---------------------------------------------------------
 const insertBookingRow = async (client, bookingRow) => {
   const cols = Object.keys(bookingRow);
   const vals = Object.values(bookingRow);
@@ -929,7 +932,7 @@ const completeBoookingByController = async (id, driver_id) => {
 const updateDashboardBookingFares = async (id, total_charges) => {
   const query = `
     UPDATE bookings
-    SET total_charges= $1
+    SET fares= $1
     WHERE id = $2
   `;
   return pool.query(query, [total_charges, id]);
@@ -1231,6 +1234,252 @@ const getDriverEarningsStatistics = async (filters = {}) => {
   };
 };
 
+const getBookingStatisticsData = async ({
+  page = 1,
+  limit = 20,
+  filters = {},
+}) => {
+  const offset = (page - 1) * limit;
+
+  const conditions = ["b.trash = false"];
+  const params = [];
+  let idx = 1;
+
+  // =========================
+  // DATE RANGE
+  // =========================
+
+  if (filters.from_date) {
+    conditions.push(`b.pickup_date >= $${idx++}`);
+    params.push(filters.from_date);
+  }
+
+  if (filters.to_date) {
+    conditions.push(`b.pickup_date <= $${idx++}`);
+    params.push(filters.to_date);
+  }
+
+  // =========================
+  // TIME RANGE
+  // =========================
+
+  if (filters.from_time) {
+    conditions.push(`TRIM(b.pickup_time)::time >= $${idx++}::time`);
+    params.push(filters.from_time);
+  }
+
+  if (filters.to_time) {
+    conditions.push(`TRIM(b.pickup_time)::time <= $${idx++}::time`);
+    params.push(filters.to_time);
+  }
+
+  // =========================
+  // STATUS
+  // =========================
+
+  if (filters.booking_status_id) {
+    conditions.push(`b.booking_status_id = $${idx++}`);
+    params.push(filters.booking_status_id);
+  }
+
+  // =========================
+  // PAYMENT TYPE
+  // =========================
+
+  if (filters.payment_type_id) {
+    conditions.push(`b.payment_type_id = $${idx++}`);
+    params.push(filters.payment_type_id);
+  }
+
+  // =========================
+  // CUSTOMER
+  // =========================
+
+  if (filters.customer) {
+    conditions.push(`b.name ILIKE $${idx++}`);
+    params.push(`%${filters.customer}%`);
+  }
+
+  if (filters.mobile) {
+    conditions.push(`b.mobile ILIKE $${idx++}`);
+    params.push(`%${filters.mobile}%`);
+  }
+
+  if (filters.telephone) {
+    conditions.push(`b.telephone ILIKE $${idx++}`);
+    params.push(`%${filters.telephone}%`);
+  }
+
+  // =========================
+  // ACCOUNT
+  // =========================
+
+  if (filters.account_id) {
+    conditions.push(`b.account_id = $${idx++}`);
+    params.push(filters.account_id);
+  }
+
+  // =========================
+  // DEPARTMENT
+  // =========================
+
+  if (filters.department) {
+    conditions.push(`b.department ILIKE $${idx++}`);
+    params.push(`%${filters.department}%`);
+  }
+
+  // =========================
+  // ORDER NUMBER
+  // =========================
+
+  if (filters.order_number) {
+    conditions.push(`b.order_number ILIKE $${idx++}`);
+    params.push(`%${filters.order_number}%`);
+  }
+
+  // =========================
+  // BOOKED BY
+  // =========================
+
+  if (filters.booked_by) {
+    conditions.push(`b.booked_by ILIKE $${idx++}`);
+    params.push(`%${filters.booked_by}%`);
+  }
+
+  // =========================
+  // EMPLOYEE
+  // =========================
+
+  if (filters.employee_id) {
+    conditions.push(`b.employee_id = $${idx++}`);
+    params.push(filters.employee_id);
+  }
+
+  // =========================
+  // SUBSIDIARY
+  // =========================
+
+  if (filters.subsidiary_id) {
+    conditions.push(`b.subsidiary_id = $${idx++}`);
+    params.push(filters.subsidiary_id);
+  }
+
+  // =========================
+  // REFERENCE NUMBER
+  // =========================
+
+  if (filters.reference_number) {
+    conditions.push(`b.reference_number ILIKE $${idx++}`);
+    params.push(`%${filters.reference_number}%`);
+  }
+
+  // =========================
+  // PICKUP
+  // =========================
+
+  if (filters.pickup) {
+    conditions.push(`b.pickup ILIKE $${idx++}`);
+    params.push(`%${filters.pickup}%`);
+  }
+
+  // =========================
+  // DROPOFF
+  // =========================
+
+  if (filters.dropoff) {
+    conditions.push(`b.dropoff ILIKE $${idx++}`);
+    params.push(`%${filters.dropoff}%`);
+  }
+
+  const whereClause = `
+    WHERE ${conditions.join(" AND ")}
+  `;
+
+  // =========================
+  // TOTAL COUNT
+  // =========================
+
+  const countSql = `
+    SELECT COUNT(*) AS total
+    FROM bookings b
+    ${whereClause}
+  `;
+
+  const countResult = await pool.query(countSql, params);
+  const total = parseInt(countResult.rows[0].total);
+
+  // =========================
+  // DASHBOARD TOTALS
+  // =========================
+
+  const totalsSql = `
+    SELECT
+      COUNT(*) AS total_bookings,
+
+      COALESCE(SUM(b.fares), 0) AS total_earnings,
+
+      COALESCE(
+        SUM(
+          CASE
+            WHEN b.account_id IS NOT NULL
+            THEN b.fares
+            ELSE 0
+          END
+        ),
+        0
+      ) AS total_account_earnings
+
+    FROM bookings b
+    ${whereClause}
+  `;
+
+  const totalsResult = await pool.query(totalsSql, params);
+
+  // =========================
+  // SORTING
+  // =========================
+
+  const sortDirection =
+    filters.sort_order &&
+    filters.sort_order.toUpperCase() === "DESC"
+      ? "DESC"
+      : "ASC";
+
+  // =========================
+  // DATA QUERY
+  // =========================
+
+  const dataSql = `
+    ${ENRICHED_SELECT}
+    ${whereClause}
+    ORDER BY
+      (b.pickup_date::date + TRIM(b.pickup_time)::time)
+      ${sortDirection}
+    OFFSET $${idx++}
+    LIMIT $${idx++}
+  `;
+
+  const dataParams = [...params, offset, limit];
+
+  const result = await pool.query(dataSql, dataParams);
+
+  return {
+    rows: result.rows,
+    total,
+    totals: {
+      total_bookings: Number(
+        totalsResult.rows[0].total_bookings || 0
+      ),
+      total_earnings: Number(
+        totalsResult.rows[0].total_earnings || 0
+      ),
+      total_account_earnings: Number(
+        totalsResult.rows[0].total_account_earnings || 0
+      ),
+    },
+  };
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -1276,4 +1525,5 @@ module.exports = {
   recoverDashboardBooking,
   getCompletedBookingLogsByDriverId,
   getDriverEarningsStatistics,
+  getBookingStatisticsData
 };

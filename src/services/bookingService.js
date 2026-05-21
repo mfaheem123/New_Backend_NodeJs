@@ -540,6 +540,12 @@ async function createReturnWayBooking(payload) {
 
     await pool.query("COMMIT");
 
+    // OUTBOUND SMS
+await sendBookingSMS(outboundEnriched);
+
+// RETURN SMS
+await sendBookingSMS(returnEnriched);
+
     return {
       bookings: [outboundEnriched],
       return_booking: [returnEnriched],
@@ -1471,7 +1477,7 @@ async function assignFutureBookingDriverService(bookingId, driverId) {
     }
   }
 
-  console.log("DRIVER FARE METER STATUS: ", fare_meter)
+  console.log("DRIVER FARE METER STATUS: ", fare_meter);
   // 1️ Update booking with driver
   const updated = await updateBooking(bookingId, {
     driver_id: driverId,
@@ -1492,7 +1498,6 @@ async function assignFutureBookingDriverService(bookingId, driverId) {
   // 3️ Send notification to driver
   await sendFutureBookingNotification(driverId, enriched);
 
-  
   // -------------------------------
   // 📩 DISPATCH SMS (TEMPLATE 3)
   // -------------------------------
@@ -1528,7 +1533,6 @@ async function assignFutureBookingDriverService(bookingId, driverId) {
   return enriched;
 }
 
-
 // EXPORTS
 module.exports = {
   create,
@@ -1538,5 +1542,5 @@ module.exports = {
   assignDriverService,
   assignFOBDriverService,
   cloneOneWayBookingService,
-  assignFutureBookingDriverService
+  assignFutureBookingDriverService,
 };

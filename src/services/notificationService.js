@@ -420,5 +420,5 @@ module.exports = {
   sendBreakStatusNotification,
   sendRecoverBookingNotification,
   sendAppBookingNotification,
-  sendFutureBookingNotification
+  sendFutureBookingNotification,
 };

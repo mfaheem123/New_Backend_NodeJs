@@ -41,6 +41,10 @@ router.get(
   bookingController.getDriverEarningsStatistics,
 );
 
+router.get(
+  "/booking-statistics",
+  bookingController.getBookingStatistics,
+);
 //POST APIS
 router.post("/add", bookingController.createBooking);
 router.post("/update/:id", bookingController.updateBooking);

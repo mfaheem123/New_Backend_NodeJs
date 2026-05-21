@@ -37,6 +37,7 @@ const {
   recoverDashboardBooking,
   getCompletedBookingLogsByDriverId,
   getDriverEarningsStatistics,
+  getBookingStatisticsData,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1609,7 +1610,6 @@ exports.getDriverEarningsStatistics = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
 // ASSIGN FUTURR BOOKING TO DRIVER
 // ---------------------------------------------------------
@@ -1662,12 +1662,12 @@ exports.assignFutureBookingToDriver = async (req, res) => {
       });
     }
 
-
     // Assign FOB Booking to Driver
-    const updatedBooking = await bookingService.assignFutureBookingDriverService(
-      booking_id,
-      driver_id,
-    );
+    const updatedBooking =
+      await bookingService.assignFutureBookingDriverService(
+        booking_id,
+        driver_id,
+      );
 
     return res.status(200).json({
       status: true,
@@ -1680,6 +1680,102 @@ exports.assignFutureBookingToDriver = async (req, res) => {
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET ALL BOOKING STATISTICS
+// ---------------------------------------------------------
+exports.getBookingStatistics = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+
+      from_date,
+      to_date,
+
+      from_time,
+      to_time,
+
+      booking_status_id,
+      payment_type_id,
+
+      customer,
+      mobile,
+      telephone,
+
+      account_id,
+      department,
+
+      order_number,
+      booked_by,
+
+      employee_id,
+      subsidiary_id,
+
+      reference_number,
+      pickup,
+      dropoff,
+
+      sort_order = "ASC"
+    } = req.query;
+
+    const result = await getBookingStatisticsData({
+      page: Number(page),
+      limit: Number(limit),
+
+      filters: {
+        from_date,
+        to_date,
+        from_time,
+        to_time,
+
+        booking_status_id,
+        payment_type_id,
+
+        customer,
+        mobile,
+        telephone,
+
+        account_id,
+        department,
+
+        order_number,
+        booked_by,
+
+        employee_id,
+        subsidiary_id,
+
+        reference_number,
+        pickup,
+        dropoff,
+
+        sort_order
+      }
+    });
+
+    const data = result.rows.map(parseJSONFields);
+
+    res.json({
+      success: true,
+      page: Number(page),
+      limit: Number(limit),
+      total: result.total,
+      total_pages: Math.ceil(result.total / limit),
+      count: data.length,
+
+      totals: result.totals,
+
+      data
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
