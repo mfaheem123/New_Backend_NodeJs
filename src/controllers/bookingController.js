@@ -1719,7 +1719,7 @@ exports.getBookingStatistics = async (req, res) => {
       pickup,
       dropoff,
 
-      sort_order = "ASC"
+      sort_order = "ASC",
     } = req.query;
 
     const result = await getBookingStatisticsData({
@@ -1752,8 +1752,8 @@ exports.getBookingStatistics = async (req, res) => {
         pickup,
         dropoff,
 
-        sort_order
-      }
+        sort_order,
+      },
     });
 
     const data = result.rows.map(parseJSONFields);
@@ -1768,14 +1768,13 @@ exports.getBookingStatistics = async (req, res) => {
 
       totals: result.totals,
 
-      data
+      data,
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };

@@ -541,10 +541,10 @@ async function createReturnWayBooking(payload) {
     await pool.query("COMMIT");
 
     // OUTBOUND SMS
-await sendBookingSMS(outboundEnriched);
+    await sendBookingSMS(outboundEnriched);
 
-// RETURN SMS
-await sendBookingSMS(returnEnriched);
+    // RETURN SMS
+    await sendBookingSMS(returnEnriched);
 
     return {
       bookings: [outboundEnriched],

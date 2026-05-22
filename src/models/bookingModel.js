@@ -1,7 +1,7 @@
 const pool = require("../db");
 
 // ---------------------------------------------------------
-// CREATE BOOKING 
+// CREATE BOOKING MODEL
 // ---------------------------------------------------------
 const insertBookingRow = async (client, bookingRow) => {
   const cols = Object.keys(bookingRow);
@@ -14,6 +14,9 @@ const insertBookingRow = async (client, bookingRow) => {
   return res.rows[0];
 };
 
+// ---------------------------------------------------------
+// UPDATE BOOKING BY ID
+// ---------------------------------------------------------
 const updateBooking = async (id, updates) => {
   const cols = Object.keys(updates);
   const vals = Object.values(updates);
@@ -33,6 +36,9 @@ const updateBooking = async (id, updates) => {
   return res.rows[0];
 };
 
+// ---------------------------------------------------------
+// BOOKING RESPONSE JSON 
+// ---------------------------------------------------------
 const ENRICHED_SELECT = `
   SELECT 
     b.id,
@@ -284,7 +290,9 @@ LEFT JOIN location_types ltd ON ld.location_type_id = ltd.id
 
 `;
 
-// TODAY BOOKINGS (STATUS = WAITING)
+// ---------------------------------------------------------
+// GET TODAY BOOKINGS (STATUS = WAITING)
+// ---------------------------------------------------------
 const getTodayBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -297,7 +305,9 @@ const getTodayBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// ALL BOOKINGS
+// ---------------------------------------------------------
+// GET ALL BOOKINGS
+// ---------------------------------------------------------
 const getAllBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -306,7 +316,10 @@ const getAllBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// PRE BOOKINGS (DATE > TODAY)
+
+// ---------------------------------------------------------
+// GET PRE BOOKINGS (DATE > TODAY)
+// ---------------------------------------------------------
 const getPreBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -316,7 +329,10 @@ const getPreBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// RECENT BOOKINGS (NOT COMPLETED)
+
+// ---------------------------------------------------------
+// GET RECENT BOOKINGS (NOT COMPLETED)
+// ---------------------------------------------------------
 const getRecentBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -326,7 +342,10 @@ const getRecentBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// COMPLETED BOOKINGS
+
+// ---------------------------------------------------------
+// GET COMPLETED BOOKINGS
+// ---------------------------------------------------------
 const getCompletedBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -336,7 +355,9 @@ const getCompletedBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// WEB BOOKINGS
+// ---------------------------------------------------------
+// GET WEB BOOKINGS
+// ---------------------------------------------------------
 const getWebBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -346,7 +367,9 @@ const getWebBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// APP BOOKINGS
+// ---------------------------------------------------------
+// GET APP BOOKINGS
+// ---------------------------------------------------------
 const getAppBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -356,7 +379,9 @@ const getAppBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// IVR BOOKINGS
+// ---------------------------------------------------------
+// GET IVR BOOKINGS
+// ---------------------------------------------------------
 const getIvrBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -366,7 +391,9 @@ const getIvrBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-// QUOTED BOOKINGS
+// ---------------------------------------------------------
+// GET QUOTED BOOKINGS
+// ---------------------------------------------------------
 const getQuotedBookings = async () => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -376,7 +403,9 @@ const getQuotedBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
+// ---------------------------------------------------------
 // GET BOOKINGS BY TABS (PAGINATION + SEARCHING)
+// ---------------------------------------------------------
 const getBookingsByTab = async ({
   tabWhere,
   offset = 0,
@@ -502,7 +531,9 @@ const getBookingsByTab = async ({
   return { rows: result.rows, total };
 };
 
+// ---------------------------------------------------------
 // GET BOOKINGS BY ID
+// ---------------------------------------------------------
 const getBookingByIdEnriched = async (id) => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -512,7 +543,9 @@ const getBookingByIdEnriched = async (id) => {
   return res.rows[0];
 };
 
+// ---------------------------------------------------------
 // CHECKING ID IS PRESENT OR NOT (FOR UPDATE STATUS AND FARES)
+// ---------------------------------------------------------
 const findBookingById = async (id) => {
   const query = `
     SELECT 
@@ -533,12 +566,17 @@ const findBookingById = async (id) => {
   return pool.query(query, [id]);
 };
 
+// ---------------------------------------------------------
 // FIND ALL DATA OF BOOKING BY ID (FOR UPDATE)
+// ---------------------------------------------------------
 const findBookingsById = async (id) => {
   const res = await pool.query(`SELECT * FROM bookings WHERE id = $1`, [id]);
   return res.rows[0];
 };
 
+// ---------------------------------------------------------
+// CREATE TRASH BOOKING
+// ---------------------------------------------------------
 const trashBooking = async (id) => {
   const query = `
     UPDATE bookings
@@ -548,6 +586,9 @@ const trashBooking = async (id) => {
   return pool.query(query, [id]);
 };
 
+// ---------------------------------------------------------
+// FIND EXISTING BOOKING
+// ---------------------------------------------------------
 const findExistingBookings = async (ids) => {
   const query = `
     SELECT id FROM bookings
@@ -556,6 +597,9 @@ const findExistingBookings = async (ids) => {
   return pool.query(query, [ids]);
 };
 
+// ---------------------------------------------------------
+// CREATE MULTIPLE TRASH BOOKING
+// ---------------------------------------------------------
 const trashMultipleBookings = async (ids) => {
   const query = `
     UPDATE bookings
@@ -565,6 +609,9 @@ const trashMultipleBookings = async (ids) => {
   return pool.query(query, [ids]);
 };
 
+// ---------------------------------------------------------
+// UPDATE BOOKING STATUS
+// ---------------------------------------------------------
 const updateBookingStatus = async (id, statusId) => {
   const query = `
     UPDATE bookings
@@ -574,6 +621,9 @@ const updateBookingStatus = async (id, statusId) => {
   return pool.query(query, [statusId, id]);
 };
 
+// ---------------------------------------------------------
+// UPDATE BOOKING ON ROUTE STATUS
+// ---------------------------------------------------------
 const updateBookingonRoute = async (id, on_route, completed, arrived) => {
   const query = `
     UPDATE bookings
@@ -583,6 +633,9 @@ const updateBookingonRoute = async (id, on_route, completed, arrived) => {
   return pool.query(query, [on_route, completed, arrived, id]);
 };
 
+// ---------------------------------------------------------
+// UPDATE BOOKING FARES
+// ---------------------------------------------------------
 const updateBookingFares = async (
   id,
   fares,
@@ -606,7 +659,9 @@ const updateBookingFares = async (
   ]);
 };
 
-// GET BOOKINGS BY ID
+// ---------------------------------------------------------
+// GET BOOKINGS BY DRIVER ID
+// ---------------------------------------------------------
 const getBookingByDriverId = async (driver_id, lastdays) => {
   let whereClause = `WHERE b.driver_id = $1 AND b.booking_status_id = 11`;
   const values = [driver_id];
@@ -629,6 +684,9 @@ const getBookingByDriverId = async (driver_id, lastdays) => {
   return res.rows;
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY DRIVER COMMISSION
+// ---------------------------------------------------------
 const getBookingByDriverCommission = async (
   driver_id,
   payment_type_ids,
@@ -655,7 +713,9 @@ const getBookingByDriverCommission = async (
   return res.rows;
 };
 
-// Total bookings
+// ---------------------------------------------------------
+// GET TOTAL BOOKING BY CUSTOMER ID
+// ---------------------------------------------------------
 const getTotalBookingsByCustomer = async (customerId) => {
   const query = `
     SELECT COUNT(*) 
@@ -666,7 +726,9 @@ const getTotalBookingsByCustomer = async (customerId) => {
   return Number(rows[0].count);
 };
 
-// Cancelled bookings
+// ---------------------------------------------------------
+// GET CANCELLED BOOKING BY CUSTOMER ID
+// ---------------------------------------------------------
 const getCancelledBookingsByCustomer = async (customerId) => {
   const query = `
     SELECT COUNT(*) 
@@ -678,7 +740,9 @@ const getCancelledBookingsByCustomer = async (customerId) => {
   return Number(rows[0].count);
 };
 
-// Total completed ride amount
+// ---------------------------------------------------------
+// GET TOTAL AMOUNT BY CUSTOMER ID
+// ---------------------------------------------------------
 const getTotalAmountByCustomer = async (customerId) => {
   const query = `
     SELECT COALESCE(SUM(fares), 0) as total
@@ -690,6 +754,9 @@ const getTotalAmountByCustomer = async (customerId) => {
   return Number(rows[0].total);
 };
 
+// ---------------------------------------------------------
+// GET BOOKING STATUS BY ID
+// ---------------------------------------------------------
 const getBookingStatusById = async (bookingId) => {
   const query = `
     SELECT booking_status_id 
@@ -702,6 +769,9 @@ const getBookingStatusById = async (bookingId) => {
 };
 
 // GET BOOKINGS BY ID
+// ---------------------------------------------------------
+// CREATE BOOKING MODEL
+// ---------------------------------------------------------
 const getBookingByDriverIdAndStatus = async (driver_id, booking_status_id) => {
   const whereClause = `
     WHERE b.driver_id = $1 
@@ -722,6 +792,9 @@ const getBookingByDriverIdAndStatus = async (driver_id, booking_status_id) => {
   return res.rows;
 };
 
+// ---------------------------------------------------------
+// CREATE BOOKING MODEL
+// ---------------------------------------------------------
 const hasActiveBookingToday = async (driverId) => {
   const query = `
     SELECT id
@@ -747,6 +820,9 @@ const hasActiveBookingToday = async (driverId) => {
   };
 };
 
+// ---------------------------------------------------------
+// CREATE BOOKING MODEL
+// ---------------------------------------------------------
 const getDriverCurrentJob = async (driverId) => {
   const query = `
     ${ENRICHED_SELECT}
@@ -762,6 +838,9 @@ const getDriverCurrentJob = async (driverId) => {
   return result.rows[0] || null;
 };
 
+// ---------------------------------------------------------
+// CREATE BOOKING MODEL
+// ---------------------------------------------------------
 const updateBookingFareCharges = async (
   id,
   fares,
@@ -789,6 +868,9 @@ const updateBookingFareCharges = async (
   ]);
 };
 
+// ---------------------------------------------------------
+// CREATE BOOKING MODEL
+// ---------------------------------------------------------
 const getDriverTotalEarning = async (driver_id) => {
   const query = `
     SELECT 
@@ -803,6 +885,9 @@ const getDriverTotalEarning = async (driver_id) => {
   return rows[0];
 };
 
+// ---------------------------------------------------------
+// CREATE BOOKING MODEL
+// ---------------------------------------------------------
 const getBookingByDriverRent = async (
   driver_id,
   payment_type_ids,
@@ -830,6 +915,9 @@ const getBookingByDriverRent = async (
   return res.rows;
 };
 
+// ---------------------------------------------------------
+// CREATE BOOKING MODEL
+// ---------------------------------------------------------
 const getBookingByCustomerId = async (customer_id) => {
   let whereClause = `WHERE b.customer_id = $1 AND b.booking_status_id = 11 AND trash = false`;
   const values = [customer_id];
@@ -846,6 +934,9 @@ const getBookingByCustomerId = async (customer_id) => {
   return res.rows;
 };
 
+// ---------------------------------------------------------
+// GET BOOKING CUSTOMER MOBILE
+// ---------------------------------------------------------
 const getBookingByCustomerMobile = async (mobile, name) => {
   let whereClause = `WHERE (b.mobile = $1 OR b.name = $2) AND trash = false`;
   const values = [mobile, name];
@@ -862,6 +953,9 @@ const getBookingByCustomerMobile = async (mobile, name) => {
   return res.rows;
 };
 
+// ---------------------------------------------------------
+// GET SCHEDULE BOOKING BY CUSTOMER ID
+// ---------------------------------------------------------
 const getScheduleBookingByCustomerId = async (customer_id) => {
   let whereClause = `
     WHERE b.customer_id = $1 
@@ -884,6 +978,9 @@ const getScheduleBookingByCustomerId = async (customer_id) => {
   return res.rows;
 };
 
+// ---------------------------------------------------------
+// CHECK DRIVER FOLLOW ON BOOKING
+// ---------------------------------------------------------
 const checkDriverFobBooking = async (driver_id) => {
   const sql = `
     ${ENRICHED_SELECT}
@@ -900,6 +997,9 @@ const checkDriverFobBooking = async (driver_id) => {
   return res.rows[0]; // 👈 only one booking
 };
 
+// ---------------------------------------------------------
+// GET FOLLOW ON BOOKING HISTORY BY DRIVER ID
+// ---------------------------------------------------------
 const getFOBBookingHIstoryByDriverId = async (driver_id) => {
   const whereClause = `
     WHERE b.driver_id = $1 
@@ -920,6 +1020,9 @@ const getFOBBookingHIstoryByDriverId = async (driver_id) => {
   return res.rows;
 };
 
+// ---------------------------------------------------------
+// COMPLETE BOOKING BY CONTROLLER
+// ---------------------------------------------------------
 const completeBoookingByController = async (id, driver_id) => {
   const query = `
     UPDATE bookings
@@ -929,6 +1032,9 @@ const completeBoookingByController = async (id, driver_id) => {
   return pool.query(query, [driver_id, id]);
 };
 
+// ---------------------------------------------------------
+// UPDATE DASHBOARD BOOKING FARES
+// ---------------------------------------------------------
 const updateDashboardBookingFares = async (id, total_charges) => {
   const query = `
     UPDATE bookings
@@ -938,6 +1044,9 @@ const updateDashboardBookingFares = async (id, total_charges) => {
   return pool.query(query, [total_charges, id]);
 };
 
+// ---------------------------------------------------------
+// RECOVER DASHBOARD BOOKING
+// ---------------------------------------------------------
 const recoverDashboardBooking = async (id) => {
   const query = `
     UPDATE bookings
@@ -948,6 +1057,9 @@ const recoverDashboardBooking = async (id) => {
   return pool.query(query, [id]);
 };
 
+// ---------------------------------------------------------
+// GET COMPLETE BOOKING LOGS BY DRIVER ID
+// ---------------------------------------------------------
 const getCompletedBookingLogsByDriverId = async (driver_id, filters = {}) => {
   const {
     from_date,
@@ -1068,6 +1180,9 @@ const getCompletedBookingLogsByDriverId = async (driver_id, filters = {}) => {
   return res.rows;
 };
 
+// ---------------------------------------------------------
+// GET DRIVER BOOKING AND EARNING STATISTICS
+// ---------------------------------------------------------
 const getDriverEarningsStatistics = async (filters = {}) => {
   const {
     from_date,
@@ -1234,6 +1349,9 @@ const getDriverEarningsStatistics = async (filters = {}) => {
   };
 };
 
+// ---------------------------------------------------------
+// GET BOOKING STATISTICS DATA
+// ---------------------------------------------------------
 const getBookingStatisticsData = async ({
   page = 1,
   limit = 20,
@@ -1440,8 +1558,7 @@ const getBookingStatisticsData = async ({
   // =========================
 
   const sortDirection =
-    filters.sort_order &&
-    filters.sort_order.toUpperCase() === "DESC"
+    filters.sort_order && filters.sort_order.toUpperCase() === "DESC"
       ? "DESC"
       : "ASC";
 
@@ -1467,14 +1584,10 @@ const getBookingStatisticsData = async ({
     rows: result.rows,
     total,
     totals: {
-      total_bookings: Number(
-        totalsResult.rows[0].total_bookings || 0
-      ),
-      total_earnings: Number(
-        totalsResult.rows[0].total_earnings || 0
-      ),
+      total_bookings: Number(totalsResult.rows[0].total_bookings || 0),
+      total_earnings: Number(totalsResult.rows[0].total_earnings || 0),
       total_account_earnings: Number(
-        totalsResult.rows[0].total_account_earnings || 0
+        totalsResult.rows[0].total_account_earnings || 0,
       ),
     },
   };
@@ -1525,5 +1638,5 @@ module.exports = {
   recoverDashboardBooking,
   getCompletedBookingLogsByDriverId,
   getDriverEarningsStatistics,
-  getBookingStatisticsData
+  getBookingStatisticsData,
 };
