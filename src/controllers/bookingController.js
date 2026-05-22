@@ -1719,7 +1719,9 @@ exports.getBookingStatistics = async (req, res) => {
       pickup,
       dropoff,
 
-      sort_order = "ASC",
+      sort_by = "datetime",
+  sort_order = "ASC",
+
     } = req.query;
 
     const result = await getBookingStatisticsData({
@@ -1752,7 +1754,9 @@ exports.getBookingStatistics = async (req, res) => {
         pickup,
         dropoff,
 
-        sort_order,
+        sort_by,
+  sort_order,
+
       },
     });
 

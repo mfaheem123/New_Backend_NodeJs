@@ -202,9 +202,7 @@ const calculateSingleFare = async (payload) => {
       let extraMiles = miles - minMiles;
       if (extraMiles < 0) extraMiles = 0;
 
-      baseFare = 0 + extraMiles * 2;
-      // baseFare = minFare + extraMiles * 2;
-
+      baseFare = minFare + extraMiles * 2;
       fareType = rule.from_date ? "SPECIAL" : "NORMAL";
     }
   }
@@ -268,6 +266,81 @@ const calculateSingleFare = async (payload) => {
 
 /* ---------------- CONTROLLER ---------------- */
 
+// exports.calculateFare = async (req, res) => {
+//   try {
+//     let { multi_reservation } = req.body;
+
+//     console.log(
+//       "🚀 INCOMING FARE CALCULATION BODY:",
+//       JSON.stringify(req.body, null, 2)
+//     );
+
+//     if (typeof multi_reservation === "string") {
+//       multi_reservation = JSON.parse(multi_reservation);
+//     }
+
+//     /* -------- MULTI -------- */
+//     if (Array.isArray(multi_reservation)) {
+//       const reservations = [];
+//       let grand_total = 0;
+
+//       for (const r of multi_reservation) {
+//         if (r.exclude) {
+//           reservations.push({
+//             pickup_date: r.pickup_date,
+//             pickup_time: r.pickup_time,
+//             exclude: true,
+//             total_fare: 0,
+//           });
+//           continue;
+//         }
+
+//         const fare = await calculateSingleFare({
+//           ...req.body,
+//           pickup_date: r.pickup_date,
+//           pickup_time: r.pickup_time,
+//           day: r.day,
+//         });
+
+//         reservations.push({
+//           pickup_date: r.pickup_date,
+//           pickup_time: r.pickup_time,
+//           exclude: false,
+//           ...fare,
+//         });
+
+//         grand_total += fare.total_fare;
+//       }
+
+//       return res.status(200).json({
+//         status: true,
+//         message: "Multi reservation fares calculated",
+//         data: {
+//           total_reservations: reservations.length,
+//           total_fare: Number(grand_total.toFixed(2)),
+//           multi_reservation: reservations,
+//         },
+//       });
+//     }
+
+//     /* -------- SINGLE -------- */
+//     const fare = await calculateSingleFare(req.body);
+
+//     return res.status(200).json({
+//       status: true,
+//       message: "Fare calculated successfully",
+//       data: fare,
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({
+//       status: false,
+//       message: "Internal server error",
+//     });
+//   }
+// };
+
+// RETUR FARE ADDED
 exports.calculateFare = async (req, res) => {
   try {
     let { multi_reservation, journey_type_id } = req.body;
@@ -302,9 +375,10 @@ exports.calculateFare = async (req, res) => {
         dropoff: req.body.return_dropoff,
         pickup_plot_id: req.body.return_pickup_plot_id,
         dropoff_plot_id: req.body.return_dropoff_plot_id,
-        pickup_date: req.body.return_pickup_date,
-        pickup_time: req.body.return_pickup_time,
-        vehicle_type_id: req.body.return_vehicle_type_id,
+        pickup_date: req.body.return_pickup_date || req.body.pickup_date,
+        pickup_time: req.body.return_pickup_time || req.body.pickup_time,
+        // vehicle_type_id: req.body.return_vehicle_type_id,
+        vehicle_type_id: req.body.return_vehicle_type_id || req.body.vehicle_type_id,
         journey_type_id: 1,
 
         // outbound extra charges

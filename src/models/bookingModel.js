@@ -37,7 +37,7 @@ const updateBooking = async (id, updates) => {
 };
 
 // ---------------------------------------------------------
-// BOOKING RESPONSE JSON 
+// BOOKING RESPONSE JSON
 // ---------------------------------------------------------
 const ENRICHED_SELECT = `
   SELECT 
@@ -316,7 +316,6 @@ const getAllBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-
 // ---------------------------------------------------------
 // GET PRE BOOKINGS (DATE > TODAY)
 // ---------------------------------------------------------
@@ -329,7 +328,6 @@ const getPreBookings = async () => {
   return (await pool.query(sql)).rows;
 };
 
-
 // ---------------------------------------------------------
 // GET RECENT BOOKINGS (NOT COMPLETED)
 // ---------------------------------------------------------
@@ -341,7 +339,6 @@ const getRecentBookings = async () => {
   `;
   return (await pool.query(sql)).rows;
 };
-
 
 // ---------------------------------------------------------
 // GET COMPLETED BOOKINGS
@@ -768,9 +765,8 @@ const getBookingStatusById = async (bookingId) => {
   return result.rows[0];
 };
 
-// GET BOOKINGS BY ID
 // ---------------------------------------------------------
-// CREATE BOOKING MODEL
+// GET BOOKINGS BY DRIVER ID AND STATUS
 // ---------------------------------------------------------
 const getBookingByDriverIdAndStatus = async (driver_id, booking_status_id) => {
   const whereClause = `
@@ -793,7 +789,7 @@ const getBookingByDriverIdAndStatus = async (driver_id, booking_status_id) => {
 };
 
 // ---------------------------------------------------------
-// CREATE BOOKING MODEL
+// CHECK ACTIVE BOOKING TODAY
 // ---------------------------------------------------------
 const hasActiveBookingToday = async (driverId) => {
   const query = `
@@ -821,7 +817,7 @@ const hasActiveBookingToday = async (driverId) => {
 };
 
 // ---------------------------------------------------------
-// CREATE BOOKING MODEL
+// GET DRIVER CURRENT BOOKING
 // ---------------------------------------------------------
 const getDriverCurrentJob = async (driverId) => {
   const query = `
@@ -839,7 +835,7 @@ const getDriverCurrentJob = async (driverId) => {
 };
 
 // ---------------------------------------------------------
-// CREATE BOOKING MODEL
+// UPDATE BOOKING FARE CHARGES
 // ---------------------------------------------------------
 const updateBookingFareCharges = async (
   id,
@@ -869,7 +865,7 @@ const updateBookingFareCharges = async (
 };
 
 // ---------------------------------------------------------
-// CREATE BOOKING MODEL
+// GET DRIVER TOTAL EARNING
 // ---------------------------------------------------------
 const getDriverTotalEarning = async (driver_id) => {
   const query = `
@@ -886,7 +882,7 @@ const getDriverTotalEarning = async (driver_id) => {
 };
 
 // ---------------------------------------------------------
-// CREATE BOOKING MODEL
+// GET BOOKING BY DRIVER RENT
 // ---------------------------------------------------------
 const getBookingByDriverRent = async (
   driver_id,
@@ -916,7 +912,7 @@ const getBookingByDriverRent = async (
 };
 
 // ---------------------------------------------------------
-// CREATE BOOKING MODEL
+// GET BOOKING BY CUSTOMER ID
 // ---------------------------------------------------------
 const getBookingByCustomerId = async (customer_id) => {
   let whereClause = `WHERE b.customer_id = $1 AND b.booking_status_id = 11 AND trash = false`;
@@ -1553,28 +1549,91 @@ const getBookingStatisticsData = async ({
 
   const totalsResult = await pool.query(totalsSql, params);
 
-  // =========================
-  // SORTING
-  // =========================
+ // =========================
+// SORTING
+// =========================
 
-  const sortDirection =
-    filters.sort_order && filters.sort_order.toUpperCase() === "DESC"
-      ? "DESC"
-      : "ASC";
+const sortDirection =
+  filters.sort_order?.toUpperCase() === "DESC"
+    ? "DESC"
+    : "ASC";
 
-  // =========================
-  // DATA QUERY
-  // =========================
+let orderColumn;
 
-  const dataSql = `
-    ${ENRICHED_SELECT}
-    ${whereClause}
-    ORDER BY
-      (b.pickup_date::date + TRIM(b.pickup_time)::time)
-      ${sortDirection}
-    OFFSET $${idx++}
-    LIMIT $${idx++}
-  `;
+switch (filters.sort_by) {
+  case "reference_number":
+    orderColumn = "b.reference_number";
+    break;
+
+  case "datetime":
+    orderColumn =
+      "(b.pickup_date::date + TRIM(b.pickup_time)::time)";
+    break;
+
+  case "customer":
+    orderColumn = "b.name";
+    break;
+
+  case "mobile":
+    orderColumn = "b.mobile";
+    break;
+
+  case "telephone":
+    orderColumn = "b.telephone";
+    break;
+
+  case "pickup":
+    orderColumn = "b.pickup";
+    break;
+
+  case "dropoff":
+    orderColumn = "b.dropoff";
+    break;
+
+  case "fare":
+    orderColumn = "b.fares";
+    break;
+
+  case "account":
+    orderColumn = "a.name";
+    break;
+
+  case "order_number":
+    orderColumn = "b.order_number";
+    break;
+
+  case "payment_type":
+    orderColumn = "pt.name";
+    break;
+
+  case "driver":
+    orderColumn = "d.name";
+    break;
+
+  case "vehicle_type":
+    orderColumn = "vt.name";
+    break;
+
+  case "status":
+    orderColumn = "bs.booking_status";
+    break;
+
+  default:
+    orderColumn =
+      "(b.pickup_date::date + TRIM(b.pickup_time)::time)";
+}
+
+// =========================
+// DATA QUERY
+// =========================
+
+const dataSql = `
+  ${ENRICHED_SELECT}
+  ${whereClause}
+  ORDER BY ${orderColumn} ${sortDirection}
+  OFFSET $${idx++}
+  LIMIT $${idx++}
+`;
 
   const dataParams = [...params, offset, limit];
 
