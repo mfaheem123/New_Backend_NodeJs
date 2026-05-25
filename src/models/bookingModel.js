@@ -1549,85 +1549,81 @@ const getBookingStatisticsData = async ({
 
   const totalsResult = await pool.query(totalsSql, params);
 
- // =========================
-// SORTING
-// =========================
+  // =========================
+  // SORTING
+  // =========================
 
-const sortDirection =
-  filters.sort_order?.toUpperCase() === "DESC"
-    ? "DESC"
-    : "ASC";
+  const sortDirection =
+    filters.sort_order?.toUpperCase() === "DESC" ? "DESC" : "ASC";
 
-let orderColumn;
+  let orderColumn;
 
-switch (filters.sort_by) {
-  case "reference_number":
-    orderColumn = "b.reference_number";
-    break;
+  switch (filters.sort_by) {
+    case "reference_number":
+      orderColumn = "b.reference_number";
+      break;
 
-  case "datetime":
-    orderColumn =
-      "(b.pickup_date::date + TRIM(b.pickup_time)::time)";
-    break;
+    case "datetime":
+      orderColumn = "(b.pickup_date::date + TRIM(b.pickup_time)::time)";
+      break;
 
-  case "customer":
-    orderColumn = "b.name";
-    break;
+    case "customer":
+      orderColumn = "b.name";
+      break;
 
-  case "mobile":
-    orderColumn = "b.mobile";
-    break;
+    case "mobile":
+      orderColumn = "b.mobile";
+      break;
 
-  case "telephone":
-    orderColumn = "b.telephone";
-    break;
+    case "telephone":
+      orderColumn = "b.telephone";
+      break;
 
-  case "pickup":
-    orderColumn = "b.pickup";
-    break;
+    case "pickup":
+      orderColumn = "b.pickup";
+      break;
 
-  case "dropoff":
-    orderColumn = "b.dropoff";
-    break;
+    case "dropoff":
+      orderColumn = "b.dropoff";
+      break;
 
-  case "fare":
-    orderColumn = "b.fares";
-    break;
+    case "fare":
+      orderColumn = "b.fares";
+      break;
 
-  case "account":
-    orderColumn = "a.name";
-    break;
+    case "account":
+      orderColumn = "a.name";
+      break;
 
-  case "order_number":
-    orderColumn = "b.order_number";
-    break;
+    case "order_number":
+      orderColumn = "b.order_number";
+      break;
 
-  case "payment_type":
-    orderColumn = "pt.name";
-    break;
+    case "payment_type":
+      orderColumn = "pt.name";
+      break;
 
-  case "driver":
-    orderColumn = "d.name";
-    break;
+    case "driver":
+      orderColumn = "d.name";
+      break;
 
-  case "vehicle_type":
-    orderColumn = "vt.name";
-    break;
+    case "vehicle_type":
+      orderColumn = "vt.name";
+      break;
 
-  case "status":
-    orderColumn = "bs.booking_status";
-    break;
+    case "status":
+      orderColumn = "bs.booking_status";
+      break;
 
-  default:
-    orderColumn =
-      "(b.pickup_date::date + TRIM(b.pickup_time)::time)";
-}
+    default:
+      orderColumn = "(b.pickup_date::date + TRIM(b.pickup_time)::time)";
+  }
 
-// =========================
-// DATA QUERY
-// =========================
+  // =========================
+  // DATA QUERY
+  // =========================
 
-const dataSql = `
+  const dataSql = `
   ${ENRICHED_SELECT}
   ${whereClause}
   ORDER BY ${orderColumn} ${sortDirection}
