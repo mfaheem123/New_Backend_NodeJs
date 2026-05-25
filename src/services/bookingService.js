@@ -9,7 +9,6 @@ const {
 const {
   sendBookingNotification,
   sendFOBBookingNotification,
-  sendFutureBookingNotification,
 } = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
@@ -277,7 +276,6 @@ async function createBookingRow(pool, bookingObj) {
     "invoice_number",
     "initial_subsidiary_id",
     "eta",
-    "company_id",
   ];
 
   // 🔥 FIX: Properly DEFINE row before using it
@@ -336,13 +334,14 @@ async function createSimpleBooking(payload) {
     if (payload.driver_id) {
       const driverFeatures = await driverAppFeatureModel.getByDriverId(
         payload.driver_id,
+        1
       );
 
       if (driverFeatures) {
         payload.fare_meter = !!driverFeatures.fare_meter;
       } else {
-        // Agar record hi nahi mila to default false rakh do
-        payload.fare_meter = false;
+        // Agar record hi nahi mila to default true rakh do
+        payload.fare_meter = true;
       }
     }
     const normalized = await normalizeBookingPayload(payload);
@@ -353,8 +352,6 @@ async function createSimpleBooking(payload) {
 
     const enriched = await getBookingByIdEnriched(inserted.id);
     const clean = parseJSONFields(enriched);
-
-    await pool.query("COMMIT");
 
     console.log("BOOKING DATA FOR SENDING SMS: ", clean);
     //  SEND SMS
@@ -367,6 +364,8 @@ async function createSimpleBooking(payload) {
       //   dispatched_at: new Date(),
       // });
     }
+
+    await pool.query("COMMIT");
 
     // return { booking: [inserted] };
     return { bookings: [clean] };
@@ -539,12 +538,11 @@ async function createReturnWayBooking(payload) {
     );
 
     await pool.query("COMMIT");
-
     // OUTBOUND SMS
-    await sendBookingSMS(outboundEnriched);
+await sendBookingSMS(outboundEnriched);
 
-    // RETURN SMS
-    await sendBookingSMS(returnEnriched);
+// RETURN SMS
+await sendBookingSMS(returnEnriched);
 
     return {
       bookings: [outboundEnriched],
@@ -1343,20 +1341,20 @@ async function cloneOneWayBookingService(payload) {
 async function assignDriverService(bookingId, driverId) {
   let fare_meter = false;
   if (driverId) {
-    const driverFeatures = await driverAppFeatureModel.getByDriverId(driverId);
-
+    const driverFeatures = await driverAppFeatureModel.getByDriverId(driverId,1);
+console.log("DRIVER FEATURES:", driverFeatures);
     if (driverFeatures) {
       fare_meter = !!driverFeatures.fare_meter;
     }
   }
-
+console.log("FARE METER:", fare_meter);
   // 1️ Update booking with driver
   const updated = await updateBooking(bookingId, {
     driver_id: driverId,
     booking_status_id: 1,
-    // fare_meter: fare_meter,
-    fare_meter: true,
-    // dispatched_at: new Date(),
+    fare_meter: fare_meter,
+    // fare_meter: true,
+    dispatched_at: new Date(),
   });
 
   if (!updated) return null;
@@ -1367,7 +1365,7 @@ async function assignDriverService(bookingId, driverId) {
   console.log("ENRICHED BOOKING DATA", enriched);
 
   // 3️ Send notification to driver
-  await sendBookingNotification(driverId, enriched);
+  // await sendBookingNotification(driverId, enriched);
   // -------------------------------
   // 📩 DISPATCH SMS (TEMPLATE 3)
   // -------------------------------
@@ -1406,7 +1404,7 @@ async function assignDriverService(bookingId, driverId) {
 async function assignFOBDriverService(bookingId, driverId) {
   let fare_meter = false;
   if (driverId) {
-    const driverFeatures = await driverAppFeatureModel.getByDriverId(driverId);
+    const driverFeatures = await driverAppFeatureModel.getByDriverId(driverId,1);
 
     if (driverFeatures) {
       fare_meter = !!driverFeatures.fare_meter;
@@ -1467,72 +1465,6 @@ async function assignFOBDriverService(bookingId, driverId) {
   return enriched;
 }
 
-async function assignFutureBookingDriverService(bookingId, driverId) {
-  let fare_meter = false;
-  if (driverId) {
-    const driverFeatures = await driverAppFeatureModel.getByDriverId(driverId);
-
-    if (driverFeatures) {
-      fare_meter = !!driverFeatures.fare_meter;
-    }
-  }
-
-  console.log("DRIVER FARE METER STATUS: ", fare_meter);
-  // 1️ Update booking with driver
-  const updated = await updateBooking(bookingId, {
-    driver_id: driverId,
-    booking_status_id: 13,
-    // fare_meter: fare_meter,
-    fare_meter: true,
-    fob: true,
-    dispatched_at: new Date(),
-  });
-
-  if (!updated) return null;
-
-  // 2️ Get enriched booking
-  const enriched = await getBookingByIdEnriched(bookingId);
-
-  console.log("ENRICHED BOOKING DATA", enriched);
-
-  // 3️ Send notification to driver
-  await sendFutureBookingNotification(driverId, enriched);
-
-  // -------------------------------
-  // 📩 DISPATCH SMS (TEMPLATE 3)
-  // -------------------------------
-  // try {
-  //   if (enriched?.mobile && enriched?.driver_id) {
-  //     const totalFare = enriched?.total_charges ?? "0.00";
-
-  //     const template3Data = {
-  //       company_name: enriched?.subsidiary?.name ?? "",
-  //       company_telephone: enriched?.subsidiary?.telephone_number ?? "",
-  //       company_email: enriched?.subsidiary?.email ?? "",
-  //       vehicle_type: enriched?.vehicle_type?.name ?? "",
-  //       vehicle_color: enriched?.driver?.vehicle?.color ?? "",
-  //       vehicle_make: enriched?.driver?.vehicle?.make ?? "",
-  //       vehicle_model: enriched?.driver?.vehicle?.model ?? "",
-  //       vehicle_number: enriched?.driver?.vehicle?.vehicle_number ?? "",
-  //       driver_name: enriched?.driver?.name ?? "",
-  //       fares: totalFare,
-  //     };
-
-  //     console.log("📩 Sending DISPATCH SMS...");
-
-  //     await sendSMSWithTemplate({
-  //       template_id: 3,
-  //       mobile: enriched.mobile,
-  //       port: 5,
-  //       data: template3Data,
-  //     });
-  //   }
-  // } catch (err) {
-  //   console.error("❌ Dispatch SMS Error:", err);
-  // }
-  return enriched;
-}
-
 // EXPORTS
 module.exports = {
   create,
@@ -1542,5 +1474,4 @@ module.exports = {
   assignDriverService,
   assignFOBDriverService,
   cloneOneWayBookingService,
-  assignFutureBookingDriverService,
 };

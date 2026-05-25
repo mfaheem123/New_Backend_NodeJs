@@ -50,6 +50,7 @@ const {
   sendRecoverBookingNotification,
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
+
 function parseJSONFields(row) {
   if (!row) return row;
 
@@ -1117,7 +1118,7 @@ exports.assignDriverToBooking = async (req, res) => {
         message: "Driver is already busy",
       });
     }
-
+console.log("BOOKING DATA BEFORE ASSIGN DRIVER:", booking.rows[0]);
     // Call service
     const updatedBooking = await bookingService.assignDriverService(
       booking_id,
