@@ -38,7 +38,8 @@ const {
   getCompletedBookingLogsByDriverId,
   getDriverEarningsStatistics,
   getBookingStatisticsData,
-  getBookingStatisticsGraphData
+  getBookingStatisticsGraphData,
+  getIncomeReportData
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1783,7 +1784,6 @@ exports.getBookingStatistics = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
 // GET BOOKING STATISTICS GRAPH DATA
 // ---------------------------------------------------------
@@ -1808,6 +1808,47 @@ exports.getBookingStatisticsGraph = async (req, res) => {
     res.json({
       success: true,
       data: result,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET INCOME REPORT DATA
+// ---------------------------------------------------------
+exports.getIncomeReport = async (req, res) => {
+  try {
+    const {
+      from_date,
+      to_date,
+
+      driver_id,
+      account_id,
+      subsidiary_id,
+
+      payment_type_id, // 1,2,3
+    } = req.query;
+
+    const result = await getIncomeReportData({
+      from_date,
+      to_date,
+      driver_id,
+      account_id,
+      subsidiary_id,
+      payment_type_id,
+    });
+
+    res.json({
+      success: true,
+      total_bookings: result.total_bookings,
+      total_earnings: result.total_earnings,
+      bookings: result.rows,
     });
   } catch (error) {
     console.log(error);

@@ -1759,6 +1759,186 @@ const getBookingStatisticsGraphData = async (filters = {}) => {
   return Object.values(formatted);
 };
 
+// ---------------------------------------------------------
+// GET INCOME REPORT DATA
+// ---------------------------------------------------------
+const getIncomeReportData = async ({
+  from_date,
+  to_date,
+  driver_id,
+  account_id,
+  subsidiary_id,
+  payment_type_id,
+}) => {
+  const conditions = [
+    "b.trash = false",
+    "b.booking_status_id = 11", // completed only
+  ];
+
+  const params = [];
+
+  let idx = 1;
+
+  // =========================
+  // DATE FILTER
+  // =========================
+
+  if (from_date) {
+    conditions.push(`b.pickup_date >= $${idx++}`);
+    params.push(from_date);
+  }
+
+  if (to_date) {
+    conditions.push(`b.pickup_date <= $${idx++}`);
+    params.push(to_date);
+  }
+
+  // =========================
+  // DRIVER
+  // =========================
+
+  if (driver_id) {
+    conditions.push(`b.driver_id = $${idx++}`);
+    params.push(driver_id);
+  }
+
+  // =========================
+  // ACCOUNT
+  // =========================
+
+  if (account_id) {
+    conditions.push(`b.account_id = $${idx++}`);
+    params.push(account_id);
+  }
+
+  // =========================
+  // SUBSIDIARY
+  // =========================
+
+  if (subsidiary_id) {
+    conditions.push(`b.subsidiary_id = $${idx++}`);
+    params.push(subsidiary_id);
+  }
+
+  // =========================
+  // PAYMENT TYPE
+  // =========================
+
+  // ALL => no payment_type_id
+  // CASH => 1
+  // CARD => 2
+  // ACCOUNT => 3
+
+  if (payment_type_id) {
+    conditions.push(`b.payment_type_id = $${idx++}`);
+    params.push(payment_type_id);
+  }
+
+  const whereClause = `
+    WHERE ${conditions.join(" AND ")}
+  `;
+
+  // =========================
+  // TOTALS
+  // =========================
+
+  const totalsSql = `
+    SELECT
+      COUNT(*) AS total_bookings,
+
+      ROUND(
+        COALESCE(
+          SUM(
+            COALESCE(b.fares, 0)
+            + COALESCE(b.parking_charges, 0)
+            + COALESCE(b.waiting_charges, 0)
+            + COALESCE(b.extra_drop_charges, 0)
+          ),
+          0
+        )::numeric,
+        2
+      ) AS total_earnings
+
+    FROM bookings b
+    ${whereClause}
+  `;
+
+  const totalsResult = await pool.query(totalsSql, params);
+
+  // =========================
+  // DATA
+  // =========================
+
+  const sql = `
+    SELECT
+      b.id,
+
+      UPPER(b.reference_number) AS reference_number,
+
+      b.pickup_date,
+      b.pickup_time,
+
+      b.pickup,
+      b.dropoff,
+
+      COALESCE(vt.name, '') AS vehicle,
+
+      d.username AS driver_number,
+      d.name AS driver_name,
+
+      a.name AS account,
+
+      COALESCE(b.fares, 0) AS fares,
+
+      COALESCE(b.parking_charges, 0) AS parking,
+
+      COALESCE(b.waiting_charges, 0) AS waiting,
+
+      COALESCE(b.extra_drop_charges, 0) AS extra_drop,
+
+      ROUND(
+        (
+          COALESCE(b.fares, 0)
+          + COALESCE(b.parking_charges, 0)
+          + COALESCE(b.waiting_charges, 0)
+          + COALESCE(b.extra_drop_charges, 0)
+        )::numeric,
+        2
+      ) AS total
+
+    FROM bookings b
+
+    LEFT JOIN drivers d
+      ON d.id = b.driver_id
+
+    LEFT JOIN vehicle_types vt
+      ON vt.id = b.vehicle_type_id
+
+    LEFT JOIN accounts a
+      ON a.id = b.account_id
+
+    ${whereClause}
+
+    ORDER BY
+      b.pickup_date ASC,
+      TRIM(b.pickup_time)::time ASC
+  `;
+
+  const result = await pool.query(sql, params);
+
+  return {
+    rows: result.rows,
+
+    total_bookings: Number(
+      totalsResult.rows[0].total_bookings || 0
+    ),
+
+    total_earnings: Number(
+      totalsResult.rows[0].total_earnings || 0
+    ),
+  };
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -1805,5 +1985,6 @@ module.exports = {
   getCompletedBookingLogsByDriverId,
   getDriverEarningsStatistics,
   getBookingStatisticsData,
-  getBookingStatisticsGraphData
+  getBookingStatisticsGraphData,
+  getIncomeReportData
 };

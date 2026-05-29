@@ -8,6 +8,7 @@ const pool = require("../db");
 const path = require("path");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 const JWT_SECRET = process.env.JWT_SECRET || "NexusTaxiDispatchSystem";
+const ShiftHistory = require("../models/employeeShiftHistoryModel");
 
 // Helper for password hashing
 const hashPassword = async (plainPassword) => {
@@ -318,6 +319,14 @@ const login = async (req, res) => {
         .json({ status: false, message: "Invalid username or password" });
     }
 
+    // CHECK ACTIVE SHIFT
+const activeShift = await ShiftHistory.getActiveShift(employee.id);
+
+// AGAR PEHLE SE LOGIN HAI TO NAYA RECORD NA BANAO
+if (!activeShift) {
+  await ShiftHistory.createLoginHistory(employee.id);
+}
+
     // ✅ SAVE FCM TOKEN / WEB DEVICE ID
     if (web_device_id) {
       await pool.query(
@@ -408,6 +417,10 @@ const logout = async (req, res) => {
          WHERE id = $1`,
       [employee.id],
     );
+
+    // UPDATE LOGOUT TIME
+await ShiftHistory.updateLogoutHistory(employee.id);
+
     res.status(200).json({
       status: true,
       message: "Logout Successful",

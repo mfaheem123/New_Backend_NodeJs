@@ -1368,7 +1368,7 @@ async function assignDriverService(bookingId, driverId) {
   console.log("ENRICHED BOOKING DATA", enriched);
 
   // 3️ Send notification to driver
-  // await sendBookingNotification(driverId, enriched);
+  await sendBookingNotification(driverId, enriched);
   // -------------------------------
   // 📩 DISPATCH SMS (TEMPLATE 3)
   // -------------------------------

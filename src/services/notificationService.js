@@ -277,7 +277,7 @@ async function sendRecoverBookingNotification(driverId, booking) {
   const message = {
     token: fcmToken,
     notification: {
-      title: "Booking Recover From Dashboard",
+      title: "Booking Recover From Controller",
       // body: `Pickup: ${booking.pickup}`,
     },
     data: {
