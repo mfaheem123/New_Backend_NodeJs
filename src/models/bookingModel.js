@@ -1648,6 +1648,117 @@ const getBookingStatisticsData = async ({
   };
 };
 
+// ---------------------------------------------------------
+// GET BOOKING STATISTICS GRAPH DATA
+// ---------------------------------------------------------
+const getBookingStatisticsGraphData = async (filters = {}) => {
+  const conditions = ["b.trash = false"];
+  const params = [];
+
+  let idx = 1;
+
+  // =========================
+  // DATE FILTER
+  // =========================
+
+  if (filters.from_date) {
+    conditions.push(`b.pickup_date >= $${idx++}`);
+    params.push(filters.from_date);
+  }
+
+  if (filters.to_date) {
+    conditions.push(`b.pickup_date <= $${idx++}`);
+    params.push(filters.to_date);
+  }
+
+  // =========================
+  // BOOKING STATUS
+  // =========================
+
+  if (filters.booking_status_id) {
+    conditions.push(`b.booking_status_id = $${idx++}`);
+    params.push(filters.booking_status_id);
+  }
+
+  // =========================
+  // PAYMENT TYPE
+  // =========================
+
+  if (filters.payment_type_id) {
+    conditions.push(`b.payment_type_id = $${idx++}`);
+    params.push(filters.payment_type_id);
+  }
+
+  // =========================
+  // SUBSIDIARY
+  // =========================
+
+  if (filters.subsidiary_id) {
+    conditions.push(`b.subsidiary_id = $${idx++}`);
+    params.push(filters.subsidiary_id);
+  }
+
+  const whereClause = `
+    WHERE ${conditions.join(" AND ")}
+  `;
+
+  // =========================
+  // GRAPH QUERY
+  // =========================
+
+  const sql = `
+  SELECT
+    TO_CHAR(b.pickup_date::date, 'YYYY-MM-DD') AS date,
+
+    pt.name AS payment_type,
+
+    COUNT(b.id) AS total_bookings,
+
+    COALESCE(SUM(b.fares), 0) AS total_fares
+
+  FROM bookings b
+
+  LEFT JOIN payment_types pt
+    ON pt.id = b.payment_type_id
+
+  ${whereClause}
+
+  GROUP BY
+    b.pickup_date::date,
+    pt.name
+
+  ORDER BY
+    b.pickup_date::date ASC
+`;
+
+  const result = await pool.query(sql, params);
+
+  // =========================
+  // FORMAT RESPONSE
+  // =========================
+
+  const formatted = {};
+
+  for (const row of result.rows) {
+    const date = row.date;
+
+    if (!formatted[date]) {
+      formatted[date] = {
+        date,
+        payments: [],
+      };
+    }
+
+    formatted[date].payments.push({
+      payment_type: row.payment_type || "Unknown",
+      total_bookings: Number(row.total_bookings),
+      total_fares: Number(row.total_fares),
+    });
+  }
+
+  return Object.values(formatted);
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -1694,4 +1805,5 @@ module.exports = {
   getCompletedBookingLogsByDriverId,
   getDriverEarningsStatistics,
   getBookingStatisticsData,
+  getBookingStatisticsGraphData
 };

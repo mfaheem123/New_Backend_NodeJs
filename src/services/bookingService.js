@@ -334,7 +334,7 @@ async function createSimpleBooking(payload) {
     if (payload.driver_id) {
       const driverFeatures = await driverAppFeatureModel.getByDriverId(
         payload.driver_id,
-        1
+        1,
       );
 
       if (driverFeatures) {
@@ -539,10 +539,10 @@ async function createReturnWayBooking(payload) {
 
     await pool.query("COMMIT");
     // OUTBOUND SMS
-await sendBookingSMS(outboundEnriched);
+    await sendBookingSMS(outboundEnriched);
 
-// RETURN SMS
-await sendBookingSMS(returnEnriched);
+    // RETURN SMS
+    await sendBookingSMS(returnEnriched);
 
     return {
       bookings: [outboundEnriched],
@@ -1341,13 +1341,16 @@ async function cloneOneWayBookingService(payload) {
 async function assignDriverService(bookingId, driverId) {
   let fare_meter = false;
   if (driverId) {
-    const driverFeatures = await driverAppFeatureModel.getByDriverId(driverId,1);
-console.log("DRIVER FEATURES:", driverFeatures);
+    const driverFeatures = await driverAppFeatureModel.getByDriverId(
+      driverId,
+      1,
+    );
+    console.log("DRIVER FEATURES:", driverFeatures);
     if (driverFeatures) {
       fare_meter = !!driverFeatures.fare_meter;
     }
   }
-console.log("FARE METER:", fare_meter);
+  console.log("FARE METER:", fare_meter);
   // 1️ Update booking with driver
   const updated = await updateBooking(bookingId, {
     driver_id: driverId,
@@ -1404,7 +1407,10 @@ console.log("FARE METER:", fare_meter);
 async function assignFOBDriverService(bookingId, driverId) {
   let fare_meter = false;
   if (driverId) {
-    const driverFeatures = await driverAppFeatureModel.getByDriverId(driverId,1);
+    const driverFeatures = await driverAppFeatureModel.getByDriverId(
+      driverId,
+      1,
+    );
 
     if (driverFeatures) {
       fare_meter = !!driverFeatures.fare_meter;

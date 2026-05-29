@@ -16,6 +16,7 @@ router.get("/customer-bookings/:id", bookingController.getBookingByCustomerId);
 router.get("/customer-jobs", bookingController.getBookingByCustomerMobile);
 router.get("/driver-fob/:id", bookingController.getBookingByDriverIdAndFob);
 router.get("/driver-logs", bookingController.getCompletedBookingLogsByDriverId);
+router.get("/booking-statistics", bookingController.getBookingStatistics);
 
 router.get(
   "/fob-history/:id",
@@ -41,7 +42,11 @@ router.get(
   bookingController.getDriverEarningsStatistics,
 );
 
-router.get("/booking-statistics", bookingController.getBookingStatistics);
+router.get(
+  "/booking-statistics-graph",
+  bookingController.getBookingStatisticsGraph,
+);
+
 //POST APIS
 router.post("/add", bookingController.createBooking);
 router.post("/update/:id", bookingController.updateBooking);

@@ -38,6 +38,7 @@ const {
   getCompletedBookingLogsByDriverId,
   getDriverEarningsStatistics,
   getBookingStatisticsData,
+  getBookingStatisticsGraphData
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1118,7 +1119,7 @@ exports.assignDriverToBooking = async (req, res) => {
         message: "Driver is already busy",
       });
     }
-console.log("BOOKING DATA BEFORE ASSIGN DRIVER:", booking.rows[0]);
+    console.log("BOOKING DATA BEFORE ASSIGN DRIVER:", booking.rows[0]);
     // Call service
     const updatedBooking = await bookingService.assignDriverService(
       booking_id,
@@ -1775,6 +1776,42 @@ exports.getBookingStatistics = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// ---------------------------------------------------------
+// GET BOOKING STATISTICS GRAPH DATA
+// ---------------------------------------------------------
+exports.getBookingStatisticsGraph = async (req, res) => {
+  try {
+    const {
+      from_date,
+      to_date,
+      booking_status_id,
+      payment_type_id,
+      subsidiary_id,
+    } = req.query;
+
+    const result = await getBookingStatisticsGraphData({
+      from_date,
+      to_date,
+      booking_status_id,
+      payment_type_id,
+      subsidiary_id,
+    });
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
+
     res.status(500).json({
       success: false,
       message: error.message,
