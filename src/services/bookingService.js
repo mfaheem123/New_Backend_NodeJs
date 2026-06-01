@@ -9,6 +9,7 @@ const {
 const {
   sendBookingNotification,
   sendFOBBookingNotification,
+  sendAppBookingNotification
 } = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
@@ -357,7 +358,7 @@ async function createSimpleBooking(payload) {
     //  SEND SMS
     await sendBookingSMS(clean);
 
-    // SEND NOTIFICATION
+    // SEND NOTIFICATION TO DRIVER
     if (clean.driver_id) {
       await sendBookingNotification(clean.driver_id, clean);
       //     await updateBooking(clean.id, {
@@ -365,9 +366,12 @@ async function createSimpleBooking(payload) {
       // });
     }
 
+    // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
+if (clean.booking_source == "app") {
+      await sendAppBookingNotification(clean);
+    }    
     await pool.query("COMMIT");
 
-    // return { booking: [inserted] };
     return { bookings: [clean] };
   } catch (err) {
     await pool.query("ROLLBACK");

@@ -320,12 +320,12 @@ const login = async (req, res) => {
     }
 
     // CHECK ACTIVE SHIFT
-const activeShift = await ShiftHistory.getActiveShift(employee.id);
+    const activeShift = await ShiftHistory.getActiveShift(employee.id);
 
-// AGAR PEHLE SE LOGIN HAI TO NAYA RECORD NA BANAO
-if (!activeShift) {
-  await ShiftHistory.createLoginHistory(employee.id);
-}
+    // AGAR PEHLE SE LOGIN HAI TO NAYA RECORD NA BANAO
+    if (!activeShift) {
+      await ShiftHistory.createLoginHistory(employee.id);
+    }
 
     // ✅ SAVE FCM TOKEN / WEB DEVICE ID
     if (web_device_id) {
@@ -419,7 +419,7 @@ const logout = async (req, res) => {
     );
 
     // UPDATE LOGOUT TIME
-await ShiftHistory.updateLogoutHistory(employee.id);
+    await ShiftHistory.updateLogoutHistory(employee.id);
 
     res.status(200).json({
       status: true,

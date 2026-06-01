@@ -1,4 +1,4 @@
-const pool = require("../db"); 
+const pool = require("../db");
 
 const getEmployeeShiftHistory = async ({
   employee_id,
@@ -116,7 +116,7 @@ const updateLogoutHistory = async (employee_id) => {
 };
 
 module.exports = {
-getEmployeeShiftHistory,
+  getEmployeeShiftHistory,
   createLoginHistory,
   getActiveShift,
   updateLogoutHistory,

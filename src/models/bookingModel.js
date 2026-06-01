@@ -1883,7 +1883,7 @@ const getIncomeReportData = async ({
 
       COALESCE(vt.name, '') AS vehicle,
 
-      d.username AS driver_number,
+      d.username AS driver_username,
       d.name AS driver_name,
 
       a.name AS account,

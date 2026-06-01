@@ -314,10 +314,10 @@ async function sendAppBookingNotification(booking) {
         `${booking.pickup_date} ${booking.pickup_time}`,
       );
 
-      // Agar booking next 30 minutes ke andar hai => ASAP
+      // Agar booking next 10 minutes ke andar hai => ASAP
       const diffMinutes = (pickupDateTime - now) / (1000 * 60);
 
-      if (diffMinutes <= 30) {
+      if (diffMinutes <= 10) {
         bookingType = "ASAP";
       }
     } catch (err) {
@@ -359,16 +359,20 @@ async function sendAppBookingNotification(booking) {
         type: "NEW_APP_BOOKING",
         booking_mode: bookingType,
         booking_id: String(booking.id),
-        booking: JSON.stringify(booking),
+        booking_id: '1234',
+        // booking: JSON.stringify(booking),
       },
     };
 
     // ==============================
     // SEND
     // ==============================
-
+console.log("App Booking Notification Data:", message);
     const response = await admin.messaging().sendEachForMulticast(message);
-
+console.log(
+  "FCM RESPONSE:",
+  JSON.stringify(response, null, 2)
+);
     console.log(
       `✅ App booking notification sent: ${response.successCount} success`,
     );
