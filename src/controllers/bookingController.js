@@ -39,7 +39,7 @@ const {
   getDriverEarningsStatistics,
   getBookingStatisticsData,
   getBookingStatisticsGraphData,
-  getIncomeReportData
+  getIncomeReportData,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");

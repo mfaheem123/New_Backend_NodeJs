@@ -359,7 +359,7 @@ async function sendAppBookingNotification(booking) {
         type: "NEW_APP_BOOKING",
         booking_mode: bookingType,
         booking_id: String(booking.id),
-        booking_id: '1234',
+        booking_id: "1234",
         // booking: JSON.stringify(booking),
       },
     };
@@ -367,12 +367,9 @@ async function sendAppBookingNotification(booking) {
     // ==============================
     // SEND
     // ==============================
-console.log("App Booking Notification Data:", message);
+    console.log("App Booking Notification Data:", message);
     const response = await admin.messaging().sendEachForMulticast(message);
-console.log(
-  "FCM RESPONSE:",
-  JSON.stringify(response, null, 2)
-);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
     console.log(
       `✅ App booking notification sent: ${response.successCount} success`,
     );
@@ -413,6 +410,93 @@ async function sendFutureBookingNotification(driverId, booking) {
   // 3️⃣ Send
   await admin.messaging().send(message);
   console.log("✅ FOB Notification sent to driver:", driverId);
+}
+
+async function sendWebBookingNotification(booking) {
+  try {
+    // ✅ Sirf WEB bookings ke liye
+    if (
+      !booking.booking_source ||
+      booking.booking_source.toUpperCase() !== "WEB"
+    ) {
+      return;
+    }
+
+    // ==============================
+    // ASAP YA SCHEDULE CHECK
+    // ==============================
+
+    let bookingType = "SCHEDULE";
+
+    try {
+      const now = new Date();
+
+      const pickupDateTime = new Date(
+        `${booking.pickup_date} ${booking.pickup_time}`,
+      );
+
+      // Agar booking next 10 minutes ke andar hai => ASAP
+      const diffMinutes = (pickupDateTime - now) / (1000 * 60);
+
+      if (diffMinutes <= 10) {
+        bookingType = "ASAP";
+      }
+    } catch (err) {
+      console.log("❌ Error detecting booking type:", err);
+    }
+
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(`
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `);
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+    const message = {
+      tokens,
+
+      notification: {
+        title: `New ${bookingType} App Booking`,
+        body: `${booking.pickup} → ${booking.dropoff}`,
+      },
+
+      data: {
+        type: "NEW_APP_BOOKING",
+        booking_mode: bookingType,
+        booking_id: String(booking.id),
+        booking_id: "1234",
+        // booking: JSON.stringify(booking),
+      },
+    };
+
+    // ==============================
+    // SEND
+    // ==============================
+    console.log("App Booking Notification Data:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
+    console.log(
+      `✅ App booking notification sent: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendAppBookingNotification Error:", err);
+  }
 }
 
 module.exports = {

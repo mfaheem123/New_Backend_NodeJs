@@ -1929,13 +1929,9 @@ const getIncomeReportData = async ({
   return {
     rows: result.rows,
 
-    total_bookings: Number(
-      totalsResult.rows[0].total_bookings || 0
-    ),
+    total_bookings: Number(totalsResult.rows[0].total_bookings || 0),
 
-    total_earnings: Number(
-      totalsResult.rows[0].total_earnings || 0
-    ),
+    total_earnings: Number(totalsResult.rows[0].total_earnings || 0),
   };
 };
 
@@ -1986,5 +1982,5 @@ module.exports = {
   getDriverEarningsStatistics,
   getBookingStatisticsData,
   getBookingStatisticsGraphData,
-  getIncomeReportData
+  getIncomeReportData,
 };

@@ -47,10 +47,7 @@ router.get(
   bookingController.getBookingStatisticsGraph,
 );
 
-router.get(
-  "/income-report",
-  bookingController.getIncomeReport
-);
+router.get("/income-report", bookingController.getIncomeReport);
 
 //POST APIS
 router.post("/add", bookingController.createBooking);

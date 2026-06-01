@@ -9,7 +9,7 @@ const {
 const {
   sendBookingNotification,
   sendFOBBookingNotification,
-  sendAppBookingNotification
+  sendAppBookingNotification,
 } = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
@@ -367,9 +367,9 @@ async function createSimpleBooking(payload) {
     }
 
     // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
-if (clean.booking_source == "app") {
+    if (clean.booking_source == "app") {
       await sendAppBookingNotification(clean);
-    }    
+    }
     await pool.query("COMMIT");
 
     return { bookings: [clean] };
