@@ -1,6 +1,9 @@
 const admin = require("../config/firebase"); // firebase-admin init
 const pool = require("../db");
 
+// ---------------------------------------------------------
+// SEND BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
 async function sendBookingNotification(driverId, booking) {
   // 1️⃣ Driver ka FCM token lao
   const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
@@ -34,6 +37,9 @@ async function sendBookingNotification(driverId, booking) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+// ---------------------------------------------------------
+// SEND RIDE ACCEPTED NOTIFICATION TO CUSTOMER
+// ---------------------------------------------------------
 async function sendRideAcceptedNotification(customerId, booking) {
   // 1️⃣ Customer ka FCM token lao
   const res = await pool.query(
@@ -69,6 +75,9 @@ async function sendRideAcceptedNotification(customerId, booking) {
   console.log("✅ Notification sent to customer:", customerId);
 }
 
+// ---------------------------------------------------------
+// SEND FOLLOW ON BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
 async function sendFOBBookingNotification(driverId, booking) {
   // 1️⃣ Driver ka FCM token lao
   const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
@@ -103,6 +112,9 @@ async function sendFOBBookingNotification(driverId, booking) {
   console.log("✅ FOB Notification sent to driver:", driverId);
 }
 
+// ---------------------------------------------------------
+// SEND PANIC NOTIFICATION TO DASHBOARD
+// ---------------------------------------------------------
 async function sendPanicDriverNotification(driverId) {
   try {
     // 1️⃣ Sare controllers ke web_device_id lao
@@ -158,6 +170,9 @@ async function sendPanicDriverNotification(driverId) {
   }
 }
 
+// ---------------------------------------------------------
+// SEND ON BREAK NOTIFICATION TO DASHBOARD
+// ---------------------------------------------------------
 async function sendOnBreakDriverNotification(driverId) {
   try {
     // 1️⃣ Sare controllers ke web_device_id lao
@@ -214,6 +229,9 @@ async function sendOnBreakDriverNotification(driverId) {
   }
 }
 
+// ---------------------------------------------------------
+// SEND BREAK STATUS NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
 async function sendBreakStatusNotification(driverId, break_status) {
   // Driver Token
   const res = await pool.query(`SELECT * FROM drivers WHERE id = $1`, [
@@ -261,6 +279,9 @@ async function sendBreakStatusNotification(driverId, break_status) {
   console.log("✅ Break Status Notification sent to driver:", driverId);
 }
 
+// ---------------------------------------------------------
+// SEND RECOVER BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
 async function sendRecoverBookingNotification(driverId, booking) {
   // 1️⃣ Driver ka FCM token lao
   const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
@@ -358,7 +379,7 @@ async function sendAppBookingNotification(booking) {
       data: {
         type: "NEW_APP_BOOKING",
         booking_mode: bookingType,
-        booking_id: String(booking.id),
+        // booking_id: String(booking.id),
         booking_id: "1234",
         // booking: JSON.stringify(booking),
       },
@@ -472,30 +493,29 @@ async function sendWebBookingNotification(booking) {
       tokens,
 
       notification: {
-        title: `New ${bookingType} App Booking`,
+        title: `New ${bookingType} Web Booking`,
         body: `${booking.pickup} → ${booking.dropoff}`,
       },
 
       data: {
-        type: "NEW_APP_BOOKING",
+        type: "NEW_WEB_BOOKING",
         booking_mode: bookingType,
-        booking_id: String(booking.id),
+        // booking_id: String(booking.id),
         booking_id: "1234",
-        // booking: JSON.stringify(booking),
       },
     };
 
     // ==============================
     // SEND
     // ==============================
-    console.log("App Booking Notification Data:", message);
+    console.log("Web Booking Notification Data:", message);
     const response = await admin.messaging().sendEachForMulticast(message);
     console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
     console.log(
-      `✅ App booking notification sent: ${response.successCount} success`,
+      `✅ Web booking notification sent: ${response.successCount} success`,
     );
   } catch (err) {
-    console.error("❌ sendAppBookingNotification Error:", err);
+    console.error("❌ sendWebBookingNotification Error:", err);
   }
 }
 
@@ -509,4 +529,5 @@ module.exports = {
   sendRecoverBookingNotification,
   sendAppBookingNotification,
   sendFutureBookingNotification,
+  sendWebBookingNotification
 };

@@ -10,6 +10,7 @@ const {
   sendBookingNotification,
   sendFOBBookingNotification,
   sendAppBookingNotification,
+  sendWebBookingNotification
 } = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
@@ -370,6 +371,10 @@ async function createSimpleBooking(payload) {
     if (clean.booking_source == "app") {
       await sendAppBookingNotification(clean);
     }
+    // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
+    if (clean.booking_source == "web") {
+      await sendWebBookingNotification(clean);
+    }
     await pool.query("COMMIT");
 
     return { bookings: [clean] };
@@ -548,6 +553,10 @@ async function createReturnWayBooking(payload) {
     // RETURN SMS
     await sendBookingSMS(returnEnriched);
 
+// SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
+    if (outboundEnriched.booking_source == "web") {
+      await sendWebBookingNotification(outboundEnriched);
+    }
     return {
       bookings: [outboundEnriched],
       return_booking: [returnEnriched],
