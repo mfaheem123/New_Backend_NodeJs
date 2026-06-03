@@ -10,7 +10,7 @@ const {
   sendBookingNotification,
   sendFOBBookingNotification,
   sendAppBookingNotification,
-  sendWebBookingNotification
+  sendWebBookingNotification,
 } = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
@@ -553,7 +553,7 @@ async function createReturnWayBooking(payload) {
     // RETURN SMS
     await sendBookingSMS(returnEnriched);
 
-// SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
+    // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
     if (outboundEnriched.booking_source == "web") {
       await sendWebBookingNotification(outboundEnriched);
     }

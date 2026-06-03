@@ -312,6 +312,9 @@ async function sendRecoverBookingNotification(driverId, booking) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+// ---------------------------------------------------------
+// SEND APP BOOKING NOTIFICATION TO DASHBOARD
+// ---------------------------------------------------------
 async function sendAppBookingNotification(booking) {
   try {
     // ✅ Sirf APP bookings ke liye
@@ -379,9 +382,7 @@ async function sendAppBookingNotification(booking) {
       data: {
         type: "NEW_APP_BOOKING",
         booking_mode: bookingType,
-        // booking_id: String(booking.id),
-        booking_id: "1234",
-        // booking: JSON.stringify(booking),
+        booking_id: String(booking.id),
       },
     };
 
@@ -399,6 +400,9 @@ async function sendAppBookingNotification(booking) {
   }
 }
 
+// ---------------------------------------------------------
+// SEND FUTURE BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
 async function sendFutureBookingNotification(driverId, booking) {
   // 1️⃣ Driver ka FCM token lao
   const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
@@ -417,20 +421,19 @@ async function sendFutureBookingNotification(driverId, booking) {
   const message = {
     token: fcmToken,
     notification: {
-      title: "New Follow On Booking Assigned",
+      title: "New Future Booking Assigned",
       body: `Pickup: ${booking.pickup}`,
     },
     data: {
-      // booking: JSON.stringify(bookingPayload),
-      booking_status: "fob",
+      booking_status: "future",
       booking_id: booking.id.toString(),
-      type: "FOB_BOOKING",
+      type: "FUTURE_BOOKING",
     },
   };
 
   // 3️⃣ Send
   await admin.messaging().send(message);
-  console.log("✅ FOB Notification sent to driver:", driverId);
+  console.log("✅ Future Booking Notification Sent To Driver:", driverId);
 }
 
 async function sendWebBookingNotification(booking) {
@@ -500,8 +503,8 @@ async function sendWebBookingNotification(booking) {
       data: {
         type: "NEW_WEB_BOOKING",
         booking_mode: bookingType,
-        // booking_id: String(booking.id),
-        booking_id: "1234",
+        booking_id: String(booking.id),
+        // booking_id: "1234",
       },
     };
 
@@ -529,5 +532,5 @@ module.exports = {
   sendRecoverBookingNotification,
   sendAppBookingNotification,
   sendFutureBookingNotification,
-  sendWebBookingNotification
+  sendWebBookingNotification,
 };

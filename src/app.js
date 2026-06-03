@@ -58,7 +58,6 @@ const authorizationRoutes = require("./routes/authorizationRoutes");
 const driverShiftRoutes = require("./routes/driverShiftHistoryRoutes");
 const EmployeeShiftRoutes = require("./routes/employeeShiftHistoryRoutes");
 
-
 const app = express();
 
 // ✅ CORS configuration
