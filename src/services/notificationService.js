@@ -382,7 +382,8 @@ async function sendAppBookingNotification(booking) {
       data: {
         type: "NEW_APP_BOOKING",
         booking_mode: bookingType,
-        booking_id: String(booking.id),
+        // booking_id: String(booking.id),
+        booking_id: "1234",
       },
     };
 
@@ -436,6 +437,9 @@ async function sendFutureBookingNotification(driverId, booking) {
   console.log("✅ Future Booking Notification Sent To Driver:", driverId);
 }
 
+// ---------------------------------------------------------
+// SEND WEB BOOKING NOTIFICATION TO DASHBOARD
+// ---------------------------------------------------------
 async function sendWebBookingNotification(booking) {
   try {
     // ✅ Sirf WEB bookings ke liye
@@ -503,8 +507,107 @@ async function sendWebBookingNotification(booking) {
       data: {
         type: "NEW_WEB_BOOKING",
         booking_mode: bookingType,
-        booking_id: String(booking.id),
-        // booking_id: "1234",
+        // booking_id: String(booking.id),
+        booking_id: "1235",
+      },
+    };
+
+    // ==============================
+    // SEND
+    // ==============================
+    console.log("Web Booking Notification Data:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
+    console.log(
+      `✅ Web booking notification sent: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendWebBookingNotification Error:", err);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND PDA UPDATE NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendPDANotification(driverId) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "PDA Updated",
+      body: "Your PDA Has Been Updated",
+    },
+    data: {
+      driver_id: String(driverId),
+      type: "PDA_UPDATE",
+      message: "Your PDA Has Been Updated"
+    },
+  };
+
+  // 3️⃣ Send
+  await admin.messaging().send(message);
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND IVR BOOKING NOTIFICATION TO DASHBOARD
+// ---------------------------------------------------------
+async function sendIVRBookingNotification(booking) {
+  try {
+    // ✅ Sirf IVR bookings ke liye
+    if (
+      !booking.booking_source ||
+      booking.booking_source.toUpperCase() !== "IVR"
+    ) {
+      return;
+    }
+
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(`
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `);
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+    const message = {
+      tokens,
+
+      notification: {
+        title: "New IVR Booking",
+        body: `${booking.pickup} → ${booking.dropoff}`,
+      },
+
+      data: {
+        type: "NEW_IVR_BOOKING",
+        // booking_id: String(booking.id),
+        booking_id: "1235",
       },
     };
 
@@ -533,4 +636,6 @@ module.exports = {
   sendAppBookingNotification,
   sendFutureBookingNotification,
   sendWebBookingNotification,
+  sendPDANotification,
+  sendIVRBookingNotification
 };

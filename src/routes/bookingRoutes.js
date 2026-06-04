@@ -10,6 +10,7 @@ router.get("/getbyid/:id", bookingController.getBookingById);
 router.get("/getbydriverid/:id", bookingController.getBookingByDriverId);
 router.get("/driver-current-booking", bookingController.getCurrentJob);
 router.get("/driver-total-earning/:id", bookingController.getDriverEarning);
+router.get("/driver-today-earning/:id", bookingController.getDriverTodayEarning);
 router.get("/check-status/:booking_id", bookingController.checkBookingStatus);
 router.get("/driver-rent", bookingController.getBookingByDriverCommission);
 router.get("/customer-bookings/:id", bookingController.getBookingByCustomerId);

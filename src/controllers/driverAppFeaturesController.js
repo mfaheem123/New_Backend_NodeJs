@@ -1,4 +1,5 @@
 const driverFeatures = require("../models/driverAppFeaturesModel");
+const pdaNotification = require("../services/notificationService")
 
 exports.updateDriverAppFeatures = async (req, res) => {
   try {
@@ -19,6 +20,8 @@ exports.updateDriverAppFeatures = async (req, res) => {
         message: "No valid fields provided for update",
       });
     }
+
+    await pdaNotification.sendPDANotification(driver_id);
 
     return res.json({
       status: true,

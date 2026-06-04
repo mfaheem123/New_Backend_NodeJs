@@ -1179,79 +1179,70 @@ const getCompletedBookingLogsByDriverId = async (driver_id, filters = {}) => {
 // ---------------------------------------------------------
 // GET DRIVER BOOKING AND EARNING STATISTICS
 // ---------------------------------------------------------
-const getDriverEarningsStatistics = async (filters = {}) => {
-  const {
-    from_date,
-    to_date,
+const getDriverEarningsStatistics = async ({
+  view,
+  date,
+  from_date,
+  to_date,
+  driver_id,
+}) => {
 
-    from_time,
-    to_time,
-
-    from_datetime,
-    to_datetime,
-
-    driver_type,
-    driver_id,
-
-    booking_status_id,
-    booking_source,
-    payment_type_id,
-    vehicle_type_id,
-  } = filters;
-
-  let whereClause = `WHERE b.trash = false`;
   const values = [];
   let index = 1;
 
-  // DRIVER TYPE FILTER
-  // login => Available
-  // logout => Unavailable
+  let whereClause = `
+    WHERE b.trash = false
+    AND b.booking_status_id = 11
+  `;
 
-  if (driver_type === "login") {
-    whereClause += ` AND d.session_status = 'logged_in'`;
-  }
-
-  if (driver_type === "logout") {
-    whereClause += ` AND d.session_status = 'logged_out'`;
-  }
-
-  // SINGLE DRIVER FILTER
   if (driver_id) {
     whereClause += ` AND b.driver_id = $${index}`;
     values.push(driver_id);
     index++;
   }
 
-  // BOOKING STATUS FILTER
-  if (booking_status_id) {
-    whereClause += ` AND b.booking_status_id = $${index}`;
-    values.push(booking_status_id);
+  // DATE FILTERS
+
+  if (view === "daily") {
+
+    whereClause += `
+      AND b.pickup_date::date = $${index}::date
+    `;
+
+    values.push(date);
     index++;
   }
 
-  // BOOKING SOURCE FILTER
-  if (booking_source) {
-    whereClause += ` AND b.booking_source = $${index}`;
-    values.push(booking_source);
+  else if (view === "weekly") {
+
+    whereClause += `
+      AND DATE_TRUNC('week', b.pickup_date::date)
+      =
+      DATE_TRUNC('week', $${index}::date)
+    `;
+
+    values.push(date);
     index++;
   }
 
-  // PAYMENT TYPE FILTER
-  if (payment_type_id) {
-    whereClause += ` AND b.payment_type_id = $${index}`;
-    values.push(payment_type_id);
+  else if (view === "monthly") {
+
+    whereClause += `
+      AND DATE_TRUNC('month', b.pickup_date::date)
+      =
+      DATE_TRUNC('month', $${index}::date)
+    `;
+
+    values.push(date);
     index++;
   }
 
-  // VEHICLE TYPE FILTER
-  if (vehicle_type_id) {
-    whereClause += ` AND b.vehicle_type_id = $${index}`;
-    values.push(vehicle_type_id);
-    index++;
-  }
+  else if (
+    view === "custom" &&
+    from_date &&
+    to_date
+  ) {
 
-  // DATE RANGE FILTER
-  if (from_date && to_date) {
     whereClause += `
       AND b.pickup_date::date
       BETWEEN $${index}::date
@@ -1262,86 +1253,132 @@ const getDriverEarningsStatistics = async (filters = {}) => {
     index += 2;
   }
 
-  // TIME RANGE FILTER
-  if (from_time && to_time) {
-    whereClause += `
-      AND b.pickup_time::time
-      BETWEEN $${index}::time
-      AND $${index + 1}::time
-    `;
+  // SUMMARY DATA
 
-    values.push(from_time, to_time);
-    index += 2;
-  }
-
-  // DATETIME RANGE FILTER
-  if (from_datetime && to_datetime) {
-    whereClause += `
-      AND (
-        b.pickup_date::date +
-        TRIM(b.pickup_time)::time
-      )
-      BETWEEN $${index}::timestamp
-      AND $${index + 1}::timestamp
-    `;
-
-    values.push(from_datetime, to_datetime);
-    index += 2;
-  }
-
-  const sql = `
+  const summarySql = `
     SELECT
-      d.id AS driver_id,
-      d.username,
-      d.name,
-      d.driver_status,
-      d.session_status,
 
-      COUNT(b.id) AS total_bookings,
+      COUNT(*) AS total_trips,
+
+      COALESCE(
+        SUM(b.total_charges),
+        0
+      ) AS total_earnings,
+
+      COALESCE(
+        AVG(b.total_charges),
+        0
+      ) AS average_per_trip,
 
       COALESCE(
         SUM(
           CASE
-            WHEN b.booking_status_id = 11
+            WHEN b.payment_type_id = 1
             THEN b.total_charges
             ELSE 0
           END
         ),
         0
-      ) AS total_earnings
+      ) AS cash_collected
 
     FROM bookings b
 
-    LEFT JOIN drivers d
-      ON b.driver_id = d.id
+    ${whereClause}
+  `;
+
+  const summaryResult =
+    await pool.query(summarySql, values);
+
+  // CHART DATA
+
+  let groupByQuery = "";
+
+  if (view === "daily") {
+
+    groupByQuery = `
+      TO_CHAR(
+        b.pickup_time::time,
+        'HH24'
+      )
+    `;
+  }
+
+  else if (view === "weekly") {
+
+    groupByQuery = `
+      TO_CHAR(
+        b.pickup_date::date,
+        'Dy'
+      )
+    `;
+  }
+
+  else if (view === "monthly") {
+
+    groupByQuery = `
+      TO_CHAR(
+        b.pickup_date::date,
+        'DD'
+      )
+    `;
+  }
+
+  else {
+
+    groupByQuery = `
+      TO_CHAR(
+        b.pickup_date::date,
+        'YYYY-MM-DD'
+      )
+    `;
+  }
+
+  const chartSql = `
+    SELECT
+
+      ${groupByQuery}
+      AS label,
+
+      COALESCE(
+        SUM(b.total_charges),
+        0
+      ) AS earnings
+
+    FROM bookings b
 
     ${whereClause}
 
-    GROUP BY
-      d.id,
-      d.username,
-      d.name,
-      d.driver_status
+    GROUP BY label
 
-    ORDER BY total_bookings DESC
+    ORDER BY label
   `;
 
-  const result = await pool.query(sql, values);
-
-  // TOTALS
-  let totalBookings = 0;
-  let totalAmount = 0;
-
-  result.rows.forEach((item) => {
-    totalBookings += Number(item.total_bookings);
-    totalAmount += Number(item.total_earnings);
-  });
+  const chartResult =
+    await pool.query(chartSql, values);
 
   return {
-    total_bookings: totalBookings,
-    total_amount: totalAmount,
+    total_trips:
+      Number(
+        summaryResult.rows[0].total_trips
+      ),
 
-    drivers: result.rows,
+    total_earnings:
+      Number(
+        summaryResult.rows[0].total_earnings
+      ),
+
+    average_per_trip:
+      Number(
+        summaryResult.rows[0].average_per_trip
+      ),
+
+    cash_collected:
+      Number(
+        summaryResult.rows[0].cash_collected
+      ),
+
+    chart_data:
+      chartResult.rows,
   };
 };
 
@@ -1935,6 +1972,24 @@ const getIncomeReportData = async ({
   };
 };
 
+// ---------------------------------------------------------
+// GET DRIVER TODAY EARNING
+// ---------------------------------------------------------
+const getDriverTodayEarning = async (driver_id) => {
+  const query = `
+    SELECT 
+      COALESCE(SUM(fares), 0) AS today_earning,
+      COUNT(id) AS total_bookings
+    FROM bookings
+    WHERE driver_id = $1
+      AND booking_status_id = 11
+      AND TO_DATE(pickup_date, 'YYYY-MM-DD') = CURRENT_DATE
+  `;
+
+  const { rows } = await pool.query(query, [driver_id]);
+  return rows[0];
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -1983,4 +2038,5 @@ module.exports = {
   getBookingStatisticsData,
   getBookingStatisticsGraphData,
   getIncomeReportData,
+  getDriverTodayEarning
 };

@@ -40,6 +40,7 @@ const {
   getBookingStatisticsData,
   getBookingStatisticsGraphData,
   getIncomeReportData,
+  getDriverTodayEarning,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1555,60 +1556,31 @@ exports.getCompletedBookingLogsByDriverId = async (req, res) => {
 exports.getDriverEarningsStatistics = async (req, res) => {
   try {
     const {
-      // DATE FILTERS
+      view,
+      date,
       from_date,
       to_date,
-
-      // TIME FILTERS
-      from_time,
-      to_time,
-
-      // DATETIME FILTERS
-      from_datetime,
-      to_datetime,
-
-      // DRIVER FILTERS
-      driver_type, // all | login | logout
       driver_id,
-
-      // OTHER FILTERS
-      booking_status_id,
-      booking_source,
-      payment_type_id,
-      vehicle_type_id,
     } = req.query;
 
     const result = await getDriverEarningsStatistics({
+      view,
+      date,
       from_date,
       to_date,
-
-      from_time,
-      to_time,
-
-      from_datetime,
-      to_datetime,
-
-      driver_type,
       driver_id,
-
-      booking_status_id,
-      booking_source,
-      payment_type_id,
-      vehicle_type_id,
     });
 
     return res.status(200).json({
       success: true,
-      message: "Driver earnings statistics fetched successfully",
       data: result,
     });
   } catch (error) {
-    console.error("GET DRIVER EARNINGS STATISTICS ERROR:", error);
+    console.error(error);
 
     return res.status(500).json({
       success: false,
-      message: "Internal Server Error",
-      error: error.message,
+      message: error.message,
     });
   }
 };
@@ -1856,6 +1828,40 @@ exports.getIncomeReport = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET DRIVER TODAY EARNING
+// ---------------------------------------------------------
+exports.getDriverTodayEarning = async (req, res) => {
+  try {
+    const driver_id = req.params.id;
+
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver ID is required",
+      });
+    }
+
+    const result = await getDriverTodayEarning(driver_id);
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver Today Earning Fetched Successfully",
+      driverEarning: {
+        driver_id,
+        today_earning: result.today_earning,
+        total_bookings: result.total_bookings,
+      },
+    });
+  } catch (error) {
+    console.error("Driver Earning Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
     });
   }
 };
