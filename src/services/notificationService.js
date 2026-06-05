@@ -551,7 +551,7 @@ async function sendPDANotification(driverId) {
     data: {
       driver_id: String(driverId),
       type: "PDA_UPDATE",
-      message: "Your PDA Has Been Updated"
+      message: "Your PDA Has Been Updated",
     },
   };
 
@@ -637,5 +637,5 @@ module.exports = {
   sendFutureBookingNotification,
   sendWebBookingNotification,
   sendPDANotification,
-  sendIVRBookingNotification
+  sendIVRBookingNotification,
 };

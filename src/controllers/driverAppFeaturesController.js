@@ -1,5 +1,5 @@
 const driverFeatures = require("../models/driverAppFeaturesModel");
-const pdaNotification = require("../services/notificationService")
+const pdaNotification = require("../services/notificationService");
 
 exports.updateDriverAppFeatures = async (req, res) => {
   try {

@@ -10,7 +10,6 @@ router.get("/getbyid/:id", bookingController.getBookingById);
 router.get("/getbydriverid/:id", bookingController.getBookingByDriverId);
 router.get("/driver-current-booking", bookingController.getCurrentJob);
 router.get("/driver-total-earning/:id", bookingController.getDriverEarning);
-router.get("/driver-today-earning/:id", bookingController.getDriverTodayEarning);
 router.get("/check-status/:booking_id", bookingController.checkBookingStatus);
 router.get("/driver-rent", bookingController.getBookingByDriverCommission);
 router.get("/customer-bookings/:id", bookingController.getBookingByCustomerId);
@@ -18,6 +17,11 @@ router.get("/customer-jobs", bookingController.getBookingByCustomerMobile);
 router.get("/driver-fob/:id", bookingController.getBookingByDriverIdAndFob);
 router.get("/driver-logs", bookingController.getCompletedBookingLogsByDriverId);
 router.get("/booking-statistics", bookingController.getBookingStatistics);
+
+router.get(
+  "/driver-today-earning/:id",
+  bookingController.getDriverTodayEarning,
+);
 
 router.get(
   "/fob-history/:id",

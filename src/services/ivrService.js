@@ -10,7 +10,7 @@ const {
 } = require("../utils/calculateDistance&Time");
 const { calculateSingleFare } = require("../controllers/fareController");
 const ivrNotifcation = require("../services/notificationService");
-const bookingModel = require("../models/bookingModel")
+const bookingModel = require("../models/bookingModel");
 const genRef = async () => {
   let ref;
   let exists = true;
@@ -473,7 +473,7 @@ exports.handleFallbackIvr = async (body) => {
           [miles, eta, fares, total_charges, bookingId],
         );
         const ivrBooking = await bookingModel.getBookingByIdEnriched(bookingId);
-        await ivrNotifcation.sendIVRBookingNotification(ivrBooking)
+        await ivrNotifcation.sendIVRBookingNotification(ivrBooking);
       } catch (err) {
         console.error("Background fare calculation failed:", err);
       }

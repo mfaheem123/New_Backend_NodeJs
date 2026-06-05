@@ -1186,7 +1186,6 @@ const getDriverEarningsStatistics = async ({
   to_date,
   driver_id,
 }) => {
-
   const values = [];
   let index = 1;
 
@@ -1204,17 +1203,13 @@ const getDriverEarningsStatistics = async ({
   // DATE FILTERS
 
   if (view === "daily") {
-
     whereClause += `
       AND b.pickup_date::date = $${index}::date
     `;
 
     values.push(date);
     index++;
-  }
-
-  else if (view === "weekly") {
-
+  } else if (view === "weekly") {
     whereClause += `
       AND DATE_TRUNC('week', b.pickup_date::date)
       =
@@ -1223,10 +1218,7 @@ const getDriverEarningsStatistics = async ({
 
     values.push(date);
     index++;
-  }
-
-  else if (view === "monthly") {
-
+  } else if (view === "monthly") {
     whereClause += `
       AND DATE_TRUNC('month', b.pickup_date::date)
       =
@@ -1235,14 +1227,7 @@ const getDriverEarningsStatistics = async ({
 
     values.push(date);
     index++;
-  }
-
-  else if (
-    view === "custom" &&
-    from_date &&
-    to_date
-  ) {
-
+  } else if (view === "custom" && from_date && to_date) {
     whereClause += `
       AND b.pickup_date::date
       BETWEEN $${index}::date
@@ -1286,45 +1271,34 @@ const getDriverEarningsStatistics = async ({
     ${whereClause}
   `;
 
-  const summaryResult =
-    await pool.query(summarySql, values);
+  const summaryResult = await pool.query(summarySql, values);
 
   // CHART DATA
 
   let groupByQuery = "";
 
   if (view === "daily") {
-
     groupByQuery = `
       TO_CHAR(
         b.pickup_time::time,
         'HH24'
       )
     `;
-  }
-
-  else if (view === "weekly") {
-
+  } else if (view === "weekly") {
     groupByQuery = `
       TO_CHAR(
         b.pickup_date::date,
         'Dy'
       )
     `;
-  }
-
-  else if (view === "monthly") {
-
+  } else if (view === "monthly") {
     groupByQuery = `
       TO_CHAR(
         b.pickup_date::date,
         'DD'
       )
     `;
-  }
-
-  else {
-
+  } else {
     groupByQuery = `
       TO_CHAR(
         b.pickup_date::date,
@@ -1353,32 +1327,18 @@ const getDriverEarningsStatistics = async ({
     ORDER BY label
   `;
 
-  const chartResult =
-    await pool.query(chartSql, values);
+  const chartResult = await pool.query(chartSql, values);
 
   return {
-    total_trips:
-      Number(
-        summaryResult.rows[0].total_trips
-      ),
+    total_trips: Number(summaryResult.rows[0].total_trips),
 
-    total_earnings:
-      Number(
-        summaryResult.rows[0].total_earnings
-      ),
+    total_earnings: Number(summaryResult.rows[0].total_earnings),
 
-    average_per_trip:
-      Number(
-        summaryResult.rows[0].average_per_trip
-      ),
+    average_per_trip: Number(summaryResult.rows[0].average_per_trip),
 
-    cash_collected:
-      Number(
-        summaryResult.rows[0].cash_collected
-      ),
+    cash_collected: Number(summaryResult.rows[0].cash_collected),
 
-    chart_data:
-      chartResult.rows,
+    chart_data: chartResult.rows,
   };
 };
 
@@ -2038,5 +1998,5 @@ module.exports = {
   getBookingStatisticsData,
   getBookingStatisticsGraphData,
   getIncomeReportData,
-  getDriverTodayEarning
+  getDriverTodayEarning,
 };

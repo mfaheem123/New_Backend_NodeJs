@@ -1555,13 +1555,7 @@ exports.getCompletedBookingLogsByDriverId = async (req, res) => {
 // ---------------------------------------------------------
 exports.getDriverEarningsStatistics = async (req, res) => {
   try {
-    const {
-      view,
-      date,
-      from_date,
-      to_date,
-      driver_id,
-    } = req.query;
+    const { view, date, from_date, to_date, driver_id } = req.query;
 
     const result = await getDriverEarningsStatistics({
       view,
