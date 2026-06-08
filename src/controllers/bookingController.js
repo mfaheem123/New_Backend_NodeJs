@@ -1580,7 +1580,7 @@ exports.getDriverEarningsStatistics = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// ASSIGN FUTURR BOOKING TO DRIVER
+// ASSIGN FUTURE BOOKING TO DRIVER
 // ---------------------------------------------------------
 exports.assignFutureBookingToDriver = async (req, res) => {
   try {
