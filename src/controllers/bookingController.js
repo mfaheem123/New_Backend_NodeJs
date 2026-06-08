@@ -41,6 +41,7 @@ const {
   getBookingStatisticsGraphData,
   getIncomeReportData,
   getDriverTodayEarning,
+  getBookingsForCustomerInvoice
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1856,6 +1857,73 @@ exports.getDriverTodayEarning = async (req, res) => {
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET BOOKINGS FOR CUSTOMER INVOICE
+// ---------------------------------------------------------
+exports.getBookingsForCustomerInvoice = async (req, res) => {
+  try {
+    let {
+      customer_id,
+      from_date,
+      to_date,
+      payment_type_ids,
+    } = req.query;
+
+    if (!customer_id) {
+      return res.status(400).json({
+        status: false,
+        message: "customer_id is required",
+      });
+    }
+
+    if (!from_date || !to_date) {
+      return res.status(400).json({
+        status: false,
+        message: "from_date and to_date are required",
+      });
+    }
+
+    if (typeof payment_type_ids === "string") {
+  payment_type_ids = JSON.parse(payment_type_ids);
+}
+
+payment_type_ids = payment_type_ids.map(Number);
+
+    if (
+      !payment_type_ids ||
+      !Array.isArray(payment_type_ids) ||
+      payment_type_ids.length === 0
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "payment_type_ids must be a non-empty array",
+      });
+    }
+
+    const bookings =
+      await getBookingsForCustomerInvoice(
+        customer_id,
+        from_date,
+        to_date,
+        payment_type_ids
+      );
+
+    return res.status(200).json({
+      status: true,
+      total_records: bookings.length,
+      bookings,
+    });
+  } catch (error) {
+    console.error("Get Customer Invoice Bookings Error:", error);
+
+    return res.status(500).json({
+      status: false,
+      message: "Failed to fetch bookings",
+      error: error.message,
     });
   }
 };

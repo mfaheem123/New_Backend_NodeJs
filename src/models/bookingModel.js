@@ -1950,6 +1950,38 @@ const getDriverTodayEarning = async (driver_id) => {
   return rows[0];
 };
 
+// ---------------------------------------------------------
+// GET BOOKINGS FOR CUSTOMER INVOICE
+// ---------------------------------------------------------
+const getBookingsForCustomerInvoice = async (
+  customer_id,
+  from_date,
+  to_date,
+  payment_type_ids
+) => {
+
+  const sql = `
+    ${ENRICHED_SELECT}
+
+    WHERE b.customer_id = $1
+    AND b.pickup_date::date BETWEEN $2 AND $3
+    AND b.payment_type_id = ANY($4::int[])
+    AND b.booking_status_id = 11
+
+    ORDER BY b.pickup_date ASC
+  `;
+
+  const { rows } = await pool.query(sql, [
+    customer_id,
+    from_date,
+    to_date,
+    payment_type_ids,
+  ]);
+
+  return rows;
+};
+
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -1999,4 +2031,5 @@ module.exports = {
   getBookingStatisticsGraphData,
   getIncomeReportData,
   getDriverTodayEarning,
+  getBookingsForCustomerInvoice
 };

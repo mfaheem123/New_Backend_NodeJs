@@ -52,6 +52,11 @@ router.get(
   bookingController.getBookingStatisticsGraph,
 );
 
+router.get(
+  "/customer-invoice-bookings",
+  bookingController.getBookingsForCustomerInvoice
+);
+
 router.get("/income-report", bookingController.getIncomeReport);
 
 //POST APIS
