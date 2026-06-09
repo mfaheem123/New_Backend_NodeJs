@@ -1,6 +1,5 @@
 const pool = require("../db");
 
-
 const ENRICHED_SELECT = `
   SELECT 
     b.id,
@@ -254,7 +253,6 @@ LEFT JOIN location_types ltd ON ld.location_type_id = ltd.id
 
 exports.createCustomerInvoice = async (payload) => {
   try {
-
     await pool.query("BEGIN");
 
     const invoice = await pool.query(
@@ -282,14 +280,13 @@ exports.createCustomerInvoice = async (payload) => {
         payload.from_date,
         payload.to_date,
         payload.invoice_type,
-        payload.amount
-      ]
+        payload.amount,
+      ],
     );
 
     const invoiceId = invoice.rows[0].id;
 
     for (const item of payload.customer_invoice_lineitems) {
-
       await pool.query(
         `
         INSERT INTO customer_invoice_lineitems
@@ -299,7 +296,7 @@ exports.createCustomerInvoice = async (payload) => {
         )
         VALUES ($1,$2)
         `,
-        [invoiceId, item.booking_id]
+        [invoiceId, item.booking_id],
       );
 
       await pool.query(
@@ -308,28 +305,20 @@ exports.createCustomerInvoice = async (payload) => {
         SET invoice_number = $1
         WHERE id = $2
         `,
-        [payload.invoice_number, item.booking_id]
+        [payload.invoice_number, item.booking_id],
       );
     }
 
     await pool.query("COMMIT");
 
     return invoice.rows[0];
-
   } catch (error) {
-
     await pool.query("ROLLBACK");
     throw error;
-
-  } 
+  }
 };
 
-exports.getAllCustomerInvoices = async (
-  offset,
-  limit,
-  invoice_type
-) => {
-
+exports.getAllCustomerInvoices = async (offset, limit, invoice_type) => {
   const sql = `
     SELECT
       ci.*,
@@ -353,17 +342,12 @@ exports.getAllCustomerInvoices = async (
     LIMIT $3
   `;
 
-  const { rows } = await pool.query(sql, [
-    invoice_type || null,
-    offset,
-    limit
-  ]);
+  const { rows } = await pool.query(sql, [invoice_type || null, offset, limit]);
 
   return rows;
 };
 
 exports.payCustomerInvoice = async (id, status) => {
-
   const sql = `
     UPDATE customer_invoices
     SET
@@ -379,14 +363,13 @@ exports.payCustomerInvoice = async (id, status) => {
 };
 
 exports.deleteCustomerInvoice = async (id) => {
-
   const sql = `
     DELETE FROM customer_invoices
     WHERE id = $1
     RETURNING *
   `;
 
-  const { rows } = await pool.query(sql,[id]);
+  const { rows } = await pool.query(sql, [id]);
 
   return rows[0];
 };
@@ -412,7 +395,7 @@ exports.getById = async (id) => {
 
     WHERE ci.id = $1
     `,
-    [id]
+    [id],
   );
 
   if (!invoiceResult.rows.length) {
@@ -428,7 +411,7 @@ exports.getById = async (id) => {
     WHERE customer_invoice_id = $1
     ORDER BY id
     `,
-    [id]
+    [id],
   );
 
   const enrichedItems = [];
@@ -439,7 +422,7 @@ exports.getById = async (id) => {
       ${ENRICHED_SELECT}
       WHERE b.id = $1
       `,
-      [item.booking_id]
+      [item.booking_id],
     );
 
     enrichedItems.push({
@@ -454,11 +437,7 @@ exports.getById = async (id) => {
 };
 
 exports.update = async (id, data) => {
-  const {
-    invoice_date,
-    invoice_due_date,
-    status,
-  } = data;
+  const { invoice_date, invoice_due_date, status } = data;
 
   const { rows } = await pool.query(
     `
@@ -471,12 +450,7 @@ exports.update = async (id, data) => {
     WHERE id = $4
     RETURNING *
     `,
-    [
-      invoice_date,
-      invoice_due_date,
-      status,
-      id,
-    ]
+    [invoice_date, invoice_due_date, status, id],
   );
 
   return rows[0];

@@ -554,9 +554,10 @@ async function sendPDANotification(driverId) {
       message: "Your PDA Has Been Updated",
     },
   };
-
+console.log("PDA Notification Data:", message);
   // 3️⃣ Send
   await admin.messaging().send(message);
+  console.log("PDA Notification Data:", message);
   console.log("✅ Notification sent to driver:", driverId);
 }
 
@@ -614,7 +615,7 @@ async function sendIVRBookingNotification(booking) {
     // ==============================
     // SEND
     // ==============================
-    console.log("Web Booking Notification Data:", message);
+    console.log("IVR Booking Notification Data:", message);
     const response = await admin.messaging().sendEachForMulticast(message);
     console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
     console.log(

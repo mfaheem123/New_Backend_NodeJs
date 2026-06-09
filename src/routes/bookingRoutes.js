@@ -54,7 +54,7 @@ router.get(
 
 router.get(
   "/customer-invoice-bookings",
-  bookingController.getBookingsForCustomerInvoice
+  bookingController.getBookingsForCustomerInvoice,
 );
 
 router.get("/income-report", bookingController.getIncomeReport);

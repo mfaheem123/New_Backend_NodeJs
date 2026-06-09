@@ -41,7 +41,7 @@ const {
   getBookingStatisticsGraphData,
   getIncomeReportData,
   getDriverTodayEarning,
-  getBookingsForCustomerInvoice
+  getBookingsForCustomerInvoice,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
@@ -1866,12 +1866,7 @@ exports.getDriverTodayEarning = async (req, res) => {
 // ---------------------------------------------------------
 exports.getBookingsForCustomerInvoice = async (req, res) => {
   try {
-    let {
-      customer_id,
-      from_date,
-      to_date,
-      payment_type_ids,
-    } = req.query;
+    let { customer_id, from_date, to_date, payment_type_ids } = req.query;
 
     if (!customer_id) {
       return res.status(400).json({
@@ -1888,10 +1883,10 @@ exports.getBookingsForCustomerInvoice = async (req, res) => {
     }
 
     if (typeof payment_type_ids === "string") {
-  payment_type_ids = JSON.parse(payment_type_ids);
-}
+      payment_type_ids = JSON.parse(payment_type_ids);
+    }
 
-payment_type_ids = payment_type_ids.map(Number);
+    payment_type_ids = payment_type_ids.map(Number);
 
     if (
       !payment_type_ids ||
@@ -1904,13 +1899,12 @@ payment_type_ids = payment_type_ids.map(Number);
       });
     }
 
-    const bookings =
-      await getBookingsForCustomerInvoice(
-        customer_id,
-        from_date,
-        to_date,
-        payment_type_ids
-      );
+    const bookings = await getBookingsForCustomerInvoice(
+      customer_id,
+      from_date,
+      to_date,
+      payment_type_ids,
+    );
 
     return res.status(200).json({
       status: true,

@@ -1957,9 +1957,8 @@ const getBookingsForCustomerInvoice = async (
   customer_id,
   from_date,
   to_date,
-  payment_type_ids
+  payment_type_ids,
 ) => {
-
   const sql = `
     ${ENRICHED_SELECT}
 
@@ -1980,7 +1979,6 @@ const getBookingsForCustomerInvoice = async (
 
   return rows;
 };
-
 
 module.exports = {
   pool,
@@ -2031,5 +2029,5 @@ module.exports = {
   getBookingStatisticsGraphData,
   getIncomeReportData,
   getDriverTodayEarning,
-  getBookingsForCustomerInvoice
+  getBookingsForCustomerInvoice,
 };

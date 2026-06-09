@@ -18,18 +18,13 @@ exports.create = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const {
-      offset = 0,
-      limit = 100,
-      invoice_type,
-    } = req.query;
+    const { offset = 0, limit = 100, invoice_type } = req.query;
 
-    const invoices =
-      await customerInvoiceModel.getAllCustomerInvoices(
-        Number(offset),
-        Number(limit),
-        invoice_type
-      );
+    const invoices = await customerInvoiceModel.getAllCustomerInvoices(
+      Number(offset),
+      Number(limit),
+      invoice_type,
+    );
 
     res.json({
       status: true,
@@ -46,10 +41,7 @@ exports.getAll = async (req, res) => {
 
 exports.getById = async (req, res) => {
   try {
-    const invoice =
-      await customerInvoiceModel.getById(
-        req.params.id
-      );
+    const invoice = await customerInvoiceModel.getById(req.params.id);
 
     if (!invoice) {
       return res.status(404).json({
@@ -72,10 +64,9 @@ exports.getById = async (req, res) => {
 
 exports.pay = async (req, res) => {
   try {
-    const invoice =
-      await customerInvoiceModel.payCustomerInvoice(
-        req.params.id
-      );
+    const invoice = await customerInvoiceModel.payCustomerInvoice(
+      req.params.id,
+    );
 
     res.json({
       status: true,
@@ -91,11 +82,7 @@ exports.pay = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const invoice =
-      await customerInvoiceModel.update(
-        req.params.id,
-        req.body
-      );
+    const invoice = await customerInvoiceModel.update(req.params.id, req.body);
 
     res.json({
       status: true,
@@ -111,10 +98,9 @@ exports.update = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
-    const invoice =
-      await customerInvoiceModel.deleteCustomerInvoice(
-        req.params.id
-      );
+    const invoice = await customerInvoiceModel.deleteCustomerInvoice(
+      req.params.id,
+    );
 
     res.json({
       status: true,

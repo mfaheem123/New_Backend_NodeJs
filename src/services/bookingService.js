@@ -11,6 +11,7 @@ const {
   sendFOBBookingNotification,
   sendAppBookingNotification,
   sendWebBookingNotification,
+  sendFutureBookingNotification
 } = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
@@ -1512,7 +1513,7 @@ async function assignFutureBookingDriverService(bookingId, driverId) {
   console.log("ENRICHED BOOKING DATA", enriched);
 
   // 3️ Send notification to driver
-  // await sendFOBBookingNotification(driverId, enriched);
+  await sendFutureBookingNotification(driverId, enriched);
   // -------------------------------
   // 📩 DISPATCH SMS (TEMPLATE 3)
   // -------------------------------
@@ -1557,5 +1558,5 @@ module.exports = {
   assignDriverService,
   assignFOBDriverService,
   cloneOneWayBookingService,
-  assignFutureBookingDriverService
+  assignFutureBookingDriverService,
 };
