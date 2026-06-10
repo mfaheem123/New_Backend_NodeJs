@@ -1,4 +1,5 @@
 const WebSocket = require("ws");
+const db = require("../db");
 const logger = require("../utils/logger");
 const {
   getAvailableLoggedInDrivers,
@@ -254,44 +255,153 @@ function notifyBusyDriverUpdate(driver) {
   });
 }
 
-//OLD CODE
-// function notifyBusyDriverUpdate(driver) {
-//   console.log("BUSY CLIENTS:", busyDashboardClients.size);
-//   if (driver.session_status !== "logged_in") return;
+// ==============================
+// DRIVER BOOKING STATUS UPDATE
+// ==============================
+async function notifyDriverBookingStatusWeb(driverId) {
+  try {
+    const result = await db.query(
+      `
+      SELECT
+        d.id,
+        d.name,
+        d.username,
+        d.zone,
+        d.latitude,
+        d.longitude,
+        d.booking_status,
+        d.session_status,
+        d.driver_status,
+        d.last_login_at,
+        vt.name AS vehicle_type
+      FROM drivers d
+      LEFT JOIN vehicles v
+        ON d.vehicle_id=v.id
+      LEFT JOIN vehicle_types vt
+        ON v.vehicle_type_id=vt.id
+      WHERE d.id=$1
+      `,
+      [driverId],
+    );
 
-//   // Agar driver available ho gaya to login dashboard pe bhejo
-//   if (
-//     driver.booking_status === "Available" &&
-//     driver.driver_status === "Available"
-//   ) {
-//     loggedInDrivers.set(driver.id, driver);
+    if (!result.rows.length) return;
 
-//     const payload = JSON.stringify({
-//       event: "DRIVER_LOGIN",
-//       data: driver,
-//     });
+    const driver = result.rows[0];
 
-//     dashboardClients.forEach((client) => {
-//       if (client.readyState === WebSocket.OPEN) {
-//         client.send(payload);
-//       }
-//     });
+    if (driver.session_status !== "logged_in") return;
 
-//     return;
-//   }
+    const payload = JSON.stringify({
+      event: "DRIVER_BOOKING_STATUS_WEB_UPDATE",
+      data: {
+        ...formatDriverData(driver),
+        vehicle: {
+          vehicle_type: {
+            name: driver.vehicle_type,
+          },
+        },
+      },
+    });
 
-//   // Warna busy dashboard ko bhejo
-//   const payload = JSON.stringify({
-//     event: "BUSY_DRIVER_UPDATE",
-//     data: driver,
-//   });
+    // AVAILABLE → dashboard
+    if (
+      driver.booking_status === "Available" &&
+      driver.driver_status === "Available"
+    ) {
+      dashboardClients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(payload);
+        }
+      });
 
-//   busyDashboardClients.forEach((client) => {
-//     if (client.readyState === WebSocket.OPEN) {
-//       client.send(payload);
-//     }
-//   });
-// }
+      return;
+    }
+
+    // BUSY → busy dashboard
+    busyDashboardClients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(payload);
+      }
+    });
+
+    logger.info("ws:driver-booking-status-web-update", {
+      driverId,
+    });
+  } catch (err) {
+    logger.error("ws:driver-booking-status-web-error", {
+      error: err.message,
+    });
+  }
+}
+
+// ==============================
+// DRIVER BREAK STATUS UPDATE
+// ==============================
+async function notifyDriverBreakStatusWeb(driverId) {
+  try {
+    const result = await db.query(
+      `
+      SELECT
+        d.id,
+        d.name,
+        d.username,
+        d.zone,
+        d.latitude,
+        d.longitude,
+        d.booking_status,
+        d.session_status,
+        d.driver_status,
+        d.last_login_at,
+        vt.name AS vehicle_type
+      FROM drivers d
+      LEFT JOIN vehicles v
+        ON d.vehicle_id=v.id
+      LEFT JOIN vehicle_types vt
+        ON v.vehicle_type_id=vt.id
+      WHERE d.id=$1
+      `,
+      [driverId],
+    );
+
+    if (!result.rows.length) return;
+
+    const driver = result.rows[0];
+
+    if (driver.session_status !== "logged_in") return;
+
+    const payload = JSON.stringify({
+      event: "DRIVER_BREAK_STATUS_UPDATE",
+      data: {
+        id: driver.id,
+        name: driver.name,
+        username: driver.username,
+        zone: driver.zone,
+        latitude: driver.latitude,
+        longitude: driver.longitude,
+        booking_status: driver.booking_status,
+        session_status: driver.session_status,
+        driver_status: driver.driver_status,
+        vehicle_type: driver.vehicle_type,
+        last_login_at: driver.last_login_at,
+      },
+    });
+
+    // ✅ SIRF AVAILABLE DASHBOARD KO SEND HOGA
+    dashboardClients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(payload);
+      }
+    });
+
+    logger.info("ws:driver-break-status-update", {
+      driverId,
+      driver_status: driver.driver_status,
+    });
+  } catch (err) {
+    logger.error("ws:driver-break-error", {
+      error: err.message,
+    });
+  }
+}
 
 module.exports = {
   handleDriverLoginSocket,
@@ -299,6 +409,8 @@ module.exports = {
   notifyDriverLogout,
   notifyBusyDriverUpdate,
   handleBusyDriverSocket,
+  notifyDriverBookingStatusWeb,
+  notifyDriverBreakStatusWeb
 };
 
 // SOCKET IO CODE YAHA HAI

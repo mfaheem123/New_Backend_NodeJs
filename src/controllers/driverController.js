@@ -2,6 +2,7 @@ const Driver = require("../models/driverModel");
 const {
   notifyDriverLogin,
   notifyDriverLogout,
+  notifyDriverBreakStatusWeb
 } = require("../sockets/driverWebSocket");
 // const { getIO } = require("../sockets/io");
 const jwt = require("jsonwebtoken");
@@ -54,7 +55,9 @@ function normalizeDateFields(obj) {
   return obj;
 }
 
-// LOG BOOK DOCUMENT HANDLE IN THIS CREATE CODE
+// ---------------------------------------------------------
+// CREATE DRIVER WITH DOCUMENTS
+// ---------------------------------------------------------
 exports.create = async (req, res) => {
   try {
     console.log(
@@ -259,7 +262,9 @@ exports.create = async (req, res) => {
   }
 };
 
-// Get All Drivers
+// ---------------------------------------------------------
+// GET ALL DRIVERS
+// ---------------------------------------------------------
 exports.getAll = async (req, res) => {
   try {
     const {
@@ -316,7 +321,9 @@ exports.getAll = async (req, res) => {
   }
 };
 
-// Get Drivers by Driver ID
+// ---------------------------------------------------------
+// GET DRIVER BY ID
+// ---------------------------------------------------------
 exports.getById = async (req, res) => {
   try {
     const driver = await Driver.getById(req.params.id);
@@ -332,7 +339,9 @@ exports.getById = async (req, res) => {
   }
 };
 
-// Update Driver By ID
+// ---------------------------------------------------------
+// UPDATE DRIVER BY ID
+// ---------------------------------------------------------
 exports.update = async (req, res) => {
   try {
     const driverId = req.params.id;
@@ -540,7 +549,9 @@ exports.update = async (req, res) => {
   }
 };
 
-//Delete Driver By ID
+// ---------------------------------------------------------
+// DELETE DRIVER BY ID
+// ---------------------------------------------------------
 exports.delete = async (req, res) => {
   try {
     await Driver.delete(req.params.id);
@@ -555,7 +566,9 @@ exports.delete = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
 // GET DRIVERS BY COMPANY ID
+// ---------------------------------------------------------
 exports.getByCompany = async (req, res) => {
   try {
     const { company_id } = req.params;
@@ -583,7 +596,9 @@ exports.getByCompany = async (req, res) => {
   }
 };
 
-//DRIVER LOGIN WITH LOCATION
+// ---------------------------------------------------------
+// DRIVER LOGIN WITH LOCATION
+// ---------------------------------------------------------
 exports.driverLogin = async (req, res) => {
   const { username, password, fcm_token, latitude, longitude } = req.body;
   console.log(
@@ -632,6 +647,9 @@ exports.driverLogin = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// VERIFY DRIVER NTG TOKEN
+// ---------------------------------------------------------
 exports.verifyDriverToken = async (req, res) => {
   try {
     const { id, driver_access_token } = req.body;
@@ -675,7 +693,9 @@ exports.verifyDriverToken = async (req, res) => {
   }
 };
 
-// GET ALL DRIVER BY DRIVER TYPE
+// ---------------------------------------------------------
+// GET ALL DRIVERS BY DRIVER TYPE
+// ---------------------------------------------------------
 exports.getDriversByCommissionType = async (req, res) => {
   try {
     const { active, driver_type, company_id } = req.query;
@@ -701,6 +721,9 @@ exports.getDriversByCommissionType = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ALL DRIVERS BY SESSION STATUS
+// ---------------------------------------------------------
 exports.getBySessionStatus = async (req, res) => {
   try {
     const {
@@ -759,6 +782,9 @@ exports.getBySessionStatus = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// DRIVER LOGOUT
+// ---------------------------------------------------------
 exports.driverLogout = async (req, res) => {
   const { id } = req.params;
   const { latitude, longitude } = req.body;
@@ -803,6 +829,9 @@ exports.driverLogout = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// DRIVER ON BREAK REQUEST
+// ---------------------------------------------------------
 exports.onBreakDriver = async (req, res) => {
   try {
     const { driver_id, on_break } = req.body;
@@ -823,7 +852,6 @@ exports.onBreakDriver = async (req, res) => {
       JSON.stringify(req.body, null, 2),
     );
 
-    // const data = await Driver.getAllDriverByCommissionType(active, driver_type);
     if (on_break == true || on_break == "true") {
       console.log("DRIVER IS ON BREAK:", on_break);
 
@@ -859,6 +887,9 @@ exports.onBreakDriver = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// DRIVER ON PANIC REQUEST
+// ---------------------------------------------------------
 exports.onPanicDriver = async (req, res) => {
   try {
     const { driver_id, panic } = req.body;
@@ -912,6 +943,9 @@ exports.onPanicDriver = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET LOGIN AND BUSY DRIVERS
+// ---------------------------------------------------------
 exports.getLoginDrivers = async (req, res) => {
   try {
     const login_drivers = await Driver.getLoginDrivers();
@@ -931,6 +965,9 @@ exports.getLoginDrivers = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET LOGIN DRIVER FOR TRACKING
+// ---------------------------------------------------------
 exports.getLoginDriverTracking = async (req, res) => {
   try {
     const login_drivers = await Driver.getLoginDriverTracking();
@@ -948,6 +985,9 @@ exports.getLoginDriverTracking = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET DRIVERS WHERE BOOKING STATUS IS FOB
+// ---------------------------------------------------------
 exports.getFOBDrivers = async (req, res) => {
   try {
     const busy_drivers = await Driver.getFOBDrivers();
@@ -1001,6 +1041,8 @@ exports.breakStatusDriver = async (req, res) => {
         driver.booking_status,
         "On Break",
       );
+
+      await notifyDriverBreakStatusWeb(driver_id);
 
       //Send Break Status Notification to Driver
       await notification.sendBreakStatusNotification(driver_id, "Accepted");
@@ -1075,6 +1117,50 @@ exports.onPanicStatusDriver = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error panic button:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.endBreakStatusDriver = async (req, res) => {
+  try {
+    const {driver_id} = req.query;
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver ID is Required",
+      });
+    }
+
+    const driver = await Driver.getById(driver_id);
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
+
+    await Driver.updateDriverStatus(
+        driver_id,
+        driver.booking_status,
+        "Available",
+      );
+
+      await notifyDriverBreakStatusWeb(driver_id);
+
+      //Send Break Status Notification to Driver
+      // await notification.sendBreakStatusNotification(driver_id, "Rejected");
+      return res.status(200).json({
+        status: true,
+        message: "Driver Break Ended",
+        driver_id: driver_id,
+        driver_status: "Available",
+      });
+    
+  } catch (error) {
+    console.error("❌ Error fetching commission drivers:", error);
     return res.status(500).json({
       status: false,
       message: "Internal server error",

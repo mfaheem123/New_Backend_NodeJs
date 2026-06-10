@@ -44,7 +44,7 @@ const {
   getBookingsForCustomerInvoice,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
-const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
+const { notifyBusyDriverUpdate, notifyDriverBookingStatusWeb } = require("../sockets/driverWebSocket");
 const {
   notifyDriverBookingStatus,
 } = require("../sockets/driverTrackingSocket");
@@ -567,7 +567,8 @@ exports.updateBookingStatus = async (req, res) => {
     //RIDE ACCEPTED
     if (booking_status_id == 15) {
       await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
-      // await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
       if (booking_source == "app") {
         await sendRideAcceptedNotification(customerId, booking.rows[0]);
       }
@@ -578,6 +579,8 @@ exports.updateBookingStatus = async (req, res) => {
       await updateBookingonRoute(bookingId, true, false, false);
       await Driver.updateDriverStatus(driverId, "On Route", "Unavailable");
       await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
+
     }
 
     // ARRIVED
@@ -585,12 +588,16 @@ exports.updateBookingStatus = async (req, res) => {
       await updateBookingonRoute(bookingId, false, false, true);
       await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
       await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
+
     }
 
     // SOON TO CLEAR
     if (booking_status_id == 10) {
       await Driver.updateDriverStatus(driverId, "STC", "Unavailable");
       await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
+
     }
 
     // COMPLETED
@@ -600,6 +607,8 @@ exports.updateBookingStatus = async (req, res) => {
       await Driver.updateDriverStatus(driverId, "Available", "Available");
 
       await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
+
 
       const driver = await Driver.getById(driverId);
 

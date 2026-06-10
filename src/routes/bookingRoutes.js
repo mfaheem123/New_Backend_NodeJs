@@ -17,6 +17,7 @@ router.get("/customer-jobs", bookingController.getBookingByCustomerMobile);
 router.get("/driver-fob/:id", bookingController.getBookingByDriverIdAndFob);
 router.get("/driver-logs", bookingController.getCompletedBookingLogsByDriverId);
 router.get("/booking-statistics", bookingController.getBookingStatistics);
+router.get("/income-report", bookingController.getIncomeReport);
 
 router.get(
   "/driver-today-earning/:id",
@@ -56,8 +57,6 @@ router.get(
   "/customer-invoice-bookings",
   bookingController.getBookingsForCustomerInvoice,
 );
-
-router.get("/income-report", bookingController.getIncomeReport);
 
 //POST APIS
 router.post("/add", bookingController.createBooking);

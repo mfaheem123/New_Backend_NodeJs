@@ -382,8 +382,8 @@ async function sendAppBookingNotification(booking) {
       data: {
         type: "NEW_APP_BOOKING",
         booking_mode: bookingType,
-        // booking_id: String(booking.id),
-        booking_id: "1234",
+        booking_id: String(booking.id),
+        // booking_id: "1234",
       },
     };
 
@@ -507,8 +507,8 @@ async function sendWebBookingNotification(booking) {
       data: {
         type: "NEW_WEB_BOOKING",
         booking_mode: bookingType,
-        // booking_id: String(booking.id),
-        booking_id: "1235",
+        booking_id: String(booking.id),
+        // booking_id: "1235",
       },
     };
 
@@ -554,10 +554,12 @@ async function sendPDANotification(driverId) {
       message: "Your PDA Has Been Updated",
     },
   };
-console.log("PDA Notification Data:", message);
+
+  console.log("PDA Notification Data:", message);
+
   // 3️⃣ Send
   await admin.messaging().send(message);
-  console.log("PDA Notification Data:", message);
+
   console.log("✅ Notification sent to driver:", driverId);
 }
 

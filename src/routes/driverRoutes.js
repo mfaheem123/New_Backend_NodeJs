@@ -34,6 +34,7 @@ router.get("/fob-drivers", driverController.getFOBDrivers);
 router.get("/panic-disable/:driver_id", driverController.onPanicStatusDriver);
 
 router.post("/on-break", upload.none(), driverController.onBreakDriver);
+router.post("/end-break", upload.none(), driverController.endBreakStatusDriver);
 router.post("/panic", upload.none(), driverController.onPanicDriver);
 router.post(
   "/break-request",

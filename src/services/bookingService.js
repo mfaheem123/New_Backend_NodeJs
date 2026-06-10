@@ -11,7 +11,7 @@ const {
   sendFOBBookingNotification,
   sendAppBookingNotification,
   sendWebBookingNotification,
-  sendFutureBookingNotification
+  sendFutureBookingNotification,
 } = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
