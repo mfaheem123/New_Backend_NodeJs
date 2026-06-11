@@ -44,7 +44,10 @@ const {
   getBookingsForCustomerInvoice,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
-const { notifyBusyDriverUpdate, notifyDriverBookingStatusWeb } = require("../sockets/driverWebSocket");
+const {
+  notifyBusyDriverUpdate,
+  notifyDriverBookingStatusWeb,
+} = require("../sockets/driverWebSocket");
 const {
   notifyDriverBookingStatus,
 } = require("../sockets/driverTrackingSocket");
@@ -580,7 +583,6 @@ exports.updateBookingStatus = async (req, res) => {
       await Driver.updateDriverStatus(driverId, "On Route", "Unavailable");
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
-
     }
 
     // ARRIVED
@@ -589,7 +591,6 @@ exports.updateBookingStatus = async (req, res) => {
       await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
-
     }
 
     // SOON TO CLEAR
@@ -597,7 +598,6 @@ exports.updateBookingStatus = async (req, res) => {
       await Driver.updateDriverStatus(driverId, "STC", "Unavailable");
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
-
     }
 
     // COMPLETED
@@ -608,7 +608,6 @@ exports.updateBookingStatus = async (req, res) => {
 
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
-
 
       const driver = await Driver.getById(driverId);
 

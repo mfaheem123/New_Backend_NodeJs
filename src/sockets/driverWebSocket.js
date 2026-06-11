@@ -410,7 +410,7 @@ module.exports = {
   notifyBusyDriverUpdate,
   handleBusyDriverSocket,
   notifyDriverBookingStatusWeb,
-  notifyDriverBreakStatusWeb
+  notifyDriverBreakStatusWeb,
 };
 
 // SOCKET IO CODE YAHA HAI

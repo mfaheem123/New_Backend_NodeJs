@@ -2,7 +2,7 @@ const Driver = require("../models/driverModel");
 const {
   notifyDriverLogin,
   notifyDriverLogout,
-  notifyDriverBreakStatusWeb
+  notifyDriverBreakStatusWeb,
 } = require("../sockets/driverWebSocket");
 // const { getIO } = require("../sockets/io");
 const jwt = require("jsonwebtoken");
@@ -1126,7 +1126,7 @@ exports.onPanicStatusDriver = async (req, res) => {
 
 exports.endBreakStatusDriver = async (req, res) => {
   try {
-    const {driver_id} = req.query;
+    const { driver_id } = req.query;
     if (!driver_id) {
       return res.status(400).json({
         status: false,
@@ -1143,22 +1143,21 @@ exports.endBreakStatusDriver = async (req, res) => {
     }
 
     await Driver.updateDriverStatus(
-        driver_id,
-        driver.booking_status,
-        "Available",
-      );
+      driver_id,
+      driver.booking_status,
+      "Available",
+    );
 
-      await notifyDriverBreakStatusWeb(driver_id);
+    await notifyDriverBreakStatusWeb(driver_id);
 
-      //Send Break Status Notification to Driver
-      // await notification.sendBreakStatusNotification(driver_id, "Rejected");
-      return res.status(200).json({
-        status: true,
-        message: "Driver Break Ended",
-        driver_id: driver_id,
-        driver_status: "Available",
-      });
-    
+    //Send Break Status Notification to Driver
+    // await notification.sendBreakStatusNotification(driver_id, "Rejected");
+    return res.status(200).json({
+      status: true,
+      message: "Driver Break Ended",
+      driver_id: driver_id,
+      driver_status: "Available",
+    });
   } catch (error) {
     console.error("❌ Error fetching commission drivers:", error);
     return res.status(500).json({
