@@ -609,8 +609,9 @@ async function sendIVRBookingNotification(booking) {
 
       data: {
         type: "NEW_IVR_BOOKING",
-        // booking_id: String(booking.id),
-        booking_id: "1235",
+        booking_mode: "ASAP",
+        booking_id: String(booking.id),
+        // booking_id: "1235",
       },
     };
 
