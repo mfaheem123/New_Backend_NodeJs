@@ -1005,6 +1005,9 @@ exports.getFOBDrivers = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// SEND BREAK STATUS TO DRIVERS
+// ---------------------------------------------------------
 exports.breakStatusDriver = async (req, res) => {
   try {
     const { driver_id, on_break } = req.body;
@@ -1083,6 +1086,9 @@ exports.breakStatusDriver = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// SEND PANIC STATUS TO DRIVERS
+// ---------------------------------------------------------
 exports.onPanicStatusDriver = async (req, res) => {
   try {
     const { driver_id } = req.params;
@@ -1124,6 +1130,9 @@ exports.onPanicStatusDriver = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// SEND END BREAK STATUS TO DASHBOARD
+// ---------------------------------------------------------
 exports.endBreakStatusDriver = async (req, res) => {
   try {
     const { driver_id } = req.query;

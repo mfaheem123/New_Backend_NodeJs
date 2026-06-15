@@ -1,4 +1,4 @@
-const admin = require("../config/firebase"); // firebase-admin init
+const admin = require("../config/firebase");
 const pool = require("../db");
 
 // ---------------------------------------------------------

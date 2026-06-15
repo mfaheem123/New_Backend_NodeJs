@@ -748,9 +748,9 @@ const Driver = {
       // 🧱 Fetch driver main record
       const driverRes = await db.query(
         `SELECT d.*, s.name AS subsidiary_name
-       FROM drivers d
-       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
-       WHERE d.id = $1`,
+          FROM drivers d
+          LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
+          WHERE d.id = $1`,
         [id],
       );
 
@@ -764,18 +764,18 @@ const Driver = {
       // 📝 Notes
       const notesRes = await db.query(
         `SELECT id, note, created_at, created_by
-       FROM driver_notes
-       WHERE driver_id = $1
-       ORDER BY created_at DESC`,
+          FROM driver_notes
+          WHERE driver_id = $1
+          ORDER BY created_at DESC`,
         [id],
       );
 
       // ⏰ Shifts
       const shiftsRes = await db.query(
         `SELECT id, name, start_time, end_time
-       FROM driver_shifts
-       WHERE driver_id = $1
-       ORDER BY id ASC`,
+          FROM driver_shifts
+          WHERE driver_id = $1
+          ORDER BY id ASC`,
         [id],
       );
 
@@ -1088,20 +1088,6 @@ const Driver = {
     // console.log(result)
     return result.rows[0];
   },
-
-  // Update driver login session
-  // async updateDriverLoginStatus(driverId) {
-  //   const query = `
-  //       UPDATE drivers
-  //       SET
-  //         session_status = 'logged_in',
-  //         driver_status = 'Available',
-  //         booking_status = 'Available',
-  //         last_login_at = NOW()
-  //       WHERE id = $1
-  //     `;
-  //   return db.query(query, [driverId]);
-  // },
 
   //Update Driver Login Status With Location
   async updateDriverLoginStatus(driverId, latitude, longitude) {
