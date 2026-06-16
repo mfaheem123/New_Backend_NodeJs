@@ -89,9 +89,9 @@ const FixedFare = {
       values.push(`%${area2}%`);
     }
     if (company_id) {
-    conditions.push(`f.company_id = $${index++}`);
-    values.push(company_id);
-  }
+      conditions.push(`f.company_id = $${index++}`);
+      values.push(company_id);
+    }
 
     let whereClause = "";
     if (conditions.length > 0) {
@@ -121,7 +121,7 @@ const FixedFare = {
 
     const cleanedRows = rows.map(({ company_id, ...rest }) => rest);
 
-  return { rows: cleanedRows, totalRecords };
+    return { rows: cleanedRows, totalRecords };
   },
 
   // ✅ READ BY ID

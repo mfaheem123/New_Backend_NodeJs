@@ -32,7 +32,7 @@ module.exports = {
       data.to_time,
       data.active,
       data.day,
-      data.company_id || 1
+      data.company_id || 1,
     ];
 
     const result = await pool.query(query, values);
@@ -91,7 +91,8 @@ module.exports = {
                 TO_CHAR(from_date, 'DD-MM-YYYY') AS from_date,
                 TO_CHAR(to_date, 'DD-MM-YYYY') AS to_date,
                 surcharges_type, condition, postcode, operator, fare, parking_charges,
-                extra_drop_charges, congestion_charges, duration,from_time, to_time, active, day, created_at, updated_at FROM surcharges WHERE company_id=$1 ORDER BY id ASC;`,[company_id]
+                extra_drop_charges, congestion_charges, duration,from_time, to_time, active, day, created_at, updated_at FROM surcharges WHERE company_id=$1 ORDER BY id ASC;`,
+      [company_id],
     );
     return result.rows;
   },

@@ -45,7 +45,7 @@ exports.generateInvoiceNumber = async () => {
     ORDER BY id ASC
     LIMIT 1
     FOR UPDATE
-    `
+    `,
   );
 
   if (!res.rows.length) {
@@ -62,7 +62,7 @@ exports.generateInvoiceNumber = async () => {
     SET end_number = $1, updated_at = now()
     WHERE id = $2
     `,
-    [nextNumber, doc.id]
+    [nextNumber, doc.id],
   );
 
   return invoiceNumber;

@@ -1,6 +1,5 @@
 const pool = require("../db");
 
-
 exports.create = async (data) => {
   const columns = Object.keys(data);
   const values = Object.values(data);
@@ -80,6 +79,6 @@ exports.delete = async (id) => {
   await pool.query(
     `DELETE FROM company_configurations
      WHERE id = $1`,
-    [id]
+    [id],
   );
 };

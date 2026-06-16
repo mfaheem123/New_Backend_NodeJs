@@ -28,7 +28,7 @@ const getByRoleId = async (roleId) => {
 const updateAuthorization = async (roleId, data) => {
   // remove undefined or null fields
   const filteredEntries = Object.entries(data).filter(
-    ([_, value]) => value !== undefined && value !== null
+    ([_, value]) => value !== undefined && value !== null,
   );
 
   if (filteredEntries.length === 0) {
@@ -47,7 +47,7 @@ const updateAuthorization = async (roleId, data) => {
      SET ${setQuery}
      WHERE role_id = $1
      RETURNING *`,
-    [roleId, ...values]
+    [roleId, ...values],
   );
 
   return result.rows[0];
