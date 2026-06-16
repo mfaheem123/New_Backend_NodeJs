@@ -1929,3 +1929,45 @@ exports.getBookingsForCustomerInvoice = async (req, res) => {
     });
   }
 };
+
+
+// ---------------------------------------------------------
+// CHECK BOOKING STATUS CUSTOMER APP
+// ---------------------------------------------------------
+exports.checkBookingStatusCustomer = async (req, res) => {
+  try {
+    const { booking_id } = req.params;
+
+    if (!booking_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Booking ID is required",
+      });
+    }
+
+    const booking = await getBookingStatusById(booking_id);
+
+    if (!booking) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    const isTrue =
+      booking.booking_status_id === 11 || booking.booking_status_id === "11";
+
+    return res.json({
+      status: true,
+      booking_id: booking_id,
+      booking_status_id: booking.booking_status_id,
+      booking_status: isTrue,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};

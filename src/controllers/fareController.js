@@ -110,7 +110,7 @@ const applyFareByVehicle = async (fare, vehicle_type_id) => {
 /* ---------------- CORE FARE ---------------- */
 const calculateSingleFare = async (payload) => {
   let {
-    miles = 0,
+    miles,
     pickup_date,
     pickup_time,
     vehicle_type_id,
@@ -122,8 +122,21 @@ const calculateSingleFare = async (payload) => {
   } = payload;
 
   // safe miles
+  if (
+    miles === undefined ||
+    miles === null ||
+    miles === "" ||
+    isNaN(Number(miles))
+  ) {
+    return {
+      fare: 0,
+      total_fare: 0,
+    };
+  }
+
   miles = Number(miles);
-  if (isNaN(miles) || miles < 0) miles = 0;
+
+  if (miles < 0) miles = 0;
 
   pickup_time = normalizeTime(pickup_time);
   const resolvedDay = getDayName(pickup_date);
@@ -370,7 +383,7 @@ exports.calculateFare = async (req, res) => {
         ...req.body,
 
         // ✅ return specific
-        miles: Number(req.body.return_miles || 0),
+        miles: Number(req.body.return_miles),
         pickup: req.body.return_pickup,
         dropoff: req.body.return_dropoff,
         pickup_plot_id: req.body.return_pickup_plot_id,
