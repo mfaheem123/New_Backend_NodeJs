@@ -566,7 +566,7 @@ async function sendPDANotification(driverId) {
 // ---------------------------------------------------------
 // SEND IVR BOOKING NOTIFICATION TO DASHBOARD
 // ---------------------------------------------------------
-async function sendIVRBookingNotification(booking) {
+async function sendIVRBookingNotification(booking,companyId) {
   try {
     // ✅ Sirf IVR bookings ke liye
     if (
@@ -584,9 +584,10 @@ async function sendIVRBookingNotification(booking) {
       SELECT web_device_id
       FROM employees
       WHERE role_id = 1
+      AND company_id = $1
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
-    `);
+    `,[companyId]);
 
     const tokens = res.rows.map((r) => r.web_device_id);
 

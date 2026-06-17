@@ -75,33 +75,3 @@ module.exports = {
   handleCLISocket,
   notifyCLIOpen,
 };
-
-// SOCKET IO CODE YAHA HAI
-// const logger = require("../utils/logger");
-
-// const cliClients = new Map();
-
-// function handleCLISocket(socket) {
-//   const { extension } = socket.handshake.query;
-
-//   if (!extension) {
-//     socket.disconnect();
-//     return;
-//   }
-
-//   socket.join(`cli-${extension}`);
-
-//   logger.info("cli connected", {
-//     socketId: socket.id,
-//     extension,
-//   });
-// }
-
-// function notifyCLIOpen(io, extension, payload) {
-//   io.to(`cli-${extension}`).emit("CLI_OPEN", payload);
-// }
-
-// module.exports = {
-//   handleCLISocket,
-//   notifyCLIOpen,
-// };

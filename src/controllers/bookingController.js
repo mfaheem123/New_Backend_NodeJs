@@ -1930,7 +1930,6 @@ exports.getBookingsForCustomerInvoice = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
 // CHECK BOOKING STATUS CUSTOMER APP
 // ---------------------------------------------------------
