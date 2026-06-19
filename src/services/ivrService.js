@@ -48,7 +48,7 @@ async function getCompanyIdByIVR(number) {
     AND status='active'
     LIMIT 1
     `,
-    [number]
+    [number],
   );
 
   return result.rows[0]?.id || null;
@@ -59,22 +59,20 @@ async function getCompanyIdByIVR(number) {
 ===================================================== */
 
 exports.handleMainIvr = async (body) => {
-  const { systemToken, uniqueCallId, callerNumber, text, incomingNumber } = body;
+  const { systemToken, uniqueCallId, callerNumber, text, incomingNumber } =
+    body;
 
   if (systemToken !== SYSTEM_TOKEN) return hangup("Unauthorized");
-const companyId =
-  await getCompanyIdByIVR(incomingNumber);
+  const companyId = await getCompanyIdByIVR(incomingNumber);
 
+  if (!companyId) {
+    console.log("IVR COMPANY NOT FOUND:", incomingNumber);
 
-if (!companyId) {
-  console.log("IVR COMPANY NOT FOUND:", incomingNumber);
-
-  return transfer(
-    OFFICE_NUMBER,
-    "Company not found. Please hold while we transfer your call."
-  );
-}
-
+    return transfer(
+      OFFICE_NUMBER,
+      "Company not found. Please hold while we transfer your call.",
+    );
+  }
 
   const formattedNumber = formatMobile(callerNumber);
   const ACTIVE_STATUS = [3, 6, 10, 15];
@@ -234,20 +232,18 @@ if (!companyId) {
 };
 
 exports.handleFallbackIvr = async (body) => {
-  const { systemToken, uniqueCallId, callerNumber, text, incomingNumber } = body;
-const companyId =
-  await getCompanyIdByIVR(incomingNumber);
-
+  const { systemToken, uniqueCallId, callerNumber, text, incomingNumber } =
+    body;
+  const companyId = await getCompanyIdByIVR(incomingNumber);
 
   if (!companyId) {
-  console.log("IVR COMPANY NOT FOUND:", incomingNumber);
+    console.log("IVR COMPANY NOT FOUND:", incomingNumber);
 
-  return transfer(
-    OFFICE_NUMBER,
-    "Company not found. Please hold while we transfer your call."
-  );
-}
-
+    return transfer(
+      OFFICE_NUMBER,
+      "Company not found. Please hold while we transfer your call.",
+    );
+  }
 
   if (systemToken !== SYSTEM_TOKEN_FALLBACK) return hangup("Unauthorized");
 
@@ -274,7 +270,7 @@ const companyId =
 
   const session = sessions.get(uniqueCallId);
 
-const sessionCompanyId = session.company_id || companyId;
+  const sessionCompanyId = session.company_id || companyId;
   /* STEP 1 - PICKUP MENU */
   if (session.step === 1) {
     if (!text)
@@ -483,7 +479,7 @@ LIMIT 1`,
         session.email,
         session.mobile,
         session.telephone,
-        sessionCompanyId
+        sessionCompanyId,
       ],
     );
 
@@ -522,7 +518,10 @@ LIMIT 1`,
           [miles, eta, fares, total_charges, bookingId],
         );
         const ivrBooking = await bookingModel.getBookingByIdEnriched(bookingId);
-        await ivrNotifcation.sendIVRBookingNotification(ivrBooking,sessionCompanyId);
+        await ivrNotifcation.sendIVRBookingNotification(
+          ivrBooking,
+          sessionCompanyId,
+        );
       } catch (err) {
         console.error("Background fare calculation failed:", err);
       }

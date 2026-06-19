@@ -65,7 +65,7 @@ const deleteEventsByToken = async (token) => {
   return result.rowCount;
 };
 
-const getCompanyIdByCallEvent= async (number) =>{
+const getCompanyIdByCallEvent = async (number) => {
   const result = await db.query(
     `
     SELECT id
@@ -74,11 +74,11 @@ const getCompanyIdByCallEvent= async (number) =>{
     AND status='active'
     LIMIT 1
     `,
-    [number]
+    [number],
   );
 
   return result.rows[0]?.id || null;
-}
+};
 
 module.exports = {
   createBatch,
@@ -86,5 +86,5 @@ module.exports = {
   markCliTriggered,
   getEventsByToken,
   deleteEventsByToken,
-  getCompanyIdByCallEvent
+  getCompanyIdByCallEvent,
 };

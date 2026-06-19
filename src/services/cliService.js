@@ -41,9 +41,9 @@ const deduplicateBookings = (bookings) => {
  */
 const findCustomerByPhone = async (phone) => {
   const cleanPhone = phone.replace(/\s+/g, "");
-const companyId = 1;
+  const companyId = 1;
   // 1️⃣ Find customer
-  const customers = await CustomerModel.searchByMobile(cleanPhone,companyId);
+  const customers = await CustomerModel.searchByMobile(cleanPhone, companyId);
 
   if (!customers || customers.length === 0) {
     return {

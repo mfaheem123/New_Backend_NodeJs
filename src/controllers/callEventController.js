@@ -45,20 +45,15 @@ exports.receiveCallEvents = async (req, res) => {
         continue; // skip invalid event
       }
 
-       // ✅ COMPANY FIND BY DIALED NUMBER
-        const companyId =
-          await CallEventModel.getCompanyIdByCallEvent(
-            event.dialledNumber
-          );
+      // ✅ COMPANY FIND BY DIALED NUMBER
+      const companyId = await CallEventModel.getCompanyIdByCallEvent(
+        event.dialledNumber,
+      );
 
-        if (!companyId) {
-          console.warn(
-            "❌ Company not found:",
-            event.dialledNumber
-          );
-          continue;
-        }
-
+      if (!companyId) {
+        console.warn("❌ Company not found:", event.dialledNumber);
+        continue;
+      }
 
       // 🔹 Save event and get saved record
       const savedEvent = await CallEventModel.insertSingleEvent(batchId, {
@@ -75,19 +70,18 @@ exports.receiveCallEvents = async (req, res) => {
         //   extension: event.extension,
         // });
 
-       //WITH COMPANY ID
+        //WITH COMPANY ID
         notifyCLIOpen(
-            companyId, // company filter
-            event.extension,
-            {
-              companyId,
-              callId: event.callId,
-              callerId: event.callerId,
-              extension: event.extension,
-              dialledNumber:
-                event.dialledNumber,
-            }
-          );
+          companyId, // company filter
+          event.extension,
+          {
+            companyId,
+            callId: event.callId,
+            callerId: event.callerId,
+            extension: event.extension,
+            dialledNumber: event.dialledNumber,
+          },
+        );
 
         // 3️⃣ Mark as triggered
         await CallEventModel.markCliTriggered(savedEvent.id);
