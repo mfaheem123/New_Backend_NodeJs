@@ -1980,6 +1980,18 @@ const getBookingsForCustomerInvoice = async (
   return rows;
 };
 
+// ---------------------------------------------------------
+// GET BOOKINGS BY ID
+// ---------------------------------------------------------
+const getBookingByReferenceNumber = async (reference_number) => {
+  const sql = `
+    ${ENRICHED_SELECT}
+    WHERE b.reference_number = $1
+  `;
+  const res = await pool.query(sql, [reference_number]);
+  return res.rows[0];
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -2030,4 +2042,5 @@ module.exports = {
   getIncomeReportData,
   getDriverTodayEarning,
   getBookingsForCustomerInvoice,
+  getBookingByReferenceNumber
 };

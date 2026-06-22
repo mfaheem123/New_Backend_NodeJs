@@ -7,6 +7,7 @@ const bookingController = require("../controllers/bookingController");
 router.get("/get/:id", bookingController.getBookingSections);
 router.get("/getbytabs/:id", bookingController.getBookingByTabs);
 router.get("/getbyid/:id", bookingController.getBookingById);
+router.get("/reference-number", bookingController.getBookingByReferenceNumber);
 router.get("/getbydriverid/:id", bookingController.getBookingByDriverId);
 router.get("/driver-current-booking", bookingController.getCurrentJob);
 router.get("/driver-total-earning/:id", bookingController.getDriverEarning);

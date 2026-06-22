@@ -42,6 +42,7 @@ const {
   getIncomeReportData,
   getDriverTodayEarning,
   getBookingsForCustomerInvoice,
+  getBookingByReferenceNumber
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -1969,4 +1970,32 @@ exports.checkBookingStatusCustomer = async (req, res) => {
       message: "Internal Server Error",
     });
   }
+};
+
+
+// ---------------------------------------------------------
+// GET BOOKING BY REFERENCE NUMBER
+// ---------------------------------------------------------
+exports.getBookingByReferenceNumber = async (req, res) => {
+  const { reference_number } = req.query;
+  console.log(
+    "🚀 INCOMING GET BOOKING BODY:",
+    JSON.stringify(req.query, null, 2),
+  );
+
+  const booking = await getBookingByReferenceNumber(reference_number);
+
+  if (!booking) {
+    return res.status(404).json({
+      success: false,
+      message: "Booking not found",
+    });
+  }
+
+  const data = parseJSONFields(booking);
+
+  res.status(200).json({
+    success: true,
+    booking: data,
+  });
 };

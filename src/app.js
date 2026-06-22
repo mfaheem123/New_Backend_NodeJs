@@ -57,6 +57,7 @@ const lostPropertyRoutes = require("./routes/lostPropertyRoutes");
 const authorizationRoutes = require("./routes/authorizationRoutes");
 const driverShiftRoutes = require("./routes/driverShiftHistoryRoutes");
 const EmployeeShiftRoutes = require("./routes/employeeShiftHistoryRoutes");
+const complaintRoutes = require("./routes/complaintRoutes");
 
 const app = express();
 
@@ -167,6 +168,7 @@ app.use("/api/lost-property", lostPropertyRoutes);
 app.use("/api/authorizations", authorizationRoutes);
 app.use("/api/driver_shift_history", driverShiftRoutes);
 app.use("/api/employee_shift_history", EmployeeShiftRoutes);
+app.use("/api/complaint", complaintRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

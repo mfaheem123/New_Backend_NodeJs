@@ -1,0 +1,165 @@
+const db = require("../db");
+
+async function createComplaint(data) {
+  const {
+    complain_date,
+    incident_date,
+    customer_id,
+    booking_id,
+    complaint,
+    dealt_with,
+    result,
+    driver_id,
+    employee_id,
+    account_id,
+  } = data;
+
+  const query = `
+INSERT INTO complaints(
+complain_date,
+incident_date,
+customer_id,
+booking_id,
+complaint,
+dealt_with,
+result,
+driver_id,
+employee_id,
+account_id
+)
+VALUES(
+$1,$2,$3,$4,$5,$6,$7,$8,$9,$10
+)
+RETURNING *;
+`;
+
+  const values = [
+    complain_date,
+    incident_date,
+    customer_id,
+    booking_id,
+    complaint,
+    dealt_with,
+    result,
+    driver_id,
+    employee_id,
+    account_id,
+  ];
+
+  const resultDB = await db.query(query, values);
+
+  return resultDB.rows[0];
+}
+
+async function getAllComplaints(offset, limit) {
+  const query = `
+SELECT
+c.*,
+
+json_build_object(
+'name',cu.name
+) customer,
+
+json_build_object(
+'reference_number',b.reference_number,
+'notes',b.notes
+) booking
+
+FROM complaints c
+
+LEFT JOIN customers cu
+ON cu.id=c.customer_id
+
+LEFT JOIN bookings b
+ON b.id=c.booking_id
+
+ORDER BY c.id DESC
+OFFSET $1
+LIMIT $2
+`;
+
+  const result = await db.query(query, [offset, limit]);
+
+  return result.rows;
+}
+
+async function getComplaintById(id) {
+  const query = `
+SELECT
+c.*,
+
+json_build_object(
+'name',cu.name,
+'mobile',cu.mobile,
+'door_number',cu.door_number,
+'address1',cu.address1,
+'address2',cu.address2
+) customer,
+
+json_build_object(
+'reference_number',b.reference_number,
+'notes',b.notes,
+'pickup',b.pickup,
+'dropoff',b.dropoff
+) booking
+
+FROM complaints c
+
+LEFT JOIN customers cu
+ON cu.id=c.customer_id
+
+LEFT JOIN bookings b
+ON b.id=c.booking_id
+
+WHERE c.id=$1
+`;
+
+  const result = await db.query(query, [id]);
+
+  return result.rows[0];
+}
+
+async function updateComplaint(id, body) {
+  const query = `
+UPDATE complaints
+SET
+complaint=$1,
+dealt_with=$2,
+result=$3,
+driver_id=$4,
+updated_at=NOW()
+
+WHERE id=$5
+RETURNING *
+`;
+
+  const values = [
+    body.complaint,
+    body.dealt_with,
+    body.result,
+    body.driver_id,
+    id,
+  ];
+
+  const result = await db.query(query, values);
+
+  return result.rows[0];
+}
+
+async function deleteComplaint(id) {
+  await db.query(
+    `
+DELETE FROM complaints
+WHERE id=$1
+`,
+    [id]
+  );
+}
+
+module.exports = {
+  createComplaint,
+  getAllComplaints,
+  getComplaintById,
+  updateComplaint,
+  deleteComplaint,
+};
