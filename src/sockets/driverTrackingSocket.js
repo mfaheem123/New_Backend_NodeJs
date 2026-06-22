@@ -132,7 +132,7 @@ function handleDriverTrackingSocket(ws) {
           `📏 Driver ${driverId} moved: ${distance.toFixed(2)} meters`,
         );
 
-        if (distance >= 50) {
+        if (distance >= 3) {
           shouldBroadcast = true;
         }
       }

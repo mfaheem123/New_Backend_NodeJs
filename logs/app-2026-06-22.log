@@ -1,0 +1,21 @@
+{"duration":1119,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-06-22T10:15:12.850Z"}
+{"level":"info","message":"GET /api/location-types 200 1129.727 ms","timestamp":"2026-06-22T10:15:12.862Z"}
+{"duration":1138,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-06-22T10:15:12.866Z"}
+{"level":"info","message":"GET /api/location-types 200 1139.900 ms","timestamp":"2026-06-22T10:15:12.868Z"}
+{"duration":75,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-06-22T11:35:09.915Z"}
+{"level":"info","message":"GET /api/location-types 200 80.362 ms","timestamp":"2026-06-22T11:35:09.919Z"}
+{"duration":51,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-06-22T12:55:09.884Z"}
+{"level":"info","message":"GET /api/location-types 200 53.932 ms","timestamp":"2026-06-22T12:55:09.888Z"}
+{"duration":55,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-06-22T14:15:09.917Z"}
+{"level":"info","message":"GET /api/location-types 200 58.514 ms","timestamp":"2026-06-22T14:15:09.921Z"}
+{"duration":12,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-06-22T14:20:27.997Z"}
+{"level":"info","message":"GET /api/location-types 200 25.672 ms","timestamp":"2026-06-22T14:20:28.010Z"}
+{"duration":66,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-06-22T14:20:28.055Z"}
+{"level":"info","message":"GET /api/location-types 200 67.550 ms","timestamp":"2026-06-22T14:20:28.056Z"}
+{"duration":70,"level":"info","message":"db-query","rows":39,"text":"\n        SELECT \n            id, sms_flag, name, mobile, email, telephone, address1, address2\n        FROM customers\n        WHERE mobile LIKE $1 AND company_id = $2\n    ","timestamp":"2026-06-22T14:32:21.323Z"}
+{"level":"info","message":"GET /api/customers/search-data?mobile=1234&company_id=1 200 73.526 ms","timestamp":"2026-06-22T14:32:21.324Z"}
+{"level":"info","message":"GET /favicon.ico 404 2.329 ms","timestamp":"2026-06-22T14:32:21.374Z"}
+{"duration":93,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-06-22T15:40:26.810Z"}
+{"level":"info","message":"GET /api/location-types 200 94.379 ms","timestamp":"2026-06-22T15:40:26.811Z"}
+{"duration":53,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-06-22T17:00:26.806Z"}
+{"level":"info","message":"GET /api/location-types 200 55.321 ms","timestamp":"2026-06-22T17:00:26.809Z"}

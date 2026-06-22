@@ -118,13 +118,16 @@ async function sendFOBBookingNotification(driverId, booking) {
 async function sendPanicDriverNotification(driverId) {
   try {
     // 1️⃣ Sare controllers ke web_device_id lao
-    const res = await pool.query(`
+    const res = await pool.query(
+      `
       SELECT web_device_id
       FROM employees
-      WHERE role_id = 1
+      WHERE role_id = 1 AND company_id = $1
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
-    `);
+    `,
+      [booking.company_id],
+    );
 
     // 2️⃣ Tokens array banao
     const tokens = res.rows.map((row) => row.web_device_id);
@@ -176,13 +179,16 @@ async function sendPanicDriverNotification(driverId) {
 async function sendOnBreakDriverNotification(driverId) {
   try {
     // 1️⃣ Sare controllers ke web_device_id lao
-    const res = await pool.query(`
+    const res = await pool.query(
+      `
       SELECT web_device_id
       FROM employees
-      WHERE role_id = 1
+      WHERE role_id = 1 AND company_id = $1
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
-    `);
+    `,
+      [booking.company_id],
+    );
 
     // 2️⃣ Tokens array banao
     const tokens = res.rows.map((row) => row.web_device_id);
@@ -352,13 +358,16 @@ async function sendAppBookingNotification(booking) {
     // DASHBOARD TOKENS
     // ==============================
 
-    const res = await pool.query(`
+    const res = await pool.query(
+      `
       SELECT web_device_id
       FROM employees
-      WHERE role_id = 1
+      WHERE role_id = 1 AND company_id = $1
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
-    `);
+    `,
+      [booking.company_id],
+    );
 
     const tokens = res.rows.map((r) => r.web_device_id);
 
@@ -477,13 +486,16 @@ async function sendWebBookingNotification(booking) {
     // DASHBOARD TOKENS
     // ==============================
 
-    const res = await pool.query(`
+    const res = await pool.query(
+      `
       SELECT web_device_id
       FROM employees
-      WHERE role_id = 1
+      WHERE role_id = 1 AND company_id = $1
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
-    `);
+    `,
+      [booking.company_id],
+    );
 
     const tokens = res.rows.map((r) => r.web_device_id);
 
