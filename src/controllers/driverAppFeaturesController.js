@@ -1,5 +1,8 @@
 const driverFeatures = require("../models/driverAppFeaturesModel");
 const pdaNotification = require("../services/notificationService");
+const {
+  emitDriverFeatureUpdate,
+} = require("../sockets/driverAppFeaturesSocket");
 
 exports.updateDriverAppFeatures = async (req, res) => {
   try {
@@ -22,6 +25,8 @@ exports.updateDriverAppFeatures = async (req, res) => {
     }
 
     await pdaNotification.sendPDANotification(driver_id);
+    // REALTIME EVENT
+    emitDriverFeatureUpdate(driver_id, updated);
 
     return res.json({
       status: true,

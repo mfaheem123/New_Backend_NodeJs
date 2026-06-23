@@ -16,25 +16,20 @@ exports.create = async (req, res) => {
   try {
     console.log(
       "🚀 INCOMING ADD CUSTOMER COMPLAINT BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
 
-    const complaint =
-      await Complaint.createComplaint(req.body);
+    const complaint = await Complaint.createComplaint(req.body);
 
     await generateReference(complaint.id);
 
     // FIX
-    const data =
-      await Complaint.getComplaintById(
-        complaint.id
-      );
+    const data = await Complaint.getComplaintById(complaint.id);
 
     return res.status(201).json({
       status: true,
       complaint: data,
     });
-
   } catch (err) {
     console.error("ADD COMPLAINT ERROR:", err);
 

@@ -12,6 +12,7 @@ const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 const notification = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 const { panicDriverClients } = require("../sockets/panicSocket");
+const { breakDriverClients } = require("../sockets/breakSocket");
 
 // const io = getIO();
 
@@ -1064,8 +1065,25 @@ exports.breakStatusDriver = async (req, res) => {
         "Available",
       );
       console.log("DRIVER BREAK IS END:", on_break);
-      //Send Break Status Notification to Driver
+      
+      // Send Break False To Driver App Socket
+    const driverSocket = breakDriverClients.get(driver_id);
+    if (driverSocket && driverSocket.readyState === WebSocket.OPEN) {
+      driverSocket.send(
+        JSON.stringify({
+          event: "BREAK_STATUS",
+          data: {
+            break: false,
+          },
+        }),
+      );
+
+      console.log("Break False Sent To Driver");
+    }
+
+    //Send Break Status Notification to Driver
       await notification.sendBreakStatusNotification(driver_id, "Rejected");
+
       return res.status(200).json({
         status: true,
         message: "Driver Break Has Been Rejected",
