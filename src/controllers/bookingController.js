@@ -42,7 +42,7 @@ const {
   getIncomeReportData,
   getDriverTodayEarning,
   getBookingsForCustomerInvoice,
-  getBookingByReferenceNumber
+  getBookingByReferenceNumber,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -1971,7 +1971,6 @@ exports.checkBookingStatusCustomer = async (req, res) => {
     });
   }
 };
-
 
 // ---------------------------------------------------------
 // GET BOOKING BY REFERENCE NUMBER

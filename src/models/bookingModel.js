@@ -2042,5 +2042,5 @@ module.exports = {
   getIncomeReportData,
   getDriverTodayEarning,
   getBookingsForCustomerInvoice,
-  getBookingByReferenceNumber
+  getBookingByReferenceNumber,
 };

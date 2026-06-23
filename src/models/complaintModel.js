@@ -152,7 +152,7 @@ async function deleteComplaint(id) {
 DELETE FROM complaints
 WHERE id=$1
 `,
-    [id]
+    [id],
   );
 }
 

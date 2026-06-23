@@ -2,99 +2,86 @@ const Complaint = require("../models/complaintModel");
 const db = require("../db");
 
 async function generateReference(id) {
-
   await db.query(
-`
+    `
 UPDATE complaints
 SET reference_number=$1
 WHERE id=$2
 `,
-[`NTG${id}`, id]
-);
+    [`NTG${id}`, id],
+  );
 }
+
 exports.create = async (req, res) => {
-try {
-const complaint = await Complaint.createComplaint(body);
+  try {
+    console.log(
+      "🚀 INCOMING ADD CUSTOMER COMPLAINT BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
 
-  await generateReference(complaint.id);
+    const complaint =
+      await Complaint.createComplaint(req.body);
 
-const data = Complaint.getComplaintById(complaint.id);
+    await generateReference(complaint.id);
 
-res.json({
-status:true,
-complaint: data
-});
+    // FIX
+    const data =
+      await Complaint.getComplaintById(
+        complaint.id
+      );
 
-} catch (err) {
+    return res.status(201).json({
+      status: true,
+      complaint: data,
+    });
 
-res.status(500).json({
-status:false,
-message:err.message
-});
+  } catch (err) {
+    console.error("ADD COMPLAINT ERROR:", err);
 
-}
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
 };
 
 exports.getAll = async (req, res) => {
+  const offset = Number(req.query.offset) || 0;
 
-const offset =
-Number(req.query.offset)||0;
+  const limit = Number(req.query.limit) || 100;
 
-const limit =
-Number(req.query.limit)||100;
+  const complaints = await Complaint.getAllComplaints(offset, limit);
 
-const complaints =
-await Complaint.getAllComplaints(
-offset,
-limit
-);
-
-res.json({
-status:true,
-count:complaints.length,
-complaints
-});
-
+  res.json({
+    status: true,
+    count: complaints.length,
+    complaints,
+  });
 };
 
-exports.getById = async (req,res)=>{
+exports.getById = async (req, res) => {
+  const data = await Complaint.getComplaintById(req.query.id);
 
-const data =
-await Complaint.getComplaintById(
-req.query.id
-);
-
-res.json({
-status:true,
-complaint:data
-});
-
+  res.json({
+    status: true,
+    complaint: data,
+  });
 };
 
-exports.update = async (req,res)=>{
+exports.update = async (req, res) => {
+  const result = await Complaint.updateComplaint(req.params.id, req.body);
 
-const result =
-await Complaint.updateComplaint(
-req.params.id,
-req.body
-);
-
-res.json({
-status:true,
-complaint:result
-});
-
+  res.json({
+    status: true,
+    complaint: result,
+  });
 };
 
-exports.delete = async (req,res)=>{
+exports.delete = async (req, res) => {
+  await Complaint.deleteComplaint(req.params.id);
 
-await Complaint.deleteComplaint(
-req.params.id
-);
-
-res.json({
-status:true,
-message:"Complaint deleted"
-});
-
+  res.json({
+    status: true,
+    message: "Complaint deleted",
+  });
 };
