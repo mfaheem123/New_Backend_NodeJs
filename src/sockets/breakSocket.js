@@ -11,7 +11,8 @@ function handleBreakDriverSocket(ws, req) {
 
   if (!driverId) {
     ws.close();
-    return;0
+    return;
+    0;
   }
 
   // Save Driver Socket

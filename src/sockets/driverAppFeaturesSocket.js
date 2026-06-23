@@ -24,7 +24,7 @@ function handleDriverAppFeaturesSocket(ws, req) {
     JSON.stringify({
       event: "connected",
       message: "Driver feature socket connected",
-    })
+    }),
   );
 
   ws.on("close", () => {
@@ -52,7 +52,7 @@ function emitDriverFeatureUpdate(driverId, features) {
     JSON.stringify({
       event: "driver_app_features_updated",
       data: features,
-    })
+    }),
   );
 
   logger.info("ws:driver-feature-sent", {

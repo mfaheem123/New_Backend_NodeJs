@@ -16,9 +16,7 @@ const {
 const { handlePanicDriverSocket } = require("./panicSocket");
 const { handleBreakDriverSocket } = require("./breakSocket");
 
-const {
-  handleDriverAppFeaturesSocket,
-} = require("./driverAppFeaturesSocket");
+const { handleDriverAppFeaturesSocket } = require("./driverAppFeaturesSocket");
 
 function initWebSockets(server) {
   const wss = new WebSocket.Server({ noServer: true });
@@ -86,7 +84,7 @@ function initWebSockets(server) {
       } else if (url.startsWith("/websocket/break-driver")) {
         handleBreakDriverSocket(ws, req);
       } else if (url.startsWith("/websocket/driver-app-features")) {
-   handleDriverAppFeaturesSocket(ws, req);
+        handleDriverAppFeaturesSocket(ws, req);
       } else {
         logger.warn("ws:rejected", { url });
         ws.close();
