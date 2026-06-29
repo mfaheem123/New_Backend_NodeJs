@@ -123,21 +123,42 @@ async function updateComplaint(id, body) {
   const query = `
 UPDATE complaints
 SET
-complaint=$1,
-dealt_with=$2,
-result=$3,
-driver_id=$4,
-updated_at=NOW()
+complain_date = COALESCE($1, complain_date),
+incident_date = COALESCE($2, incident_date),
 
-WHERE id=$5
+customer_id = COALESCE($3, customer_id),
+booking_id = COALESCE($4, booking_id),
+
+complaint = COALESCE($5, complaint),
+dealt_with = COALESCE($6, dealt_with),
+result = COALESCE($7, result),
+
+driver_id = COALESCE($8, driver_id),
+employee_id = COALESCE($9, employee_id),
+account_id = COALESCE($10, account_id),
+
+updated_at = NOW()
+
+WHERE id=$11
+
 RETURNING *
 `;
 
   const values = [
-    body.complaint,
-    body.dealt_with,
-    body.result,
-    body.driver_id,
+    body.complain_date ?? null,
+    body.incident_date ?? null,
+
+    body.customer_id ?? null,
+    body.booking_id ?? null,
+
+    body.complaint ?? null,
+    body.dealt_with ?? null,
+    body.result ?? null,
+
+    body.driver_id ?? null,
+    body.employee_id ?? null,
+    body.account_id ?? null,
+
     id,
   ];
 
@@ -147,13 +168,20 @@ RETURNING *
 }
 
 async function deleteComplaint(id) {
-  await db.query(
+  const result = await db.query(
     `
 DELETE FROM complaints
 WHERE id=$1
+RETURNING id
 `,
-    [id],
+    [id]
   );
+
+  if (result.rowCount === 0) {
+    return null;
+  }
+
+  return result.rows[0];
 }
 
 module.exports = {

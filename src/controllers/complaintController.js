@@ -64,19 +64,71 @@ exports.getById = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const result = await Complaint.updateComplaint(req.params.id, req.body);
+  try {
+    console.log(
+      "🚀 INCOMING UPDATE COMPLAINT BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
 
-  res.json({
-    status: true,
-    complaint: result,
-  });
+    const updated =
+      await Complaint.updateComplaint(
+        req.params.id,
+        req.body
+      );
+
+    if (!updated) {
+      return res.status(404).json({
+        status: false,
+        message: "Complaint not found",
+      });
+    }
+
+    // Create jaisa response
+    const data =
+      await Complaint.getComplaintById(
+        updated.id
+      );
+
+    return res.json({
+      status: true,
+      complaint: data,
+    });
+
+  } catch (err) {
+    console.error("UPDATE ERROR:", err);
+
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
 };
 
 exports.delete = async (req, res) => {
-  await Complaint.deleteComplaint(req.params.id);
+  try {
+    const deleted =
+      await Complaint.deleteComplaint(
+        req.params.id
+      );
 
-  res.json({
-    status: true,
-    message: "Complaint deleted",
-  });
+    if (!deleted) {
+      return res.status(404).json({
+        status: false,
+        message: "Complaint Not Found",
+      });
+    }
+
+    return res.json({
+      status: true,
+      message: "Complaint Deleted Successfully",
+    });
+
+  } catch (err) {
+    console.error("DELETE COMPLAINT ERROR:", err);
+
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
 };
