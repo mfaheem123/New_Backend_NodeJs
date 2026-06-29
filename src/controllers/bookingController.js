@@ -1487,7 +1487,12 @@ exports.recoverDashboardBooking = async (req, res) => {
       "Available",
       "Available",
     );
+// await notifyDriverBookingStatus(booking.driver_id);
+//       await notifyDriverBookingStatusWeb(booking.driver_id);
 
+//       const driver = await Driver.getById(booking.driver_id);
+
+//       notifyBusyDriverUpdate(driver);
     return res.status(200).json({
       status: true,
       message: "Recover Booking Successfully",
