@@ -849,7 +849,14 @@ const updateBookingFareCharges = async (
 ) => {
   const query = `
     UPDATE bookings
-    SET fares = $1, parking_charges = $2 , waiting_charges = $3 , extra_drop_charges = $4 , meet_and_greet = $5 , congestion_charges = $6 , total_charges= $7
+    SET 
+      fares = $1, 
+      parking_charges = $2 , 
+      waiting_charges = $3 , 
+      extra_drop_charges = $4 , 
+      meet_and_greet = $5 , 
+      congestion_charges = $6 , 
+      total_charges= $7
     WHERE id = $8
   `;
   return pool.query(query, [

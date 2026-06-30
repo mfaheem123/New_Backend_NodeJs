@@ -51,16 +51,8 @@ RETURNING *;
   return resultDB.rows[0];
 }
 
-async function getAllComplaints(
-  offset,
-  limit,
-  filters
-) {
-  const {
-    reference_number,
-    complain_date,
-    name,
-  } = filters;
+async function getAllComplaints(offset, limit, filters) {
+  const { reference_number, complain_date, name } = filters;
 
   const values = [];
   const where = [];
@@ -70,16 +62,14 @@ async function getAllComplaints(
 
     where.push(
       `LOWER(c.reference_number)
-       LIKE LOWER($${values.length})`
+       LIKE LOWER($${values.length})`,
     );
   }
 
   if (complain_date) {
     values.push(complain_date);
 
-    where.push(
-      `c.complain_date=$${values.length}`
-    );
+    where.push(`c.complain_date=$${values.length}`);
   }
 
   if (name) {
@@ -87,14 +77,11 @@ async function getAllComplaints(
 
     where.push(
       `LOWER(cu.name)
-       LIKE LOWER($${values.length})`
+       LIKE LOWER($${values.length})`,
     );
   }
 
-  const whereClause =
-    where.length
-      ? `WHERE ${where.join(" AND ")}`
-      : "";
+  const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
   values.push(offset);
   values.push(limit);
@@ -132,11 +119,7 @@ OFFSET $${values.length - 1}
 LIMIT $${values.length}
 `;
 
-  const result =
-    await db.query(
-      query,
-      values
-    );
+  const result = await db.query(query, values);
 
   return result.rows;
 }

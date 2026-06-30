@@ -1,6 +1,8 @@
 const Account = require("../models/accountModel");
 
+// ---------------------------------------------------------
 // CREATE ACCOUNT
+// ---------------------------------------------------------
 exports.createAccount = async (req, res) => {
   try {
     console.log(
@@ -20,7 +22,9 @@ exports.createAccount = async (req, res) => {
   }
 };
 
-// Get All Accounts
+// ---------------------------------------------------------
+// GET ALL ACCOUNT
+// ---------------------------------------------------------
 exports.getAccounts = async (req, res) => {
   try {
     let {

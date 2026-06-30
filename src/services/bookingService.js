@@ -376,10 +376,13 @@ async function createSimpleBooking(payload) {
     if (clean.booking_source == "web") {
       await sendWebBookingNotification(clean);
     }
+    console.log("BOOKING INSERTED", inserted.id);
     await pool.query("COMMIT");
+console.log("BOOKING COMMITTED", inserted.id);
 
     return { bookings: [clean] };
   } catch (err) {
+    console.error("ROLLBACK ERROR", err);
     await pool.query("ROLLBACK");
     throw err;
   }

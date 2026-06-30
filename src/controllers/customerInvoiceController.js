@@ -34,7 +34,7 @@ exports.customerInvoiceNumber = async (req, res) => {
   }
 };
 
-exports.create = async (req, res) => {
+exports.createCustomerInvoice = async (req, res) => {
   try {
     const invoice = await customerInvoiceModel.createCustomerInvoice(req.body);
 
@@ -50,7 +50,7 @@ exports.create = async (req, res) => {
   }
 };
 
-exports.getAll = async (req, res) => {
+exports.getAllCustomerInvoice = async (req, res) => {
   try {
     const { offset = 0, limit = 100, invoice_type } = req.query;
 
@@ -73,7 +73,7 @@ exports.getAll = async (req, res) => {
   }
 };
 
-exports.getById = async (req, res) => {
+exports.getByIdCustomerInvoice = async (req, res) => {
   try {
     const invoice = await customerInvoiceModel.getById(req.params.id);
 
@@ -96,7 +96,7 @@ exports.getById = async (req, res) => {
   }
 };
 
-exports.pay = async (req, res) => {
+exports.payCustomerInvoice = async (req, res) => {
   try {
     const invoice = await customerInvoiceModel.payCustomerInvoice(
       req.params.id,
@@ -114,7 +114,7 @@ exports.pay = async (req, res) => {
   }
 };
 
-exports.update = async (req, res) => {
+exports.updateCustomerInvoice = async (req, res) => {
   try {
     const invoice = await customerInvoiceModel.update(req.params.id, req.body);
 
@@ -130,7 +130,7 @@ exports.update = async (req, res) => {
   }
 };
 
-exports.remove = async (req, res) => {
+exports.removeCustomerInvoice = async (req, res) => {
   try {
     const invoice = await customerInvoiceModel.deleteCustomerInvoice(
       req.params.id,

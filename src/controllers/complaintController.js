@@ -46,19 +46,17 @@ exports.getAll = async (req, res) => {
 
     const limit = Number(req.query.limit) || 100;
 
-    const complaints =
-      await Complaint.getAllComplaints(
-        offset,
-        limit,
-        req.query
-      );
+    const complaints = await Complaint.getAllComplaints(
+      offset,
+      limit,
+      req.query,
+    );
 
     return res.json({
       status: true,
       count: complaints.length,
       complaints,
     });
-
   } catch (err) {
     return res.status(500).json({
       status: false,
