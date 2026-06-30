@@ -41,17 +41,30 @@ exports.create = async (req, res) => {
 };
 
 exports.getAll = async (req, res) => {
-  const offset = Number(req.query.offset) || 0;
+  try {
+    const offset = Number(req.query.offset) || 0;
 
-  const limit = Number(req.query.limit) || 100;
+    const limit = Number(req.query.limit) || 100;
 
-  const complaints = await Complaint.getAllComplaints(offset, limit);
+    const complaints =
+      await Complaint.getAllComplaints(
+        offset,
+        limit,
+        req.query
+      );
 
-  res.json({
-    status: true,
-    count: complaints.length,
-    complaints,
-  });
+    return res.json({
+      status: true,
+      count: complaints.length,
+      complaints,
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
 };
 
 exports.getById = async (req, res) => {
@@ -67,14 +80,10 @@ exports.update = async (req, res) => {
   try {
     console.log(
       "🚀 INCOMING UPDATE COMPLAINT BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
 
-    const updated =
-      await Complaint.updateComplaint(
-        req.params.id,
-        req.body
-      );
+    const updated = await Complaint.updateComplaint(req.params.id, req.body);
 
     if (!updated) {
       return res.status(404).json({
@@ -84,16 +93,12 @@ exports.update = async (req, res) => {
     }
 
     // Create jaisa response
-    const data =
-      await Complaint.getComplaintById(
-        updated.id
-      );
+    const data = await Complaint.getComplaintById(updated.id);
 
     return res.json({
       status: true,
       complaint: data,
     });
-
   } catch (err) {
     console.error("UPDATE ERROR:", err);
 
@@ -106,10 +111,7 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    const deleted =
-      await Complaint.deleteComplaint(
-        req.params.id
-      );
+    const deleted = await Complaint.deleteComplaint(req.params.id);
 
     if (!deleted) {
       return res.status(404).json({
@@ -122,7 +124,6 @@ exports.delete = async (req, res) => {
       status: true,
       message: "Complaint Deleted Successfully",
     });
-
   } catch (err) {
     console.error("DELETE COMPLAINT ERROR:", err);
 

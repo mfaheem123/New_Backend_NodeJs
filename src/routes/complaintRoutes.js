@@ -1,15 +1,15 @@
 const router = require("express").Router();
 
-const controller = require("../controllers/complaintController");
+const complaintController = require("../controllers/complaintController");
 
-router.post("/add", controller.create);
+router.post("/add", complaintController.create);
 
-router.get("/get", controller.getAll);
+router.get("/get", complaintController.getAll);
 
-router.get("/getbyid", controller.getById);
+router.get("/getbyid", complaintController.getById);
 
-router.post("/update/:id", controller.update);
+router.post("/update/:id", complaintController.update);
 
-router.delete("/delete/:id", controller.delete);
+router.delete("/delete/:id", complaintController.delete);
 
 module.exports = router;

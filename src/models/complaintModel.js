@@ -51,18 +51,68 @@ RETURNING *;
   return resultDB.rows[0];
 }
 
-async function getAllComplaints(offset, limit) {
+async function getAllComplaints(
+  offset,
+  limit,
+  filters
+) {
+  const {
+    reference_number,
+    complain_date,
+    name,
+  } = filters;
+
+  const values = [];
+  const where = [];
+
+  if (reference_number) {
+    values.push(`%${reference_number}%`);
+
+    where.push(
+      `LOWER(c.reference_number)
+       LIKE LOWER($${values.length})`
+    );
+  }
+
+  if (complain_date) {
+    values.push(complain_date);
+
+    where.push(
+      `c.complain_date=$${values.length}`
+    );
+  }
+
+  if (name) {
+    values.push(`%${name}%`);
+
+    where.push(
+      `LOWER(cu.name)
+       LIKE LOWER($${values.length})`
+    );
+  }
+
+  const whereClause =
+    where.length
+      ? `WHERE ${where.join(" AND ")}`
+      : "";
+
+  values.push(offset);
+  values.push(limit);
+
   const query = `
 SELECT
 c.*,
 
 json_build_object(
-'name',cu.name
+'name', cu.name
 ) customer,
 
 json_build_object(
-'reference_number',b.reference_number,
-'notes',b.notes
+'reference_number',
+b.reference_number,
+
+'notes',
+b.notes
 ) booking
 
 FROM complaints c
@@ -73,12 +123,20 @@ ON cu.id=c.customer_id
 LEFT JOIN bookings b
 ON b.id=c.booking_id
 
+${whereClause}
+
 ORDER BY c.id DESC
-OFFSET $1
-LIMIT $2
+
+OFFSET $${values.length - 1}
+
+LIMIT $${values.length}
 `;
 
-  const result = await db.query(query, [offset, limit]);
+  const result =
+    await db.query(
+      query,
+      values
+    );
 
   return result.rows;
 }
@@ -174,7 +232,7 @@ DELETE FROM complaints
 WHERE id=$1
 RETURNING id
 `,
-    [id]
+    [id],
   );
 
   if (result.rowCount === 0) {

@@ -20,13 +20,6 @@ function handleDriverAppFeaturesSocket(ws, req) {
     driverId,
   });
 
-  ws.send(
-    JSON.stringify({
-      event: "connected",
-      message: "Driver feature socket connected",
-    }),
-  );
-
   ws.on("close", () => {
     driverFeatureClients.delete(driverId);
 
