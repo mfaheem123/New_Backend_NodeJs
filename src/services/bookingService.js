@@ -378,7 +378,7 @@ async function createSimpleBooking(payload) {
     }
     console.log("BOOKING INSERTED", inserted.id);
     await pool.query("COMMIT");
-console.log("BOOKING COMMITTED", inserted.id);
+    console.log("BOOKING COMMITTED", inserted.id);
 
     return { bookings: [clean] };
   } catch (err) {

@@ -413,7 +413,7 @@ exports.calculateFareAllVehicles = async (req, res) => {
   try {
     console.log(
       "🚀 CALCULATE ALL VEHICLES:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
 
     // Get all vehicles
@@ -461,6 +461,5 @@ exports.calculateFareAllVehicles = async (req, res) => {
     });
   }
 };
-
 
 exports.calculateSingleFare = calculateSingleFare;

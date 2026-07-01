@@ -36,19 +36,34 @@ exports.customerInvoiceNumber = async (req, res) => {
 
 exports.createCustomerInvoice = async (req, res) => {
   try {
-    const invoice = await customerInvoiceModel.createCustomerInvoice(req.body);
+    console.log(
+      "🚀 CREATE CUSTOMER INVOICE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    const payload = {
+      ...req.body,
+      customer_invoice_lineitems:
+        typeof req.body.customer_invoice_lineitems === "string"
+          ? JSON.parse(req.body.customer_invoice_lineitems.trim())
+          : req.body.customer_invoice_lineitems,
+    };
 
-    res.status(200).json({
-      status: true,
-      customer_invoice: invoice,
-    });
+    console.log("PAYLOAD: ",payload);
+
+    const result = await customerInvoiceModel.createCustomerInvoice(payload);
+
+res.status(200).json({
+  status: true,
+  customer_invoice: result.customer_invoice,
+    customer_invoice_lineitems: result.customer_invoice_lineitems,
+});
   } catch (error) {
     res.status(500).json({
       status: false,
       message: error.message,
     });
   }
-};
+};;
 
 exports.getAllCustomerInvoice = async (req, res) => {
   try {

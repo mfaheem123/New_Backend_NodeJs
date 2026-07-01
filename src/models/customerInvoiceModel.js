@@ -309,9 +309,22 @@ exports.createCustomerInvoice = async (payload) => {
       );
     }
 
+
+    const lineItems = await pool.query(
+  `
+  SELECT *
+  FROM customer_invoice_lineitems
+  WHERE customer_invoice_id = $1
+  ORDER BY id
+  `,
+  [invoiceId]
+);
     await pool.query("COMMIT");
 
-    return invoice.rows[0];
+    return {
+  customer_invoice: invoice.rows[0],
+  customer_invoice_lineitems: lineItems.rows,
+};
   } catch (error) {
     await pool.query("ROLLBACK");
     throw error;
