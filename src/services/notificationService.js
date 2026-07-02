@@ -645,6 +645,100 @@ async function sendIVRBookingNotification(booking, companyId) {
   }
 }
 
+// ---------------------------------------------------------
+// SEND RECOVER BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER
+// ---------------------------------------------------------
+async function sendDriverRecoverBookingNotification(booking) {
+  try {
+
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1 AND company_id = $1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `,
+      [booking.company_id],
+    );
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+
+      const message = {
+    tokens,
+    notification: {
+      title: "Booking Recover Request From Driver",
+      body: `Driver ${booking.driver_name} Has Requested To Recover This Booking.`,
+
+    },
+    data: {
+      booking_id: booking.id.toString(),
+      driver_id: booking.driver_id.toString(),
+      type: "DRIVER_RECOVER_BOOKING_REQUEST",
+    },
+  };
+
+    // ==============================
+    // SEND
+    // ==============================
+    console.log("Driver Recover Booking Notification Data:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
+    console.log(
+      `✅ Driver Recover Booking Notification Sent: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendDriverRecoverBookingNotification Error:", err);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND REJECT RECOVER BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendRejectRecoverBookingNotification(driverId, booking) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Your Request For Recover Booking Has Been Rejected",
+    },
+    data: {
+      booking_id: booking.id.toString(),
+      type: "DRIVER_RECOVER_BOOKING_REJECTED",
+    },
+  };
+    console.log("Reject Driver Recover Booking Notification Data:", message);
+
+  // 3️⃣ Send
+  await admin.messaging().send(message);
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
@@ -658,4 +752,6 @@ module.exports = {
   sendWebBookingNotification,
   sendPDANotification,
   sendIVRBookingNotification,
+  sendDriverRecoverBookingNotification,
+  sendRejectRecoverBookingNotification
 };

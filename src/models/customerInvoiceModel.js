@@ -309,33 +309,41 @@ exports.createCustomerInvoice = async (payload) => {
       );
     }
 
-
     const lineItems = await pool.query(
-  `
+      `
   SELECT *
   FROM customer_invoice_lineitems
   WHERE customer_invoice_id = $1
   ORDER BY id
   `,
-  [invoiceId]
-);
+      [invoiceId],
+    );
     await pool.query("COMMIT");
 
     return {
-  customer_invoice: invoice.rows[0],
-  customer_invoice_lineitems: lineItems.rows,
-};
+      customer_invoice: invoice.rows[0],
+      customer_invoice_lineitems: lineItems.rows,
+    };
   } catch (error) {
     await pool.query("ROLLBACK");
     throw error;
   }
 };
 
-exports.getAllCustomerInvoices = async (offset, limit, invoice_type) => {
+exports.getAllCustomerInvoices = async (offset, limit, filters) => {
+  const {
+    invoice_type,
+    invoice_number,
+    customer,
+    invoice_date,
+    invoice_due_date,
+    status,
+    amount,
+  } = filters;
+
   const sql = `
     SELECT
       ci.*,
-
       json_build_object(
         'name', c.name,
         'email', c.email
@@ -349,13 +357,38 @@ exports.getAllCustomerInvoices = async (offset, limit, invoice_type) => {
     WHERE
       ($1::text IS NULL OR ci.invoice_type = $1)
 
+      AND ($2::text IS NULL OR ci.invoice_number ILIKE '%' || $2 || '%')
+
+      AND ($3::text IS NULL OR c.name ILIKE '%' || $3 || '%')
+
+      AND ($4::text IS NULL OR ci.invoice_date ILIKE '%' || $4 || '%')
+
+AND ($5::text IS NULL OR ci.invoice_due_date ILIKE '%' || $5 || '%')
+
+      AND (
+  $6::text IS NULL
+  OR LOWER(ci.status) = LOWER($6)
+)
+
+      AND ($7::text IS NULL OR CAST(ci.amount AS TEXT) ILIKE '%' || $7 || '%')
+
     ORDER BY ci.id DESC
 
-    OFFSET $2
-    LIMIT $3
+    OFFSET $8
+    LIMIT $9
   `;
 
-  const { rows } = await pool.query(sql, [invoice_type || null, offset, limit]);
+  const { rows } = await pool.query(sql, [
+    invoice_type || null,
+    invoice_number || null,
+    customer || null,
+    invoice_date || null,
+    invoice_due_date || null,
+    status || null,
+    amount || null,
+    offset,
+    limit,
+  ]);
 
   return rows;
 };

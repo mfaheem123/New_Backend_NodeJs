@@ -48,31 +48,50 @@ exports.createCustomerInvoice = async (req, res) => {
           : req.body.customer_invoice_lineitems,
     };
 
-    console.log("PAYLOAD: ",payload);
+    console.log("PAYLOAD: ", payload);
 
     const result = await customerInvoiceModel.createCustomerInvoice(payload);
 
-res.status(200).json({
-  status: true,
-  customer_invoice: result.customer_invoice,
-    customer_invoice_lineitems: result.customer_invoice_lineitems,
-});
+    res.status(200).json({
+      status: true,
+      customer_invoice: result.customer_invoice,
+      customer_invoice_lineitems: result.customer_invoice_lineitems,
+    });
   } catch (error) {
     res.status(500).json({
       status: false,
       message: error.message,
     });
   }
-};;
+};
 
 exports.getAllCustomerInvoice = async (req, res) => {
   try {
-    const { offset = 0, limit = 100, invoice_type } = req.query;
+    const {
+      offset = 0,
+      limit = 100,
+      invoice_type,
+
+      invoice_number,
+      customer,
+      invoice_date,
+      invoice_due_date,
+      status,
+      amount,
+    } = req.query;
 
     const invoices = await customerInvoiceModel.getAllCustomerInvoices(
       Number(offset),
       Number(limit),
-      invoice_type,
+      {
+        invoice_type,
+        invoice_number,
+        customer,
+        invoice_date,
+        invoice_due_date,
+        status,
+        amount,
+      }
     );
 
     res.json({

@@ -56,6 +56,8 @@ const {
   sendBookingNotification,
   sendRideAcceptedNotification,
   sendRecoverBookingNotification,
+  sendDriverRecoverBookingNotification,
+  sendRejectRecoverBookingNotification
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 
@@ -2002,4 +2004,75 @@ exports.getBookingByReferenceNumber = async (req, res) => {
     success: true,
     booking: data,
   });
+};
+
+
+// ---------------------------------------------------------
+// SEND RECOVER BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER
+// ---------------------------------------------------------
+exports.recoverDriverBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const bookingResult = await findBookingById(bookingId);
+
+    if (bookingResult.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+    // ✅ Actual booking object
+    const booking = bookingResult.rows[0];
+
+    console.log("BOOKING:", booking);
+    console.log(booking.id);
+    await sendDriverRecoverBookingNotification(booking);
+    
+    return res.status(200).json({
+      status: true,
+      message: "Send Recover Booking Request to Web Successfully",
+    });
+  } catch (error) {
+    console.error("Recover Booking Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+
+// ---------------------------------------------------------
+// RECOVER DASHBOARD BOOKING
+// ---------------------------------------------------------
+exports.rejectRecoverBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const bookingResult = await findBookingById(bookingId);
+
+    if (bookingResult.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+    // ✅ Actual booking object
+    const booking = bookingResult.rows[0];
+
+    console.log("BOOKING:", booking);
+    console.log(booking.id);
+    await sendRejectRecoverBookingNotification(booking.driver_id, booking);
+    return res.status(200).json({
+      status: true,
+      message: "Driver Recover Booking Reject Successfully",
+    });
+  } catch (error) {
+    console.error("Driver Recover Booking Reject Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
 };

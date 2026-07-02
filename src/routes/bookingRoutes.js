@@ -74,6 +74,8 @@ router.post(
   bookingController.updateDashboardBookingFares,
 );
 router.post("/recover-booking/:id", bookingController.recoverDashboardBooking);
+router.get("/recover-driver-booking/:id", bookingController.recoverDriverBooking);
+router.get("/reject-recover-driver/:id", bookingController.rejectRecoverBooking);
 
 router.post(
   "/completed-booking/:id",
