@@ -650,7 +650,6 @@ async function sendIVRBookingNotification(booking, companyId) {
 // ---------------------------------------------------------
 async function sendDriverRecoverBookingNotification(booking) {
   try {
-
     // ==============================
     // DASHBOARD TOKENS
     // ==============================
@@ -677,20 +676,18 @@ async function sendDriverRecoverBookingNotification(booking) {
     // NOTIFICATION PAYLOAD
     // ==============================
 
-
-      const message = {
-    tokens,
-    notification: {
-      title: "Booking Recover Request From Driver",
-      body: `Driver ${booking.driver_name} Has Requested To Recover This Booking.`,
-
-    },
-    data: {
-      booking_id: booking.id.toString(),
-      driver_id: booking.driver_id.toString(),
-      type: "DRIVER_RECOVER_BOOKING_REQUEST",
-    },
-  };
+    const message = {
+      tokens,
+      notification: {
+        title: "Booking Recover Request From Driver",
+        body: `Driver ${booking.driver_name} Has Requested To Recover This Booking.`,
+      },
+      data: {
+        booking_id: booking.id.toString(),
+        driver_id: booking.driver_id.toString(),
+        type: "DRIVER_RECOVER_BOOKING_REQUEST",
+      },
+    };
 
     // ==============================
     // SEND
@@ -732,7 +729,7 @@ async function sendRejectRecoverBookingNotification(driverId, booking) {
       type: "DRIVER_RECOVER_BOOKING_REJECTED",
     },
   };
-    console.log("Reject Driver Recover Booking Notification Data:", message);
+  console.log("Reject Driver Recover Booking Notification Data:", message);
 
   // 3️⃣ Send
   await admin.messaging().send(message);
@@ -753,5 +750,5 @@ module.exports = {
   sendPDANotification,
   sendIVRBookingNotification,
   sendDriverRecoverBookingNotification,
-  sendRejectRecoverBookingNotification
+  sendRejectRecoverBookingNotification,
 };

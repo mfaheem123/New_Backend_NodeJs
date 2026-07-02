@@ -57,7 +57,7 @@ const {
   sendRideAcceptedNotification,
   sendRecoverBookingNotification,
   sendDriverRecoverBookingNotification,
-  sendRejectRecoverBookingNotification
+  sendRejectRecoverBookingNotification,
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 
@@ -2006,7 +2006,6 @@ exports.getBookingByReferenceNumber = async (req, res) => {
   });
 };
 
-
 // ---------------------------------------------------------
 // SEND RECOVER BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER
 // ---------------------------------------------------------
@@ -2028,7 +2027,7 @@ exports.recoverDriverBooking = async (req, res) => {
     console.log("BOOKING:", booking);
     console.log(booking.id);
     await sendDriverRecoverBookingNotification(booking);
-    
+
     return res.status(200).json({
       status: true,
       message: "Send Recover Booking Request to Web Successfully",
@@ -2041,7 +2040,6 @@ exports.recoverDriverBooking = async (req, res) => {
     });
   }
 };
-
 
 // ---------------------------------------------------------
 // RECOVER DASHBOARD BOOKING
@@ -2063,7 +2061,10 @@ exports.rejectRecoverBooking = async (req, res) => {
 
     console.log("BOOKING:", booking);
     console.log(booking.id);
+
+    //Notification Send
     await sendRejectRecoverBookingNotification(booking.driver_id, booking);
+    
     return res.status(200).json({
       status: true,
       message: "Driver Recover Booking Reject Successfully",

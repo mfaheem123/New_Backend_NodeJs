@@ -91,7 +91,7 @@ exports.getAllCustomerInvoice = async (req, res) => {
         invoice_due_date,
         status,
         amount,
-      }
+      },
     );
 
     res.json({
