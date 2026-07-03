@@ -1,5 +1,5 @@
 const pool = require("../db");
-                       
+
 const ENRICHED_SELECT_GETBYID = `
 SELECT
     b.id,
@@ -270,22 +270,114 @@ exports.getById = async (id) => {
   return invoice;
 };
 
-exports.update = async (id, data) => {
-  const { invoice_date, invoice_due_date, status } = data;
+exports.update = async (id, payload) => {
+  try {
+    await pool.query("BEGIN");
 
-  const { rows } = await pool.query(
-    `
-    UPDATE customer_invoices
-    SET
-      invoice_date = $1,
-      invoice_due_date = $2,
-      status = $3,
-      updated_at = NOW()
-    WHERE id = $4
-    RETURNING *
-    `,
-    [invoice_date, invoice_due_date, status, id],
-  );
+    const invoiceResult = await pool.query(
+      `
+      UPDATE customer_invoices
+      SET
+        invoice_date = COALESCE($1, invoice_date),
+        invoice_due_date = COALESCE($2, invoice_due_date),
+        status = COALESCE($3, status),
+        updated_at = NOW()
+      WHERE id = $4
+      RETURNING *
+      `,
+      [
+        payload.invoice_date ?? null,
+        payload.invoice_due_date ?? null,
+        payload.status ?? null,
+        id,
+      ]
+    );
 
-  return rows[0];
+    if (!invoiceResult.rows.length) {
+      throw new Error("Invoice not found");
+    }
+
+    const invoice = invoiceResult.rows[0];
+
+    if (Array.isArray(payload.customer_invoice_lineitems)) {
+
+      // purani bookings ka invoice_number remove
+      const oldItems = await pool.query(
+        `
+        SELECT booking_id
+        FROM customer_invoice_lineitems
+        WHERE customer_invoice_id = $1
+        `,
+        [id]
+      );
+
+      for (const item of oldItems.rows) {
+        await pool.query(
+          `
+          UPDATE bookings
+          SET invoice_number = NULL
+          WHERE id = $1
+          `,
+          [item.booking_id]
+        );
+      }
+
+      // purane lineitems delete
+      await pool.query(
+        `
+        DELETE FROM customer_invoice_lineitems
+        WHERE customer_invoice_id = $1
+        `,
+        [id]
+      );
+
+      // naye insert
+      for (const item of payload.customer_invoice_lineitems) {
+
+        await pool.query(
+          `
+          INSERT INTO customer_invoice_lineitems
+          (
+            customer_invoice_id,
+            booking_id
+          )
+          VALUES ($1,$2)
+          `,
+          [id, item.booking_id]
+        );
+
+        await pool.query(
+          `
+          UPDATE bookings
+          SET invoice_number = $1
+          WHERE id = $2
+          `,
+          [invoice.invoice_number, item.booking_id]
+        );
+      }
+    }
+
+    const lineItems = await pool.query(
+      `
+      SELECT *
+      FROM customer_invoice_lineitems
+      WHERE customer_invoice_id = $1
+      ORDER BY id
+      `,
+      [id]
+    );
+
+    await pool.query("COMMIT");
+
+    return {
+      customer_invoice: invoice,
+      customer_invoice_lineitems: lineItems.rows,
+    };
+
+  } catch (err) {
+
+    await pool.query("ROLLBACK");
+    throw err;
+
+  }
 };

@@ -150,17 +150,36 @@ exports.payCustomerInvoice = async (req, res) => {
 
 exports.updateCustomerInvoice = async (req, res) => {
   try {
-    const invoice = await customerInvoiceModel.update(req.params.id, req.body);
+
+    const payload = {
+      ...req.body,
+      customer_invoice_lineitems:
+        typeof req.body.customer_invoice_lineitems === "string"
+          ? JSON.parse(req.body.customer_invoice_lineitems.trim())
+          : req.body.customer_invoice_lineitems,
+    };
+
+    const result = await customerInvoiceModel.update(
+      req.params.id,
+
+
+      
+      payload
+    );
 
     res.json({
       status: true,
-      customer_invoice: invoice,
+      customer_invoice: result.customer_invoice,
+      customer_invoice_lineitems: result.customer_invoice_lineitems,
     });
+
   } catch (error) {
+
     res.status(500).json({
       status: false,
       message: error.message,
     });
+
   }
 };
 

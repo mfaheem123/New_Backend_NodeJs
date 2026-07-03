@@ -74,11 +74,11 @@ router.post(
   bookingController.updateDashboardBookingFares,
 );
 router.post("/recover-booking/:id", bookingController.recoverDashboardBooking);
-router.get(
+router.post(
   "/recover-driver-booking/:id",
   bookingController.recoverDriverBooking,
 );
-router.get(
+router.post(
   "/reject-recover-driver/:id",
   bookingController.rejectRecoverBooking,
 );

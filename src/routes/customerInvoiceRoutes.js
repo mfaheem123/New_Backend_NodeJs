@@ -11,9 +11,9 @@ router.get("/invoice-number", customerInvoiceController.customerInvoiceNumber);
 
 router.get("/getbyid/:id", customerInvoiceController.getByIdCustomerInvoice);
 
-router.put("/update/:id", customerInvoiceController.updateCustomerInvoice);
+router.post("/update/:id", customerInvoiceController.updateCustomerInvoice);
 
-router.put("/pay/:id", customerInvoiceController.payCustomerInvoice);
+router.post("/pay/:id", customerInvoiceController.payCustomerInvoice);
 
 router.delete("/delete/:id", customerInvoiceController.removeCustomerInvoice);
 

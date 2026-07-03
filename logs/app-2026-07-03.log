@@ -1,0 +1,15 @@
+{"duration":64,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-03T10:51:05.511Z"}
+{"level":"info","message":"GET /api/location-types 200 69.757 ms","timestamp":"2026-07-03T10:51:05.518Z"}
+{"duration":69,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-03T10:51:05.520Z"}
+{"level":"info","message":"GET /api/location-types 200 71.173 ms","timestamp":"2026-07-03T10:51:05.522Z"}
+{"duration":459,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT \n      b.*,\n      vt.name as vehicle_type_name,\n      d.name as driver_name,\n      v.color,\n      v.make,\n      v.model,\n      v.vehicle_number\n    FROM bookings b\n    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\n    LEFT JOIN drivers d ON b.driver_id = d.id\n    LEFT JOIN vehicles v ON d.vehicle_id = v.id\n    WHERE b.id = $1 AND trash = false\n  ","timestamp":"2026-07-03T11:27:09.130Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n      SELECT web_device_id\n      FROM employees\n      WHERE role_id = 1 AND company_id = $1\n      AND web_device_id IS NOT NULL\n      AND web_device_id != ''\n    ","timestamp":"2026-07-03T11:27:09.135Z"}
+{"level":"info","message":"GET /api/bookings/recover-driver-booking/887 200 1756.882 ms","timestamp":"2026-07-03T11:27:10.427Z"}
+{"duration":11,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-03T11:33:28.261Z"}
+{"level":"info","message":"GET /api/location-types 200 18.852 ms","timestamp":"2026-07-03T11:33:28.269Z"}
+{"duration":55,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-03T11:33:28.311Z"}
+{"level":"info","message":"GET /api/location-types 200 56.753 ms","timestamp":"2026-07-03T11:33:28.312Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-03T11:34:59.147Z"}
+{"level":"info","message":"GET /api/location-types 200 32.268 ms","timestamp":"2026-07-03T11:34:59.173Z"}
+{"duration":95,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-03T11:34:59.238Z"}
+{"level":"info","message":"GET /api/location-types 200 96.177 ms","timestamp":"2026-07-03T11:34:59.239Z"}

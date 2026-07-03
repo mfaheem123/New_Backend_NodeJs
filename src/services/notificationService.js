@@ -679,7 +679,7 @@ async function sendDriverRecoverBookingNotification(booking) {
     const message = {
       tokens,
       notification: {
-        title: "Booking Recover Request From Driver",
+        title: "Recover Booking Request From Driver",
         body: `Driver ${booking.driver_name} Has Requested To Recover This Booking.`,
       },
       data: {
@@ -730,6 +730,97 @@ async function sendRejectRecoverBookingNotification(driverId, booking) {
     },
   };
   console.log("Reject Driver Recover Booking Notification Data:", message);
+
+  // 3️⃣ Send
+  await admin.messaging().send(message);
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND NO PICKUP BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER
+// ---------------------------------------------------------
+async function sendDriverNoPickupBookingNotification(booking) {
+  try {
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1 AND company_id = $1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `,
+      [booking.company_id],
+    );
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+    const message = {
+      tokens,
+      notification: {
+        title: "No Pickup Booking Request From Driver",
+        body: `Driver ${booking.driver_name} Has Requested To No Pickup This Booking.`,
+      },
+      data: {
+        booking_id: booking.id.toString(),
+        driver_id: booking.driver_id.toString(),
+        type: "DRIVER_NOPICKUP_BOOKING_REQUEST",
+      },
+    };
+
+    // ==============================
+    // SEND
+    // ==============================
+    console.log("Driver No Pickup Booking Notification Data:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
+    console.log(
+      `✅ Driver No Pickup Booking Notification Sent: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendDriverNoPickupBookingNotification Error:", err);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND REJECT NO PICKUP BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendRejectNoPickupBookingNotification(driverId, booking) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Your Request For Recover Booking Has Been Rejected",
+    },
+    data: {
+      booking_id: booking.id.toString(),
+      type: "DRIVER_NOPICKUP_BOOKING_REJECTED",
+    },
+  };
+  console.log("Reject Driver No Pickup Booking Notification Data:", message);
 
   // 3️⃣ Send
   await admin.messaging().send(message);
