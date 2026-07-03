@@ -281,16 +281,24 @@ exports.update = async (id, payload) => {
         invoice_date = COALESCE($1, invoice_date),
         invoice_due_date = COALESCE($2, invoice_due_date),
         status = COALESCE($3, status),
+        amount = COALESCE($4, amount),
+        from_date = COALESCE($5, from_date),
+        to_date = COALESCE($6, to_date),
+        invoice_type = COALESCE($7, invoice_type),
         updated_at = NOW()
-      WHERE id = $4
+      WHERE id = $8
       RETURNING *
       `,
       [
         payload.invoice_date ?? null,
         payload.invoice_due_date ?? null,
         payload.status ?? null,
+        payload.amount ?? null,
+        payload.from_date ?? null,
+        payload.to_date ?? null,
+        payload.invoice_type ?? null,
         id,
-      ]
+      ],
     );
 
     if (!invoiceResult.rows.length) {
@@ -300,7 +308,6 @@ exports.update = async (id, payload) => {
     const invoice = invoiceResult.rows[0];
 
     if (Array.isArray(payload.customer_invoice_lineitems)) {
-
       // purani bookings ka invoice_number remove
       const oldItems = await pool.query(
         `
@@ -308,7 +315,7 @@ exports.update = async (id, payload) => {
         FROM customer_invoice_lineitems
         WHERE customer_invoice_id = $1
         `,
-        [id]
+        [id],
       );
 
       for (const item of oldItems.rows) {
@@ -318,7 +325,7 @@ exports.update = async (id, payload) => {
           SET invoice_number = NULL
           WHERE id = $1
           `,
-          [item.booking_id]
+          [item.booking_id],
         );
       }
 
@@ -328,12 +335,11 @@ exports.update = async (id, payload) => {
         DELETE FROM customer_invoice_lineitems
         WHERE customer_invoice_id = $1
         `,
-        [id]
+        [id],
       );
 
       // naye insert
       for (const item of payload.customer_invoice_lineitems) {
-
         await pool.query(
           `
           INSERT INTO customer_invoice_lineitems
@@ -343,7 +349,7 @@ exports.update = async (id, payload) => {
           )
           VALUES ($1,$2)
           `,
-          [id, item.booking_id]
+          [id, item.booking_id],
         );
 
         await pool.query(
@@ -352,7 +358,7 @@ exports.update = async (id, payload) => {
           SET invoice_number = $1
           WHERE id = $2
           `,
-          [invoice.invoice_number, item.booking_id]
+          [invoice.invoice_number, item.booking_id],
         );
       }
     }
@@ -364,7 +370,7 @@ exports.update = async (id, payload) => {
       WHERE customer_invoice_id = $1
       ORDER BY id
       `,
-      [id]
+      [id],
     );
 
     await pool.query("COMMIT");
@@ -373,11 +379,8 @@ exports.update = async (id, payload) => {
       customer_invoice: invoice,
       customer_invoice_lineitems: lineItems.rows,
     };
-
   } catch (err) {
-
     await pool.query("ROLLBACK");
     throw err;
-
   }
 };

@@ -58,6 +58,8 @@ const {
   sendRecoverBookingNotification,
   sendDriverRecoverBookingNotification,
   sendRejectRecoverBookingNotification,
+  sendDriverNoPickupBookingNotification,
+  sendRejectNoPickupBookingNotification
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 
@@ -2042,7 +2044,7 @@ exports.recoverDriverBooking = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// RECOVER DASHBOARD BOOKING
+// REJECT RECOVER DASHBOARD BOOKING
 // ---------------------------------------------------------
 exports.rejectRecoverBooking = async (req, res) => {
   try {
@@ -2064,10 +2066,83 @@ exports.rejectRecoverBooking = async (req, res) => {
 
     //Notification Send
     await sendRejectRecoverBookingNotification(booking.driver_id, booking);
-    
+
     return res.status(200).json({
       status: true,
       message: "Driver Recover Booking Reject Successfully",
+    });
+  } catch (error) {
+    console.error("Driver Recover Booking Reject Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+
+// ---------------------------------------------------------
+// SEND RECOVER BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER
+// ---------------------------------------------------------
+exports.noPickupDriverBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const bookingResult = await findBookingById(bookingId);
+
+    if (bookingResult.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+    // ✅ Actual booking object
+    const booking = bookingResult.rows[0];
+
+    console.log("BOOKING:", booking);
+    console.log(booking.id);
+    await sendDriverNoPickupBookingNotification(booking);
+
+    return res.status(200).json({
+      status: true,
+      message: "Send No Pickup Booking Request to Web Successfully",
+    });
+  } catch (error) {
+    console.error("Recover Booking Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// RECOVER DASHBOARD BOOKING
+// ---------------------------------------------------------
+exports.rejectNoPickupBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const bookingResult = await findBookingById(bookingId);
+
+    if (bookingResult.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+    // ✅ Actual booking object
+    const booking = bookingResult.rows[0];
+
+    console.log("BOOKING:", booking);
+    console.log(booking.id);
+
+    //Notification Send
+    await sendRejectNoPickupBookingNotification(booking.driver_id, booking);
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver No Pickup Booking Reject Successfully",
     });
   } catch (error) {
     console.error("Driver Recover Booking Reject Error:", error);

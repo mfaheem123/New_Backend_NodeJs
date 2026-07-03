@@ -150,7 +150,6 @@ exports.payCustomerInvoice = async (req, res) => {
 
 exports.updateCustomerInvoice = async (req, res) => {
   try {
-
     const payload = {
       ...req.body,
       customer_invoice_lineitems:
@@ -162,9 +161,7 @@ exports.updateCustomerInvoice = async (req, res) => {
     const result = await customerInvoiceModel.update(
       req.params.id,
 
-
-      
-      payload
+      payload,
     );
 
     res.json({
@@ -172,14 +169,11 @@ exports.updateCustomerInvoice = async (req, res) => {
       customer_invoice: result.customer_invoice,
       customer_invoice_lineitems: result.customer_invoice_lineitems,
     });
-
   } catch (error) {
-
     res.status(500).json({
       status: false,
       message: error.message,
     });
-
   }
 };
 

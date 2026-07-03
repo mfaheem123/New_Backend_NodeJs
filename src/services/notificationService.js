@@ -842,4 +842,6 @@ module.exports = {
   sendIVRBookingNotification,
   sendDriverRecoverBookingNotification,
   sendRejectRecoverBookingNotification,
+  sendDriverNoPickupBookingNotification,
+  sendRejectNoPickupBookingNotification
 };

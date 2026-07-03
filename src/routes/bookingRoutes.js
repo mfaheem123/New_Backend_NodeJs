@@ -82,7 +82,14 @@ router.post(
   "/reject-recover-driver/:id",
   bookingController.rejectRecoverBooking,
 );
-
+router.post(
+  "/no-pickup-driver-booking/:id",
+  bookingController.noPickupDriverBooking,
+);
+router.post(
+  "/reject-no-pickup-driver/:id",
+  bookingController.rejectNoPickupBooking,
+);
 router.post(
   "/completed-booking/:id",
   bookingController.completeBoookingByController,
