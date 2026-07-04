@@ -59,7 +59,7 @@ const {
   sendDriverRecoverBookingNotification,
   sendRejectRecoverBookingNotification,
   sendDriverNoPickupBookingNotification,
-  sendRejectNoPickupBookingNotification
+  sendRejectNoPickupBookingNotification,
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 
@@ -2079,7 +2079,6 @@ exports.rejectRecoverBooking = async (req, res) => {
     });
   }
 };
-
 
 // ---------------------------------------------------------
 // SEND RECOVER BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER

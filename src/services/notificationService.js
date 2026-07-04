@@ -827,6 +827,39 @@ async function sendRejectNoPickupBookingNotification(driverId, booking) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+// ---------------------------------------------------------
+// SEND NO PICKUP BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendNoPickupBookingNotification(driverId, booking) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "No Pickup Booking From Controller",
+      // body: `Pickup: ${booking.pickup}`,
+    },
+    data: {
+      booking_id: booking.id.toString(),
+      type: "NO_PICKUP_BOOKING",
+    },
+  };
+
+  // 3️⃣ Send
+  await admin.messaging().send(message);
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
@@ -843,5 +876,5 @@ module.exports = {
   sendDriverRecoverBookingNotification,
   sendRejectRecoverBookingNotification,
   sendDriverNoPickupBookingNotification,
-  sendRejectNoPickupBookingNotification
+  sendRejectNoPickupBookingNotification,
 };

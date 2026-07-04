@@ -452,7 +452,7 @@ This code will expire in 15 minutes.
       const customer = await Customer.findByEmailForLogin(email);
 
       if (!customer) {
-        return res.status(404).json({
+        return res.status(400).json({
           status: false,
           error: "Customer not found",
         });
@@ -460,7 +460,7 @@ This code will expire in 15 minutes.
 
       // 🔹 Check email verified
       if (!customer.email_verified) {
-        return res.status(401).json({
+        return res.status(400).json({
           status: false,
           error: "Email not verified",
         });
@@ -470,7 +470,7 @@ This code will expire in 15 minutes.
       const isMatch = await bcrypt.compare(password, customer.password);
 
       if (!isMatch) {
-        return res.status(401).json({
+        return res.status(400).json({
           status: false,
           error: "Invalid password",
         });

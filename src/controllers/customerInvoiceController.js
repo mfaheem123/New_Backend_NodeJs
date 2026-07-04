@@ -48,7 +48,7 @@ exports.createCustomerInvoice = async (req, res) => {
           : req.body.customer_invoice_lineitems,
     };
 
-    console.log("PAYLOAD: ", payload);
+    console.log("CREATE CUSTOMER INVOICE PAYLOAD: ", payload);
 
     const result = await customerInvoiceModel.createCustomerInvoice(payload);
 
@@ -150,6 +150,10 @@ exports.payCustomerInvoice = async (req, res) => {
 
 exports.updateCustomerInvoice = async (req, res) => {
   try {
+    console.log(
+      "🚀 UPDATE CUSTOMER INVOICE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const payload = {
       ...req.body,
       customer_invoice_lineitems:
@@ -157,6 +161,7 @@ exports.updateCustomerInvoice = async (req, res) => {
           ? JSON.parse(req.body.customer_invoice_lineitems.trim())
           : req.body.customer_invoice_lineitems,
     };
+    console.log("UPDATE CUSTOMER INVOICE PAYLOAD: ", payload);
 
     const result = await customerInvoiceModel.update(
       req.params.id,
