@@ -4,10 +4,12 @@ const BASE_URL = "http://192.168.110.5:5000/api";
 
 exports.getCombinedData = async (req, res) => {
   try {
+    const{company_id} = req.query;
+        console.log("Query: ", req.query)
     // Parallel requests for better performance 🚀
     const [locationTypesRes, zonesRes] = await Promise.all([
       axios.get(`${BASE_URL}/location-types`),
-      axios.get(`${BASE_URL}/zones/get`),
+      axios.get(`${BASE_URL}/zones/get?company_id=${company_id}`),
     ]);
 
     const locationTypes = locationTypesRes.data.location_types || [];

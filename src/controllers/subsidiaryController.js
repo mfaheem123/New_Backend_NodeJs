@@ -163,8 +163,10 @@ const getAllWithBankDetails = async (req, res) => {
   try {
     const limit = Math.min(1000, parseInt(req.query.limit) || 100);
     const offset = parseInt(req.query.offset) || 0;
+        const{company_id} = req.query;
 
-    const rows = await Subs.getAllWithBankDetails({ limit, offset });
+
+    const rows = await Subs.getAllWithBankDetails({ limit, offset, company_id });
 
     res.status(200).json({
       status: true,

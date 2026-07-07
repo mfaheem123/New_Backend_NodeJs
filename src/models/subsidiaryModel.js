@@ -165,7 +165,7 @@ const remove = async (id) => {
   return rows[0] || null;
 };
 
-const getAllWithBankDetails = async ({ limit = 100, offset = 0 } = {}) => {
+const getAllWithBankDetails = async ({ limit = 100, offset = 0, company_id } = {}) => {
   const q = `
     SELECT 
       s.*,
@@ -184,10 +184,11 @@ const getAllWithBankDetails = async ({ limit = 100, offset = 0 } = {}) => {
     FROM subsidiaries s
     LEFT JOIN subsidiary_bank_details b 
     ON s.id = b.subsidiary_id
+    WHERE company_id = $3
     ORDER BY s.id
     LIMIT $1 OFFSET $2;
   `;
-  const { rows } = await pool.query(q, [limit, offset]);
+  const { rows } = await pool.query(q, [limit, offset, company_id]);
   return rows;
 };
 

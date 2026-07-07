@@ -949,8 +949,9 @@ exports.onPanicDriver = async (req, res) => {
 // ---------------------------------------------------------
 exports.getLoginDrivers = async (req, res) => {
   try {
-    const login_drivers = await Driver.getLoginDrivers();
-    const busy_drivers = await Driver.getBusyDrivers();
+    const{company_id} = req.query;
+    const login_drivers = await Driver.getLoginDrivers(company_id);
+    const busy_drivers = await Driver.getBusyDrivers(company_id);
 
     res.status(200).json({
       status: true,
@@ -971,7 +972,8 @@ exports.getLoginDrivers = async (req, res) => {
 // ---------------------------------------------------------
 exports.getLoginDriverTracking = async (req, res) => {
   try {
-    const login_drivers = await Driver.getLoginDriverTracking();
+    const{company_id} = req.query;
+    const login_drivers = await Driver.getLoginDriverTracking(company_id);
 
     res.status(200).json({
       status: true,
@@ -991,7 +993,8 @@ exports.getLoginDriverTracking = async (req, res) => {
 // ---------------------------------------------------------
 exports.getFOBDrivers = async (req, res) => {
   try {
-    const busy_drivers = await Driver.getFOBDrivers();
+        const{company_id} = req.query;
+    const busy_drivers = await Driver.getFOBDrivers(company_id);
 
     res.status(200).json({
       status: true,

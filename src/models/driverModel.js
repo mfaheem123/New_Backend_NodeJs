@@ -1520,7 +1520,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return true;
   },
 
-  async getLoginDrivers() {
+  async getLoginDrivers(company_id) {
     const query = `
     SELECT 
       d.id,
@@ -1560,13 +1560,14 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status = 'logged_in'
       AND d.driver_status = 'Available'
       AND d.booking_status = 'Available'
+      AND company_id = $1
   `;
 
-    const result = await db.query(query);
+    const result = await db.query(query,[company_id]);
     return result.rows;
   },
 
-  async getBusyDrivers() {
+  async getBusyDrivers(company_id) {
     const query = `
     SELECT 
       d.id,
@@ -1606,13 +1607,15 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status = 'logged_in'
       AND d.driver_status = 'Unavailable'
       AND d.booking_status IS DISTINCT FROM 'Available'
+      AND company_id = $1
+
   `;
 
-    const result = await db.query(query);
+    const result = await db.query(query,[company_id]);
     return result.rows;
   },
 
-  async getLoginDriverTracking() {
+  async getLoginDriverTracking(company_id) {
     const query = `
     SELECT 
       d.id,
@@ -1650,13 +1653,15 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
 
     WHERE 
       d.session_status = 'logged_in'
+      AND company_id = $1
+
   `;
 
-    const result = await db.query(query);
+    const result = await db.query(query, [company_id]);
     return result.rows;
   },
 
-  async getFOBDrivers() {
+  async getFOBDrivers(company_id) {
     const dataQuery = `
 SELECT 
   d.*,
@@ -1699,11 +1704,12 @@ LEFT JOIN vehicles v ON v.id = d.vehicle_id
 LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
 LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
 LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
-WHERE d.driver_status = 'Unavailable' AND session_status = 'logged_in'
+WHERE d.driver_status = 'Unavailable' AND session_status = 'logged_in' AND company_id = $1
+
 ORDER BY d.id DESC
 `;
 
-    const result = await db.query(dataQuery);
+    const result = await db.query(dataQuery,[company_id]);
     return result.rows;
   },
 };
