@@ -1704,7 +1704,7 @@ LEFT JOIN vehicles v ON v.id = d.vehicle_id
 LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
 LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
 LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
-WHERE d.driver_status = 'Unavailable' AND session_status = 'logged_in' AND company_id = $1
+WHERE d.driver_status = 'Unavailable' AND session_status = 'logged_in' AND d.company_id = $1
 
 ORDER BY d.id DESC
 `;

@@ -68,25 +68,25 @@ const CACHE_TTL = 60 * 1000; // 1 minute
 let fareByVehicleCache = {};
 
 /* ---------------- FARE BY VEHICLE FUNCTION ---------------- */
-const applyFareByVehicle = async (fare, vehicle_type_id) => {
+const applyFareByVehicle = async (fare, vehicle_type_id,company_id) => {
   const now = Date.now();
-
+const cacheKey = `${company_id}_${vehicle_type_id}`;
   if (
-    !fareByVehicleCache[vehicle_type_id] ||
-    now - fareByVehicleCache[vehicle_type_id].timestamp > CACHE_TTL
+    !fareByVehicleCache[cacheKey] ||
+    now - fareByVehicleCache[cacheKey].timestamp > CACHE_TTL
   ) {
     const { rows } = await db.query(
-      `SELECT * FROM fare_by_vehicles WHERE vehicle_type_id=$1`,
-      [vehicle_type_id],
+      `SELECT * FROM fare_by_vehicles WHERE vehicle_type_id=$1 AND company_id=$2`,
+      [vehicle_type_id,company_id],
     );
 
-    fareByVehicleCache[vehicle_type_id] = {
-      data: rows,
-      timestamp: now,
-    };
+    fareByVehicleCache[cacheKey] = {
+   data: rows,
+   timestamp: now,
+};
   }
 
-  const rows = fareByVehicleCache[vehicle_type_id].data;
+  const rows = fareByVehicleCache[cacheKey].data;
 
   if (!rows.length) return fare;
 
@@ -119,6 +119,7 @@ const calculateSingleFare = async (payload) => {
     dropoff_plot_id,
     pickup,
     dropoff,
+    company_id,
   } = payload;
 
   // safe miles
@@ -151,8 +152,8 @@ const calculateSingleFare = async (payload) => {
   /* -------- FIXED -------- */
   if (pickup && dropoff) {
     const { rows } = await db.query(
-      `SELECT * FROM fixed_fares WHERE vehicle_type_id=$1`,
-      [vehicle_type_id],
+      `SELECT * FROM fixed_fares WHERE vehicle_type_id=$1 AND company_id = $2`,
+      [vehicle_type_id, company_id],
     );
 
     const p = normalize(pickup);
@@ -177,8 +178,9 @@ const calculateSingleFare = async (payload) => {
        WHERE vehicle_type_id=$1
        AND pickup_plot_id=$2
        AND dropoff_plot_id=$3
+       AND company_id = $4
        ORDER BY id DESC LIMIT 1`,
-      [vehicle_type_id, pickup_plot_id, dropoff_plot_id],
+      [vehicle_type_id, pickup_plot_id, dropoff_plot_id, company_id],
     );
 
     if (rows.length) {
@@ -191,9 +193,9 @@ const calculateSingleFare = async (payload) => {
   if (!baseFare) {
     const { rows } = await db.query(
       `SELECT * FROM fare_configurations
-       WHERE vehicle_type_id=$1
+       WHERE vehicle_type_id=$1 AND company_id = $2
        ORDER BY id ASC`,
-      [vehicle_type_id],
+      [vehicle_type_id, company_id],
     );
 
     const rule =
@@ -234,8 +236,8 @@ const calculateSingleFare = async (payload) => {
   let airportDropoff = 0;
 
   const { rows: airports } = await db.query(
-    `SELECT * FROM locations WHERE location_type_id=2`,
-  );
+    `SELECT * FROM locations WHERE location_type_id=2 AND company_id =$1`,
+    [company_id]);
 
   if (pickup) {
     const a = airports.find((x) =>
@@ -252,7 +254,7 @@ const calculateSingleFare = async (payload) => {
   }
 
   /* -------- FARE BY VEHICLE CHARGES -------- */
-  let vehicleAdjustedFare = await applyFareByVehicle(baseFare, vehicle_type_id);
+  let vehicleAdjustedFare = await applyFareByVehicle(baseFare, vehicle_type_id, company_id);
 
   /* -------- EXTRA CHARGES -------- */
   const extraChargesTotal = sumExtraCharges(payload);
@@ -282,7 +284,7 @@ const calculateSingleFare = async (payload) => {
 // CALCULATE FARES WITH SINGLE VEHICLE
 exports.calculateFare = async (req, res) => {
   try {
-    let { multi_reservation, journey_type_id } = req.body;
+    let { multi_reservation, journey_type_id, company_id } = req.body;
 
     console.log(
       "🚀 INCOMING FARE CALCULATION BODY:",
@@ -416,12 +418,21 @@ exports.calculateFareAllVehicles = async (req, res) => {
       JSON.stringify(req.body, null, 2),
     );
 
+    const { company_id } = req.body;
+
+if (!company_id) {
+  return res.status(400).json({
+    status: false,
+    message: "company_id is required",
+  });
+}
+
     // Get all vehicles
     const { rows: vehicles } = await db.query(`
       SELECT id, name
-      FROM vehicle_types
+      FROM vehicle_types WHERE company_id = $1
       ORDER BY id
-    `);
+    `,[company_id]);
 
     if (!vehicles.length) {
       return res.status(404).json({

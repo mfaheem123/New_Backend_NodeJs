@@ -281,7 +281,7 @@ const remove = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { username, password, web_device_id } = req.body;
+    const { username, password, web_device_id, company_id } = req.body;
 
     console.log(
       "🚀 INCOMING EMPLOYEE LOGIN BODY:",
@@ -297,6 +297,7 @@ const login = async (req, res) => {
 
     // Find user
     const employee = await Employee.getByUsername(username.toLowerCase());
+    console.log("Employee Data: ", employee)
 
     if (!employee) {
       return res
@@ -309,7 +310,12 @@ const login = async (req, res) => {
         .status(400)
         .json({ status: false, message: "You Are Inactive" });
     }
-
+if (Number(employee.company_id) !== Number(company_id)) {
+  return res.status(400).json({
+    status: false,
+    message: "Invalid User",
+  });
+}
     // Compare passwords
     const match = await bcrypt.compare(password, employee.password);
 
