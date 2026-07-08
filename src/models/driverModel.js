@@ -1563,7 +1563,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       AND company_id = $1
   `;
 
-    const result = await db.query(query,[company_id]);
+    const result = await db.query(query, [company_id]);
     return result.rows;
   },
 
@@ -1611,7 +1611,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
 
   `;
 
-    const result = await db.query(query,[company_id]);
+    const result = await db.query(query, [company_id]);
     return result.rows;
   },
 
@@ -1709,7 +1709,7 @@ WHERE d.driver_status = 'Unavailable' AND session_status = 'logged_in' AND d.com
 ORDER BY d.id DESC
 `;
 
-    const result = await db.query(dataQuery,[company_id]);
+    const result = await db.query(dataQuery, [company_id]);
     return result.rows;
   },
 };

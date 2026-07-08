@@ -297,7 +297,7 @@ const login = async (req, res) => {
 
     // Find user
     const employee = await Employee.getByUsername(username.toLowerCase());
-    console.log("Employee Data: ", employee)
+    console.log("Employee Data: ", employee);
 
     if (!employee) {
       return res
@@ -310,12 +310,12 @@ const login = async (req, res) => {
         .status(400)
         .json({ status: false, message: "You Are Inactive" });
     }
-if (Number(employee.company_id) !== Number(company_id)) {
-  return res.status(400).json({
-    status: false,
-    message: "Invalid User",
-  });
-}
+    if (Number(employee.company_id) !== Number(company_id)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid User",
+      });
+    }
     // Compare passwords
     const match = await bcrypt.compare(password, employee.password);
 

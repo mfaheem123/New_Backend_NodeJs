@@ -11,17 +11,16 @@ exports.create = async (data) => {
     end_number,
     increment_value,
     auto_increment,
-    company_id
+    company_id,
   } = data;
 
-if (end_number == null) {
+  if (end_number == null) {
     end_number = start_number;
   }
 
   prefix = prefix.toLowerCase();
 
-
-// ✅ Duplicate Check
+  // ✅ Duplicate Check
   const exists = await pool.query(
     `
     SELECT id
@@ -29,11 +28,11 @@ if (end_number == null) {
     WHERE subsidiary_id = $1
       AND document_table = $2
     `,
-    [subsidiary_id, document_table]
+    [subsidiary_id, document_table],
   );
 
   if (exists.rows.length) {
-     throw new Error("Document number already exists.");
+    throw new Error("Document number already exists.");
   }
 
   const res = await pool.query(
@@ -62,7 +61,7 @@ if (end_number == null) {
       end_number,
       increment_value,
       auto_increment,
-      company_id
+      company_id,
     ],
   );
 
@@ -94,7 +93,7 @@ exports.getAll = async ({ offset = 0, limit = 100, company_id }) => {
     ORDER BY dn.id
     OFFSET $1 LIMIT $2
   `,
-    [offset, limit,company_id],
+    [offset, limit, company_id],
   );
 
   const count = await pool.query(`SELECT COUNT(*) FROM document_numbers`);
@@ -126,57 +125,54 @@ exports.getById = async (id) => {
 
 /* UPDATE */
 exports.update = async (id, data) => {
+  const allowedFields = [
+    "subsidiary_id",
+    "document_table",
+    "document_column",
+    "prefix",
+    "start_number",
+    "end_number",
+    "increment_value",
+    "auto_increment",
+  ];
 
-    const allowedFields = [
-        "subsidiary_id",
-        "document_table",
-        "document_column",
-        "prefix",
-        "start_number",
-        "end_number",
-        "increment_value",
-        "auto_increment"
-    ];
+  const fields = [];
+  const values = [];
 
-    const fields = [];
-    const values = [];
+  let i = 1;
 
-    let i = 1;
+  for (const key of allowedFields) {
+    if (data[key] !== undefined) {
+      if (key == "prefix") {
+        values.push(data[key].toLowerCase());
+      } else {
+        values.push(data[key]);
+      }
 
-    for(const key of allowedFields){
-
-        if(data[key] !== undefined){
-
-            if(key=="prefix"){
-                values.push(data[key].toLowerCase());
-            }
-            else{
-                values.push(data[key]);
-            }
-
-            fields.push(`${key}=$${i++}`);
-        }
-
+      fields.push(`${key}=$${i++}`);
     }
+  }
 
-    if(fields.length===0){
-        throw new Error("Nothing to update.");
-    }
+  if (fields.length === 0) {
+    throw new Error("Nothing to update.");
+  }
 
-    values.push(id);
+  values.push(id);
 
-    const result = await pool.query(`
+  const result = await pool.query(
+    `
         UPDATE document_numbers
         SET
             ${fields.join(",")},
             updated_at=NOW()
         WHERE id=$${i}
         RETURNING *
-    `,values);
+    `,
+    values,
+  );
 
-    return result.rows[0];
-
-}
+  return result.rows[0];
+};
 
 /* DELETE */
 exports.remove = async (id) => {

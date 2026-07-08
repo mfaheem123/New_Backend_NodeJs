@@ -1079,7 +1079,7 @@ exports.getDriverEarning = async (req, res) => {
 // ---------------------------------------------------------
 exports.assignDriverToBooking = async (req, res) => {
   try {
-    const { booking_id, driver_id } = req.body;
+    const { booking_id, driver_id, company_id } = req.body;
 
     console.log("🚀 ASSIGN DRIVER BODY:", req.body);
 
@@ -1140,6 +1140,7 @@ exports.assignDriverToBooking = async (req, res) => {
     const updatedBooking = await bookingService.assignDriverService(
       booking_id,
       driver_id,
+      company_id
     );
 
     return res.status(200).json({
@@ -1235,7 +1236,7 @@ exports.getBookingByCustomerMobile = async (req, res) => {
 // ---------------------------------------------------------
 exports.assignFOBBookingToDriver = async (req, res) => {
   try {
-    const { booking_id, driver_id } = req.body;
+    const { booking_id, driver_id, company_id } = req.body;
 
     console.log("🚀 ASSIGN FOB BOOKING TO DRIVER BODY:", req.body);
 
@@ -1297,6 +1298,7 @@ exports.assignFOBBookingToDriver = async (req, res) => {
     const updatedBooking = await bookingService.assignFOBDriverService(
       booking_id,
       driver_id,
+      company_id
     );
 
     return res.status(200).json({
