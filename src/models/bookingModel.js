@@ -660,21 +660,28 @@ const updateBookingFares = async (
 // GET BOOKINGS BY DRIVER ID
 // ---------------------------------------------------------
 const getBookingByDriverId = async (driver_id, lastdays) => {
-  let whereClause = `WHERE b.driver_id = $1 AND b.booking_status_id = 11`;
+  let whereClause = `
+    WHERE b.driver_id = $1
+      AND b.booking_status_id = 11
+      AND b.trash = false
+  `;
+
   const values = [driver_id];
 
   if (lastdays) {
     whereClause += `
-    AND b.pickup_date::date >= CURRENT_DATE - INTERVAL '${lastdays} days'
-  `;
+      AND b.pickup_date::date >= CURRENT_DATE - ($2 * INTERVAL '1 day')
+    `;
+    values.push(lastdays);
   }
 
   const sql = `
     ${ENRICHED_SELECT}
     ${whereClause}
-    ORDER BY 
-      b.pickup_date DESC,
-      b.pickup_time DESC
+    ORDER BY
+      b.pickup_date::date DESC,
+      COALESCE(NULLIF(b.pickup_time, ''), '00:00:00')::time DESC,
+      b.id DESC
   `;
 
   const res = await pool.query(sql, values);

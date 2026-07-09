@@ -1140,7 +1140,7 @@ exports.assignDriverToBooking = async (req, res) => {
     const updatedBooking = await bookingService.assignDriverService(
       booking_id,
       driver_id,
-      company_id
+      company_id,
     );
 
     return res.status(200).json({
@@ -1298,7 +1298,7 @@ exports.assignFOBBookingToDriver = async (req, res) => {
     const updatedBooking = await bookingService.assignFOBDriverService(
       booking_id,
       driver_id,
-      company_id
+      company_id,
     );
 
     return res.status(200).json({

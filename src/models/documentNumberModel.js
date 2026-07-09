@@ -138,22 +138,22 @@ exports.update = async (id, data) => {
 
   const fields = [];
   const values = [];
-
-  let i = 1;
+  let index = 1;
 
   for (const key of allowedFields) {
-    if (data[key] !== undefined) {
-      if (key == "prefix") {
-        values.push(data[key].toLowerCase());
-      } else {
-        values.push(data[key]);
-      }
+    // Ignore undefined and null values
+    if (data[key] !== undefined && data[key] !== null) {
+      values.push(
+        key === "prefix"
+          ? String(data[key]).toLowerCase()
+          : data[key]
+      );
 
-      fields.push(`${key}=$${i++}`);
+      fields.push(`${key} = $${index++}`);
     }
   }
 
-  if (fields.length === 0) {
+  if (!fields.length) {
     throw new Error("Nothing to update.");
   }
 
@@ -161,15 +161,19 @@ exports.update = async (id, data) => {
 
   const result = await pool.query(
     `
-        UPDATE document_numbers
-        SET
-            ${fields.join(",")},
-            updated_at=NOW()
-        WHERE id=$${i}
-        RETURNING *
+      UPDATE document_numbers
+      SET
+        ${fields.join(", ")},
+        updated_at = NOW()
+      WHERE id = $${index}
+      RETURNING *;
     `,
-    values,
+    values
   );
+
+  if (!result.rows.length) {
+    throw new Error("Document number not found.");
+  }
 
   return result.rows[0];
 };

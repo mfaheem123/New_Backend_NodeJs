@@ -1355,7 +1355,7 @@ async function cloneOneWayBookingService(payload) {
 }
 
 // ASSIGN DRIVER TO BOOKINGS
-async function assignDriverService(bookingId, driverId,company_id) {
+async function assignDriverService(bookingId, driverId, company_id) {
   let fare_meter = false;
   if (driverId) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(
@@ -1421,7 +1421,7 @@ async function assignDriverService(bookingId, driverId,company_id) {
   return enriched;
 }
 
-async function assignFOBDriverService(bookingId, driverId,company_id) {
+async function assignFOBDriverService(bookingId, driverId, company_id) {
   let fare_meter = false;
   if (driverId) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(

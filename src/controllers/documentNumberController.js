@@ -78,6 +78,10 @@ exports.getById = async (req, res) => {
 /* UPDATE */
 exports.update = async (req, res) => {
   try {
+    console.log(
+      "🚀 UPDATE DOCUMENT NUMBER BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const doc = await Model.update(req.params.id, req.body);
     res.json({ status: true, document_number: doc });
   } catch (err) {

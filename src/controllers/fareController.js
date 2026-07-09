@@ -68,22 +68,22 @@ const CACHE_TTL = 60 * 1000; // 1 minute
 let fareByVehicleCache = {};
 
 /* ---------------- FARE BY VEHICLE FUNCTION ---------------- */
-const applyFareByVehicle = async (fare, vehicle_type_id,company_id) => {
+const applyFareByVehicle = async (fare, vehicle_type_id, company_id) => {
   const now = Date.now();
-const cacheKey = `${company_id}_${vehicle_type_id}`;
+  const cacheKey = `${company_id}_${vehicle_type_id}`;
   if (
     !fareByVehicleCache[cacheKey] ||
     now - fareByVehicleCache[cacheKey].timestamp > CACHE_TTL
   ) {
     const { rows } = await db.query(
       `SELECT * FROM fare_by_vehicles WHERE vehicle_type_id=$1 AND company_id=$2`,
-      [vehicle_type_id,company_id],
+      [vehicle_type_id, company_id],
     );
 
     fareByVehicleCache[cacheKey] = {
-   data: rows,
-   timestamp: now,
-};
+      data: rows,
+      timestamp: now,
+    };
   }
 
   const rows = fareByVehicleCache[cacheKey].data;
@@ -237,7 +237,8 @@ const calculateSingleFare = async (payload) => {
 
   const { rows: airports } = await db.query(
     `SELECT * FROM locations WHERE location_type_id=2 AND company_id =$1`,
-    [company_id]);
+    [company_id],
+  );
 
   if (pickup) {
     const a = airports.find((x) =>
@@ -254,7 +255,11 @@ const calculateSingleFare = async (payload) => {
   }
 
   /* -------- FARE BY VEHICLE CHARGES -------- */
-  let vehicleAdjustedFare = await applyFareByVehicle(baseFare, vehicle_type_id, company_id);
+  let vehicleAdjustedFare = await applyFareByVehicle(
+    baseFare,
+    vehicle_type_id,
+    company_id,
+  );
 
   /* -------- EXTRA CHARGES -------- */
   const extraChargesTotal = sumExtraCharges(payload);
@@ -420,19 +425,22 @@ exports.calculateFareAllVehicles = async (req, res) => {
 
     const { company_id } = req.body;
 
-if (!company_id) {
-  return res.status(400).json({
-    status: false,
-    message: "company_id is required",
-  });
-}
+    if (!company_id) {
+      return res.status(400).json({
+        status: false,
+        message: "company_id is required",
+      });
+    }
 
     // Get all vehicles
-    const { rows: vehicles } = await db.query(`
+    const { rows: vehicles } = await db.query(
+      `
       SELECT id, name
       FROM vehicle_types WHERE company_id = $1
       ORDER BY id
-    `,[company_id]);
+    `,
+      [company_id],
+    );
 
     if (!vehicles.length) {
       return res.status(404).json({
