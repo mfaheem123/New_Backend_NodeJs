@@ -35,4 +35,3 @@ exports.getCombinedData = async (req, res) => {
     });
   }
 };
-

@@ -610,6 +610,8 @@ exports.updateBookingStatus = async (req, res) => {
       await updateBookingonRoute(bookingId, false, true, true);
 
       // await Driver.updateDriverStatus(driverId, "Available", "Available");
+
+      // CHECK DRIVER HAS FOB OR NOT
 const hasFob = await checkDriverFobBooking(driverId);
 
 if (hasFob) {

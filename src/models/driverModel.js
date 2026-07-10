@@ -549,14 +549,14 @@ const Driver = {
         }
       }
       await db.query(
-  `
-  INSERT INTO driver_app_features (driver_id, company_id)
-  VALUES ($1, $2)
-  ON CONFLICT (driver_id)
-  DO NOTHING
-  `,
-  [driverId, driver.company_id ?? 1]
-);
+        `
+        INSERT INTO driver_app_features (driver_id, company_id)
+        VALUES ($1, $2)
+        ON CONFLICT (driver_id)
+        DO NOTHING
+        `,
+        [driverId, driver.company_id ?? 1],
+      );
 
       // Insert driver shifts
       if (Array.isArray(shifts) && shifts.length) {
@@ -1561,7 +1561,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status = 'logged_in'
       AND d.driver_status = 'Available'
       AND d.booking_status = 'Available'
-      AND company_id = $1
+      AND d.company_id = $1
   `;
 
     const result = await db.query(query, [company_id]);
@@ -1608,7 +1608,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status = 'logged_in'
       AND d.driver_status = 'Unavailable'
       AND d.booking_status IS DISTINCT FROM 'Available'
-      AND company_id = $1
+      AND d.company_id = $1
 
   `;
 
@@ -1654,7 +1654,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
 
     WHERE 
       d.session_status = 'logged_in'
-      AND company_id = $1
+      AND d.company_id = $1
 
   `;
 

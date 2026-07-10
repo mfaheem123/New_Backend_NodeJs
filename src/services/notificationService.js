@@ -176,7 +176,7 @@ async function sendPanicDriverNotification(driverId) {
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
     `,
-      [booking.company_id],
+      [company_id],
     );
 
     // 2️⃣ Tokens array banao
