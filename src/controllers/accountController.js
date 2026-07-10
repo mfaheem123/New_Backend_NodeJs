@@ -39,6 +39,7 @@ exports.getAccounts = async (req, res) => {
       contact_name,
       subsidiary,
       company_id,
+      closed,
     } = req.query;
 
     page = parseInt(page);
@@ -58,6 +59,7 @@ exports.getAccounts = async (req, res) => {
         contact_name,
         subsidiary,
         company_id,
+        closed,
       },
     });
 

@@ -66,6 +66,10 @@ const getById = async (req, res) => {
 
 const create = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING ADD VEHICLE TYPE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     Object.keys(req.body).forEach((key) => {
       if (req.body[key] === "") req.body[key] = null;
     });
@@ -126,6 +130,10 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING UPDATE VEHICLE TYPE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const id = req.params.id;
 
     Object.keys(req.body).forEach((key) => {

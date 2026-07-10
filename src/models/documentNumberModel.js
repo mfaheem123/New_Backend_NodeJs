@@ -144,9 +144,7 @@ exports.update = async (id, data) => {
     // Ignore undefined and null values
     if (data[key] !== undefined && data[key] !== null) {
       values.push(
-        key === "prefix"
-          ? String(data[key]).toLowerCase()
-          : data[key]
+        key === "prefix" ? String(data[key]).toLowerCase() : data[key],
       );
 
       fields.push(`${key} = $${index++}`);
@@ -168,7 +166,7 @@ exports.update = async (id, data) => {
       WHERE id = $${index}
       RETURNING *;
     `,
-    values
+    values,
   );
 
   if (!result.rows.length) {

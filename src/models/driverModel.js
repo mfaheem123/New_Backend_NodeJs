@@ -549,13 +549,14 @@ const Driver = {
         }
       }
       await db.query(
-        `
-        INSERT INTO driver_app_features (driver_id)
-        VALUES ($1)
-        ON CONFLICT (driver_id) DO NOTHING
-        `,
-        [driverId],
-      );
+  `
+  INSERT INTO driver_app_features (driver_id, company_id)
+  VALUES ($1, $2)
+  ON CONFLICT (driver_id)
+  DO NOTHING
+  `,
+  [driverId, driver.company_id ?? 1]
+);
 
       // Insert driver shifts
       if (Array.isArray(shifts) && shifts.length) {

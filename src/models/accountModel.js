@@ -184,6 +184,7 @@ exports.getAccounts = async ({ offset = 0, limit = 100, filters = {} }) => {
     contact_name,
     subsidiary,
     company_id,
+    closed
   } = filters;
 
   const conditions = [];
@@ -226,6 +227,10 @@ exports.getAccounts = async ({ offset = 0, limit = 100, filters = {} }) => {
   if (company_id) {
     conditions.push(`a.company_id = $${idx++}`);
     params.push(company_id);
+  }
+  if (closed) {
+    conditions.push(`a.closed = $${idx++}`);
+    params.push(closed);
   }
   const whereClause = conditions.length
     ? `WHERE ${conditions.join(" AND ")}`
