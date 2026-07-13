@@ -2,7 +2,10 @@ const FareConfiguration = require("../models/fareConfigurationModel");
 
 exports.createFareConfiguration = async (req, res) => {
   try {
-    console.log("🟢 Received body in /add =>", req.body);
+    console.log(
+      "🚀 INCOMING ADD FARE CONFIGURATION BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
 
     // Step 1️⃣: Create record
     const data = await FareConfiguration.create(req.body);
@@ -58,6 +61,11 @@ exports.getFareConfigurationById = async (req, res) => {
 
 exports.updateFareConfiguration = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING UPDATE FARE CONFIGURATION BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+
     const { id } = req.params;
     const data = await FareConfiguration.update(id, req.body);
 

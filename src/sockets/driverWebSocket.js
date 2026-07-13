@@ -57,7 +57,6 @@ function handleDriverLoginSocket(ws) {
       driver.driver_status === "Available",
   );
 
-
   // 2️⃣ Subscribe future updates
   const driverLoginListener = (driver) => {
     if (driver.session_status !== "logged_in") return;
@@ -88,7 +87,6 @@ async function handleBusyDriverSocket(ws) {
     socketId: ws.id,
   });
 
-
   ws.on("close", () => {
     busyDashboardClients.delete(ws);
   });
@@ -114,7 +112,7 @@ function notifyDriverLogin(driver) {
 
   const existing = loggedInDrivers.get(driver.id);
 
-   // 🚫 Already available → skip
+  // 🚫 Already available → skip
   if (!hasDriverStateChanged(existing, driver)) {
     logger.info("ws:skip-duplicate-available", {
       driverId: driver.id,
@@ -123,7 +121,6 @@ function notifyDriverLogin(driver) {
     return;
   }
   loggedInDrivers.set(driver.id, driver);
-
 
   const payload = JSON.stringify({
     event: "DRIVER_LOGIN",
@@ -140,7 +137,7 @@ function notifyDriverLogin(driver) {
 // Driver Logout Notify At Web
 function notifyDriverLogout(driverId) {
   loggedInDrivers.delete(driverId);
-busyDrivers.delete(driverId);
+  busyDrivers.delete(driverId);
 
   const payload = JSON.stringify({
     event: "DRIVER_LOGOUT",
@@ -167,11 +164,10 @@ function notifyBusyDriverUpdate(driver) {
     driver.booking_status === "Available" &&
     driver.driver_status === "Available"
   ) {
-
     busyDrivers.delete(driver.id);
-     const existing = loggedInDrivers.get(driver.id);
+    const existing = loggedInDrivers.get(driver.id);
 
-     // Already available → skip
+    // Already available → skip
     if (!hasDriverStateChanged(existing, driver)) {
       return;
     }
@@ -192,9 +188,9 @@ function notifyBusyDriverUpdate(driver) {
     // 🔥 BUSY SOCKET → REMOVE (important for Flutter)
     const busyPayload = JSON.stringify({
       event: "BUSY_DRIVER_REMOVE", // ⚠️ Flutter me else hit karega
-      data: { 
-        id: driver.id
-       },
+      data: {
+        id: driver.id,
+      },
     });
 
     busyDashboardClients.forEach((client) => {
@@ -205,7 +201,7 @@ function notifyBusyDriverUpdate(driver) {
 
     return;
   }
- // BUSY
+  // BUSY
   const existingBusy = busyDrivers.get(driver.id);
   // 🚫 Already busy → skip
   if (!hasDriverStateChanged(existingBusy, driver)) {

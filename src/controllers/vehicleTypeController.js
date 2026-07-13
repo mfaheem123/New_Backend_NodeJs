@@ -156,7 +156,7 @@ const update = async (req, res) => {
     numericFields.forEach((f) => {
       if (req.body[f] !== null && req.body[f] !== undefined)
         req.body[f] = parseFloat(req.body[f]) || null;
-    });
+    }); 
 
     const booleanFields = ["default_vehicle", "vehicle_type_minimum_fares"];
     booleanFields.forEach((f) => {
@@ -191,10 +191,10 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { 
-  getAll, 
-  getById, 
-  create, 
-  update, 
-  remove 
+module.exports = {
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
 };

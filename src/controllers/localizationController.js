@@ -30,6 +30,10 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING ADD LOCALIZATION BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const newLoc = await Localization.create(req.body);
     res.json({ status: true, localization: newLoc });
   } catch (err) {
