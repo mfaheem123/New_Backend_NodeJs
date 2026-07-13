@@ -184,7 +184,7 @@ exports.getAccounts = async ({ offset = 0, limit = 100, filters = {} }) => {
     contact_name,
     subsidiary,
     company_id,
-    closed
+    closed,
   } = filters;
 
   const conditions = [];

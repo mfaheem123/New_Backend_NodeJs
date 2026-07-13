@@ -5,9 +5,9 @@ const zoneController = {
   createZone: async (req, res) => {
     try {
       console.log(
-      "🚀 INCOMING ADD ZONE BODY:",
-      JSON.stringify(req.body, null, 2),
-    );
+        "🚀 INCOMING ADD ZONE BODY:",
+        JSON.stringify(req.body, null, 2),
+      );
       const zone = await Zone.create(req.body);
       res.status(200).json({
         status: true,
@@ -79,9 +79,9 @@ const zoneController = {
   updateZone: async (req, res) => {
     try {
       console.log(
-      "🚀 INCOMING UPDATE ZONE BODY:",
-      JSON.stringify(req.body, null, 2),
-    );
+        "🚀 INCOMING UPDATE ZONE BODY:",
+        JSON.stringify(req.body, null, 2),
+      );
       const { id } = req.params;
       const zone = await Zone.update(id, req.body);
       if (!zone) {

@@ -609,42 +609,30 @@ exports.updateBookingStatus = async (req, res) => {
     if (booking_status_id == 11) {
       await updateBookingonRoute(bookingId, false, true, true);
 
-      // await Driver.updateDriverStatus(driverId, "Available", "Available");
+      await Driver.updateDriverStatus(driverId, "Available", "Available");
 
       // CHECK DRIVER HAS FOB OR NOT
-const hasFob = await checkDriverFobBooking(driverId);
+      const hasFob = await checkDriverFobBooking(driverId);
 
-if (hasFob) {
+      // if (hasFob) {
+      //   await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
 
-    await Driver.updateDriverStatus(
-        driverId,
-        "Accepted",
-        "Unavailable"
-    );
+      //   const driver = await Driver.getById(driverId);
 
-    const driver = await Driver.getById(driverId);
+      //   notifyBusyDriverUpdate(driver);
+      // } else {
+      //   await Driver.updateDriverStatus(driverId, "Available", "Available");
 
-    notifyBusyDriverUpdate(driver);
+      //   const driver = await Driver.getById(driverId);
 
-}
-else{
-
-    await Driver.updateDriverStatus(
-        driverId,
-        "Available",
-        "Available"
-    );
-
-    const driver = await Driver.getById(driverId);
-
-    notifyBusyDriverUpdate(driver);
-}
+      //   notifyBusyDriverUpdate(driver);
+      // }
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
 
-      // const driver = await Driver.getById(driverId);
+      const driver = await Driver.getById(driverId);
 
-      // notifyBusyDriverUpdate(driver);
+      notifyBusyDriverUpdate(driver);
       await DriverShiftHistory.addBookingToShift(driverId, bookingId);
     }
 

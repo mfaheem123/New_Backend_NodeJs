@@ -29,7 +29,7 @@ const getAll = async ({
   location_type,
   zone,
   company_id,
-  blacklist
+  blacklist,
 }) => {
   const offset = (page - 1) * limit;
 

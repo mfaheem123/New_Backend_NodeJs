@@ -12,7 +12,7 @@ const getAll = async (req, res) => {
       location_type,
       zone,
       company_id,
-      blacklist
+      blacklist,
     } = req.query;
 
     const { locations, total } = await Location.getAll({
@@ -25,7 +25,7 @@ const getAll = async (req, res) => {
       location_type,
       zone,
       company_id,
-      blacklist
+      blacklist,
     });
 
     res.json({
