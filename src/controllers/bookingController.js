@@ -1228,9 +1228,9 @@ exports.getScheduleBookingByCustomerId = async (req, res) => {
 // GET BOOKING BY CUSTOMER MOBILE
 // ---------------------------------------------------------
 exports.getBookingByCustomerMobile = async (req, res) => {
-  const { mobile, name } = req.query;
+  const { mobile, name, company_id } = req.query;
 
-  const bookings = await getBookingByCustomerMobile(mobile, name);
+  const bookings = await getBookingByCustomerMobile(mobile, name, company_id);
 
   if (!bookings || bookings.length === 0) {
     return res.status(404).json({

@@ -4,51 +4,51 @@ const pool = require("../db");
 // ---------------------------------------------------------
 // SAFE SEND FCM NOTIFICATION
 // ---------------------------------------------------------
-async function safeSendNotification(
-  message,
-  { driverId = null, customerId = null } = {},
-) {
-  try {
-    return await admin.messaging().send(message);
-  } catch (error) {
-    console.error("❌ FCM Error:", error.code);
+// async function safeSendNotification(
+//   message,
+//   { driverId = null, customerId = null } = {},
+// ) {
+//   try {
+//     return await admin.messaging().send(message);
+//   } catch (error) {
+//     console.error("❌ FCM Error:", error.code);
 
-    // Driver invalid token
-    if (
-      driverId &&
-      error.code === "messaging/registration-token-not-registered"
-    ) {
-      await pool.query(
-        `UPDATE drivers
-         SET fcm_token = NULL
-         WHERE id = $1`,
-        [driverId],
-      );
+//     // Driver invalid token
+//     if (
+//       driverId &&
+//       error.code === "messaging/registration-token-not-registered"
+//     ) {
+//       await pool.query(
+//         `UPDATE drivers
+//          SET fcm_token = NULL
+//          WHERE id = $1`,
+//         [driverId],
+//       );
 
-      console.log(`⚠️ Invalid driver token removed. Driver ID: ${driverId}`);
-    }
+//       console.log(`⚠️ Invalid driver token removed. Driver ID: ${driverId}`);
+//     }
 
-    // Customer invalid token
-    if (
-      customerId &&
-      error.code === "messaging/registration-token-not-registered"
-    ) {
-      await pool.query(
-        `UPDATE customers
-         SET fcm_token = NULL
-         WHERE id = $1`,
-        [customerId],
-      );
+//     // Customer invalid token
+//     if (
+//       customerId &&
+//       error.code === "messaging/registration-token-not-registered"
+//     ) {
+//       await pool.query(
+//         `UPDATE customers
+//          SET fcm_token = NULL
+//          WHERE id = $1`,
+//         [customerId],
+//       );
 
-      console.log(
-        `⚠️ Invalid customer token removed. Customer ID: ${customerId}`,
-      );
-    }
+//       console.log(
+//         `⚠️ Invalid customer token removed. Customer ID: ${customerId}`,
+//       );
+//     }
 
-    // Error ko throw nahi karna
-    return null;
-  }
-}
+//     // Error ko throw nahi karna
+//     return null;
+//   }
+// }
 
 // ---------------------------------------------------------
 // SEND BOOKING NOTIFICATION TO DRIVER
@@ -82,8 +82,8 @@ async function sendBookingNotification(driverId, booking) {
   };
 
   // 3️⃣ Send
-  // await admin.messaging().send(message);
-  await safeSendNotification(message, { driverId });
+  await admin.messaging().send(message);
+  // await safeSendNotification(message, { driverId });
   console.log("✅ Notification sent to driver:", driverId);
 }
 
@@ -121,8 +121,8 @@ async function sendRideAcceptedNotification(customerId, booking) {
   };
 
   // 3️⃣ Send
-  // await admin.messaging().send(message);
-  await safeSendNotification(message, { customerId });
+  await admin.messaging().send(message);
+  // await safeSendNotification(message, { customerId });
   console.log("✅ Notification sent to customer:", customerId);
 }
 
@@ -159,8 +159,8 @@ async function sendFOBBookingNotification(driverId, booking) {
   };
 
   // 3️⃣ Send
-  // await admin.messaging().send(message);
-  await safeSendNotification(message, { driverId });
+  await admin.messaging().send(message);
+  // await safeSendNotification(message, { driverId });
   console.log("✅ FOB Notification sent to driver:", driverId);
 }
 
@@ -332,8 +332,8 @@ async function sendBreakStatusNotification(driverId, break_status) {
   };
   console.log("Notification Data:", message);
   // Send Notification
-  // await admin.messaging().send(message);
-  await safeSendNotification(message, { driverId });
+  await admin.messaging().send(message);
+  // await safeSendNotification(message, { driverId });
   console.log("✅ Break Status Notification sent to driver:", driverId);
 }
 
@@ -366,8 +366,8 @@ async function sendRecoverBookingNotification(driverId, booking) {
   };
 
   // 3️⃣ Send
-  // await admin.messaging().send(message);
-  await safeSendNotification(message, { driverId });
+  await admin.messaging().send(message);
+  // await safeSendNotification(message, { driverId });
   console.log("✅ Notification sent to driver:", driverId);
 }
 
@@ -495,8 +495,8 @@ async function sendFutureBookingNotification(driverId, booking) {
   };
 
   // 3️⃣ Send
-  // await admin.messaging().send(message);
-  await safeSendNotification(message, { driverId });
+  await admin.messaging().send(message);
+  // await safeSendNotification(message, { driverId });
   console.log("✅ Future Booking Notification Sent To Driver:", driverId);
 }
 
@@ -624,8 +624,8 @@ async function sendPDANotification(driverId) {
   console.log("PDA Notification Data:", message);
 
   // 3️⃣ Send
-  // await admin.messaging().send(message);
-  await safeSendNotification(message, { driverId });
+  await admin.messaging().send(message);
+  // await safeSendNotification(message, { driverId });
 
   console.log("✅ Notification sent to driver:", driverId);
 }
@@ -787,8 +787,8 @@ async function sendRejectRecoverBookingNotification(driverId, booking) {
   console.log("Reject Driver Recover Booking Notification Data:", message);
 
   // 3️⃣ Send
-  // await admin.messaging().send(message);
-  await safeSendNotification(message, { driverId });
+  await admin.messaging().send(message);
+  // await safeSendNotification(message, { driverId });
   console.log("✅ Notification sent to driver:", driverId);
 }
 
@@ -879,8 +879,8 @@ async function sendRejectNoPickupBookingNotification(driverId, booking) {
   console.log("Reject Driver No Pickup Booking Notification Data:", message);
 
   // 3️⃣ Send
-  // await admin.messaging().send(message);
-  await safeSendNotification(message, { driverId });
+  await admin.messaging().send(message);
+  // await safeSendNotification(message, { driverId });
   console.log("✅ Notification sent to driver:", driverId);
 }
 
@@ -913,8 +913,8 @@ async function sendNoPickupBookingNotification(driverId, booking) {
   };
 
   // 3️⃣ Send
-  // await admin.messaging().send(message);
-  await safeSendNotification(message, { driverId });
+  await admin.messaging().send(message);
+  // await safeSendNotification(message, { driverId });
   console.log("✅ Notification sent to driver:", driverId);
 }
 

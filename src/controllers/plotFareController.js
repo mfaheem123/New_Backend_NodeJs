@@ -108,6 +108,10 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING PLOT FARE UPDATE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const { id } = req.params;
     const updated = await PlotFare.update(id, req.body);
     if (!updated)

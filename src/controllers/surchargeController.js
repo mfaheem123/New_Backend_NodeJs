@@ -3,6 +3,10 @@ const Surcharge = require("../models/surchargeModel");
 module.exports = {
   async add(req, res) {
     try {
+      console.log(
+      "🚀 INCOMING ADD SURCHARGES BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
       const data = req.body;
       const result = await Surcharge.create(data);
 
@@ -19,6 +23,10 @@ module.exports = {
 
   async update(req, res) {
     try {
+      console.log(
+      "🚀 INCOMING UPDATE SURCHARGES BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
       const id = req.params.id;
       const data = req.body;
 

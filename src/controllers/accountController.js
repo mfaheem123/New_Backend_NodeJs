@@ -151,8 +151,8 @@ exports.deleteAccount = async (req, res) => {
 exports.getAccountsBySubsidiary = async (req, res) => {
   try {
     const { subsidiary_id } = req.params;
-    // const { company_id } = req.query;
-    const company_id = 1;
+    const { company_id } = req.query;
+    // const company_id = 1;
 
     const accounts = await Account.getAccountsBySubsidiary(
       subsidiary_id,
