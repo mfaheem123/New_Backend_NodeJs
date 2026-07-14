@@ -35,3 +35,34 @@ exports.getAllPaymentTypes = async (req, res) => {
     });
   }
 };
+
+exports.updatePaymentType = async (req, res) => {
+  try {
+    console.log(
+      "🚀 INCOMING UPDATE PAYMENT TYPES BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    const id = parseInt(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid payment type id",
+      });
+    }
+
+    const data = await EnumerationsModel.updatePaymentType(id, req.body);
+
+    return res.json({
+      status: true,
+      payment_type: data,
+    });
+  } catch (error) {
+    console.log("Error Updating Payment Type:", error);
+
+    return res.status(500).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};

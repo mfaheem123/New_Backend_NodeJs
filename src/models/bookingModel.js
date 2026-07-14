@@ -1995,7 +1995,7 @@ const getBookingsForCustomerInvoice = async (
 };
 
 // ---------------------------------------------------------
-// GET BOOKINGS BY ID
+// GET BOOKINGS BY REFERENCE NUMBER
 // ---------------------------------------------------------
 const getBookingByReferenceNumber = async (reference_number) => {
   const sql = `
@@ -2005,6 +2005,146 @@ const getBookingByReferenceNumber = async (reference_number) => {
   const res = await pool.query(sql, [reference_number]);
   return res.rows[0];
 };
+
+// ---------------------------------------------------------
+// GET ALL BOOKINGS WHICH ARE NOT COMPLETED
+// ---------------------------------------------------------
+const getClearBookings = async ({
+  offset = 0,
+  limit = 100,
+  reference_number,
+  pickup_date,
+  customer,
+  pickup,
+  dropoff,
+  driver,
+  booking_status,
+}) => {
+
+  const values = [];
+  let index = 1;
+
+  let where = `
+    WHERE b.booking_status_id IN (2,3,6,9,10)
+    AND b.trash = false
+  `;
+
+  if (reference_number) {
+    where += ` AND LOWER(b.reference_number) LIKE LOWER($${index})`;
+    values.push(`%${reference_number}%`);
+    index++;
+  }
+
+  if (pickup_date) {
+    where += ` AND b.pickup_date = $${index}`;
+    values.push(pickup_date);
+    index++;
+  }
+
+  if (customer) {
+    where += ` AND LOWER(b.name) LIKE LOWER($${index})`;
+    values.push(`%${customer}%`);
+    index++;
+  }
+
+  if (pickup) {
+    where += ` AND LOWER(b.pickup) LIKE LOWER($${index})`;
+    values.push(`%${pickup}%`);
+    index++;
+  }
+
+  if (dropoff) {
+    where += ` AND LOWER(b.dropoff) LIKE LOWER($${index})`;
+    values.push(`%${dropoff}%`);
+    index++;
+  }
+
+  if (driver) {
+    where += ` AND LOWER(d.username) LIKE LOWER($${index})`;
+    values.push(`%${driver}%`);
+    index++;
+  }
+
+  if (booking_status) {
+    where += ` AND LOWER(bs.booking_status) LIKE LOWER($${index})`;
+    values.push(`%${booking_status}%`);
+    index++;
+  }
+
+  const countSql = `
+      SELECT COUNT(*)
+      FROM bookings b
+      LEFT JOIN drivers d ON d.id = b.driver_id
+      LEFT JOIN booking_statuses bs
+        ON bs.id = b.booking_status_id
+      ${where}
+  `;
+
+  const total = (
+    await pool.query(countSql, values)
+  ).rows[0].count;
+
+  values.push(offset);
+  values.push(limit);
+
+  const sql = `
+      ${ENRICHED_SELECT}
+
+      ${where}
+
+      ORDER BY
+          b.pickup_date DESC,
+          b.pickup_time DESC
+
+      OFFSET $${index}
+      LIMIT $${index + 1}
+  `;
+
+  const result = await pool.query(sql, values);
+
+  return {
+    total: Number(total),
+    rows: result.rows,
+  };
+};
+
+// ---------------------------------------------------------
+// CLEAR SELECTED BOOKINGS
+// ---------------------------------------------------------
+const clearSelectedBookings = async (driver_id, ids) => {
+  const sql = `
+    UPDATE bookings
+    SET
+      booking_status_id = 11,
+      completed = TRUE,
+      controller_completed = TRUE,
+      driver_id = $1,
+      updated_at = NOW()
+    WHERE id = ANY($2::int[])
+  `;
+
+  await pool.query(sql, [driver_id, ids]);
+};
+
+// ---------------------------------------------------------
+// CLEAR ALL SELECTED BOOKINGS
+// ---------------------------------------------------------
+const clearAllBookings = async()=>{
+
+    const sql = `
+    UPDATE bookings
+    SET
+        booking_status_id = 11,
+        completed = true,
+        controller_completed = true,
+        updated_at = NOW()
+    WHERE booking_status_id IN (2,3,6,9,10)
+    AND trash = false
+    `;
+
+    await pool.query(sql);
+
+}
 
 module.exports = {
   pool,
@@ -2057,4 +2197,7 @@ module.exports = {
   getDriverTodayEarning,
   getBookingsForCustomerInvoice,
   getBookingByReferenceNumber,
+  getClearBookings,
+  clearSelectedBookings,
+  clearAllBookings
 };

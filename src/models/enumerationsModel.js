@@ -223,6 +223,54 @@ const EnumerationsModel = {
       payment_types: payment_types.rows,
     };
   },
+
+  updatePaymentType: async (id, body) => {
+  // Allowed fields
+  const allowedFields = [
+    "name",
+    "service",
+    "background_color",
+    "foreground_color",
+  ];
+
+  const updates = [];
+  const values = [];
+  let index = 1;
+
+  for (const field of allowedFields) {
+    if (Object.prototype.hasOwnProperty.call(body, field)) {
+      updates.push(`${field} = $${index}`);
+      values.push(body[field]);
+      index++;
+    }
+  }
+
+  if (updates.length === 0) {
+    throw new Error("No valid fields provided for update.");
+  }
+
+  values.push(id);
+
+  const result = await db.query(
+    `
+    UPDATE payment_types
+    SET
+      ${updates.join(", ")}
+    WHERE id = $${index}
+    RETURNING *;
+    `,
+    values
+  );
+
+  if (result.rows.length === 0) {
+    throw new Error("Payment type not found.");
+  }
+
+  return result.rows[0];
+},
+
 };
+
+
 
 module.exports = EnumerationsModel;

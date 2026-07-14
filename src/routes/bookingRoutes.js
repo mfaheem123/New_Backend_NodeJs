@@ -63,6 +63,11 @@ router.get(
   bookingController.getBookingsForCustomerInvoice,
 );
 
+router.get(
+    "/clear",
+    bookingController.getClearBookings
+)
+
 //POST APIS
 router.post("/add", bookingController.createBooking);
 router.post("/update/:id", bookingController.updateBooking);
@@ -101,6 +106,16 @@ router.post("/fob-driver", bookingController.assignFOBBookingToDriver);
 router.post(
   "/booking-history-driver",
   bookingController.getBookingByDriverIdAndStatus,
+);
+
+router.post(
+    "/clear-selected",
+    bookingController.clearSelectedBookings
+);
+
+router.post(
+    "/clear-all",
+    bookingController.clearAllBookings
 );
 
 //DELETE APIS

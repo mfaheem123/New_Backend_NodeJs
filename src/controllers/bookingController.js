@@ -43,6 +43,9 @@ const {
   getDriverTodayEarning,
   getBookingsForCustomerInvoice,
   getBookingByReferenceNumber,
+  getClearBookings,
+  clearSelectedBookings,
+  clearAllBookings
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -2170,3 +2173,108 @@ exports.rejectNoPickupBooking = async (req, res) => {
     });
   }
 };
+
+// ---------------------------------------------------------
+// GET ALL BOOKINGS WHICH ARE NOT COMPLETED
+// ---------------------------------------------------------
+exports.getClearBookings = async (req, res) => {
+  try {
+    const {
+      offset = 0,
+      limit = 100,
+      reference_number,
+      pickup_date,
+      customer,
+      pickup,
+      dropoff,
+      driver,
+      booking_status,
+    } = req.query;
+
+    const result = await getClearBookings({
+      offset: Number(offset),
+      limit: Number(limit),
+      reference_number,
+      pickup_date,
+      customer,
+      pickup,
+      dropoff,
+      driver,
+      booking_status,
+    });
+
+    res.json({
+      status: true,
+      count: result.rows.length,
+      total: result.total,
+      bookings: result.rows.map(parseJSONFields),
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// CLEAR SELECTED BOOKINGS
+// ---------------------------------------------------------
+exports.clearSelectedBookings = async(req,res)=>{
+console.log(
+      "🚀 INCOMING CLEAR SELECTED BOOKINGS BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    let {driver_id, ids} = req.body;
+driver_id = Number(driver_id);
+if (typeof ids === "string") {
+      ids = JSON.parse(ids);
+    }
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        status: false,
+        message: "ids must be an array",
+      });
+    }
+
+    ids = ids.map(Number);
+    if(!driver_id)
+    {
+        return res.status(400).json({
+            status:false,
+            message:"driver_id required"
+        });
+    }
+
+    if(!ids || !ids.length)
+    {
+        return res.status(400).json({
+            status:false,
+            message:"ids required"
+        });
+    }
+
+    await clearSelectedBookings(driver_id,ids);
+
+    res.json({
+        status:true,
+        message:"Booking Cleared Successfully"
+    });
+
+}
+
+// ---------------------------------------------------------
+// CLEAR ALL SELECTED BOOKINGS
+// ---------------------------------------------------------
+exports.clearAllBookings = async(req,res)=>{
+
+    await clearAllBookings();
+
+    res.json({
+        status:true,
+        message:"All Bookings Cleared Successfully"
+    });
+
+}
