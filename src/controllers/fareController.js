@@ -241,18 +241,38 @@ const calculateSingleFare = async (payload) => {
   );
 
   if (pickup) {
-    const a = airports.find((x) =>
-      normalize(pickup).includes(normalize(x.address)),
+  const pickupText = normalize(pickup);
+
+  const airport = airports.find((a) => {
+    return (
+      pickupText.includes(normalize(a.name || "")) ||
+      pickupText.includes(normalize(a.postcode || "")) ||
+      pickupText.includes(normalize(a.shortcut || "")) ||
+      pickupText.includes(normalize(a.address || ""))
     );
-    if (a) airportPickup = Number(a.pickup_charges || 0) * multiplier;
+  });
+
+  if (airport) {
+    airportPickup = Number(airport.pickup_charges || 0) * multiplier;
   }
+}
 
   if (dropoff) {
-    const a = airports.find((x) =>
-      normalize(dropoff).includes(normalize(x.address)),
+  const dropoffText = normalize(dropoff);
+
+  const airport = airports.find((a) => {
+    return (
+      dropoffText.includes(normalize(a.name || "")) ||
+      dropoffText.includes(normalize(a.postcode || "")) ||
+      dropoffText.includes(normalize(a.shortcut || "")) ||
+      dropoffText.includes(normalize(a.address || ""))
     );
-    if (a) airportDropoff = Number(a.dropoff_charges || 0) * multiplier;
+  });
+
+  if (airport) {
+    airportDropoff = Number(airport.dropoff_charges || 0) * multiplier;
   }
+}
 
   /* -------- FARE BY VEHICLE CHARGES -------- */
   let vehicleAdjustedFare = await applyFareByVehicle(

@@ -1,6 +1,7 @@
 const WebSocket = require("ws");
 const db = require("../db");
 const logger = require("../utils/logger");
+const { URL } = require("url");
 const {
   getAvailableLoggedInDrivers,
   getBusyLoggedInDrivers,
@@ -45,9 +46,16 @@ function formatDriverData(driver) {
 }
 
 //Driver Login Socket
-function handleDriverLoginSocket(ws) {
+function handleDriverLoginSocket(ws, req) {
+  const { searchParams } = new URL(req.url, "http://localhost");
+  ws.company_id = Number(searchParams.get("company_id"));
+        console.log("Socket Company ID:", ws.company_id);
+
   dashboardClients.add(ws);
-  logger.info("ws:dashboard-connected", { socketId: ws.id });
+  logger.info("ws:dashboard-connected", {
+    socketId: ws.id,
+    company_id: ws.company_id,
+  });
 
   // 1️⃣ Sirf available logged in drivers bhejo
   const availableDrivers = Array.from(loggedInDrivers.values()).filter(
@@ -80,11 +88,16 @@ function handleDriverLoginSocket(ws) {
   });
 }
 
-async function handleBusyDriverSocket(ws) {
+async function handleBusyDriverSocket(ws, req) {
+   const { searchParams } = new URL(req.url, "http://localhost");
+
+  ws.company_id = Number(searchParams.get("company_id"));
+
   busyDashboardClients.add(ws);
 
   logger.info("ws:busy-dashboard-connected", {
     socketId: ws.id,
+    company_id: ws.company_id,
   });
 
   ws.on("close", () => {
@@ -126,26 +139,37 @@ function notifyDriverLogin(driver) {
     event: "DRIVER_LOGIN",
     data: formatDriverData(driver),
   });
-
+console.log("Driver Company ID: ", driver.company_id)
   dashboardClients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(payload);
-    }
-  });
+  if (
+    client.readyState === WebSocket.OPEN &&
+    client.company_id === driver.company_id
+  ) {
+    client.send(payload);
+  }
+});
 }
 
 // Driver Logout Notify At Web
 function notifyDriverLogout(driverId) {
+  const driver =
+    loggedInDrivers.get(driverId) || busyDrivers.get(driverId);
+
   loggedInDrivers.delete(driverId);
   busyDrivers.delete(driverId);
+if (!driver) return;
 
   const payload = JSON.stringify({
     event: "DRIVER_LOGOUT",
     data: { driverId },
   });
+console.log("Driver Company ID: ", driver.company_id)
 
   dashboardClients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
+    if (
+      client.readyState === WebSocket.OPEN &&
+      client.company_id === driver.company_id
+    ) {
       client.send(payload);
     }
   });
@@ -178,12 +202,16 @@ function notifyBusyDriverUpdate(driver) {
       event: "DRIVER_LOGIN",
       data: formatDriverData(driver),
     });
+console.log("Driver Company ID: ", driver.company_id)
 
     dashboardClients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(payload);
-      }
-    });
+  if (
+    client.readyState === WebSocket.OPEN &&
+    client.company_id === driver.company_id
+  ) {
+    client.send(payload);
+  }
+});
 
     // 🔥 BUSY SOCKET → REMOVE (important for Flutter)
     const busyPayload = JSON.stringify({
@@ -192,12 +220,16 @@ function notifyBusyDriverUpdate(driver) {
         id: driver.id,
       },
     });
+console.log("Driver Company ID: ", driver.company_id)
 
     busyDashboardClients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(busyPayload);
-      }
-    });
+  if (
+    client.readyState === WebSocket.OPEN &&
+    client.company_id === driver.company_id
+  ) {
+    client.send(busyPayload);
+  }
+});
 
     return;
   }
@@ -220,12 +252,16 @@ function notifyBusyDriverUpdate(driver) {
     event: "BUSY_DRIVER_UPDATE",
     data: formatDriverData(driver), // ✅ only required fields
   });
+console.log("Driver Company ID: ", driver.company_id)
 
-  busyDashboardClients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(payload);
-    }
-  });
+ busyDashboardClients.forEach((client) => {
+  if (
+    client.readyState === WebSocket.OPEN &&
+    client.company_id === driver.company_id
+  ) {
+    client.send(payload);
+  }
+});
 }
 
 // ==============================
@@ -246,6 +282,7 @@ async function notifyDriverBookingStatusWeb(driverId) {
         d.session_status,
         d.driver_status,
         d.last_login_at,
+        d.company_id,
         vt.name AS vehicle_type
       FROM drivers d
       LEFT JOIN vehicles v
@@ -281,20 +318,26 @@ async function notifyDriverBookingStatusWeb(driverId) {
       driver.driver_status === "Available"
     ) {
       dashboardClients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(payload);
-        }
-      });
+  if (
+    client.readyState === WebSocket.OPEN &&
+    client.company_id === driver.company_id
+  ) {
+    client.send(payload);
+  }
+});
 
       return;
     }
 
     // BUSY → busy dashboard
     busyDashboardClients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(payload);
-      }
-    });
+  if (
+    client.readyState === WebSocket.OPEN &&
+    client.company_id === driver.company_id
+  ) {
+    client.send(payload);
+  }
+});
 
     logger.info("ws:driver-booking-status-web-update", {
       driverId,
@@ -324,6 +367,7 @@ async function notifyDriverBreakStatusWeb(driverId) {
         d.session_status,
         d.driver_status,
         d.last_login_at,
+        d.company_id,
         vt.name AS vehicle_type
       FROM drivers d
       LEFT JOIN vehicles v
@@ -359,11 +403,14 @@ async function notifyDriverBreakStatusWeb(driverId) {
     });
 
     // ✅ SIRF AVAILABLE DASHBOARD KO SEND HOGA
-    dashboardClients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(payload);
-      }
-    });
+   dashboardClients.forEach((client) => {
+  if (
+    client.readyState === WebSocket.OPEN &&
+    client.company_id === driver.company_id
+  ) {
+    client.send(payload);
+  }
+});
 
     logger.info("ws:driver-break-status-update", {
       driverId,

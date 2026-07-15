@@ -279,6 +279,7 @@ async function createBookingRow(pool, bookingObj) {
     "invoice_number",
     "initial_subsidiary_id",
     "eta",
+    "company_id",
   ];
 
   // 🔥 FIX: Properly DEFINE row before using it
@@ -1360,7 +1361,7 @@ async function assignDriverService(bookingId, driverId, company_id) {
   if (driverId) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(
       driverId,
-      company_id,
+      1,
     );
     console.log("DRIVER FEATURES:", driverFeatures);
     if (driverFeatures) {
