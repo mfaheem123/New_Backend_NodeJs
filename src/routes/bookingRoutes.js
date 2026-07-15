@@ -63,10 +63,7 @@ router.get(
   bookingController.getBookingsForCustomerInvoice,
 );
 
-router.get(
-    "/clear",
-    bookingController.getClearBookings
-)
+router.get("/clear", bookingController.getClearBookings);
 
 //POST APIS
 router.post("/add", bookingController.createBooking);
@@ -108,15 +105,8 @@ router.post(
   bookingController.getBookingByDriverIdAndStatus,
 );
 
-router.post(
-    "/clear-selected",
-    bookingController.clearSelectedBookings
-);
-
-router.post(
-    "/clear-all",
-    bookingController.clearAllBookings
-);
+router.post("/clear-selected", bookingController.clearSelectedBookings);
+router.post("/clear-all", bookingController.clearAllBookings);
 
 //DELETE APIS
 router.delete("/delete/:id", bookingController.deleteBooking);

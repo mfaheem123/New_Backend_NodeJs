@@ -2020,7 +2020,6 @@ const getClearBookings = async ({
   driver,
   booking_status,
 }) => {
-
   const values = [];
   let index = 1;
 
@@ -2080,9 +2079,7 @@ const getClearBookings = async ({
       ${where}
   `;
 
-  const total = (
-    await pool.query(countSql, values)
-  ).rows[0].count;
+  const total = (await pool.query(countSql, values)).rows[0].count;
 
   values.push(offset);
   values.push(limit);
@@ -2129,9 +2126,8 @@ const clearSelectedBookings = async (driver_id, ids) => {
 // ---------------------------------------------------------
 // CLEAR ALL SELECTED BOOKINGS
 // ---------------------------------------------------------
-const clearAllBookings = async()=>{
-
-    const sql = `
+const clearAllBookings = async () => {
+  const sql = `
     UPDATE bookings
     SET
         booking_status_id = 11,
@@ -2142,9 +2138,8 @@ const clearAllBookings = async()=>{
     AND trash = false
     `;
 
-    await pool.query(sql);
-
-}
+  await pool.query(sql);
+};
 
 module.exports = {
   pool,
@@ -2199,5 +2194,5 @@ module.exports = {
   getBookingByReferenceNumber,
   getClearBookings,
   clearSelectedBookings,
-  clearAllBookings
+  clearAllBookings,
 };
