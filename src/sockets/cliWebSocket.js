@@ -1,8 +1,9 @@
 const WebSocket = require("ws");
 const logger = require("../utils/logger");
 
-// extension => Set of sockets
-const cliClientsByExtension = new Map();
+
+// companyId => extension => Set<WebSocket>
+const cliClients = new Map();
 
 /**
  * Handle CLI socket connection
@@ -10,32 +11,54 @@ const cliClientsByExtension = new Map();
  */
 function handleCLISocket(ws, req) {
   const params = new URLSearchParams(req.url.split("?")[1]);
+ const companyId = params.get("companyId");
+
   const extension = params.get("extension");
 
-  if (!extension) {
-    ws.close(1008, "Extension required");
+    if (!companyId || !extension) {
+    ws.close(1008, "companyId and extension required");
     return;
   }
 
+   ws.companyId = companyId;
   ws.extension = extension;
 
-  if (!cliClientsByExtension.has(extension)) {
-    cliClientsByExtension.set(extension, new Set());
-  }
+  if (!cliClients.has(companyId)) {
+  cliClients.set(companyId, new Map());
+}
 
-  cliClientsByExtension.get(extension).add(ws);
+const companyExtensions = cliClients.get(companyId);
+
+if (!companyExtensions.has(extension)) {
+  companyExtensions.set(extension, new Set());
+}
+
+companyExtensions.get(extension).add(ws);
 
   logger.info("ws:cli-connected", {
     socketId: ws.id,
     extension,
+    companyId
   });
 
   ws.on("close", () => {
-    cliClientsByExtension.get(extension)?.delete(ws);
+const companyExtensions = cliClients.get(companyId);
 
+companyExtensions?.get(extension)?.delete(ws);
+
+if (
+  companyExtensions?.get(extension)?.size === 0
+) {
+  companyExtensions.delete(extension);
+}
+
+if (companyExtensions?.size === 0) {
+  cliClients.delete(companyId);
+}
     logger.info("ws:cli-disconnected", {
       socketId: ws.id,
       extension,
+      companyId
     });
   });
 
@@ -50,10 +73,18 @@ function handleCLISocket(ws, req) {
 /**
  * Notify CLI to open for specific extension
  */
-function notifyCLIOpen(extension, payload) {
-  const clients = cliClientsByExtension.get(extension);
+function notifyCLIOpen(companyId, extension, payload) {
+  const companyExtensions = cliClients.get(
+        String(companyId)
+    );
 
-  if (!clients) return;
+    if (!companyExtensions) return;
+  const clients = companyExtensions.get(
+        String(extension)
+    );
+
+    if (!clients) return;
+
 
   const message = JSON.stringify({
     event: "CLI_OPEN",
@@ -67,6 +98,7 @@ function notifyCLIOpen(extension, payload) {
   });
 
   logger.info("ws:cli-open-sent", {
+    companyId,
     extension,
   });
 }

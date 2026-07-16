@@ -948,7 +948,7 @@ const getBookingByCustomerId = async (customer_id) => {
 // GET BOOKING CUSTOMER MOBILE
 // ---------------------------------------------------------
 const getBookingByCustomerMobile = async (mobile, name, company_id) => {
-  let whereClause = `WHERE (b.mobile = $1 OR b.name = $2) AND company_id = $3 AND trash = false`;
+  let whereClause = `WHERE (b.mobile = $1 OR b.name = $2) AND b.company_id = $3 AND trash = false`;
   const values = [mobile, name, company_id];
 
   const sql = `

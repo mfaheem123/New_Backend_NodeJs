@@ -75,7 +75,6 @@ exports.receiveCallEvents = async (req, res) => {
           companyId, // company filter
           event.extension,
           {
-            companyId,
             callId: event.callId,
             callerId: event.callerId,
             extension: event.extension,

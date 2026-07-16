@@ -620,10 +620,6 @@ exports.updateBookingStatus = async (req, res) => {
 
       if (hasFob) {
         await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
-
-        const driver = await Driver.getById(driverId);
-
-        notifyBusyDriverUpdate(driver);
       } else {
         await Driver.updateDriverStatus(driverId, "Available", "Available");
 

@@ -18,7 +18,7 @@ function handleBreakDriverSocket(ws, req) {
   // Save Driver Socket
   breakDriverClients.set(driverId, ws);
 
-  logger.info("ws:panic-driver-connected", {
+  logger.info("ws:break-driver-connected", {
     driverId,
   });
 

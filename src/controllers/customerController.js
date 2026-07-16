@@ -439,7 +439,7 @@ This code will expire in 15 minutes.
 
   customerLogin: async (req, res) => {
     try {
-      const { email, password, fcm_token } = req.body;
+      const { email, password, fcm_token, company_id } = req.body;
 
       if (!email || !password) {
         return res.status(400).json({
@@ -465,7 +465,12 @@ This code will expire in 15 minutes.
           error: "Email not verified",
         });
       }
-
+if (Number(customer.company_id) !== Number(company_id)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid User",
+      });
+    }
       // 🔹 Compare hashed password
       const isMatch = await bcrypt.compare(password, customer.password);
 
