@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("../controllers/accountInvoiceBookingController");
+const accountInvoiceBookingController = require("../controllers/accountInvoiceBookingController");
 
-router.get("/bookings", controller.getBookingsForInvoice);
+router.get("/bookings", accountInvoiceBookingController.getBookingsForInvoice);
 
 module.exports = router;

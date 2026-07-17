@@ -1,0 +1,246 @@
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T11:25:32.305Z"}
+{"level":"info","message":"GET /api/location-types 200 16.635 ms","timestamp":"2026-07-17T11:25:32.315Z"}
+{"duration":94,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T11:25:32.394Z"}
+{"level":"info","message":"GET /api/location-types 200 109.063 ms","timestamp":"2026-07-17T11:25:32.409Z"}
+{"duration":159,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T12:45:30.666Z"}
+{"level":"info","message":"GET /api/location-types 200 162.072 ms","timestamp":"2026-07-17T12:45:30.668Z"}
+{"duration":218,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T14:05:30.762Z"}
+{"level":"info","message":"GET /api/location-types 200 222.209 ms","timestamp":"2026-07-17T14:05:30.765Z"}
+{"duration":50,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T15:25:30.573Z"}
+{"level":"info","message":"GET /api/location-types 200 53.171 ms","timestamp":"2026-07-17T15:25:30.576Z"}
+{"duration":64,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T16:45:30.607Z"}
+{"level":"info","message":"GET /api/location-types 200 67.346 ms","timestamp":"2026-07-17T16:45:30.610Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-07-17T17:14:33.842Z","url":"/websocket/cli?extension=202&company_id=1"}
+{"id":"bf4dbb8f-c9e7-4bd3-bcb1-14e19d441fb3","level":"info","message":"ws:closed","timestamp":"2026-07-17T17:14:33.863Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-07-17T17:14:48.229Z","url":"/websocket/cli?extension=202&company_id=1"}
+{"id":"1e8741b2-decd-4e59-9584-f460ed90934f","level":"info","message":"ws:closed","timestamp":"2026-07-17T17:14:48.232Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:16:38.035Z"}
+{"level":"info","message":"GET /api/location-types 200 10.960 ms","timestamp":"2026-07-17T17:16:38.041Z"}
+{"duration":51,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:16:38.082Z"}
+{"level":"info","message":"GET /api/location-types 200 52.408 ms","timestamp":"2026-07-17T17:16:38.084Z"}
+{"level":"info","message":"ws:upgrade","timestamp":"2026-07-17T17:16:38.780Z","url":"/websocket/cli?extension=202&company_id=1"}
+{"companyId":"1","extension":"202","level":"info","message":"ws:cli-connected","socketId":"9691dbf2-2d5e-48c0-9e1f-d66d8af7fac6","timestamp":"2026-07-17T17:16:38.783Z"}
+{"level":"info","message":"POST //api/calls/receivecallevents 404 2.168 ms","timestamp":"2026-07-17T17:17:37.138Z"}
+{"duration":100,"level":"info","message":"db-query","rows":1,"text":"INSERT INTO call_event_batches (token)\n     VALUES ($1)\n     RETURNING id","timestamp":"2026-07-17T17:17:43.440Z"}
+{"duration":6,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:17:43.446Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:17:43.449Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:17:43.451Z"}
+{"level":"info","message":"POST /api/calls/receivecallevents 200 113.707 ms","timestamp":"2026-07-17T17:17:43.453Z"}
+{"duration":54,"level":"info","message":"db-query","rows":1,"text":"INSERT INTO call_event_batches (token)\n     VALUES ($1)\n     RETURNING id","timestamp":"2026-07-17T17:17:57.571Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:17:57.574Z"}
+{"duration":27,"level":"info","message":"db-query","rows":1,"text":"\n    INSERT INTO call_events\n    (batch_id, call_id, dialled_number, extension, caller_id, status, event_time)\n    VALUES ($1,$2,$3,$4,$5,$6,$7)\n    RETURNING *\n    ","timestamp":"2026-07-17T17:17:57.602Z"}
+{"companyId":1,"extension":"202","level":"info","message":"ws:cli-open-sent","timestamp":"2026-07-17T17:17:57.603Z"}
+{"duration":8,"level":"info","message":"db-query","rows":1,"text":"UPDATE call_events SET cli_triggered = true WHERE id = $1","timestamp":"2026-07-17T17:17:57.612Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:17:57.614Z"}
+{"duration":0,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:17:57.616Z"}
+{"level":"info","message":"POST /api/calls/receivecallevents 200 101.979 ms","timestamp":"2026-07-17T17:17:57.617Z"}
+{"duration":55,"level":"info","message":"db-query","rows":1,"text":"INSERT INTO call_event_batches (token)\n     VALUES ($1)\n     RETURNING id","timestamp":"2026-07-17T17:19:27.376Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:19:27.380Z"}
+{"duration":12,"level":"info","message":"db-query","rows":1,"text":"\n    INSERT INTO call_events\n    (batch_id, call_id, dialled_number, extension, caller_id, status, event_time)\n    VALUES ($1,$2,$3,$4,$5,$6,$7)\n    RETURNING *\n    ","timestamp":"2026-07-17T17:19:27.392Z"}
+{"companyId":1,"extension":"202","level":"info","message":"ws:cli-open-sent","timestamp":"2026-07-17T17:19:27.393Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"UPDATE call_events SET cli_triggered = true WHERE id = $1","timestamp":"2026-07-17T17:19:27.395Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:19:27.398Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    INSERT INTO call_events\n    (batch_id, call_id, dialled_number, extension, caller_id, status, event_time)\n    VALUES ($1,$2,$3,$4,$5,$6,$7)\n    RETURNING *\n    ","timestamp":"2026-07-17T17:19:27.401Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:19:27.402Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    INSERT INTO call_events\n    (batch_id, call_id, dialled_number, extension, caller_id, status, event_time)\n    VALUES ($1,$2,$3,$4,$5,$6,$7)\n    RETURNING *\n    ","timestamp":"2026-07-17T17:19:27.404Z"}
+{"companyId":1,"extension":"202","level":"info","message":"ws:cli-open-sent","timestamp":"2026-07-17T17:19:27.405Z"}
+{"duration":18,"level":"info","message":"db-query","rows":1,"text":"UPDATE call_events SET cli_triggered = true WHERE id = $1","timestamp":"2026-07-17T17:19:27.424Z"}
+{"level":"info","message":"POST /api/calls/receivecallevents 200 103.689 ms","timestamp":"2026-07-17T17:19:27.425Z"}
+{"duration":54,"level":"info","message":"db-query","rows":1,"text":"INSERT INTO call_event_batches (token)\n     VALUES ($1)\n     RETURNING id","timestamp":"2026-07-17T17:19:56.009Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:19:56.011Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    INSERT INTO call_events\n    (batch_id, call_id, dialled_number, extension, caller_id, status, event_time)\n    VALUES ($1,$2,$3,$4,$5,$6,$7)\n    RETURNING *\n    ","timestamp":"2026-07-17T17:19:56.015Z"}
+{"companyId":1,"extension":"202","level":"info","message":"ws:cli-open-sent","timestamp":"2026-07-17T17:19:56.016Z"}
+{"duration":2,"level":"info","message":"db-query","rows":1,"text":"UPDATE call_events SET cli_triggered = true WHERE id = $1","timestamp":"2026-07-17T17:19:56.018Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:19:56.019Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    INSERT INTO call_events\n    (batch_id, call_id, dialled_number, extension, caller_id, status, event_time)\n    VALUES ($1,$2,$3,$4,$5,$6,$7)\n    RETURNING *\n    ","timestamp":"2026-07-17T17:19:56.020Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT id\n    FROM company_clients\n    WHERE mobile = $1\n    AND status='active'\n    LIMIT 1\n    ","timestamp":"2026-07-17T17:19:56.022Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"\n    INSERT INTO call_events\n    (batch_id, call_id, dialled_number, extension, caller_id, status, event_time)\n    VALUES ($1,$2,$3,$4,$5,$6,$7)\n    RETURNING *\n    ","timestamp":"2026-07-17T17:19:56.023Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"UPDATE call_events SET cli_triggered = true WHERE id = $1","timestamp":"2026-07-17T17:19:56.024Z"}
+{"level":"info","message":"POST /api/calls/receivecallevents 200 70.193 ms","timestamp":"2026-07-17T17:19:56.025Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:21:15.681Z"}
+{"level":"info","message":"GET /api/location-types 200 12.226 ms","timestamp":"2026-07-17T17:21:15.687Z"}
+{"duration":65,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:21:15.742Z"}
+{"level":"info","message":"GET /api/location-types 200 65.973 ms","timestamp":"2026-07-17T17:21:15.744Z"}
+{"duration":11,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:21:22.349Z"}
+{"level":"info","message":"GET /api/location-types 200 23.219 ms","timestamp":"2026-07-17T17:21:22.361Z"}
+{"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:21:22.405Z"}
+{"level":"info","message":"GET /api/location-types 200 64.167 ms","timestamp":"2026-07-17T17:21:22.407Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:21:32.778Z"}
+{"level":"info","message":"GET /api/location-types 200 11.758 ms","timestamp":"2026-07-17T17:21:32.785Z"}
+{"duration":55,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:21:32.830Z"}
+{"level":"info","message":"GET /api/location-types 200 56.336 ms","timestamp":"2026-07-17T17:21:32.832Z"}
+{"duration":12,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:21:45.291Z"}
+{"level":"info","message":"GET /api/location-types 200 21.279 ms","timestamp":"2026-07-17T17:21:45.300Z"}
+{"duration":57,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:21:45.341Z"}
+{"level":"info","message":"GET /api/location-types 200 59.075 ms","timestamp":"2026-07-17T17:21:45.343Z"}
+{"duration":60,"level":"info","message":"db-query","rows":0,"text":"\n        SELECT \n            id, sms_flag, name, mobile, email, telephone\n        FROM customers\n        WHERE mobile LIKE $1 AND company_id = $2\n    ","timestamp":"2026-07-17T17:22:57.398Z"}
+{"level":"info","message":"POST /api/cli/find-customer 200 61.613 ms","timestamp":"2026-07-17T17:22:57.399Z"}
+{"duration":57,"level":"info","message":"db-query","rows":0,"text":"\n        SELECT \n            id, sms_flag, name, mobile, email, telephone\n        FROM customers\n        WHERE mobile LIKE $1 AND company_id = $2\n    ","timestamp":"2026-07-17T17:23:13.881Z"}
+{"level":"info","message":"POST /api/cli/find-customer 200 58.742 ms","timestamp":"2026-07-17T17:23:13.883Z"}
+{"duration":153,"level":"info","message":"db-query","rows":1,"text":"\n        SELECT \n            id, sms_flag, name, mobile, email, telephone\n        FROM customers\n        WHERE mobile LIKE $1 AND company_id = $2\n    ","timestamp":"2026-07-17T17:23:58.492Z"}
+{"duration":113,"level":"info","message":"db-query","rows":98,"text":"\n    \n  SELECT \n    b.id,\n    b.reference_number,\n    b.subsidiary_id,\n    b.booking_type_id,\n    b.booking_status_id,\n    b.journey_type_id,\n    b.account_id,\n    b.customer_id,\n    b.employee_id,\n    b.pickup,\n    b.dropoff,\n    b.pickup_date,\n    b.pickup_time,\n    b.dropoff_date,\n    b.dropoff_time,\n    b.pickup_door_number,\n    b.dropoff_door_number,\n    b.pickup_plot,\n    b.dropoff_plot,\n    b.pickup_location_type_id,\n    b.dropoff_location_type_id,\n    b.pickup_latitude,\n    b.pickup_longitude,\n    b.dropoff_latitude,\n    b.dropoff_longitude,\n    b.viapoints,\n    b.restricted_drivers,\n    b.flight_number,\n    b.arriving_from,\n    b.vehicle_type_id,\n    b.vehicle_id,\n    b.driver_id,\n    b.passengers,\n    b.luggages,\n    b.hand_luggages,\n    b.child_seat,\n    b.name,\n    b.email,\n    b.mobile,\n    b.telephone,\n    b.lead_time,\n    b.notes,\n    b.special_instructions,\n    b.payment_type_id,\n    b.company_price,\n    b.fares,\n    b.total_charges,\n    b.parking_charges,\n    b.waiting_charges,\n    b.extra_drop_charges,\n    b.credit_card_charges,\n    b.congestion_charges,\n    b.miles,\n    b.meet_and_greet,\n    b.department,\n    b.escort_id,\n    b.order_number,\n    b.booked_by,\n    b.add_return_fare,\n    b.fare_meter_status,\n    b.fare_meter,\n    b.quotation,\n    b.quoted,\n    b.dispatch,\n    b.dispatch_as,\n    b.sms,\n    b.emailflag,\n    b.trash,\n    b.hidden,\n    b.multi_booking_id,\n    b.associated_booking,\n    b.invoice_status,\n    b.commission_status,\n    b.commission,\n    b.skipped_bookings,\n    b.permanent,\n    b.toggle_driver_text,\n    b.toggle_passenger_text,\n    b.cancelled_reason,\n    b.booking_source,\n    b.on_route,\n    b.arrived,\n    b.passenger_on_board,\n    b.completed,\n    b.controller_completed,\n    b.driver_waiting_time,\n    b.dispatched_at,\n    b.booked_at,\n    b.stripe_customer_id,\n    b.stripe_payment_id,\n    b.invoice_number,\n    b.initial_subsidiary_id,\n    b.created_at,\n    b.updated_at,\n    b.eta,\n    b.fob,\n  json_build_object(\n    'booking_status', bs.booking_status\n  ) AS booking_status,\n\n  json_build_object(\n    'booking_type', bt.booking_type\n  ) AS booking_type,\n\n  json_build_object(\n    'journey_type', jt.journey_type\n  ) AS journey_type,\n\n  json_build_object(\n    'id', s.id,\n    'name', s.name,\n    'telephone_number', s.telephone_number\n  ) AS subsidiary,\n\n  json_build_object(\n    'name', vt.name,\n    'background_color', vt.background_color,\n    'foreground_color', vt.foreground_color\n  ) AS vehicle_type,\n\n  json_build_object(\n    'id', pt.id,\n    'name', pt.name,\n    'background_color', pt.background_color,\n    'foreground_color', pt.foreground_color\n  ) AS payment_type,\n\n  json_build_object(\n    'id', a.id,\n    'name', a.name,\n    'background_color', a.background_color,\n    'foreground_color', a.foreground_color,\n    'has_vat', a.has_vat,\n    'bank_information', a.bank_information,\n    'fare_controller', a.fare_controller,\n    'account_fees_type', a.account_fees_type,\n    'account_fees', a.account_fees,\n    'account_fees_vat', a.account_fees_vat\n  ) AS account,\n\n  json_build_object(\n    'id', d.id,\n    'username', d.username,\n    'name', d.name,\n    'mobile_device_id', d.mobile_device_id,\n    'phc_vehicle_number', d.phc_vehicle_number,\n    'phc_driver_number', d.phc_driver_number,\n    'vehicle_id', d.vehicle_id,\n    'driver_commission', d.driver_commission,\n    'session_status', d.session_status,\n    'vehicle', json_build_object(\n        'make', v.make,\n        'model', v.model,\n        'color', v.color,\n        'vehicle_number', v.vehicle_number\n    )\n  ) AS driver,\n\n  json_build_object(\n    'door_number', c.door_number,\n    'address1', c.address1,\n    'address2', c.address2,\n    'blacklist', c.blacklist\n  ) AS customer,\n\n  json_build_object(\n    'username', e.username,\n    'role_id', e.role_id\n  ) AS employee,\n\n  json_build_object(\n  'pickup',\n  CASE\n    WHEN lp.id IS NOT NULL THEN json_build_object(\n      'id', lp.id,\n      'name', lp.name,\n      'location_type', json_build_object(\n            'id', ltp.id,\n            'name', ltp.name,\n            'background_color', ltp.background_color,\n            'foreground_color', ltp.foreground_color\n          )\n    )\n    ELSE \n    json_build_object(\n      'id', null,\n      'name', null,\n      'location_type', json_build_object(\n        'id', null,\n        'name', null,\n        'background_color', null,\n        'foreground_color', null\n      )\n    )\n  END,\n  'dropoff',\n  CASE\n    WHEN ld.id IS NOT NULL THEN json_build_object(\n      'id', ld.id,\n      'name', ld.name,\n      'location_type', json_build_object(\n            'id', ltp.id,\n            'name', ltp.name,\n            'background_color', ltp.background_color,\n            'foreground_color', ltp.foreground_color\n          )\n\n    )\n    ELSE \n    json_build_object(\n      'id', null,\n      'name', null,\n      'location_type', json_build_object(\n  'id', null,\n  'name', null,\n  'background_color', null,\n  'foreground_color', null\n)\n\n    )\n  END\n) AS airport\n\n\nFROM bookings b\nLEFT JOIN booking_statuses bs ON b.booking_status_id = bs.id\nLEFT JOIN booking_types bt ON b.booking_type_id = bt.id\nLEFT JOIN journey_types jt ON b.journey_type_id = jt.id\nLEFT JOIN subsidiaries s ON b.subsidiary_id = s.id\nLEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\nLEFT JOIN payment_types pt ON b.payment_type_id = pt.id\nLEFT JOIN accounts a ON b.account_id = a.id\nLEFT JOIN drivers d ON b.driver_id = d.id\nLEFT JOIN vehicles v ON d.vehicle_id = v.id\nLEFT JOIN customers c ON b.customer_id = c.id\nLEFT JOIN employees e ON b.employee_id = e.id\nLEFT JOIN locations lp\n  ON lp.location_type_id = 2\n AND b.pickup ILIKE '%' || lp.name || '%'\n\nLEFT JOIN locations ld\n  ON ld.location_type_id = 2\n AND b.dropoff ILIKE '%' || ld.name || '%'\nLEFT JOIN location_types ltp ON lp.location_type_id = ltp.id\nLEFT JOIN location_types ltd ON ld.location_type_id = ltd.id\n\n\n\n    WHERE b.booking_status_id = 11 AND trash = false\n    ORDER BY b.id DESC\n  ","timestamp":"2026-07-17T17:23:58.606Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) \n    FROM bookings \n    WHERE customer_id = $1\n  ","timestamp":"2026-07-17T17:23:58.611Z"}
+{"duration":61,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COALESCE(SUM(fares), 0) as total\n    FROM bookings\n    WHERE customer_id = $1\n    AND booking_status_id = 11\n  ","timestamp":"2026-07-17T17:23:58.669Z"}
+{"duration":169,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) \n    FROM bookings \n    WHERE customer_id = $1 \n    AND booking_status_id = 12\n  ","timestamp":"2026-07-17T17:23:58.777Z"}
+{"level":"info","message":"POST /api/cli/find-customer 200 438.943 ms","timestamp":"2026-07-17T17:23:58.778Z"}
+{"duration":3,"level":"info","message":"db-query","rows":0,"text":"\n        SELECT \n            id, sms_flag, name, mobile, email, telephone\n        FROM customers\n        WHERE mobile LIKE $1 AND company_id = $2\n    ","timestamp":"2026-07-17T17:24:03.757Z"}
+{"level":"info","message":"POST /api/cli/find-customer 200 3.619 ms","timestamp":"2026-07-17T17:24:03.758Z"}
+{"duration":153,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM bookings WHERE id = $1","timestamp":"2026-07-17T17:26:11.503Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"SELECT reference_number FROM bookings WHERE reference_number = $1 LIMIT 1","timestamp":"2026-07-17T17:26:11.505Z"}
+{"duration":46,"level":"info","message":"db-query","rows":1,"text":"INSERT INTO bookings (reference_number,subsidiary_id,booking_type_id,booking_status_id,journey_type_id,account_id,customer_id,employee_id,pickup,dropoff,pickup_date,pickup_time,dropoff_date,dropoff_time,pickup_door_number,dropoff_door_number,pickup_plot,dropoff_plot,pickup_location_type_id,dropoff_location_type_id,pickup_latitude,pickup_longitude,dropoff_latitude,dropoff_longitude,viapoints,restricted_drivers,flight_number,arriving_from,vehicle_type_id,vehicle_id,driver_id,passengers,luggages,hand_luggages,child_seat,name,email,mobile,telephone,lead_time,notes,special_instructions,payment_type_id,company_price,fares,total_charges,parking_charges,waiting_charges,extra_drop_charges,credit_card_charges,congestion_charges,miles,meet_and_greet,department,escort_id,order_number,booked_by,add_return_fare,fare_meter_status,fare_meter,quotation,quoted,dispatch,dispatch_as,sms,emailflag,trash,hidden,multi_booking_id,associated_booking,invoice_status,commission_status,commission,skipped_bookings,permanent,toggle_driver_text,toggle_passenger_text,cancelled_reason,booking_source,on_route,arrived,passenger_on_board,completed,controller_completed,driver_waiting_time,dispatched_at,booked_at,stripe_customer_id,stripe_payment_id,invoice_number,initial_subsidiary_id,eta,company_id)\n               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37,$38,$39,$40,$41,$42,$43,$44,$45,$46,$47,$48,$49,$50,$51,$52,$53,$54,$55,$56,$57,$58,$59,$60,$61,$62,$63,$64,$65,$66,$67,$68,$69,$70,$71,$72,$73,$74,$75,$76,$77,$78,$79,$80,$81,$82,$83,$84,$85,$86,$87,$88,$89,$90,$91,$92,$93)\n               RETURNING *;","timestamp":"2026-07-17T17:26:11.552Z"}
+{"duration":7,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM fixed_fares WHERE vehicle_type_id=$1 AND company_id = $2","timestamp":"2026-07-17T17:26:11.585Z"}
+{"duration":6,"level":"info","message":"db-query","rows":2,"text":"SELECT * FROM fare_configurations\n       WHERE vehicle_type_id=$1 AND company_id = $2\n       ORDER BY id ASC","timestamp":"2026-07-17T17:26:11.592Z"}
+{"duration":3,"level":"info","message":"db-query","rows":22,"text":"SELECT * FROM locations WHERE location_type_id=2 AND company_id =$1","timestamp":"2026-07-17T17:26:11.595Z"}
+{"duration":3,"level":"info","message":"db-query","rows":1,"text":"SELECT * FROM fare_by_vehicles WHERE vehicle_type_id=$1 AND company_id=$2","timestamp":"2026-07-17T17:26:11.599Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"UPDATE bookings SET total_charges = $1 WHERE id = $2","timestamp":"2026-07-17T17:26:11.605Z"}
+{"duration":20,"level":"info","message":"db-query","rows":1,"text":"\n    \n  SELECT \n    b.id,\n    b.reference_number,\n    b.subsidiary_id,\n    b.booking_type_id,\n    b.booking_status_id,\n    b.journey_type_id,\n    b.account_id,\n    b.customer_id,\n    b.employee_id,\n    b.pickup,\n    b.dropoff,\n    b.pickup_date,\n    b.pickup_time,\n    b.dropoff_date,\n    b.dropoff_time,\n    b.pickup_door_number,\n    b.dropoff_door_number,\n    b.pickup_plot,\n    b.dropoff_plot,\n    b.pickup_location_type_id,\n    b.dropoff_location_type_id,\n    b.pickup_latitude,\n    b.pickup_longitude,\n    b.dropoff_latitude,\n    b.dropoff_longitude,\n    b.viapoints,\n    b.restricted_drivers,\n    b.flight_number,\n    b.arriving_from,\n    b.vehicle_type_id,\n    b.vehicle_id,\n    b.driver_id,\n    b.passengers,\n    b.luggages,\n    b.hand_luggages,\n    b.child_seat,\n    b.name,\n    b.email,\n    b.mobile,\n    b.telephone,\n    b.lead_time,\n    b.notes,\n    b.special_instructions,\n    b.payment_type_id,\n    b.company_price,\n    b.fares,\n    b.total_charges,\n    b.parking_charges,\n    b.waiting_charges,\n    b.extra_drop_charges,\n    b.credit_card_charges,\n    b.congestion_charges,\n    b.miles,\n    b.meet_and_greet,\n    b.department,\n    b.escort_id,\n    b.order_number,\n    b.booked_by,\n    b.add_return_fare,\n    b.fare_meter_status,\n    b.fare_meter,\n    b.quotation,\n    b.quoted,\n    b.dispatch,\n    b.dispatch_as,\n    b.sms,\n    b.emailflag,\n    b.trash,\n    b.hidden,\n    b.multi_booking_id,\n    b.associated_booking,\n    b.invoice_status,\n    b.commission_status,\n    b.commission,\n    b.skipped_bookings,\n    b.permanent,\n    b.toggle_driver_text,\n    b.toggle_passenger_text,\n    b.cancelled_reason,\n    b.booking_source,\n    b.on_route,\n    b.arrived,\n    b.passenger_on_board,\n    b.completed,\n    b.controller_completed,\n    b.driver_waiting_time,\n    b.dispatched_at,\n    b.booked_at,\n    b.stripe_customer_id,\n    b.stripe_payment_id,\n    b.invoice_number,\n    b.initial_subsidiary_id,\n    b.created_at,\n    b.updated_at,\n    b.eta,\n    b.fob,\n  json_build_object(\n    'booking_status', bs.booking_status\n  ) AS booking_status,\n\n  json_build_object(\n    'booking_type', bt.booking_type\n  ) AS booking_type,\n\n  json_build_object(\n    'journey_type', jt.journey_type\n  ) AS journey_type,\n\n  json_build_object(\n    'id', s.id,\n    'name', s.name,\n    'telephone_number', s.telephone_number\n  ) AS subsidiary,\n\n  json_build_object(\n    'name', vt.name,\n    'background_color', vt.background_color,\n    'foreground_color', vt.foreground_color\n  ) AS vehicle_type,\n\n  json_build_object(\n    'id', pt.id,\n    'name', pt.name,\n    'background_color', pt.background_color,\n    'foreground_color', pt.foreground_color\n  ) AS payment_type,\n\n  json_build_object(\n    'id', a.id,\n    'name', a.name,\n    'background_color', a.background_color,\n    'foreground_color', a.foreground_color,\n    'has_vat', a.has_vat,\n    'bank_information', a.bank_information,\n    'fare_controller', a.fare_controller,\n    'account_fees_type', a.account_fees_type,\n    'account_fees', a.account_fees,\n    'account_fees_vat', a.account_fees_vat\n  ) AS account,\n\n  json_build_object(\n    'id', d.id,\n    'username', d.username,\n    'name', d.name,\n    'mobile_device_id', d.mobile_device_id,\n    'phc_vehicle_number', d.phc_vehicle_number,\n    'phc_driver_number', d.phc_driver_number,\n    'vehicle_id', d.vehicle_id,\n    'driver_commission', d.driver_commission,\n    'session_status', d.session_status,\n    'vehicle', json_build_object(\n        'make', v.make,\n        'model', v.model,\n        'color', v.color,\n        'vehicle_number', v.vehicle_number\n    )\n  ) AS driver,\n\n  json_build_object(\n    'door_number', c.door_number,\n    'address1', c.address1,\n    'address2', c.address2,\n    'blacklist', c.blacklist\n  ) AS customer,\n\n  json_build_object(\n    'username', e.username,\n    'role_id', e.role_id\n  ) AS employee,\n\n  json_build_object(\n  'pickup',\n  CASE\n    WHEN lp.id IS NOT NULL THEN json_build_object(\n      'id', lp.id,\n      'name', lp.name,\n      'location_type', json_build_object(\n            'id', ltp.id,\n            'name', ltp.name,\n            'background_color', ltp.background_color,\n            'foreground_color', ltp.foreground_color\n          )\n    )\n    ELSE \n    json_build_object(\n      'id', null,\n      'name', null,\n      'location_type', json_build_object(\n        'id', null,\n        'name', null,\n        'background_color', null,\n        'foreground_color', null\n      )\n    )\n  END,\n  'dropoff',\n  CASE\n    WHEN ld.id IS NOT NULL THEN json_build_object(\n      'id', ld.id,\n      'name', ld.name,\n      'location_type', json_build_object(\n            'id', ltp.id,\n            'name', ltp.name,\n            'background_color', ltp.background_color,\n            'foreground_color', ltp.foreground_color\n          )\n\n    )\n    ELSE \n    json_build_object(\n      'id', null,\n      'name', null,\n      'location_type', json_build_object(\n  'id', null,\n  'name', null,\n  'background_color', null,\n  'foreground_color', null\n)\n\n    )\n  END\n) AS airport\n\n\nFROM bookings b\nLEFT JOIN booking_statuses bs ON b.booking_status_id = bs.id\nLEFT JOIN booking_types bt ON b.booking_type_id = bt.id\nLEFT JOIN journey_types jt ON b.journey_type_id = jt.id\nLEFT JOIN subsidiaries s ON b.subsidiary_id = s.id\nLEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id\nLEFT JOIN payment_types pt ON b.payment_type_id = pt.id\nLEFT JOIN accounts a ON b.account_id = a.id\nLEFT JOIN drivers d ON b.driver_id = d.id\nLEFT JOIN vehicles v ON d.vehicle_id = v.id\nLEFT JOIN customers c ON b.customer_id = c.id\nLEFT JOIN employees e ON b.employee_id = e.id\nLEFT JOIN locations lp\n  ON lp.location_type_id = 2\n AND b.pickup ILIKE '%' || lp.name || '%'\n\nLEFT JOIN locations ld\n  ON ld.location_type_id = 2\n AND b.dropoff ILIKE '%' || ld.name || '%'\nLEFT JOIN location_types ltp ON lp.location_type_id = ltp.id\nLEFT JOIN location_types ltd ON ld.location_type_id = ltd.id\n\n\n\n    WHERE b.id = $1\n  ","timestamp":"2026-07-17T17:26:11.626Z"}
+{"duration":1,"level":"info","message":"db-query","rows":1,"text":"SELECT fcm_token FROM drivers WHERE id = $1","timestamp":"2026-07-17T17:26:11.629Z"}
+{"level":"info","message":"POST /api/bookings/cli 200 281.529 ms","timestamp":"2026-07-17T17:26:11.631Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:28:12.272Z"}
+{"level":"info","message":"GET /api/location-types 200 22.350 ms","timestamp":"2026-07-17T17:28:12.286Z"}
+{"duration":64,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:28:12.330Z"}
+{"level":"info","message":"GET /api/location-types 200 66.799 ms","timestamp":"2026-07-17T17:28:12.333Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:30:52.359Z"}
+{"level":"info","message":"GET /api/location-types 200 11.815 ms","timestamp":"2026-07-17T17:30:52.365Z"}
+{"duration":217,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:30:52.572Z"}
+{"level":"info","message":"GET /api/location-types 200 219.507 ms","timestamp":"2026-07-17T17:30:52.574Z"}
+{"duration":11,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:31:00.833Z"}
+{"level":"info","message":"GET /api/location-types 200 22.142 ms","timestamp":"2026-07-17T17:31:00.843Z"}
+{"duration":73,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:31:00.901Z"}
+{"level":"info","message":"GET /api/location-types 200 74.877 ms","timestamp":"2026-07-17T17:31:00.903Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:31:49.834Z"}
+{"level":"info","message":"GET /api/location-types 200 10.963 ms","timestamp":"2026-07-17T17:31:49.840Z"}
+{"duration":169,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:31:50.000Z"}
+{"level":"info","message":"GET /api/location-types 200 170.632 ms","timestamp":"2026-07-17T17:31:50.002Z"}
+{"duration":13,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:32:23.324Z"}
+{"level":"info","message":"GET /api/location-types 200 26.835 ms","timestamp":"2026-07-17T17:32:23.336Z"}
+{"duration":79,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:32:23.395Z"}
+{"level":"info","message":"GET /api/location-types 200 80.961 ms","timestamp":"2026-07-17T17:32:23.397Z"}
+{"duration":12,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:33:04.219Z"}
+{"level":"info","message":"GET /api/location-types 200 19.863 ms","timestamp":"2026-07-17T17:33:04.227Z"}
+{"duration":65,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:33:04.278Z"}
+{"level":"info","message":"GET /api/location-types 200 66.028 ms","timestamp":"2026-07-17T17:33:04.279Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:33:40.755Z"}
+{"level":"info","message":"GET /api/location-types 200 11.178 ms","timestamp":"2026-07-17T17:33:40.761Z"}
+{"duration":48,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:33:40.799Z"}
+{"level":"info","message":"GET /api/location-types 200 49.501 ms","timestamp":"2026-07-17T17:33:40.801Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:34:01.308Z"}
+{"level":"info","message":"GET /api/location-types 200 17.502 ms","timestamp":"2026-07-17T17:34:01.319Z"}
+{"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:34:01.365Z"}
+{"level":"info","message":"GET /api/location-types 200 64.313 ms","timestamp":"2026-07-17T17:34:01.367Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:35:11.378Z"}
+{"level":"info","message":"GET /api/location-types 200 11.840 ms","timestamp":"2026-07-17T17:35:11.385Z"}
+{"duration":51,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:35:11.426Z"}
+{"level":"info","message":"GET /api/location-types 200 52.212 ms","timestamp":"2026-07-17T17:35:11.427Z"}
+{"duration":14,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:35:15.445Z"}
+{"level":"info","message":"GET /api/location-types 200 29.025 ms","timestamp":"2026-07-17T17:35:15.456Z"}
+{"duration":54,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:35:15.494Z"}
+{"level":"info","message":"GET /api/location-types 200 55.505 ms","timestamp":"2026-07-17T17:35:15.495Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:39:11.271Z"}
+{"level":"info","message":"GET /api/location-types 200 12.193 ms","timestamp":"2026-07-17T17:39:11.278Z"}
+{"duration":66,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:39:11.333Z"}
+{"level":"info","message":"GET /api/location-types 200 66.788 ms","timestamp":"2026-07-17T17:39:11.334Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:39:17.117Z"}
+{"level":"info","message":"GET /api/location-types 200 11.445 ms","timestamp":"2026-07-17T17:39:17.123Z"}
+{"duration":171,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:39:17.283Z"}
+{"level":"info","message":"GET /api/location-types 200 171.645 ms","timestamp":"2026-07-17T17:39:17.284Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:39:31.594Z"}
+{"level":"info","message":"GET /api/location-types 200 20.351 ms","timestamp":"2026-07-17T17:39:31.610Z"}
+{"duration":95,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:39:31.685Z"}
+{"level":"info","message":"GET /api/location-types 200 95.672 ms","timestamp":"2026-07-17T17:39:31.686Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:39:38.901Z"}
+{"level":"info","message":"GET /api/location-types 200 13.448 ms","timestamp":"2026-07-17T17:39:38.908Z"}
+{"duration":92,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:39:38.988Z"}
+{"level":"info","message":"GET /api/location-types 200 96.351 ms","timestamp":"2026-07-17T17:39:38.993Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:39:47.860Z"}
+{"level":"info","message":"GET /api/location-types 200 12.603 ms","timestamp":"2026-07-17T17:39:47.868Z"}
+{"duration":48,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:39:47.904Z"}
+{"level":"info","message":"GET /api/location-types 200 48.565 ms","timestamp":"2026-07-17T17:39:47.905Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:01.278Z"}
+{"level":"info","message":"GET /api/location-types 200 11.282 ms","timestamp":"2026-07-17T17:40:01.285Z"}
+{"duration":62,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:01.336Z"}
+{"level":"info","message":"GET /api/location-types 200 63.401 ms","timestamp":"2026-07-17T17:40:01.338Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:05.948Z"}
+{"level":"info","message":"GET /api/location-types 200 19.650 ms","timestamp":"2026-07-17T17:40:05.956Z"}
+{"duration":56,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:05.994Z"}
+{"level":"info","message":"GET /api/location-types 200 57.183 ms","timestamp":"2026-07-17T17:40:05.996Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:17.294Z"}
+{"level":"info","message":"GET /api/location-types 200 12.225 ms","timestamp":"2026-07-17T17:40:17.301Z"}
+{"duration":166,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:17.457Z"}
+{"level":"info","message":"GET /api/location-types 200 167.453 ms","timestamp":"2026-07-17T17:40:17.458Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:24.829Z"}
+{"level":"info","message":"GET /api/location-types 200 14.257 ms","timestamp":"2026-07-17T17:40:24.838Z"}
+{"duration":179,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:25.004Z"}
+{"level":"info","message":"GET /api/location-types 200 179.810 ms","timestamp":"2026-07-17T17:40:25.005Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:46.641Z"}
+{"level":"info","message":"GET /api/location-types 200 13.660 ms","timestamp":"2026-07-17T17:40:46.649Z"}
+{"duration":53,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:46.690Z"}
+{"level":"info","message":"GET /api/location-types 200 54.658 ms","timestamp":"2026-07-17T17:40:46.691Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:52.274Z"}
+{"level":"info","message":"GET /api/location-types 200 12.538 ms","timestamp":"2026-07-17T17:40:52.282Z"}
+{"duration":52,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:52.323Z"}
+{"level":"info","message":"GET /api/location-types 200 53.522 ms","timestamp":"2026-07-17T17:40:52.325Z"}
+{"duration":13,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:56.244Z"}
+{"level":"info","message":"GET /api/location-types 200 32.949 ms","timestamp":"2026-07-17T17:40:56.264Z"}
+{"duration":70,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:40:56.305Z"}
+{"level":"info","message":"GET /api/location-types 200 71.781 ms","timestamp":"2026-07-17T17:40:56.307Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:41:03.992Z"}
+{"level":"info","message":"GET /api/location-types 200 11.226 ms","timestamp":"2026-07-17T17:41:03.999Z"}
+{"duration":163,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:41:04.152Z"}
+{"level":"info","message":"GET /api/location-types 200 164.289 ms","timestamp":"2026-07-17T17:41:04.153Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:41:08.847Z"}
+{"level":"info","message":"GET /api/location-types 200 11.092 ms","timestamp":"2026-07-17T17:41:08.853Z"}
+{"duration":48,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:41:08.892Z"}
+{"level":"info","message":"GET /api/location-types 200 49.916 ms","timestamp":"2026-07-17T17:41:08.893Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:41:25.999Z"}
+{"level":"info","message":"GET /api/location-types 200 12.462 ms","timestamp":"2026-07-17T17:41:26.007Z"}
+{"duration":52,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:41:26.047Z"}
+{"level":"info","message":"GET /api/location-types 200 54.403 ms","timestamp":"2026-07-17T17:41:26.050Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:41:33.297Z"}
+{"level":"info","message":"GET /api/location-types 200 12.315 ms","timestamp":"2026-07-17T17:41:33.306Z"}
+{"duration":53,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:41:33.346Z"}
+{"level":"info","message":"GET /api/location-types 200 56.902 ms","timestamp":"2026-07-17T17:41:33.351Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:41:43.409Z"}
+{"level":"info","message":"GET /api/location-types 200 13.902 ms","timestamp":"2026-07-17T17:41:43.417Z"}
+{"duration":82,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:41:43.488Z"}
+{"level":"info","message":"GET /api/location-types 200 117.877 ms","timestamp":"2026-07-17T17:41:43.523Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:42:01.685Z"}
+{"level":"info","message":"GET /api/location-types 200 13.305 ms","timestamp":"2026-07-17T17:42:01.694Z"}
+{"duration":52,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:42:01.734Z"}
+{"level":"info","message":"GET /api/location-types 200 53.784 ms","timestamp":"2026-07-17T17:42:01.736Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:42:34.832Z"}
+{"level":"info","message":"GET /api/location-types 200 14.646 ms","timestamp":"2026-07-17T17:42:34.841Z"}
+{"duration":73,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:42:34.901Z"}
+{"level":"info","message":"GET /api/location-types 200 74.685 ms","timestamp":"2026-07-17T17:42:34.903Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:42:41.603Z"}
+{"level":"info","message":"GET /api/location-types 200 16.360 ms","timestamp":"2026-07-17T17:42:41.613Z"}
+{"duration":90,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:42:41.690Z"}
+{"level":"info","message":"GET /api/location-types 200 91.744 ms","timestamp":"2026-07-17T17:42:41.692Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:43:44.389Z"}
+{"level":"info","message":"GET /api/location-types 200 10.961 ms","timestamp":"2026-07-17T17:43:44.395Z"}
+{"duration":48,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:43:44.434Z"}
+{"level":"info","message":"GET /api/location-types 200 49.547 ms","timestamp":"2026-07-17T17:43:44.435Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:48:29.834Z"}
+{"level":"info","message":"GET /api/location-types 200 11.240 ms","timestamp":"2026-07-17T17:48:29.840Z"}
+{"duration":154,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:48:29.984Z"}
+{"level":"info","message":"GET /api/location-types 200 155.468 ms","timestamp":"2026-07-17T17:48:29.985Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:48:38.611Z"}
+{"level":"info","message":"GET /api/location-types 200 17.065 ms","timestamp":"2026-07-17T17:48:38.621Z"}
+{"duration":55,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:48:38.660Z"}
+{"level":"info","message":"GET /api/location-types 200 55.808 ms","timestamp":"2026-07-17T17:48:38.661Z"}
+{"duration":11,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:48:47.145Z"}
+{"level":"info","message":"GET /api/location-types 200 21.839 ms","timestamp":"2026-07-17T17:48:47.157Z"}
+{"duration":75,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T17:48:47.215Z"}
+{"level":"info","message":"GET /api/location-types 200 76.549 ms","timestamp":"2026-07-17T17:48:47.217Z"}
+{"duration":13,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T18:19:39.768Z"}
+{"level":"info","message":"GET /api/location-types 200 26.257 ms","timestamp":"2026-07-17T18:19:39.781Z"}
+{"duration":59,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T18:19:39.819Z"}
+{"level":"info","message":"GET /api/location-types 200 60.492 ms","timestamp":"2026-07-17T18:19:39.820Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T18:23:21.871Z"}
+{"level":"info","message":"GET /api/location-types 200 12.982 ms","timestamp":"2026-07-17T18:23:21.877Z"}
+{"duration":56,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T18:23:21.922Z"}
+{"level":"info","message":"GET /api/location-types 200 57.464 ms","timestamp":"2026-07-17T18:23:21.924Z"}
+{"duration":9,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T18:24:19.373Z"}
+{"level":"info","message":"GET /api/location-types 200 16.945 ms","timestamp":"2026-07-17T18:24:19.381Z"}
+{"duration":57,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-17T18:24:19.424Z"}
+{"level":"info","message":"GET /api/location-types 200 58.946 ms","timestamp":"2026-07-17T18:24:19.425Z"}

@@ -238,7 +238,7 @@ function notifyBusyDriverUpdate(driver) {
   if (existingBusy) {
     logger.info("Already busy, skip");
     return;
-}
+  }
 
   loggedInDrivers.delete(driver.id);
 

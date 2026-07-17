@@ -2,7 +2,7 @@ const cliService = require("../services/cliService");
 
 exports.findCustomer = async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { phone, company_id } = req.body;
 
     if (!phone) {
       return res.status(400).json({
@@ -11,7 +11,7 @@ exports.findCustomer = async (req, res) => {
       });
     }
 
-    const result = await cliService.findCustomerByPhone(phone);
+    const result = await cliService.findCustomerByPhone(phone, company_id);
 
     return res.json({
       success: true,

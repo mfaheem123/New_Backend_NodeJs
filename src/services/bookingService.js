@@ -364,9 +364,9 @@ async function createSimpleBooking(payload) {
     // SEND NOTIFICATION TO DRIVER
     if (clean.driver_id) {
       await sendBookingNotification(clean.driver_id, clean);
-      //     await updateBooking(clean.id, {
-      //   dispatched_at: new Date(),
-      // });
+          await updateBooking(clean.id, {
+        dispatched_at: new Date(),
+      });
     }
 
     // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
@@ -659,98 +659,6 @@ async function createMultiBookings(payload) {
   return createMultiVehicleBooking(payload);
 }
 
-// NEW: MULTI RESERVATION BOOKING
-// async function createMultiReservationBooking(payload) {
-//   try {
-//     await pool.query("BEGIN");
-
-//     // -----------------------------
-//     // CREATE / FETCH CUSTOMER
-//     // -----------------------------
-//     const customerPayload = payload.customer?.[0] || payload.customer;
-//     let customerId = payload.customer_id || null;
-
-//     if (!customerId && customerPayload) {
-//       const res = await pool.query(
-//         `INSERT INTO customers (name,email,mobile,telephone,blacklist)
-//          VALUES ($1,$2,$3,$4,$5)
-//          ON CONFLICT (email)
-//          DO UPDATE SET mobile = EXCLUDED.mobile
-//          RETURNING id`,
-//         [
-//           customerPayload.name || payload.name,
-//           customerPayload.email || payload.email,
-//           customerPayload.mobile || payload.mobile,
-//           customerPayload.telephone || payload.telephone,
-//           customerPayload.blacklist || false,
-//         ]
-//       );
-//       customerId = res.rows[0].id;
-//     }
-
-//     // -----------------------------
-//     // GENERATE MULTI BOOKING ID
-//     // -----------------------------
-//     const multiBookingIdRes = await pool.query(
-//       "SELECT nextval('bookings_id_seq') AS nextid"
-//     );
-//     const multiBookingId = parseInt(multiBookingIdRes.rows[0].nextid, 10);
-
-//     // -----------------------------
-//     // INSERT BOOKINGS
-//     // -----------------------------
-//     const createdBookingIds = [];
-
-//     for (const mr of payload.multi_reservation) {
-//       if (mr.exclude === true) continue;
-
-//       const clone = { ...payload };
-
-//       clone.pickup_date = mr.pickup_date;
-//       clone.pickup_time = mr.pickup_time;
-
-//       //Fare For Every Booking
-//       clone.fares = mr.total_fare;
-//       clone.total_charges = mr.total_fare;
-
-//       // Remove non-DB fields
-//       delete clone.multi_reservation;
-//       delete clone.multi_vehicle;
-
-//       const normalized = await normalizeBookingPayload(clone);
-
-//       normalized.customer_id = customerId;
-//       normalized.multi_booking_id = multiBookingId;
-//       normalized.reference_number = await genRef();
-
-//       const inserted = await createBookingRow(pool, normalized);
-//       createdBookingIds.push(inserted.id);
-//     }
-
-//     // -----------------------------
-//     // FETCH ENRICHED BOOKINGS
-//     // -----------------------------
-//     const enrichedBookings = [];
-
-//     for (const id of createdBookingIds) {
-//       const res = await getBookingByIdEnriched(id);
-//       const parsed = parseJSONFields(res);
-//       enrichedBookings.push(parsed);
-//     }
-
-//     await pool.query("COMMIT");
-
-//     return {
-//       status: true,
-//       bookings: enrichedBookings,
-//       multi_booking_id: multiBookingId,
-//     };
-//   } catch (err) {
-//     await pool.query("ROLLBACK");
-//     throw err;
-//   }
-// }
-
 // MULTI RESERVATION WITH RETURN WAY BOOKING
 async function createMultiReservationBooking(payload) {
   try {
@@ -792,82 +700,6 @@ async function createMultiReservationBooking(payload) {
      * INSERT BOOKINGS
      * ----------------------------- */
     const createdBookingIds = [];
-
-    /* ==========================
-     MULTI RESERVATION WITHOUT FARE
-  ========================== */
-
-    // for (const mr of payload.multi_reservation) {
-    //   if (mr.exclude === true) continue;
-
-    //   /* -------- OUTBOUND BOOKING -------- */
-    //   const clone = { ...payload };
-
-    //   clone.pickup = payload.pickup;
-    //   clone.dropoff = payload.dropoff;
-
-    //   clone.pickup_date = mr.pickup_date;
-    //   clone.pickup_time = mr.pickup_time;
-
-    //   // clone.fares = mr.total_fare;
-    //   // clone.total_charges = mr.total_fare;
-
-    //   delete clone.multi_reservation;
-    //   delete clone.multi_vehicle;
-
-    //   /* -------- CALCULATE FARE -------- */
-    //   const fare = await calculateSingleFare({
-    //     ...clone,
-    //     pickup_date: mr.pickup_date,
-    //     pickup_time: mr.pickup_time,
-    //     journey_type_id: payload.journey_type_id,
-    //   });
-
-    //   clone.fares = fare.fare;
-    //   clone.total_charges = fare.total_fare;
-
-    //   const normalized = await normalizeBookingPayload(clone);
-
-    //   normalized.customer_id = customerId;
-    //   normalized.multi_booking_id = multiBookingId;
-    //   normalized.reference_number = await genRef();
-
-    //   const outboundInserted = await createBookingRow(pool, normalized);
-    //   createdBookingIds.push(outboundInserted.id);
-
-    //   /* -------- RETURN BOOKING (CONDITIONAL) -------- */
-    //   const shouldCreateReturn =
-    //     Number(payload.journey_type_id) === 3 && mr.return_pickup_time;
-
-    //   if (shouldCreateReturn) {
-    //     if (!payload.return_pickup || !payload.return_dropoff) {
-    //       throw new Error(
-    //         "return_pickup and return_dropoff are required for return journey",
-    //       );
-    //     }
-
-    //     const returnClone = {
-    //       ...normalized,
-
-    //       pickup: payload.return_pickup,
-    //       dropoff: payload.return_dropoff,
-
-    //       pickup_date: mr.pickup_date,
-    //       pickup_time: mr.return_pickup_time,
-
-    //       associated_booking: outboundInserted.id,
-    //       journey_type_id: 3,
-
-    //       driver_id: null,
-    //       vehicle_id: null,
-
-    //       reference_number: await genRef(),
-    //     };
-
-    //     const returnInserted = await createBookingRow(pool, returnClone);
-    //     createdBookingIds.push(returnInserted.id);
-    //   }
-    // }
 
     /* ==========================
      MULTI RESERVATION WITH FARE
@@ -1281,7 +1113,7 @@ async function updateBookingService(bookingId, payload) {
   return clean;
 }
 
-//CREATE CLI BOOKINg
+//CREATE CLI BOOKING
 async function cloneOneWayBookingService(payload) {
   const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id } =
     payload;
@@ -1311,6 +1143,9 @@ async function cloneOneWayBookingService(payload) {
     multi_booking_id: 0,
     created_at: new Date(),
     updated_at: new Date(),
+    dispatched_at: null,
+    invoice_number: null,
+  invoice_status: "open",
   };
 
   delete newBooking.id;
@@ -1361,7 +1196,7 @@ async function assignDriverService(bookingId, driverId, company_id) {
   if (driverId) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(
       driverId,
-      1,
+      company_id,
     );
     console.log("DRIVER FEATURES:", driverFeatures);
     if (driverFeatures) {
@@ -1374,7 +1209,6 @@ async function assignDriverService(bookingId, driverId, company_id) {
     driver_id: driverId,
     booking_status_id: 1,
     fare_meter: fare_meter,
-    // fare_meter: true,
     dispatched_at: new Date(),
   });
 
@@ -1488,12 +1322,12 @@ async function assignFOBDriverService(bookingId, driverId, company_id) {
   return enriched;
 }
 
-async function assignFutureBookingDriverService(bookingId, driverId) {
+async function assignFutureBookingDriverService(bookingId, driverId, company_id) {
   let fare_meter = false;
   if (driverId) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(
       driverId,
-      1,
+      company_id,
     );
 
     if (driverFeatures) {
