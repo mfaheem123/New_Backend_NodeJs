@@ -20,6 +20,7 @@ router.get("/driver-logs", bookingController.getCompletedBookingLogsByDriverId);
 router.get("/booking-statistics", bookingController.getBookingStatistics);
 router.get("/income-report", bookingController.getIncomeReport);
 router.get("/clear", bookingController.getClearBookings);
+router.get("/driver-earnings", bookingController.getDriverEarningsBookings);
 
 router.get(
   "/check-status-customer/:booking_id",
@@ -64,11 +65,6 @@ router.get(
 router.get(
   "/customer-invoice-bookings",
   bookingController.getBookingsForCustomerInvoice,
-);
-
-router.get(
-    "/driver-earnings",
-    bookingController.getDriverEarningsBookings
 );
 
 //BOOKING POST APIS ROUTES

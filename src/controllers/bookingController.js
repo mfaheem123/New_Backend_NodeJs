@@ -46,7 +46,7 @@ const {
   getClearBookings,
   clearSelectedBookings,
   clearAllBookings,
-  getDriverEarningsBookings
+  getDriverEarningsBookings,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -1725,6 +1725,7 @@ exports.getBookingStatistics = async (req, res) => {
       reference_number,
       pickup,
       dropoff,
+      driver_id,
 
       sort_by = "datetime",
       sort_order = "ASC",
@@ -1759,6 +1760,7 @@ exports.getBookingStatistics = async (req, res) => {
         reference_number,
         pickup,
         dropoff,
+        driver_id,
 
         sort_by,
         sort_order,
@@ -2271,19 +2273,13 @@ exports.clearAllBookings = async (req, res) => {
   });
 };
 
-
 // ---------------------------------------------------------
 // GET DRIVERS EARNING BOOKINGS
 // ---------------------------------------------------------
 exports.getDriverEarningsBookings = async (req, res) => {
   try {
-    const {
-      driver_id,
-      from_date,
-      to_date,
-      booking_status_id,
-      company_id,
-    } = req.query;
+    const { driver_id, from_date, to_date, booking_status_id, company_id } =
+      req.query;
 
     if (!driver_id || !from_date || !to_date) {
       return res.status(400).json({
@@ -2305,9 +2301,9 @@ exports.getDriverEarningsBookings = async (req, res) => {
     // Total Bookings
     const total_bookings = parsedBookings.length;
 
-    // Total Earnings
+    // Total Driver Earnings (Sum of total_charges)
     const total_earnings = parsedBookings.reduce((sum, booking) => {
-      return sum + Number(booking.total_charges || booking.fares || 0);
+      return sum + parseFloat(booking.total_charges || 0);
     }, 0);
 
     return res.status(200).json({

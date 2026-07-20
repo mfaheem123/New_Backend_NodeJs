@@ -91,40 +91,59 @@ const EnumerationsModel = {
           WHEN 1 THEN (
             SELECT COUNT(*) FROM bookings 
             WHERE DATE(pickup_date) = CURRENT_DATE 
-            AND booking_status_id = 1 AND trash = false
+            AND booking_status_id = 1 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 2 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE DATE(pickup_date) > CURRENT_DATE AND trash = false
+            WHERE DATE(pickup_date) > CURRENT_DATE 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 3 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_status_id != 11 AND booking_status_id != 1 AND trash = false
+            WHERE booking_status_id != 11 
+            AND booking_status_id != 1 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 4 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_status_id = 11 AND trash = false
+            WHERE booking_status_id = 11 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 5 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE quoted = true AND trash = false
+            WHERE quoted = true 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 6 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_source = 'ivr' AND trash = false
+            WHERE booking_source = 'ivr' 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 7 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_source = 'web' AND trash = false
+            WHERE booking_source = 'web' 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 8 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_source = 'app' AND trash = false
+            WHERE booking_source = 'app' 
+            AND trash = false
+            AND company_id = $1
           )
         END::int AS booking_count
       FROM booking_tabs bt
       ORDER BY bt.id ASC
-    `);
+    `, 
+    [company_id]
+  );
 
     // FARE CONFIGURATIONS
     const fare_configurations = await db.query(

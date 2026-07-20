@@ -1375,14 +1375,20 @@ const getBookingStatisticsData = async ({
   // =========================
 
   if (filters.from_date) {
-    conditions.push(`b.pickup_date >= $${idx++}`);
-    params.push(filters.from_date);
-  }
+  conditions.push(`
+    TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD')
+    >= TO_DATE($${idx++}, 'YYYY-MM-DD')
+  `);
+  params.push(filters.from_date);
+}
 
-  if (filters.to_date) {
-    conditions.push(`b.pickup_date <= $${idx++}`);
-    params.push(filters.to_date);
-  }
+if (filters.to_date) {
+  conditions.push(`
+    TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD')
+    <= TO_DATE($${idx++}, 'YYYY-MM-DD')
+  `);
+  params.push(filters.to_date);
+}
 
   // =========================
   // TIME RANGE
@@ -1403,18 +1409,43 @@ const getBookingStatisticsData = async ({
   // =========================
 
   if (filters.booking_status_id) {
-    conditions.push(`b.booking_status_id = $${idx++}`);
-    params.push(filters.booking_status_id);
-  }
+
+    const statuses = String(filters.booking_status_id)
+        .split(",")
+        .map(id => Number(id.trim()))
+        .filter(id => !isNaN(id));
+
+    if (statuses.length === 1) {
+
+        conditions.push(`b.booking_status_id = $${idx++}`);
+        params.push(statuses[0]);
+
+    } else if (statuses.length > 1) {
+
+        conditions.push(`b.booking_status_id = ANY($${idx++}::int[])`);
+        params.push(statuses);
+
+    }
+}
 
   // =========================
   // PAYMENT TYPE
   // =========================
 
   if (filters.payment_type_id) {
+  const paymentTypes = String(filters.payment_type_id)
+    .split(",")
+    .map((id) => Number(id.trim()))
+    .filter((id) => !isNaN(id));
+
+  if (paymentTypes.length === 1) {
     conditions.push(`b.payment_type_id = $${idx++}`);
-    params.push(filters.payment_type_id);
+    params.push(paymentTypes[0]);
+  } else if (paymentTypes.length > 1) {
+    conditions.push(`b.payment_type_id = ANY($${idx++}::int[])`);
+    params.push(paymentTypes);
   }
+}
 
   // =========================
   // CUSTOMER
@@ -1516,6 +1547,14 @@ const getBookingStatisticsData = async ({
     params.push(`%${filters.dropoff}%`);
   }
 
+ // =========================
+  // DRIVER
+  // =========================
+  if (filters.driver_id) {
+   conditions.push(`b.driver_id = $${idx++}`);
+params.push(Number(filters.driver_id));
+  }
+
   const whereClause = `
     WHERE ${conditions.join(" AND ")}
   `;
@@ -1575,7 +1614,11 @@ const getBookingStatisticsData = async ({
       break;
 
     case "datetime":
-      orderColumn = "(b.pickup_date::date + TRIM(b.pickup_time)::time)";
+      orderColumn = `(
+    TO_DATE(b.pickup_date,'YYYY-FMMM-FMDD')
+    +
+    TRIM(b.pickup_time)::time
+)`;
       break;
 
     case "customer":
@@ -1627,7 +1670,11 @@ const getBookingStatisticsData = async ({
       break;
 
     default:
-      orderColumn = "(b.pickup_date::date + TRIM(b.pickup_time)::time)";
+      orderColumn = `(
+    TO_DATE(b.pickup_date,'YYYY-FMMM-FMDD')
+    +
+    TRIM(b.pickup_time)::time
+)`;
   }
 
   // =========================
@@ -2250,5 +2297,5 @@ module.exports = {
   getClearBookings,
   clearSelectedBookings,
   clearAllBookings,
-  getDriverEarningsBookings
+  getDriverEarningsBookings,
 };
