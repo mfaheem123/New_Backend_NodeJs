@@ -364,7 +364,7 @@ async function createSimpleBooking(payload) {
     // SEND NOTIFICATION TO DRIVER
     if (clean.driver_id) {
       await sendBookingNotification(clean.driver_id, clean);
-          await updateBooking(clean.id, {
+      await updateBooking(clean.id, {
         dispatched_at: new Date(),
       });
     }
@@ -1145,7 +1145,7 @@ async function cloneOneWayBookingService(payload) {
     updated_at: new Date(),
     dispatched_at: null,
     invoice_number: null,
-  invoice_status: "open",
+    invoice_status: "open",
   };
 
   delete newBooking.id;
@@ -1322,7 +1322,11 @@ async function assignFOBDriverService(bookingId, driverId, company_id) {
   return enriched;
 }
 
-async function assignFutureBookingDriverService(bookingId, driverId, company_id) {
+async function assignFutureBookingDriverService(
+  bookingId,
+  driverId,
+  company_id,
+) {
   let fare_meter = false;
   if (driverId) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(

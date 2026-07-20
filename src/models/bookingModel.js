@@ -2141,6 +2141,61 @@ const clearAllBookings = async () => {
   await pool.query(sql);
 };
 
+// ---------------------------------------------------------
+// GET DRIVERS EARNING BOOKINGS
+// ---------------------------------------------------------
+const getDriverEarningsBookings = async ({
+  driver_id,
+  from_date,
+  to_date,
+  booking_status_id = 11,
+  company_id,
+}) => {
+  const params = [];
+  let idx = 1;
+
+  let where = `
+    WHERE b.driver_id = $${idx++}
+      AND b.booking_status_id = $${idx++}
+      AND b.trash = false
+  `;
+
+  params.push(driver_id);
+  params.push(booking_status_id);
+
+  // Filter by Pickup Date
+  if (from_date && to_date) {
+    where += `
+      AND b.pickup_date::date
+      BETWEEN $${idx++}::date AND $${idx++}::date
+    `;
+
+    params.push(from_date);
+    params.push(to_date);
+  }
+
+  // Company Filter
+  if (company_id) {
+    where += `
+      AND b.company_id = $${idx++}
+    `;
+    params.push(Number(company_id));
+  }
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    ${where}
+    ORDER BY
+      b.pickup_date::date DESC,
+      TRIM(COALESCE(b.pickup_time, '00:00:00'))::time DESC,
+      b.id DESC
+  `;
+
+  const result = await pool.query(sql, params);
+
+  return result.rows;
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -2195,4 +2250,5 @@ module.exports = {
   getClearBookings,
   clearSelectedBookings,
   clearAllBookings,
+  getDriverEarningsBookings
 };

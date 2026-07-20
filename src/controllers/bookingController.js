@@ -46,6 +46,7 @@ const {
   getClearBookings,
   clearSelectedBookings,
   clearAllBookings,
+  getDriverEarningsBookings
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -2268,4 +2269,60 @@ exports.clearAllBookings = async (req, res) => {
     status: true,
     message: "All Bookings Cleared Successfully",
   });
+};
+
+
+// ---------------------------------------------------------
+// GET DRIVERS EARNING BOOKINGS
+// ---------------------------------------------------------
+exports.getDriverEarningsBookings = async (req, res) => {
+  try {
+    const {
+      driver_id,
+      from_date,
+      to_date,
+      booking_status_id,
+      company_id,
+    } = req.query;
+
+    if (!driver_id || !from_date || !to_date) {
+      return res.status(400).json({
+        success: false,
+        message: "driver_id, from_date and to_date are required",
+      });
+    }
+
+    const bookings = await getDriverEarningsBookings({
+      driver_id: Number(driver_id),
+      from_date,
+      to_date,
+      booking_status_id: Number(booking_status_id || 11),
+      company_id,
+    });
+
+    const parsedBookings = bookings.map(parseJSONFields);
+
+    // Total Bookings
+    const total_bookings = parsedBookings.length;
+
+    // Total Earnings
+    const total_earnings = parsedBookings.reduce((sum, booking) => {
+      return sum + Number(booking.total_charges || booking.fares || 0);
+    }, 0);
+
+    return res.status(200).json({
+      success: true,
+      driver_id: Number(driver_id),
+      total_bookings,
+      total_earnings: Number(total_earnings.toFixed(2)),
+      bookings: parsedBookings,
+    });
+  } catch (err) {
+    console.log(err);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
 };

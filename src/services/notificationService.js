@@ -417,7 +417,6 @@ async function sendAppBookingNotification(booking) {
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
     `,
-
     );
 
     const tokens = res.rows.map((r) => r.web_device_id);
@@ -931,6 +930,6 @@ module.exports = {
   sendIVRBookingNotification,
   sendDriverRecoverBookingNotification,
   sendRejectRecoverBookingNotification,
-  sendDriverNoPickupBookingNotification, 
+  sendDriverNoPickupBookingNotification,
   sendRejectNoPickupBookingNotification,
 };

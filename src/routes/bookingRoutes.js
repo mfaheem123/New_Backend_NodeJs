@@ -66,6 +66,10 @@ router.get(
   bookingController.getBookingsForCustomerInvoice,
 );
 
+router.get(
+    "/driver-earnings",
+    bookingController.getDriverEarningsBookings
+);
 
 //BOOKING POST APIS ROUTES
 router.post("/add", bookingController.createBooking);
@@ -114,7 +118,6 @@ router.post(
   "/booking-history-driver",
   bookingController.getBookingByDriverIdAndStatus,
 );
-
 
 //BOOKING DELETE APIS ROUTES
 router.delete("/delete/:id", bookingController.deleteBooking);
