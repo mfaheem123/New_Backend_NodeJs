@@ -85,7 +85,7 @@ exports.createCustomerInvoice = async (payload) => {
         payload.to_date,
         payload.invoice_type,
         payload.amount,
-        payload.company_id
+        payload.company_id,
       ],
     );
 
@@ -193,7 +193,7 @@ exports.getAllCustomerInvoices = async (offset, limit, filters) => {
     amount || null,
     offset,
     limit,
-    company_id ? Number(company_id) : null
+    company_id ? Number(company_id) : null,
   ]);
 
   return rows;

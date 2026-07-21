@@ -1837,18 +1837,18 @@ const getIncomeReportData = async ({
   // =========================
 
   if (from_date) {
-  conditions.push(
-    `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`
-  );
-  params.push(from_date);
-}
+    conditions.push(
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`,
+    );
+    params.push(from_date);
+  }
 
-if (to_date) {
-  conditions.push(
-    `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`
-  );
-  params.push(to_date);
-}
+  if (to_date) {
+    conditions.push(
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`,
+    );
+    params.push(to_date);
+  }
 
   // =========================
   // DRIVER
