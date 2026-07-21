@@ -83,7 +83,8 @@ const EnumerationsModel = {
     const drivers = await db.query(query, [company_id]);
 
     // BOOKING TABS WITH COUNTS
-    const booking_tabs = await db.query(`
+    const booking_tabs = await db.query(
+      `
       SELECT
         bt.id,
         bt.booking_tabs,
@@ -141,9 +142,9 @@ const EnumerationsModel = {
         END::int AS booking_count
       FROM booking_tabs bt
       ORDER BY bt.id ASC
-    `, 
-    [company_id]
-  );
+    `,
+      [company_id],
+    );
 
     // FARE CONFIGURATIONS
     const fare_configurations = await db.query(

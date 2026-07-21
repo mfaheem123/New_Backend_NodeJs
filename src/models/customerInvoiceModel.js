@@ -57,11 +57,24 @@ exports.createCustomerInvoice = async (payload) => {
         from_date,
         to_date,
         invoice_type,
-        amount
+        amount,
+        company_id
       )
       VALUES
-      ($1,$2,$3,$4,$5,$6,$7,$8)
-      RETURNING *
+      ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      RETURNING 
+      id,
+      invoice_number,
+      customer_id,
+      invoice_date,
+      invoice_due_date,
+      from_date,
+      to_date,
+      invoice_type,
+      amount,
+      status,
+      created_at,
+      updated_at
       `,
       [
         payload.invoice_number,
@@ -72,6 +85,7 @@ exports.createCustomerInvoice = async (payload) => {
         payload.to_date,
         payload.invoice_type,
         payload.amount,
+        payload.company_id
       ],
     );
 
@@ -130,6 +144,7 @@ exports.getAllCustomerInvoices = async (offset, limit, filters) => {
     invoice_due_date,
     status,
     amount,
+    company_id,
   } = filters;
 
   const sql = `
@@ -160,6 +175,8 @@ exports.getAllCustomerInvoices = async (offset, limit, filters) => {
 
       AND ($7::text IS NULL OR CAST(ci.amount AS TEXT) ILIKE '%' || $7 || '%')
 
+      AND ($10::int IS NULL OR ci.company_id = $10)
+
     ORDER BY ci.id DESC
 
     OFFSET $8
@@ -176,6 +193,7 @@ exports.getAllCustomerInvoices = async (offset, limit, filters) => {
     amount || null,
     offset,
     limit,
+    company_id ? Number(company_id) : null
   ]);
 
   return rows;

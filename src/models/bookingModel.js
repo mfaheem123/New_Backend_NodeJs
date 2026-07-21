@@ -1375,20 +1375,20 @@ const getBookingStatisticsData = async ({
   // =========================
 
   if (filters.from_date) {
-  conditions.push(`
+    conditions.push(`
     TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD')
     >= TO_DATE($${idx++}, 'YYYY-MM-DD')
   `);
-  params.push(filters.from_date);
-}
+    params.push(filters.from_date);
+  }
 
-if (filters.to_date) {
-  conditions.push(`
+  if (filters.to_date) {
+    conditions.push(`
     TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD')
     <= TO_DATE($${idx++}, 'YYYY-MM-DD')
   `);
-  params.push(filters.to_date);
-}
+    params.push(filters.to_date);
+  }
 
   // =========================
   // TIME RANGE
@@ -1409,43 +1409,38 @@ if (filters.to_date) {
   // =========================
 
   if (filters.booking_status_id) {
-
     const statuses = String(filters.booking_status_id)
-        .split(",")
-        .map(id => Number(id.trim()))
-        .filter(id => !isNaN(id));
+      .split(",")
+      .map((id) => Number(id.trim()))
+      .filter((id) => !isNaN(id));
 
     if (statuses.length === 1) {
-
-        conditions.push(`b.booking_status_id = $${idx++}`);
-        params.push(statuses[0]);
-
+      conditions.push(`b.booking_status_id = $${idx++}`);
+      params.push(statuses[0]);
     } else if (statuses.length > 1) {
-
-        conditions.push(`b.booking_status_id = ANY($${idx++}::int[])`);
-        params.push(statuses);
-
+      conditions.push(`b.booking_status_id = ANY($${idx++}::int[])`);
+      params.push(statuses);
     }
-}
+  }
 
   // =========================
   // PAYMENT TYPE
   // =========================
 
   if (filters.payment_type_id) {
-  const paymentTypes = String(filters.payment_type_id)
-    .split(",")
-    .map((id) => Number(id.trim()))
-    .filter((id) => !isNaN(id));
+    const paymentTypes = String(filters.payment_type_id)
+      .split(",")
+      .map((id) => Number(id.trim()))
+      .filter((id) => !isNaN(id));
 
-  if (paymentTypes.length === 1) {
-    conditions.push(`b.payment_type_id = $${idx++}`);
-    params.push(paymentTypes[0]);
-  } else if (paymentTypes.length > 1) {
-    conditions.push(`b.payment_type_id = ANY($${idx++}::int[])`);
-    params.push(paymentTypes);
+    if (paymentTypes.length === 1) {
+      conditions.push(`b.payment_type_id = $${idx++}`);
+      params.push(paymentTypes[0]);
+    } else if (paymentTypes.length > 1) {
+      conditions.push(`b.payment_type_id = ANY($${idx++}::int[])`);
+      params.push(paymentTypes);
+    }
   }
-}
 
   // =========================
   // CUSTOMER
@@ -1547,12 +1542,12 @@ if (filters.to_date) {
     params.push(`%${filters.dropoff}%`);
   }
 
- // =========================
+  // =========================
   // DRIVER
   // =========================
   if (filters.driver_id) {
-   conditions.push(`b.driver_id = $${idx++}`);
-params.push(Number(filters.driver_id));
+    conditions.push(`b.driver_id = $${idx++}`);
+    params.push(Number(filters.driver_id));
   }
 
   const whereClause = `
@@ -1842,14 +1837,18 @@ const getIncomeReportData = async ({
   // =========================
 
   if (from_date) {
-    conditions.push(`b.pickup_date >= $${idx++}`);
-    params.push(from_date);
-  }
+  conditions.push(
+    `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`
+  );
+  params.push(from_date);
+}
 
-  if (to_date) {
-    conditions.push(`b.pickup_date <= $${idx++}`);
-    params.push(to_date);
-  }
+if (to_date) {
+  conditions.push(
+    `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`
+  );
+  params.push(to_date);
+}
 
   // =========================
   // DRIVER
@@ -1978,8 +1977,8 @@ const getIncomeReportData = async ({
     ${whereClause}
 
     ORDER BY
-      b.pickup_date ASC,
-      TRIM(b.pickup_time)::time ASC
+  TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') ASC,
+  TRIM(b.pickup_time)::time ASC
   `;
 
   const result = await pool.query(sql, params);

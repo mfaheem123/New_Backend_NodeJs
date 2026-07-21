@@ -78,6 +78,7 @@ exports.getAllCustomerInvoice = async (req, res) => {
       invoice_due_date,
       status,
       amount,
+      company_id,
     } = req.query;
 
     const invoices = await customerInvoiceModel.getAllCustomerInvoices(
@@ -91,6 +92,7 @@ exports.getAllCustomerInvoice = async (req, res) => {
         invoice_due_date,
         status,
         amount,
+        company_id,
       },
     );
 

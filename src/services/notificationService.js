@@ -179,7 +179,7 @@ async function sendPanicDriverNotification(driverId, company_id) {
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
     `,
-    [company_id]
+      [company_id],
     );
 
     // 2️⃣ Tokens array banao
@@ -199,9 +199,9 @@ async function sendPanicDriverNotification(driverId, company_id) {
     );
 
     if (driverRes.rows.length === 0) {
-  console.log("Driver not found");
-  return;
-}
+      console.log("Driver not found");
+      return;
+    }
 
     const driver_name = driverRes.rows[0]?.name;
     // 3️⃣ Notification payload
@@ -237,7 +237,7 @@ async function sendPanicDriverNotification(driverId, company_id) {
 async function sendOnBreakDriverNotification(driverId, company_id) {
   try {
     // 1️⃣ Sare controllers ke web_device_id lao
-       const res = await pool.query(
+    const res = await pool.query(
       `
       SELECT web_device_id
       FROM employees
@@ -246,7 +246,7 @@ async function sendOnBreakDriverNotification(driverId, company_id) {
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
     `,
-    [company_id]
+      [company_id],
     );
 
     // 2️⃣ Tokens array banao
@@ -264,10 +264,10 @@ async function sendOnBreakDriverNotification(driverId, company_id) {
       WHERE id = $1`,
       [driverId],
     );
-if (driverRes.rows.length === 0) {
-  console.log("Driver not found");
-  return;
-}
+    if (driverRes.rows.length === 0) {
+      console.log("Driver not found");
+      return;
+    }
     const driver_name = driverRes.rows[0]?.name;
     // 3️⃣ Notification payload
     const message = {
@@ -430,7 +430,7 @@ async function sendAppBookingNotification(booking) {
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
     `,
-    [booking.company_id]
+      [booking.company_id],
     );
 
     const tokens = res.rows.map((r) => r.web_device_id);

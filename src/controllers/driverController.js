@@ -852,18 +852,21 @@ exports.onBreakDriver = async (req, res) => {
       "🚀 INCOMING DRIVER ON BREAK BODY:",
       JSON.stringify(req.body, null, 2),
     );
-const driver = await Driver.getById(driver_id);
-if (!driver) {
-  return res.status(404).json({
-    status: false,
-    message: "Driver not found",
-  });
-}
+    const driver = await Driver.getById(driver_id);
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
     if (on_break == true || on_break == "true") {
       console.log("DRIVER IS ON BREAK:", on_break);
 
       //Send Driver Break Notification to Web
-      await notification.sendOnBreakDriverNotification(driver_id, driver.company_id);
+      await notification.sendOnBreakDriverNotification(
+        driver_id,
+        driver.company_id,
+      );
 
       return res.status(200).json({
         status: true,
@@ -916,16 +919,19 @@ exports.onPanicDriver = async (req, res) => {
       "🚀 INCOMING DRIVER IN PANIC BODY:",
       JSON.stringify(req.body, null, 2),
     );
-const driver = await Driver.getById(driver_id);
-if (!driver) {
-  return res.status(404).json({
-    status: false,
-    message: "Driver not found",
-  });
-}
+    const driver = await Driver.getById(driver_id);
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
     if (panic == true || panic == "true") {
       console.log("DRIVER PANIC BUTTON ACTIVE:", panic);
-      await notification.sendPanicDriverNotification(driver_id,driver.company_id);
+      await notification.sendPanicDriverNotification(
+        driver_id,
+        driver.company_id,
+      );
       return res.status(200).json({
         status: true,
         message: "Driver Enable Panic",
