@@ -162,3 +162,9 @@
 {"level":"info","message":"GET /api/location-types 200 12.432 ms","timestamp":"2026-07-21T12:29:14.374Z"}
 {"duration":177,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-21T12:29:14.540Z"}
 {"level":"info","message":"GET /api/location-types 200 177.910 ms","timestamp":"2026-07-21T12:29:14.541Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-21T12:29:25.259Z"}
+{"level":"info","message":"GET /api/location-types 200 10.309 ms","timestamp":"2026-07-21T12:29:25.265Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-21T12:29:25.273Z"}
+{"level":"info","message":"GET /api/location-types 200 3.144 ms","timestamp":"2026-07-21T12:29:25.275Z"}
+{"duration":8,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT\n      ci.*,\n      json_build_object(\n        'name', c.name,\n        'email', c.email\n      ) AS customer\n\n    FROM customer_invoices ci\n\n    LEFT JOIN customers c\n      ON c.id = ci.customer_id\n\n      WHERE\n      ($1::text IS NULL OR ci.invoice_type = $1)\n\n      AND ($2::text IS NULL OR ci.invoice_number ILIKE '%' || $2 || '%')\n\n      AND ($3::text IS NULL OR c.name ILIKE '%' || $3 || '%')\n\n      AND ($4::text IS NULL OR ci.invoice_date ILIKE '%' || $4 || '%')\n\n      AND ($5::text IS NULL OR ci.invoice_due_date ILIKE '%' || $5 || '%')\n\n      AND ($6::text IS NULL OR LOWER(ci.status) = LOWER($6))\n\n      AND ($7::text IS NULL OR CAST(ci.amount AS TEXT) ILIKE '%' || $7 || '%')\n\n      AND ($10::int IS NULL OR ci.company_id = $10)\n\n    ORDER BY ci.id DESC\n\n    OFFSET $8\n    LIMIT $9\n  ","timestamp":"2026-07-21T12:29:26.002Z"}
+{"level":"info","message":"GET /api/customer-invoice/get?company_id=3 200 9.761 ms","timestamp":"2026-07-21T12:29:26.003Z"}
