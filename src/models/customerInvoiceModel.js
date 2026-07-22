@@ -42,6 +42,9 @@ LEFT JOIN payment_types pt
 ON pt.id = b.payment_type_id
 `;
 
+// ---------------------------------------------------------
+// CREATE CUSTOMER INVOICE
+// ---------------------------------------------------------
 exports.createCustomerInvoice = async (payload) => {
   try {
     await pool.query("BEGIN");
@@ -135,6 +138,9 @@ exports.createCustomerInvoice = async (payload) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ALL CUSTOMER INVOICE
+// ---------------------------------------------------------
 exports.getAllCustomerInvoices = async (offset, limit, filters) => {
   const {
     invoice_type,
@@ -199,6 +205,9 @@ exports.getAllCustomerInvoices = async (offset, limit, filters) => {
   return rows;
 };
 
+// ---------------------------------------------------------
+// PAY CUSTOMER INVOICE
+// ---------------------------------------------------------
 exports.payCustomerInvoice = async (id, status) => {
   const sql = `
     UPDATE customer_invoices
@@ -214,6 +223,9 @@ exports.payCustomerInvoice = async (id, status) => {
   return rows[0];
 };
 
+// ---------------------------------------------------------
+// DELETE CUSTOMER INVOICE
+// ---------------------------------------------------------
 exports.deleteCustomerInvoice = async (id) => {
   const sql = `
     DELETE FROM customer_invoices
@@ -226,6 +238,9 @@ exports.deleteCustomerInvoice = async (id) => {
   return rows[0];
 };
 
+// ---------------------------------------------------------
+// GET CUSTOMER INVOICE BY ID
+// ---------------------------------------------------------
 exports.getById = async (id) => {
   const invoiceResult = await pool.query(
     `
@@ -288,6 +303,9 @@ exports.getById = async (id) => {
   return invoice;
 };
 
+// ---------------------------------------------------------
+// UPDATE CUSTOMER INVOICE
+// ---------------------------------------------------------
 exports.update = async (id, payload) => {
   try {
     await pool.query("BEGIN");

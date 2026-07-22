@@ -1,0 +1,12 @@
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-21T19:03:56.901Z"}
+{"level":"info","message":"GET /api/location-types 200 10.648 ms","timestamp":"2026-07-21T19:03:56.907Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-21T19:03:56.914Z"}
+{"level":"info","message":"GET /api/location-types 200 2.214 ms","timestamp":"2026-07-21T19:03:56.916Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-21T19:04:05.363Z"}
+{"level":"info","message":"GET /api/location-types 200 15.324 ms","timestamp":"2026-07-21T19:04:05.372Z"}
+{"duration":62,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-21T19:04:05.421Z"}
+{"level":"info","message":"GET /api/location-types 200 63.855 ms","timestamp":"2026-07-21T19:04:05.423Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-21T19:04:17.529Z"}
+{"level":"info","message":"GET /api/location-types 200 36.744 ms","timestamp":"2026-07-21T19:04:17.561Z"}
+{"duration":82,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-21T19:04:17.607Z"}
+{"level":"info","message":"GET /api/location-types 200 111.453 ms","timestamp":"2026-07-21T19:04:17.636Z"}

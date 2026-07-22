@@ -18,6 +18,9 @@ async function genRef() {
   return ref;
 }
 
+// ---------------------------------------------------------
+// GET CUSTOMER INVOICE NUMBERS
+// ---------------------------------------------------------
 exports.customerInvoiceNumber = async (req, res) => {
   try {
     const invoice = await genRef();
@@ -34,6 +37,9 @@ exports.customerInvoiceNumber = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// CREATE CUSTOMER INVOICE
+// ---------------------------------------------------------
 exports.createCustomerInvoice = async (req, res) => {
   try {
     console.log(
@@ -65,6 +71,9 @@ exports.createCustomerInvoice = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ALL CUSTOMER INVOICE
+// ---------------------------------------------------------
 exports.getAllCustomerInvoice = async (req, res) => {
   try {
     const {
@@ -109,6 +118,9 @@ exports.getAllCustomerInvoice = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET CUSTOMER INVOICE BY ID
+// ---------------------------------------------------------
 exports.getByIdCustomerInvoice = async (req, res) => {
   try {
     const invoice = await customerInvoiceModel.getById(req.params.id);
@@ -132,6 +144,9 @@ exports.getByIdCustomerInvoice = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// PAY CUSTOMER INVOICE
+// ---------------------------------------------------------
 exports.payCustomerInvoice = async (req, res) => {
   try {
     const invoice = await customerInvoiceModel.payCustomerInvoice(
@@ -150,6 +165,9 @@ exports.payCustomerInvoice = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE CUSTOMER INVOICE
+// ---------------------------------------------------------
 exports.updateCustomerInvoice = async (req, res) => {
   try {
     console.log(
@@ -184,6 +202,9 @@ exports.updateCustomerInvoice = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// DELETE CUSTOMER INVOICE
+// ---------------------------------------------------------
 exports.removeCustomerInvoice = async (req, res) => {
   try {
     const invoice = await customerInvoiceModel.deleteCustomerInvoice(
