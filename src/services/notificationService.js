@@ -384,7 +384,7 @@ async function sendRecoverBookingNotification(driverId, booking) {
 // ---------------------------------------------------------
 // SEND APP BOOKING NOTIFICATION TO DASHBOARD
 // ---------------------------------------------------------
-async function sendAppBookingNotification(booking) {
+async function sendAppBookingNotification(booking,company_id) {
   try {
     // ✅ Sirf APP bookings ke liye
     if (
@@ -430,7 +430,7 @@ async function sendAppBookingNotification(booking) {
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
     `,
-      [booking.company_id],
+      [company_id],
     );
 
     const tokens = res.rows.map((r) => r.web_device_id);
@@ -514,7 +514,7 @@ async function sendFutureBookingNotification(driverId, booking) {
 // ---------------------------------------------------------
 // SEND WEB BOOKING NOTIFICATION TO DASHBOARD
 // ---------------------------------------------------------
-async function sendWebBookingNotification(booking) {
+async function sendWebBookingNotification(booking, company_id) {
   try {
     // ✅ Sirf WEB bookings ke liye
     if (
@@ -560,9 +560,9 @@ async function sendWebBookingNotification(booking) {
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
     `,
-      [booking.company_id],
+      [company_id],
     );
-
+console.log("COMPANY ID WEB: ", booking.company_id)
     const tokens = res.rows.map((r) => r.web_device_id);
 
     if (tokens.length === 0) {
@@ -752,7 +752,9 @@ async function sendDriverRecoverBookingNotification(booking) {
       },
       data: {
         booking_id: booking.id.toString(),
+        reference_number: booking.reference_number,
         driver_id: booking.driver_id.toString(),
+        driver_name: booking.driver_name,
         type: "DRIVER_RECOVER_BOOKING_REQUEST",
       },
     };
@@ -845,7 +847,9 @@ async function sendDriverNoPickupBookingNotification(booking) {
       },
       data: {
         booking_id: booking.id.toString(),
+        reference_number: booking.reference_number,
         driver_id: booking.driver_id.toString(),
+        driver_name: booking.driver_name,
         type: "DRIVER_NOPICKUP_BOOKING_REQUEST",
       },
     };

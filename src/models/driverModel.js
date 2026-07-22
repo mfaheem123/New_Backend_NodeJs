@@ -199,10 +199,10 @@ const Driver = {
         // 1️⃣ Fetch company vehicle details
         const { rows: companyVehicleRows } = await db.query(
           `SELECT 
-          mot_number, mot_expiry, mot2_number, mot2_expiry,
-          insurance_number, insurance_expiry,
-          phc_vehicle_number, phc_vehicle_expiry
-         FROM company_vehicles WHERE id = $1 LIMIT 1`,
+            mot_number, mot_expiry, mot2_number, mot2_expiry,
+            insurance_number, insurance_expiry,
+            phc_vehicle_number, phc_vehicle_expiry
+            FROM company_vehicles WHERE id = $1 LIMIT 1`,
           [companyVehicleId],
         );
 
@@ -538,7 +538,7 @@ const Driver = {
         for (const note of notes) {
           await db.query(
             `INSERT INTO driver_notes (driver_id, note, created_at, created_by)
-           VALUES ($1, $2, $3, $4)`,
+             VALUES ($1, $2, $3, $4)`,
             [
               driverId,
               note.note,
@@ -563,7 +563,7 @@ const Driver = {
         for (const shift of shifts) {
           await db.query(
             `INSERT INTO driver_shifts (driver_id, name, start_time, end_time)
-           VALUES ($1, $2, $3, $4)`,
+             VALUES ($1, $2, $3, $4)`,
             [driverId, shift.name, shift.start_time, shift.end_time],
           );
         }
@@ -719,15 +719,15 @@ const Driver = {
             )
           )
       END AS vehicle
-    FROM drivers d
-    LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
-    LEFT JOIN vehicles v ON v.id = d.vehicle_id
-    LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
-    LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
-    LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
-    ${whereClause}
-    ORDER BY d.id DESC
-    LIMIT $${params.length - 1} OFFSET $${params.length};
+        FROM drivers d
+        LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
+        LEFT JOIN vehicles v ON v.id = d.vehicle_id
+        LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
+        LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
+        LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
+        ${whereClause}
+        ORDER BY d.id DESC
+        LIMIT $${params.length - 1} OFFSET $${params.length};
   `;
 
     const res = await db.query(dataQuery, params);
@@ -793,11 +793,11 @@ const Driver = {
               'account_waiting_charges', vt.account_waiting_charges,
               'waiting_time', vt.waiting_time
             ) AS vehicle_type
-         FROM company_vehicles cv
-         LEFT JOIN vehicle_types vt ON vt.id = cv.vehicle_type_id
-         WHERE cv.id = $1
-         LIMIT 1`,
-          [driver.company_vehicle_id],
+            FROM company_vehicles cv
+            LEFT JOIN vehicle_types vt ON vt.id = cv.vehicle_type_id
+            WHERE cv.id = $1
+            LIMIT 1`,
+            [driver.company_vehicle_id],
         );
       } else {
         vehicleRes = await db.query(
@@ -810,11 +810,11 @@ const Driver = {
               'account_waiting_charges', vt.account_waiting_charges,
               'waiting_time', vt.waiting_time
             ) AS vehicle_type
-         FROM vehicles v
-         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id
-         WHERE v.id = $1
-         LIMIT 1`,
-          [driver.vehicle_id],
+            FROM vehicles v
+            LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id
+            WHERE v.id = $1
+            LIMIT 1`,
+            [driver.vehicle_id],
         );
       }
 
@@ -983,8 +983,8 @@ const Driver = {
 
           const { rows: newVeh } = await db.query(
             `INSERT INTO vehicles (${keys.join(", ")}, driver_id)
-           VALUES (${placeholders}, $${values.length + 1})
-           RETURNING id`,
+             VALUES (${placeholders}, $${values.length + 1})
+             RETURNING id`,
             [...values, driverId],
           );
           vehicleId = newVeh[0].id;
@@ -1664,7 +1664,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
 
   async getFOBDrivers(company_id) {
     const dataQuery = `
-SELECT 
+  SELECT 
   d.*,
   s.name AS subsidiary_name,
   CASE 
@@ -1699,20 +1699,93 @@ SELECT
         )
       )
   END AS vehicle
-FROM drivers d
-LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
-LEFT JOIN vehicles v ON v.id = d.vehicle_id
-LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
-LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
-LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
-WHERE d.driver_status = 'Unavailable' AND session_status = 'logged_in' AND d.company_id = $1
-
-ORDER BY d.id DESC
+    FROM drivers d
+    LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
+    LEFT JOIN vehicles v ON v.id = d.vehicle_id
+    LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
+    LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
+    LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
+    WHERE d.driver_status = 'Unavailable' 
+    AND session_status = 'logged_in' 
+    AND d.company_id = $1
+    ORDER BY d.id DESC
 `;
 
     const result = await db.query(dataQuery, [company_id]);
     return result.rows;
   },
+
+  // ---------------------------------------------------------
+  // GET DRIVER EXPIRY DOCUMENTS
+  // ---------------------------------------------------------
+  async getDriverExpiryDocuments(company_id) {
+  const params = [];
+  let where = `
+    WHERE (
+    (d.end_date IS NOT NULL
+        AND d.end_date <> ''
+        AND TO_DATE(d.end_date, 'YYYY-MM-DD') <= CURRENT_DATE)
+
+ OR (d.phc_driver_expiry IS NOT NULL
+        AND d.phc_driver_expiry <> ''
+        AND TO_DATE(d.phc_driver_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
+
+ OR (d.mot_expiry IS NOT NULL
+        AND d.mot_expiry <> ''
+        AND TO_DATE(d.mot_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
+
+ OR (d.mot2_expiry IS NOT NULL
+        AND d.mot2_expiry <> ''
+        AND TO_DATE(d.mot2_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
+
+ OR (d.insurance_expiry IS NOT NULL
+        AND d.insurance_expiry <> ''
+        AND TO_DATE(d.insurance_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
+
+ OR (d.licence_expiry IS NOT NULL
+        AND d.licence_expiry <> ''
+        AND TO_DATE(d.licence_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
+)
+  `;
+
+  if (company_id) {
+    params.push(company_id);
+    where += ` AND d.company_id = $${params.length}`;
+  }
+
+  const query = `
+    SELECT
+      d.id,
+      d.username,
+
+      d.end_date,
+      d.phc_driver_expiry,
+
+      d.mot_expiry,
+      d.mot2_expiry,
+      d.insurance_expiry,
+      d.licence_expiry
+
+    FROM drivers d
+    ${where}
+    ORDER BY d.username ASC
+  `;
+
+  const { rows } = await db.query(query, params);
+
+  return rows.map((driver) => ({
+    id: driver.id,
+    username: driver.username,
+
+    vehicle_expiry: driver.end_date,
+    driver_expiry: driver.phc_driver_expiry,
+    mot_expiry: driver.mot_expiry,
+    mot2_expiry: driver.mot2_expiry,
+    insurance_expiry: driver.insurance_expiry,
+    licence_expiry: driver.licence_expiry,
+  }));
+},
+
 };
 
 module.exports = Driver;

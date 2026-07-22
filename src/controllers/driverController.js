@@ -1213,3 +1213,28 @@ exports.endBreakStatusDriver = async (req, res) => {
     });
   }
 };
+
+
+// ---------------------------------------------------------
+// GET DRIVER EXPIRY DOCUMENTS
+// ---------------------------------------------------------
+exports.getDriverExpiryDocuments = async (req, res) => {
+  try {
+    const { company_id } = req.query;
+
+    const drivers = await Driver.getDriverExpiryDocuments(company_id);
+
+    return res.status(200).json({
+      status: true,
+      total: drivers.length,
+      drivers,
+    });
+  } catch (err) {
+    console.error("Driver Expiry Documents Error:", err);
+
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};

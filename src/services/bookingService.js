@@ -371,11 +371,11 @@ async function createSimpleBooking(payload) {
 
     // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
     if (clean.booking_source == "app") {
-      await sendAppBookingNotification(clean);
+      await sendAppBookingNotification(clean, payload.company_id);
     }
     // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
     if (clean.booking_source == "web") {
-      await sendWebBookingNotification(clean);
+      await sendWebBookingNotification(clean, payload.company_id);
     }
     console.log("BOOKING INSERTED", inserted.id);
     await pool.query("COMMIT");
@@ -560,7 +560,7 @@ async function createReturnWayBooking(payload) {
 
     // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
     if (outboundEnriched.booking_source == "web") {
-      await sendWebBookingNotification(outboundEnriched);
+      await sendWebBookingNotification(outboundEnriched, payload.company_id);
     }
     return {
       bookings: [outboundEnriched],
