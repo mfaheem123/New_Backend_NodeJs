@@ -797,7 +797,7 @@ const Driver = {
             LEFT JOIN vehicle_types vt ON vt.id = cv.vehicle_type_id
             WHERE cv.id = $1
             LIMIT 1`,
-            [driver.company_vehicle_id],
+          [driver.company_vehicle_id],
         );
       } else {
         vehicleRes = await db.query(
@@ -814,7 +814,7 @@ const Driver = {
             LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id
             WHERE v.id = $1
             LIMIT 1`,
-            [driver.vehicle_id],
+          [driver.vehicle_id],
         );
       }
 
@@ -1719,8 +1719,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   // GET DRIVER EXPIRY DOCUMENTS
   // ---------------------------------------------------------
   async getDriverExpiryDocuments(company_id) {
-  const params = [];
-  let where = `
+    const params = [];
+    let where = `
     WHERE (
     (d.end_date IS NOT NULL
         AND d.end_date <> ''
@@ -1748,12 +1748,12 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
 )
   `;
 
-  if (company_id) {
-    params.push(company_id);
-    where += ` AND d.company_id = $${params.length}`;
-  }
+    if (company_id) {
+      params.push(company_id);
+      where += ` AND d.company_id = $${params.length}`;
+    }
 
-  const query = `
+    const query = `
     SELECT
       d.id,
       d.username,
@@ -1771,21 +1771,20 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     ORDER BY d.username ASC
   `;
 
-  const { rows } = await db.query(query, params);
+    const { rows } = await db.query(query, params);
 
-  return rows.map((driver) => ({
-    id: driver.id,
-    username: driver.username,
+    return rows.map((driver) => ({
+      id: driver.id,
+      username: driver.username,
 
-    vehicle_expiry: driver.end_date,
-    driver_expiry: driver.phc_driver_expiry,
-    mot_expiry: driver.mot_expiry,
-    mot2_expiry: driver.mot2_expiry,
-    insurance_expiry: driver.insurance_expiry,
-    licence_expiry: driver.licence_expiry,
-  }));
-},
-
+      vehicle_expiry: driver.end_date,
+      driver_expiry: driver.phc_driver_expiry,
+      mot_expiry: driver.mot_expiry,
+      mot2_expiry: driver.mot2_expiry,
+      insurance_expiry: driver.insurance_expiry,
+      licence_expiry: driver.licence_expiry,
+    }));
+  },
 };
 
 module.exports = Driver;

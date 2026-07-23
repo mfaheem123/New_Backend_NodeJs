@@ -34,7 +34,7 @@ router.get("/fob-drivers", driverController.getFOBDrivers);
 router.get("/panic-disable/:driver_id", driverController.onPanicStatusDriver);
 router.get(
   "/driver-expiry-documents",
-  driverController.getDriverExpiryDocuments
+  driverController.getDriverExpiryDocuments,
 );
 
 router.post("/on-break", upload.none(), driverController.onBreakDriver);

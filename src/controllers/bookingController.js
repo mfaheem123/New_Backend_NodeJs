@@ -47,6 +47,7 @@ const {
   clearSelectedBookings,
   clearAllBookings,
   getDriverEarningsBookings,
+  noPickupDashboardBooking
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -64,6 +65,7 @@ const {
   sendRejectRecoverBookingNotification,
   sendDriverNoPickupBookingNotification,
   sendRejectNoPickupBookingNotification,
+  sendNoPickupBookingNotification
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 
@@ -2319,6 +2321,53 @@ exports.getDriverEarningsBookings = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: err.message,
+    });
+  }
+};
+
+
+// ---------------------------------------------------------
+// NO PICKUP DASHBOARD BOOKING
+// ---------------------------------------------------------
+exports.noPickupDashboardBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const bookingResult = await findBookingById(bookingId);
+
+    if (bookingResult.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+    // ✅ Actual booking object
+    const booking = bookingResult.rows[0];
+
+    console.log("BOOKING:", booking);
+    console.log(booking.id);
+    await sendNoPickupBookingNotification(booking.driver_id, booking);
+    await noPickupDashboardBooking(bookingId);
+    await Driver.updateDriverStatus(
+      booking.driver_id,
+      "Available",
+      "Available",
+    );
+    await notifyDriverBookingStatus(booking.driver_id);
+    await notifyDriverBookingStatusWeb(booking.driver_id);
+
+    const driver = await Driver.getById(booking.driver_id);
+
+    notifyBusyDriverUpdate(driver);
+    return res.status(200).json({
+      status: true,
+      message: "No Pickup Booking Successfully",
+    });
+  } catch (error) {
+    console.error("Recover Booking Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
     });
   }
 };

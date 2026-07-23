@@ -384,7 +384,7 @@ async function sendRecoverBookingNotification(driverId, booking) {
 // ---------------------------------------------------------
 // SEND APP BOOKING NOTIFICATION TO DASHBOARD
 // ---------------------------------------------------------
-async function sendAppBookingNotification(booking,company_id) {
+async function sendAppBookingNotification(booking, company_id) {
   try {
     // ✅ Sirf APP bookings ke liye
     if (
@@ -562,7 +562,7 @@ async function sendWebBookingNotification(booking, company_id) {
     `,
       [company_id],
     );
-console.log("COMPANY ID WEB: ", booking.company_id)
+    console.log("COMPANY ID WEB: ", booking.company_id);
     const tokens = res.rows.map((r) => r.web_device_id);
 
     if (tokens.length === 0) {
@@ -887,7 +887,7 @@ async function sendRejectNoPickupBookingNotification(driverId, booking) {
   const message = {
     token: fcmToken,
     notification: {
-      title: "Your Request For Recover Booking Has Been Rejected",
+      title: "Your Request For No Pickup Booking Has Been Rejected",
     },
     data: {
       booking_id: booking.id.toString(),
@@ -936,6 +936,7 @@ async function sendNoPickupBookingNotification(driverId, booking) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
@@ -953,4 +954,5 @@ module.exports = {
   sendRejectRecoverBookingNotification,
   sendDriverNoPickupBookingNotification,
   sendRejectNoPickupBookingNotification,
+  sendNoPickupBookingNotification,
 };

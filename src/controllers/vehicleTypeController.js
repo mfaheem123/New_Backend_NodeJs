@@ -102,11 +102,14 @@ const create = async (req, res) => {
     });
 
     // 🚫 Check duplicate name
-    const existingVehicle = await VehicleType.findByName(req.body.name);
+    const existingVehicle = await VehicleType.findByName(
+  req.body.name,
+  req.body.company_id
+);
     if (existingVehicle) {
       return res.status(400).json({
         status: false,
-        message: `Vehicle type "${req.body.name}" already exists.`,
+        message: `${req.body.name} already exists for this company.`,
       });
     }
 

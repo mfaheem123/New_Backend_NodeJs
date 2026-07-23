@@ -2242,6 +2242,19 @@ const getDriverEarningsBookings = async ({
   return result.rows;
 };
 
+// ---------------------------------------------------------
+// RECOVER DASHBOARD BOOKING
+// ---------------------------------------------------------
+const noPickupDashboardBooking = async (id) => {
+  const query = `
+    UPDATE bookings
+    SET booking_status_id = 8,
+        driver_id = NULL
+    WHERE id = $1
+  `;
+  return pool.query(query, [id]);
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -2297,4 +2310,5 @@ module.exports = {
   clearSelectedBookings,
   clearAllBookings,
   getDriverEarningsBookings,
+  noPickupDashboardBooking
 };

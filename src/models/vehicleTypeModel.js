@@ -218,13 +218,20 @@ const VehicleType = {
     return result.rows[0];
   },
 
-  async findByName(name) {
-    const result = await pool.query(
-      "SELECT * FROM vehicle_types WHERE name = $1",
-      [name],
-    );
-    return result.rows[0];
-  },
+  async findByName(name, company_id) {
+  const result = await pool.query(
+    `
+    SELECT *
+    FROM vehicle_types
+    WHERE LOWER(name)=LOWER($1)
+      AND company_id=$2
+    LIMIT 1
+    `,
+    [name, company_id]
+  );
+
+  return result.rows[0];
+},
 
   async exists(id) {
     const result = await pool.query(
