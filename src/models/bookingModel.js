@@ -2310,5 +2310,5 @@ module.exports = {
   clearSelectedBookings,
   clearAllBookings,
   getDriverEarningsBookings,
-  noPickupDashboardBooking
+  noPickupDashboardBooking,
 };

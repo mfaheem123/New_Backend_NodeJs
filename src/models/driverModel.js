@@ -1147,6 +1147,7 @@ const Driver = {
     LEFT JOIN vehicles v ON d.vehicle_id = v.id
     LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
     WHERE d.company_id = $1
+    AND d.active = true
     ORDER BY d.id DESC
   `;
 
@@ -1784,6 +1785,16 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       insurance_expiry: driver.insurance_expiry,
       licence_expiry: driver.licence_expiry,
     }));
+  },
+
+  async updateDriverInactive(driverId) {
+    const query = `
+        UPDATE drivers
+        SET
+          active = false
+        WHERE id = $1
+      `;
+    return db.query(query, [driverId]);
   },
 };
 

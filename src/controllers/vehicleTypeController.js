@@ -103,9 +103,9 @@ const create = async (req, res) => {
 
     // 🚫 Check duplicate name
     const existingVehicle = await VehicleType.findByName(
-  req.body.name,
-  req.body.company_id
-);
+      req.body.name,
+      req.body.company_id,
+    );
     if (existingVehicle) {
       return res.status(400).json({
         status: false,

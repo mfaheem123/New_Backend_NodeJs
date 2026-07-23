@@ -74,7 +74,6 @@ router.post("/status/:id", bookingController.updateBookingStatus);
 router.post("/fares/:id", bookingController.updateBookingFares);
 router.post("/fare-charges/:id", bookingController.updateBookingFareCharges);
 router.post("/recover-booking/:id", bookingController.recoverDashboardBooking);
-router.post("/no-pickup-booking/:id", bookingController.noPickupDashboardBooking);
 router.post("/cli", bookingController.cloneOneWayBooking);
 router.post("/assign-driver", bookingController.assignDriverToBooking);
 router.post("/fob-driver", bookingController.assignFOBBookingToDriver);
@@ -114,6 +113,11 @@ router.post(
 router.post(
   "/booking-history-driver",
   bookingController.getBookingByDriverIdAndStatus,
+);
+
+router.post(
+  "/no-pickup-booking/:id",
+  bookingController.noPickupDashboardBooking,
 );
 
 //BOOKING DELETE APIS ROUTES

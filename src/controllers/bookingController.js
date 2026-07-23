@@ -47,7 +47,7 @@ const {
   clearSelectedBookings,
   clearAllBookings,
   getDriverEarningsBookings,
-  noPickupDashboardBooking
+  noPickupDashboardBooking,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -65,7 +65,7 @@ const {
   sendRejectRecoverBookingNotification,
   sendDriverNoPickupBookingNotification,
   sendRejectNoPickupBookingNotification,
-  sendNoPickupBookingNotification
+  sendNoPickupBookingNotification,
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 
@@ -2324,7 +2324,6 @@ exports.getDriverEarningsBookings = async (req, res) => {
     });
   }
 };
-
 
 // ---------------------------------------------------------
 // NO PICKUP DASHBOARD BOOKING

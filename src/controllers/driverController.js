@@ -1237,3 +1237,43 @@ exports.getDriverExpiryDocuments = async (req, res) => {
     });
   }
 };
+
+// ---------------------------------------------------------
+// DRIVER INACTIVE
+// ---------------------------------------------------------
+exports.updateDriverInactive = async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  console.log("DRIVER REASON: ", reason)
+
+  if (!id) {
+    return res.status(400).json({ message: "driverId is required" });
+  }
+
+  try {
+    const driver = await Driver.getById(id);
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    // UPDATE DRIVER STATUS
+    await Driver.updateDriverInactive(id);
+
+    // CLEAR FCM TOKEN
+    await Driver.clearDriverFcmToken(id);
+
+
+    return res.status(200).json({
+      status: true,
+      message: "Your account has been deleted. Access to the Driver App is no longer available.",
+      driverId: id,
+    });
+
+  } catch (error) {
+    console.error("Logout Error:", error);
+    res.status(500).json({
+      status: false,
+      message: "An error occurred during driver inactive",
+    });
+  }
+};

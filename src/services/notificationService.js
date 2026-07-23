@@ -936,7 +936,6 @@ async function sendNoPickupBookingNotification(driverId, booking) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
-
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
