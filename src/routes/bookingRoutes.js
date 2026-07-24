@@ -38,6 +38,11 @@ router.get(
 );
 
 router.get(
+  "/future-history/:id",
+  bookingController.getFutureBookingHIstoryByDriverId,
+);
+
+router.get(
   "/customer-schedule/:id",
   bookingController.getScheduleBookingByCustomerId,
 );

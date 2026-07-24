@@ -1244,7 +1244,7 @@ exports.getDriverExpiryDocuments = async (req, res) => {
 exports.updateDriverInactive = async (req, res) => {
   const { id } = req.params;
   const { reason } = req.body;
-  console.log("DRIVER REASON: ", reason)
+  console.log("DRIVER REASON: ", reason);
 
   if (!id) {
     return res.status(400).json({ message: "driverId is required" });
@@ -1262,13 +1262,12 @@ exports.updateDriverInactive = async (req, res) => {
     // CLEAR FCM TOKEN
     await Driver.clearDriverFcmToken(id);
 
-
     return res.status(200).json({
       status: true,
-      message: "Your account has been deleted. Access to the Driver App is no longer available.",
+      message:
+        "Your account has been deleted. Access to the Driver App is no longer available.",
       driverId: id,
     });
-
   } catch (error) {
     console.error("Logout Error:", error);
     res.status(500).json({

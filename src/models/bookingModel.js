@@ -2255,6 +2255,29 @@ const noPickupDashboardBooking = async (id) => {
   return pool.query(query, [id]);
 };
 
+// ---------------------------------------------------------
+// GET FOLLOW ON BOOKING HISTORY BY DRIVER ID
+// ---------------------------------------------------------
+const getFutureBookingHIstoryByDriverId = async (driver_id) => {
+  const whereClause = `
+    WHERE b.driver_id = $1 
+    AND b.booking_status_id = 14
+  `;
+
+  const values = [driver_id];
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    ${whereClause}
+    ORDER BY 
+      b.pickup_date DESC,
+      b.pickup_time DESC
+  `;
+
+  const res = await pool.query(sql, values);
+  return res.rows;
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -2311,4 +2334,5 @@ module.exports = {
   clearAllBookings,
   getDriverEarningsBookings,
   noPickupDashboardBooking,
+  getFutureBookingHIstoryByDriverId
 };

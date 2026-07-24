@@ -24,7 +24,11 @@ router.delete("/delete/:id", driverController.delete);
 router.post("/login", upload.none(), driverController.driverLogin);
 router.post("/verifytoken", upload.none(), driverController.verifyDriverToken);
 router.post("/logout/:id", upload.none(), driverController.driverLogout);
-router.post("/inactive/:id", upload.none(), driverController.updateDriverInactive);
+router.post(
+  "/inactive/:id",
+  upload.none(),
+  driverController.updateDriverInactive,
+);
 router.get("/company/:company_id", driverController.getByCompany);
 router.get("/commission", driverController.getDriversByCommissionType);
 router.get("/rent", driverController.getDriversByCommissionType);

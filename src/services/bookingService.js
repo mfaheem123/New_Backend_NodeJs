@@ -312,8 +312,8 @@ async function createSimpleBooking(payload) {
     if (!customerId && payload.customer) {
       const c = payload.customer;
       const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone,blacklist)
-         VALUES ($1,$2,$3,$4,$5)
+        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
+         VALUES ($1,$2,$3,$4,$5,$6)
          ON CONFLICT (email) DO UPDATE SET mobile=EXCLUDED.mobile
          RETURNING id`,
         [
@@ -321,17 +321,18 @@ async function createSimpleBooking(payload) {
           c.email || payload.email,
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
-          c.blacklist || null,
+          c.blacklist || false,
+          c.company_id || payload.company_id,
         ],
       );
       customerId = res.rows[0].id;
     } else if (!customerId && payload.email) {
       const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone)
-         VALUES ($1,$2,$3,$4)
+        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
+         VALUES ($1,$2,$3,$4,$5,$6)
          ON CONFLICT (email) DO UPDATE SET mobile=EXCLUDED.mobile
          RETURNING id`,
-        [payload.name, payload.email, payload.mobile, payload.telephone],
+        [payload.name, payload.email, payload.mobile, payload.telephone, false, payload.company_id],
       );
       customerId = res.rows[0].id;
     }
@@ -398,8 +399,8 @@ async function createTwoWayBooking(payload) {
     if (!customerId && payload.customer) {
       const c = payload.customer;
       const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone)
-         VALUES ($1,$2,$3,$4)
+        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
+         VALUES ($1,$2,$3,$4,$5,$6)
          ON CONFLICT (email) DO UPDATE SET mobile=EXCLUDED.mobile
          RETURNING id`,
         [
@@ -407,6 +408,8 @@ async function createTwoWayBooking(payload) {
           c.email || payload.email,
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
+          c.blacklist || false,
+          c.company_id || payload.company_id
         ],
       );
       customerId = res.rows[0].id;
@@ -469,8 +472,8 @@ async function createReturnWayBooking(payload) {
 
     if (!customerId && c) {
       const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone,blacklist)
-         VALUES ($1,$2,$3,$4,$5)
+        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
+         VALUES ($1,$2,$3,$4,$5,$6)
          ON CONFLICT (email)
          DO UPDATE SET mobile = EXCLUDED.mobile
          RETURNING id`,
@@ -480,6 +483,7 @@ async function createReturnWayBooking(payload) {
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
           c.blacklist || false,
+          c.company_id || payload.company_id
         ],
       );
       customerId = res.rows[0].id;
@@ -586,8 +590,8 @@ async function createMultiVehicleBooking(payload) {
       const c = payload.customer[0] || payload.customer;
 
       const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone,blacklist)
-         VALUES ($1,$2,$3,$4,$5)
+        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
+         VALUES ($1,$2,$3,$4,$5,$6)
          ON CONFLICT (email)
          DO UPDATE SET mobile = EXCLUDED.mobile
          RETURNING id`,
@@ -597,6 +601,7 @@ async function createMultiVehicleBooking(payload) {
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
           c.blacklist || false,
+          c.company_id || payload.company_id,
         ],
       );
 
@@ -672,8 +677,8 @@ async function createMultiReservationBooking(payload) {
 
     if (!customerId && customerPayload) {
       const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone,blacklist)
-         VALUES ($1,$2,$3,$4,$5)
+        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
+         VALUES ($1,$2,$3,$4,$5,$6)
          ON CONFLICT (email)
          DO UPDATE SET mobile = EXCLUDED.mobile
          RETURNING id`,
@@ -683,6 +688,7 @@ async function createMultiReservationBooking(payload) {
           customerPayload.mobile || payload.mobile,
           customerPayload.telephone || payload.telephone,
           customerPayload.blacklist || false,
+          customerPayload.company_id || payload.company_id
         ],
       );
       customerId = res.rows[0].id;
@@ -1033,6 +1039,7 @@ async function updateBookingService(bookingId, payload) {
     "invoice_number",
     "initial_subsidiary_id",
     "lead_time",
+    "company_id"
   ];
 
   // 2️ Filter payload
@@ -1092,6 +1099,7 @@ async function updateBookingService(bookingId, payload) {
     reference_number: await genRef(),
     created_at: new Date(),
     updated_at: new Date(),
+    company_id: payload.company_id,
   };
 
   //  Remove non-insertable fields
