@@ -48,7 +48,7 @@ const {
   clearAllBookings,
   getDriverEarningsBookings,
   noPickupDashboardBooking,
-  getFutureBookingHIstoryByDriverId
+  getFutureBookingHIstoryByDriverId,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {

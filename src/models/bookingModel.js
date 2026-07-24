@@ -2334,5 +2334,5 @@ module.exports = {
   clearAllBookings,
   getDriverEarningsBookings,
   noPickupDashboardBooking,
-  getFutureBookingHIstoryByDriverId
+  getFutureBookingHIstoryByDriverId,
 };
