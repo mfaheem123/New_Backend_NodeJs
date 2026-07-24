@@ -66,3 +66,22 @@ exports.updatePaymentType = async (req, res) => {
     });
   }
 };
+
+
+exports.getBookingCountEnumerations = async (req, res) => {
+  try {
+    const { company_id } = req.query;
+    const data = await EnumerationsModel.getBookingCount(company_id);
+
+    return res.json({
+      status: true,
+      ...data,
+    });
+  } catch (error) {
+    console.log("Error Getting Booking Count:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};

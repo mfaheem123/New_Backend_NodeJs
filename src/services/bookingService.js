@@ -1360,6 +1360,7 @@ async function assignFutureBookingDriverService(
     booking_status_id: 14,
     fare_meter: fare_meter,
     dispatched_at: new Date(),
+    future: true
   });
 
   if (!updated) return null;

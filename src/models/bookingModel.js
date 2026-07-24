@@ -2261,7 +2261,8 @@ const noPickupDashboardBooking = async (id) => {
 const getFutureBookingHIstoryByDriverId = async (driver_id) => {
   const whereClause = `
     WHERE b.driver_id = $1 
-    AND b.booking_status_id = 14
+    AND b.future = true
+    AND b.booking_status_id != 11
   `;
 
   const values = [driver_id];

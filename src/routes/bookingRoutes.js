@@ -82,6 +82,7 @@ router.post("/recover-booking/:id", bookingController.recoverDashboardBooking);
 router.post("/cli", bookingController.cloneOneWayBooking);
 router.post("/assign-driver", bookingController.assignDriverToBooking);
 router.post("/fob-driver", bookingController.assignFOBBookingToDriver);
+router.post("/assign-future-booking", bookingController.assignFutureBookingToDriver);
 router.post("/clear-selected", bookingController.clearSelectedBookings);
 router.post("/clear-all", bookingController.clearAllBookings);
 

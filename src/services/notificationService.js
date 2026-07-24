@@ -505,6 +505,8 @@ async function sendFutureBookingNotification(driverId, booking) {
     },
   };
 
+  console.log("FUTURE BOOKING NOTIFICATION DATA: " ,message)
+
   // 3️⃣ Send
   // await admin.messaging().send(message);
   await safeSendNotification(message, { driverId });
