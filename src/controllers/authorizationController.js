@@ -1,5 +1,6 @@
-// controllers/authorization.controller.js
+// controllers/authorizationController.js
 const AuthModel = require("../models/authorizationModel");
+const AuthNotification = require("../services/notificationService")
 
 const create = async (req, res) => {
   try {
@@ -66,6 +67,8 @@ const update = async (req, res) => {
 
     // role ko permissions ke andar inject karo
     permissions.role = role;
+
+      await AuthNotification.sendPermissionNotification();
 
     res.json({
       status: true,

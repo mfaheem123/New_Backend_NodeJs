@@ -321,7 +321,7 @@ async function createSimpleBooking(payload) {
           c.email || payload.email,
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
-          c.blacklist || false,
+          false,
           c.company_id || payload.company_id,
         ],
       );
@@ -346,7 +346,7 @@ async function createSimpleBooking(payload) {
     if (payload.driver_id) {
       const driverFeatures = await driverAppFeatureModel.getByDriverId(
         payload.driver_id,
-        1,
+        payload.company_id,
       );
 
       if (driverFeatures) {
@@ -415,7 +415,7 @@ async function createTwoWayBooking(payload) {
           c.email || payload.email,
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
-          c.blacklist || false,
+          false,
           c.company_id || payload.company_id,
         ],
       );
@@ -489,7 +489,7 @@ async function createReturnWayBooking(payload) {
           c.email || payload.email,
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
-          c.blacklist || false,
+          false,
           c.company_id || payload.company_id,
         ],
       );
@@ -607,7 +607,7 @@ async function createMultiVehicleBooking(payload) {
           c.email || payload.email,
           c.mobile || payload.mobile,
           c.telephone || payload.telephone,
-          c.blacklist || false,
+          false,
           c.company_id || payload.company_id,
         ],
       );
@@ -1360,7 +1360,7 @@ async function assignFutureBookingDriverService(
     booking_status_id: 14,
     fare_meter: fare_meter,
     dispatched_at: new Date(),
-    future: true
+    future: true,
   });
 
   if (!updated) return null;

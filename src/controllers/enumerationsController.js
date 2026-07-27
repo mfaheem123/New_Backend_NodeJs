@@ -67,7 +67,6 @@ exports.updatePaymentType = async (req, res) => {
   }
 };
 
-
 exports.getBookingCountEnumerations = async (req, res) => {
   try {
     const { company_id } = req.query;

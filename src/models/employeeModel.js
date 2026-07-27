@@ -142,9 +142,20 @@ const getById = async (id) => {
 };
 
 // Get employee by username (case-insensitive)
-const getByUsername = async (username) => {
-  const q = `SELECT * FROM employees WHERE LOWER(username) = LOWER($1)`;
-  const { rows } = await pool.query(q, [username]);
+const getByUsername = async (username, company_id) => {
+  const q = `
+    SELECT *
+    FROM employees
+    WHERE LOWER(username)=LOWER($1)
+      AND company_id=$2
+    LIMIT 1
+  `;
+
+  const { rows } = await pool.query(q, [
+    username,
+    company_id,
+  ]);
+
   return rows[0] || null;
 };
 

@@ -113,11 +113,14 @@ const create = async (req, res) => {
     }
 
     // Check duplicate username
-    const existing = await Employee.getByUsername(username.toLowerCase());
+    const existing = await Employee.getByUsername(
+    username.toLowerCase(),
+    company_id
+);
     if (existing) {
       return res
         .status(400)
-        .json({ status: false, message: "Username already exists" });
+        .json({ status: false, message: "Username already exists for this company" });
     }
 
     // Hash password
@@ -192,9 +195,12 @@ const update = async (req, res) => {
 
     // Check username uniqueness
     if (data.username) {
-      const existing = await Employee.getByUsername(
-        data.username.toLowerCase(),
-      );
+   const currentEmployee = await Employee.getById(id);
+
+const existing = await Employee.getByUsername(
+    data.username.toLowerCase(),
+    currentEmployee.company_id
+);
       if (existing && existing.id !== id) {
         return res
           .status(400)
@@ -296,7 +302,10 @@ const login = async (req, res) => {
     }
 
     // Find user
-    const employee = await Employee.getByUsername(username.toLowerCase());
+    const employee = await Employee.getByUsername(
+    username.toLowerCase(),
+    company_id
+);
     console.log("Employee Data: ", employee);
 
     if (!employee) {

@@ -290,7 +290,6 @@ const EnumerationsModel = {
   },
 
   getBookingCount: async (company_id) => {
-
     const booking_tabs = await db.query(
       `
       SELECT
@@ -354,7 +353,6 @@ const EnumerationsModel = {
       [company_id],
     );
 
-
     return {
       booking_tabs: booking_tabs.rows,
     };
@@ -362,4 +360,3 @@ const EnumerationsModel = {
 };
 
 module.exports = EnumerationsModel;
-

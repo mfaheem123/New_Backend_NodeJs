@@ -938,6 +938,62 @@ async function sendNoPickupBookingNotification(driverId, booking) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+// ---------------------------------------------------------
+// SEND PERMISSION NOTIFICATION TO CONTROLLER AND ADMIN
+// ---------------------------------------------------------
+async function sendPermissionNotification() {
+  try {
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id IN (1, 2)
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `,
+    );
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+    const message = {
+      tokens,
+      notification: {
+        title: "Permission Updated",
+        body: "Your Permission Has Been Updated By Super Admin",
+      },
+      data: {
+        message: "Your Permission Has Been Updated By Super Admin",
+        type: "PERMISSION_UPDATE",
+      },
+    };
+
+    // ==============================
+    // SEND
+    // ==============================
+    console.log("Permission Update:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
+    console.log(
+      `✅ Permission Update Notification Sent: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendPermissionNotification Error:", err);
+  }
+}
+
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
@@ -956,4 +1012,5 @@ module.exports = {
   sendDriverNoPickupBookingNotification,
   sendRejectNoPickupBookingNotification,
   sendNoPickupBookingNotification,
+  sendPermissionNotification
 };
