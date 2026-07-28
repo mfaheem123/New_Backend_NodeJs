@@ -1723,9 +1723,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     const params = [];
     let where = `
     WHERE (
-    (d.end_date IS NOT NULL
-        AND d.end_date <> ''
-        AND TO_DATE(d.end_date, 'YYYY-MM-DD') <= CURRENT_DATE)
+    (d.phc_vehicle_expiry IS NOT NULL
+        AND d.phc_vehicle_expiry <> ''
+        AND TO_DATE(d.phc_vehicle_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
 
  OR (d.phc_driver_expiry IS NOT NULL
         AND d.phc_driver_expiry <> ''
@@ -1759,7 +1759,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.id,
       d.username,
 
-      d.end_date,
+      d.phc_vehicle_expiry,
       d.phc_driver_expiry,
 
       d.mot_expiry,
@@ -1778,7 +1778,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       id: driver.id,
       username: driver.username,
 
-      vehicle_expiry: driver.end_date,
+      vehicle_expiry: driver.phc_vehicle_expiry,
       driver_expiry: driver.phc_driver_expiry,
       mot_expiry: driver.mot_expiry,
       mot2_expiry: driver.mot2_expiry,

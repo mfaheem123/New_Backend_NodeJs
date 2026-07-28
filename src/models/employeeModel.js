@@ -151,10 +151,7 @@ const getByUsername = async (username, company_id) => {
     LIMIT 1
   `;
 
-  const { rows } = await pool.query(q, [
-    username,
-    company_id,
-  ]);
+  const { rows } = await pool.query(q, [username, company_id]);
 
   return rows[0] || null;
 };

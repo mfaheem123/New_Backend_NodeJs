@@ -569,6 +569,22 @@ async function createReturnWayBooking(payload) {
     // RETURN SMS
     await sendBookingSMS(returnEnriched);
 
+    // SEND DRIVER NOTIFICATIONS
+
+// if (outboundEnriched.driver_id) {
+//   await sendBookingNotification(
+//     outboundEnriched.driver_id,
+//     outboundEnriched
+//   );
+// }
+
+if (returnEnriched.driver_id) {
+  await sendBookingNotification(
+    returnEnriched.driver_id,
+    returnEnriched
+  );
+}
+
     // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
     if (outboundEnriched.booking_source == "web") {
       await sendWebBookingNotification(outboundEnriched, payload.company_id);

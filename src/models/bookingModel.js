@@ -137,6 +137,7 @@ const ENRICHED_SELECT = `
     b.updated_at,
     b.eta,
     b.fob,
+    b.future,
   json_build_object(
     'booking_status', bs.booking_status
   ) AS booking_status,
