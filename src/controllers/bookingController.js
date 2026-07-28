@@ -1625,7 +1625,7 @@ exports.getDriverEarningsStatistics = async (req, res) => {
 // ---------------------------------------------------------
 exports.assignFutureBookingToDriver = async (req, res) => {
   try {
-    const { booking_id, driver_id } = req.body;
+    const { booking_id, driver_id, company_id } = req.body;
 
     console.log("🚀 ASSIGN FUTURE BOOKING TO DRIVER BODY:", req.body);
 
@@ -1677,6 +1677,7 @@ exports.assignFutureBookingToDriver = async (req, res) => {
       await bookingService.assignFutureBookingDriverService(
         booking_id,
         driver_id,
+        company_id
       );
 
     return res.status(200).json({

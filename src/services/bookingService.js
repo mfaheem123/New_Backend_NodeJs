@@ -1359,6 +1359,9 @@ async function assignFutureBookingDriverService(
   company_id,
 ) {
   let fare_meter = false;
+  let driverFeatures = null;
+  console.log("driverId:", driverId);
+console.log("company_id:", company_id);
   if (driverId) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(
       driverId,
@@ -1369,7 +1372,8 @@ async function assignFutureBookingDriverService(
       fare_meter = !!driverFeatures.fare_meter;
     }
   }
-
+  console.log("DRIVER FEATURES: ", driverFeatures)
+console.log("=================FARE METER=========================: ", fare_meter)
   // 1️ Update booking with driver
   const updated = await updateBooking(bookingId, {
     driver_id: driverId,
