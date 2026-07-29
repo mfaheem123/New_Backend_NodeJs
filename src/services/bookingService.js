@@ -513,6 +513,10 @@ async function createReturnWayBooking(payload) {
 
       pickup: payload.return_pickup,
       dropoff: payload.return_dropoff,
+
+      arriving_from: payload.arriving_from,
+      flight_number: payload.return_flight_number,
+      
       pickup_latitude: payload.return_pickup_latitude,
       pickup_longitude: payload.return_pickup_longitude,
       dropoff_latitude: payload.return_dropoff_latitude,
