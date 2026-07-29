@@ -514,9 +514,9 @@ async function createReturnWayBooking(payload) {
       pickup: payload.return_pickup,
       dropoff: payload.return_dropoff,
 
-      arriving_from: payload.arriving_from,
+      arriving_from: payload.return_arriving_from,
       flight_number: payload.return_flight_number,
-      
+
       pickup_latitude: payload.return_pickup_latitude,
       pickup_longitude: payload.return_pickup_longitude,
       dropoff_latitude: payload.return_dropoff_latitude,
@@ -575,19 +575,16 @@ async function createReturnWayBooking(payload) {
 
     // SEND DRIVER NOTIFICATIONS
 
-// if (outboundEnriched.driver_id) {
-//   await sendBookingNotification(
-//     outboundEnriched.driver_id,
-//     outboundEnriched
-//   );
-// }
+    if (outboundEnriched.driver_id) {
+      await sendBookingNotification(
+        outboundEnriched.driver_id,
+        outboundEnriched
+      );
+    }
 
-if (returnEnriched.driver_id) {
-  await sendBookingNotification(
-    returnEnriched.driver_id,
-    returnEnriched
-  );
-}
+    if (returnEnriched.driver_id) {
+      await sendBookingNotification(returnEnriched.driver_id, returnEnriched);
+    }
 
     // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
     if (outboundEnriched.booking_source == "web") {
@@ -1365,7 +1362,7 @@ async function assignFutureBookingDriverService(
   let fare_meter = false;
   let driverFeatures = null;
   console.log("driverId:", driverId);
-console.log("company_id:", company_id);
+  console.log("company_id:", company_id);
   if (driverId) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(
       driverId,
@@ -1376,8 +1373,11 @@ console.log("company_id:", company_id);
       fare_meter = !!driverFeatures.fare_meter;
     }
   }
-  console.log("DRIVER FEATURES: ", driverFeatures)
-console.log("=================FARE METER=========================: ", fare_meter)
+  console.log("DRIVER FEATURES: ", driverFeatures);
+  console.log(
+    "=================FARE METER=========================: ",
+    fare_meter,
+  );
   // 1️ Update booking with driver
   const updated = await updateBooking(bookingId, {
     driver_id: driverId,

@@ -92,7 +92,7 @@ const EnumerationsModel = {
           WHEN 1 THEN (
             SELECT COUNT(*) FROM bookings 
             WHERE DATE(pickup_date) = CURRENT_DATE 
-            AND booking_status_id = 1 
+            AND booking_status_id IN (1, 4, 5, 13) 
             AND trash = false
             AND company_id = $1
           )
@@ -104,8 +104,7 @@ const EnumerationsModel = {
           )
           WHEN 3 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_status_id != 11 
-            AND booking_status_id != 1 
+            WHERE booking_status_id NOT IN (1, 11, 4, 5, 13)
             AND trash = false
             AND company_id = $1
           )
@@ -299,7 +298,7 @@ const EnumerationsModel = {
           WHEN 1 THEN (
             SELECT COUNT(*) FROM bookings 
             WHERE DATE(pickup_date) = CURRENT_DATE 
-            AND booking_status_id = 1 
+            AND booking_status_id IN (1, 4, 5, 13) 
             AND trash = false
             AND company_id = $1
           )
@@ -311,8 +310,7 @@ const EnumerationsModel = {
           )
           WHEN 3 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_status_id != 11 
-            AND booking_status_id != 1 
+            WHERE booking_status_id NOT IN (1, 11, 4, 5, 13)
             AND trash = false
             AND company_id = $1
           )
