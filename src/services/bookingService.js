@@ -578,7 +578,7 @@ async function createReturnWayBooking(payload) {
     if (outboundEnriched.driver_id) {
       await sendBookingNotification(
         outboundEnriched.driver_id,
-        outboundEnriched
+        outboundEnriched,
       );
     }
 

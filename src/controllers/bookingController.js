@@ -599,85 +599,82 @@ exports.updateBookingStatus = async (req, res) => {
 
     // ARRIVED
     if (booking_status_id == 6) {
-
       const pickupDate = booking.rows[0].pickup_date;
-  const pickupTime = booking.rows[0].pickup_time;
+      const pickupTime = booking.rows[0].pickup_time;
 
-  const now = new Date();
+      const now = new Date();
 
-  // Current Date
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  const today = `${year}-${month}-${day}`;
+      // Current Date
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const today = `${year}-${month}-${day}`;
 
-  // Booking date must be today
-  // if (pickupDate !== today) {
-  //   return res.status(400).json({
-  //     status: false,
-  //     message: "You cannot mark Arrived before the booking date.",
-  //   });
-  // }
+      // Booking date must be today
+      // if (pickupDate !== today) {
+      //   return res.status(400).json({
+      //     status: false,
+      //     message: "You cannot mark Arrived before the booking date.",
+      //   });
+      // }
 
-  // Parse pickup time
-  // const [hours, minutes, seconds = 0] = pickupTime.split(":").map(Number);
+      // Parse pickup time
+      // const [hours, minutes, seconds = 0] = pickupTime.split(":").map(Number);
 
-  // // Pickup DateTime
-  // const pickupDateTime = new Date(
-  //   year,
-  //   now.getMonth(),
-  //   now.getDate(),
-  //   hours,
-  //   minutes,
-  //   seconds
-  // );
+      // // Pickup DateTime
+      // const pickupDateTime = new Date(
+      //   year,
+      //   now.getMonth(),
+      //   now.getDate(),
+      //   hours,
+      //   minutes,
+      //   seconds
+      // );
 
-  // // Allow Arrived only within 2 hours before pickup
-  // const allowedTime = new Date(pickupDateTime.getTime() - 2 * 60 * 60 * 1000);
+      // // Allow Arrived only within 2 hours before pickup
+      // const allowedTime = new Date(pickupDateTime.getTime() - 2 * 60 * 60 * 1000);
 
-  // if (now < allowedTime) {
-  //   return res.status(400).json({
-  //     status: false,
-  //     message:
-  //       "You cannot mark Arrived more than 2 hours before the pickup time.",
-  //   });
-  // }
-// Parse booking date
-const [bookingYear, bookingMonth, bookingDay] = pickupDate
-  .split("-")
-  .map(Number);
+      // if (now < allowedTime) {
+      //   return res.status(400).json({
+      //     status: false,
+      //     message:
+      //       "You cannot mark Arrived more than 2 hours before the pickup time.",
+      //   });
+      // }
+      // Parse booking date
+      const [bookingYear, bookingMonth, bookingDay] = pickupDate
+        .split("-")
+        .map(Number);
 
-// Parse booking time
-const [hours, minutes, seconds = 0] = pickupTime
-  .split(":")
-  .map(Number);
+      // Parse booking time
+      const [hours, minutes, seconds = 0] = pickupTime.split(":").map(Number);
 
-// Actual pickup date & time
-const pickupDateTime = new Date(
-  bookingYear,
-  bookingMonth - 1,
-  bookingDay,
-  hours,
-  minutes,
-  seconds
-);
+      // Actual pickup date & time
+      const pickupDateTime = new Date(
+        bookingYear,
+        bookingMonth - 1,
+        bookingDay,
+        hours,
+        minutes,
+        seconds,
+      );
 
-// Difference in hours
-const diffHours =
-  (pickupDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+      // Difference in hours
+      const diffHours =
+        (pickupDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
 
-console.log("Current Time:", now);
-console.log("Pickup Time:", pickupDateTime);
-console.log("Hours Remaining:", diffHours);
+      console.log("Current Time:", now);
+      console.log("Pickup Time:", pickupDateTime);
+      console.log("Hours Remaining:", diffHours);
 
-// More than 2 hours remaining
-if (diffHours > 2) {
-  return res.status(400).json({
-    status: false,
-    message:
-      "You cannot mark Arrived more than 2 hours before the pickup time.",
-  });
-}
+      // More than 2 hours remaining
+      if (diffHours > 2) {
+        return res.status(400).json({
+          status: false,
+          message:
+            "You cannot mark Arrived more than 2 hours before the pickup time.",
+        });
+      }
 
       await updateBookingonRoute(bookingId, false, false, true);
       await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
@@ -1757,7 +1754,7 @@ exports.assignFutureBookingToDriver = async (req, res) => {
       await bookingService.assignFutureBookingDriverService(
         booking_id,
         driver_id,
-        company_id
+        company_id,
       );
 
     return res.status(200).json({

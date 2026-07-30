@@ -6,11 +6,6 @@
     "auditLog": "logs\\.ed3416c04724c95738f45a285841588e321c3bf2-audit.json",
     "files": [
         {
-            "date": 1784111631636,
-            "name": "logs\\app-2026-07-15.log",
-            "hash": "a2133c24675c1fd6fa0460f14e4b23758ad6483c03a0537d0450f579fc462e7d"
-        },
-        {
             "date": 1784198090077,
             "name": "logs\\app-2026-07-16.log",
             "hash": "8843b61aca853d84c66b77bd1cfc7159863efbca317881f3c8bc39a71b09dd5c"
@@ -69,6 +64,11 @@
             "date": 1785265931657,
             "name": "logs\\app-2026-07-29.log",
             "hash": "9efa12cdc84a5985b4e7ffc648c3659857e0cd74bf8433ee04992c5bdfd9e638"
+        },
+        {
+            "date": 1785351753390,
+            "name": "logs\\app-2026-07-30.log",
+            "hash": "8df3706b2fdebe25dc80471815846220908db8e80b91cb29bd0e0a25886d4ec2"
         }
     ],
     "hashType": "sha256"

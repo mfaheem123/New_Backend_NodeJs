@@ -212,13 +212,22 @@ const calculateSingleFare = async (payload) => {
 
     if (rule) {
       const minMiles = Number(rule.minimum_miles);
-      const minFare = Number(rule.minimum_fares);
+const minFare = Number(rule.minimum_fares);
+const perMileFare = Number(rule.per_mile_fares || 0);
 
-      let extraMiles = miles - minMiles;
-      if (extraMiles < 0) extraMiles = 0;
+let extraMiles = miles - minMiles;
+if (extraMiles < 0) extraMiles = 0;
 
-      baseFare = minFare + extraMiles * 2;
+baseFare = minFare + (extraMiles * perMileFare);
       fareType = rule.from_date ? "SPECIAL" : "NORMAL";
+      console.log({
+    vehicle_type_id,
+    minimumFare: minFare,
+    minimumMiles: minMiles,
+    perMileFare,
+    extraMiles,
+    baseFare
+});
     }
   }
 
