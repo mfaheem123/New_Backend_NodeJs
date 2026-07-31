@@ -59,6 +59,7 @@ const driverShiftRoutes = require("./routes/driverShiftHistoryRoutes");
 const EmployeeShiftRoutes = require("./routes/employeeShiftHistoryRoutes");
 const complaintRoutes = require("./routes/complaintRoutes");
 const customerInvoiceRoutes = require("./routes/customerInvoiceRoutes");
+const companyConfigurationRoutes = require("./routes/companyConfigurationRoutes");
 
 const app = express();
 
@@ -171,6 +172,7 @@ app.use("/api/driver_shift_history", driverShiftRoutes);
 app.use("/api/employee_shift_history", EmployeeShiftRoutes);
 app.use("/api/complaint", complaintRoutes);
 app.use("/api/customer-invoice", customerInvoiceRoutes);
+app.use("/api/company-configuration", companyConfigurationRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

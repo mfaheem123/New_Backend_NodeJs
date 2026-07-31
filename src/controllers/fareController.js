@@ -212,22 +212,22 @@ const calculateSingleFare = async (payload) => {
 
     if (rule) {
       const minMiles = Number(rule.minimum_miles);
-const minFare = Number(rule.minimum_fares);
-const perMileFare = Number(rule.per_mile_fares || 0);
+      const minFare = Number(rule.minimum_fares);
+      const perMileFare = Number(rule.per_mile_fares || 0);
 
-let extraMiles = miles - minMiles;
-if (extraMiles < 0) extraMiles = 0;
+      let extraMiles = miles - minMiles;
+      if (extraMiles < 0) extraMiles = 0;
 
-baseFare = minFare + (extraMiles * perMileFare);
+      baseFare = minFare + extraMiles * perMileFare;
       fareType = rule.from_date ? "SPECIAL" : "NORMAL";
       console.log({
-    vehicle_type_id,
-    minimumFare: minFare,
-    minimumMiles: minMiles,
-    perMileFare,
-    extraMiles,
-    baseFare
-});
+        vehicle_type_id,
+        minimumFare: minFare,
+        minimumMiles: minMiles,
+        perMileFare,
+        extraMiles,
+        baseFare,
+      });
     }
   }
 
@@ -250,38 +250,38 @@ baseFare = minFare + (extraMiles * perMileFare);
   );
 
   if (pickup) {
-  const pickupText = normalize(pickup);
+    const pickupText = normalize(pickup);
 
-  const airport = airports.find((a) => {
-    return (
-      pickupText.includes(normalize(a.name || "")) ||
-      pickupText.includes(normalize(a.postcode || "")) ||
-      pickupText.includes(normalize(a.shortcut || "")) ||
-      pickupText.includes(normalize(a.address || ""))
-    );
-  });
+    const airport = airports.find((a) => {
+      return (
+        pickupText.includes(normalize(a.name || "")) ||
+        pickupText.includes(normalize(a.postcode || "")) ||
+        pickupText.includes(normalize(a.shortcut || "")) ||
+        pickupText.includes(normalize(a.address || ""))
+      );
+    });
 
-  if (airport) {
-    airportPickup = Number(airport.pickup_charges || 0) * multiplier;
+    if (airport) {
+      airportPickup = Number(airport.pickup_charges || 0) * multiplier;
+    }
   }
-}
 
   if (dropoff) {
-  const dropoffText = normalize(dropoff);
+    const dropoffText = normalize(dropoff);
 
-  const airport = airports.find((a) => {
-    return (
-      dropoffText.includes(normalize(a.name || "")) ||
-      dropoffText.includes(normalize(a.postcode || "")) ||
-      dropoffText.includes(normalize(a.shortcut || "")) ||
-      dropoffText.includes(normalize(a.address || ""))
-    );
-  });
+    const airport = airports.find((a) => {
+      return (
+        dropoffText.includes(normalize(a.name || "")) ||
+        dropoffText.includes(normalize(a.postcode || "")) ||
+        dropoffText.includes(normalize(a.shortcut || "")) ||
+        dropoffText.includes(normalize(a.address || ""))
+      );
+    });
 
-  if (airport) {
-    airportDropoff = Number(airport.dropoff_charges || 0) * multiplier;
+    if (airport) {
+      airportDropoff = Number(airport.dropoff_charges || 0) * multiplier;
+    }
   }
-}
 
   /* -------- FARE BY VEHICLE CHARGES -------- */
   let vehicleAdjustedFare = await applyFareByVehicle(
