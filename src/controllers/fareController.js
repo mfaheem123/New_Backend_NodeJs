@@ -2,6 +2,33 @@ const db = require("../db");
 
 /* ---------------- HELPERS ---------------- */
 
+const getApplicableFareIncrement = async (
+  company_id,
+  bookingDate,
+  type // "fix_fare" | "mileage"
+) => {
+  const { rows } = await db.query(
+    `
+      SELECT *
+      FROM fare_increments
+      WHERE company_id=$1
+      ORDER BY id DESC
+    `,
+    [company_id]
+  );
+
+  const booking = new Date(bookingDate);
+
+  return rows.find((r) => {
+    if (!r[type]) return false;
+
+    const from = new Date(r.start_date);
+    const to = new Date(r.end_date);
+
+    return booking >= from && booking <= to;
+  });
+};
+
 const days = [
   "Sunday",
   "Monday",
@@ -289,6 +316,29 @@ const calculateSingleFare = async (payload) => {
     vehicle_type_id,
     company_id,
   );
+
+  /* -------- FARE INCREMENT CHARGES -------- */
+let fareIncrementAmount = 0;
+const increment = await getApplicableFareIncrement(
+  company_id,
+  pickup_date,
+  "fix_fare"
+);
+
+if (increment) {
+  const value = Number(increment.amount);
+
+  if ((increment.operator || "").toLowerCase() === "percentage") {
+    fareIncrementAmount  = (vehicleAdjustedFare * value) / 100;
+  } else {
+    fareIncrementAmount  = value;
+  }
+  vehicleAdjustedFare += fareIncrementAmount;
+  console.log("============================== FARE INCREMENT APPLIED ==============================")
+    console.log("Operator:", increment.operator);
+  console.log("Increment Value:", value);
+  console.log("Increment Applied:", fareIncrementAmount.toFixed(2));
+}
 
   /* -------- EXTRA CHARGES -------- */
   const extraChargesTotal = sumExtraCharges(payload);

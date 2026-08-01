@@ -1,0 +1,4 @@
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-31T19:00:48.550Z"}
+{"level":"info","message":"GET /api/location-types 200 10.845 ms","timestamp":"2026-07-31T19:00:48.558Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-07-31T19:00:48.564Z"}
+{"level":"info","message":"GET /api/location-types 200 1.979 ms","timestamp":"2026-07-31T19:00:48.565Z"}

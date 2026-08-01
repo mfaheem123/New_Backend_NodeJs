@@ -41,7 +41,7 @@ exports.getAll = async (company_id) => {
     ORDER BY cc.id DESC
   `;
 
-  const { rows } = await pool.query(query,[company_id]);
+  const { rows } = await pool.query(query, [company_id]);
 
   return rows;
 };
@@ -63,12 +63,11 @@ exports.getById = async (subsidiaryId) => {
 };
 
 exports.update = async (subsidiaryId, data) => {
-
   const exists = await pool.query(
     `SELECT id
      FROM company_configurations
      WHERE subsidiary_id=$1`,
-    [subsidiaryId]
+    [subsidiaryId],
   );
 
   if (!exists.rows.length) {
@@ -76,9 +75,7 @@ exports.update = async (subsidiaryId, data) => {
   }
 
   const filteredData = Object.fromEntries(
-    Object.entries(data).filter(
-      ([_, value]) => value !== undefined
-    )
+    Object.entries(data).filter(([_, value]) => value !== undefined),
   );
 
   const fields = Object.keys(filteredData);
@@ -102,25 +99,20 @@ exports.update = async (subsidiaryId, data) => {
       RETURNING *
     `;
 
-  const { rows } = await pool.query(query, [
-    ...values,
-    subsidiaryId,
-  ]);
+  const { rows } = await pool.query(query, [...values, subsidiaryId]);
 
   return rows[0];
 };
 
 exports.delete = async (subsidiaryId) => {
-
   await pool.query(
     `DELETE FROM company_configurations
      WHERE subsidiary_id=$1`,
-    [subsidiaryId]
+    [subsidiaryId],
   );
 
   return true;
 };
-
 
 exports.createOrUpdate = async (data) => {
   const { subsidiary_id } = data;
@@ -134,14 +126,13 @@ exports.createOrUpdate = async (data) => {
     `SELECT id
      FROM company_configurations
      WHERE subsidiary_id = $1`,
-    [subsidiary_id]
+    [subsidiary_id],
   );
 
   // ==========================
   // INSERT
   // ==========================
   if (existing.rows.length === 0) {
-
     const columns = Object.keys(data);
     const values = Object.values(data);
 
@@ -158,7 +149,7 @@ exports.createOrUpdate = async (data) => {
 
     return {
       action: "created",
-      data: rows[0]
+      data: rows[0],
     };
   }
 
@@ -168,16 +159,14 @@ exports.createOrUpdate = async (data) => {
 
   const filteredData = Object.fromEntries(
     Object.entries(data).filter(
-      ([key, value]) =>
-        key !== "subsidiary_id" &&
-        value !== undefined
-    )
+      ([key, value]) => key !== "subsidiary_id" && value !== undefined,
+    ),
   );
 
   if (!Object.keys(filteredData).length) {
     return {
       action: "nothing",
-      data: existing.rows[0]
+      data: existing.rows[0],
     };
   }
 
@@ -197,13 +186,10 @@ exports.createOrUpdate = async (data) => {
       RETURNING *
   `;
 
-  const { rows } = await pool.query(query, [
-    ...values,
-    subsidiary_id,
-  ]);
+  const { rows } = await pool.query(query, [...values, subsidiary_id]);
 
   return {
     action: "updated",
-    data: rows[0]
+    data: rows[0],
   };
 };
