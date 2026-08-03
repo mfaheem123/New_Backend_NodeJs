@@ -2,6 +2,7 @@ const db = require("../db");
 
 /* ---------------- HELPERS ---------------- */
 
+// FARE INCREMENT HELPER FUNCTION
 const getApplicableFareIncrement = async (
   company_id,
   bookingDate,
@@ -28,6 +29,90 @@ const getApplicableFareIncrement = async (
     return booking >= from && booking <= to;
   });
 };
+
+// SURCHARGES HELPER FUNCTION
+const getApplicableSurcharges = async (
+  company_id,
+  pickupPostcode,
+  dropoffPostcode,
+  pickupDate,
+  pickupTime,
+) => {
+
+  const { rows } = await db.query(
+    `
+      SELECT *
+      FROM surcharges
+      WHERE company_id=$1
+      AND active=true
+    `,
+    [company_id],
+  );
+
+  pickupTime = normalizeTime(pickupTime);
+  const bookingDay = getDayName(pickupDate);
+
+  return rows.filter((s) => {
+const condition = (s.condition || "").toUpperCase();
+
+const surchargePostcode = (s.postcode || "")
+        .replace(/\s+/g, "")
+        .toUpperCase();
+
+    // ---------- POSTCODE ----------
+    let postcodeMatch = false;
+
+    if (condition === "PICKUP") {
+      postcodeMatch = pickupPostcode === surchargePostcode;
+    }
+
+    else if (condition === "DROPOFF") {
+      postcodeMatch = dropoffPostcode === surchargePostcode;
+    }
+
+    else if (condition === "BOTH") {
+      postcodeMatch =
+            pickupPostcode === surchargePostcode ||
+            dropoffPostcode === surchargePostcode;
+    }
+
+    if (!postcodeMatch) return false;
+
+    // ---------- DATE ----------
+    if (s.duration === "DATE WISE") {
+
+      return isDateInRange(
+        pickupDate,
+        s.from_date,
+        s.to_date,
+      );
+    }
+
+    // ---------- DAY ----------
+    if (s.duration === "DAY WISE") {
+
+      return (
+        bookingDay.substring(0,3).toUpperCase() === s.day &&
+        isTimeInRange(
+          pickupTime,
+          normalizeTime(s.from_time),
+          normalizeTime(s.to_time),
+        )
+      );
+    }
+
+    return false;
+  });
+
+};
+
+// EXTRACT POSTCODE FROM ADDRESS
+const extractPostcode = (address = "") => {
+
+    const match = address.match(/[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}/i);
+
+    return match ? match[0].replace(/\s/g,"").toUpperCase() : "";
+}
 
 const days = [
   "Sunday",
@@ -149,6 +234,12 @@ const calculateSingleFare = async (payload) => {
     company_id,
   } = payload;
 
+  const pickupPostcode = extractPostcode(pickup);
+const dropoffPostcode = extractPostcode(dropoff);
+
+console.log("Pickup Postcode:", pickupPostcode);
+console.log("Dropoff Postcode:", dropoffPostcode);
+
   // safe miles
   if (
     miles === undefined ||
@@ -267,7 +358,98 @@ const calculateSingleFare = async (payload) => {
     fareType = "DEFAULT";
   }
 
-  /* -------- AIRPORT CHARGES -------- */
+
+  /* -------- FARE BY VEHICLE CHARGES -------- */
+  let vehicleAdjustedFare = await applyFareByVehicle(
+    baseFare,
+    vehicle_type_id,
+    company_id,
+  );
+
+  /* -------- APPLY FARE INCREMENT CHARGES -------- */
+  let fareIncrementAmount = 0;
+  const increment = await getApplicableFareIncrement(
+    company_id,
+    pickup_date,
+    "fix_fare",
+  );
+
+  if (increment) {
+    const value = Number(increment.amount);
+
+    if ((increment.operator || "").toLowerCase() === "percentage") {
+      fareIncrementAmount = (vehicleAdjustedFare * value) / 100;
+    } else {
+      fareIncrementAmount = value;
+    }
+    vehicleAdjustedFare += fareIncrementAmount;
+    console.log(
+      "============================== FARE INCREMENT APPLIED ==============================",
+    );
+    console.log("Operator:", increment.operator);
+    console.log("Increment Value:", value);
+    console.log("Increment Applied:", fareIncrementAmount.toFixed(2));
+  }
+
+/* --------APPLY SURCHARGE CALCULATIONS -------- */
+  const applicableSurcharges =
+    await getApplicableSurcharges(
+        company_id,
+        pickupPostcode,
+        dropoffPostcode,
+        pickup_date,
+        pickup_time,
+    );
+
+    let surchargeFare = 0.00;
+let surchargeParking = 0.00;
+let surchargeExtraDrop = 0.00;
+let surchargeCongestion = 0.00;
+
+for (const surcharge of applicableSurcharges) {
+
+    const operator = (surcharge.operator || "").toLowerCase();
+
+    const apply = (base, value) => {
+
+        value = Number(value || 0);
+
+        if (operator === "percentage") {
+            return base * value / 100;
+        }
+
+        return value;
+    };
+
+    surchargeFare += apply(vehicleAdjustedFare, surcharge.fare);
+
+    surchargeParking += apply(
+        Number(payload.parking_charges || 0),
+        surcharge.parking_charges,
+    );
+
+    surchargeExtraDrop += apply(
+        Number(payload.extra_drop_charges || 0),
+        surcharge.extra_drop_charges,
+    );
+
+    surchargeCongestion += apply(
+        Number(payload.congestion_charges || 0),
+        surcharge.congestion_charges,
+    );
+}
+
+payload.parking_charges =
+    Number(payload.parking_charges || 0) + surchargeParking;
+
+payload.extra_drop_charges =
+    Number(payload.extra_drop_charges || 0) + surchargeExtraDrop;
+
+payload.congestion_charges =
+    Number(payload.congestion_charges || 0) + surchargeCongestion;
+
+
+     /* -------- AIRPORT CHARGES -------- */
   let airportPickup = 0;
   let airportDropoff = 0;
 
@@ -310,43 +492,42 @@ const calculateSingleFare = async (payload) => {
     }
   }
 
-  /* -------- FARE BY VEHICLE CHARGES -------- */
-  let vehicleAdjustedFare = await applyFareByVehicle(
-    baseFare,
-    vehicle_type_id,
-    company_id,
-  );
+  console.log("============= SURCHARGE SUMMARY =============");
 
-  /* -------- FARE INCREMENT CHARGES -------- */
-  let fareIncrementAmount = 0;
-  const increment = await getApplicableFareIncrement(
-    company_id,
-    pickup_date,
-    "fix_fare",
-  );
+console.log("Pickup Postcode :", pickupPostcode);
+console.log("Dropoff Postcode :", dropoffPostcode);
 
-  if (increment) {
-    const value = Number(increment.amount);
+console.log("Matched :", applicableSurcharges.length);
 
-    if ((increment.operator || "").toLowerCase() === "percentage") {
-      fareIncrementAmount = (vehicleAdjustedFare * value) / 100;
-    } else {
-      fareIncrementAmount = value;
-    }
-    vehicleAdjustedFare += fareIncrementAmount;
-    console.log(
-      "============================== FARE INCREMENT APPLIED ==============================",
-    );
-    console.log("Operator:", increment.operator);
-    console.log("Increment Value:", value);
-    console.log("Increment Applied:", fareIncrementAmount.toFixed(2));
-  }
+console.table(applicableSurcharges.map(s => ({
+    id: s.id,
+    postcode: s.postcode,
+    condition: s.condition,
+    operator: s.operator,
+    fare: s.fare,
+    parking: s.parking_charges,
+    congestion: s.congestion_charges,
+    extra_drop: s.extra_drop_charges
+})));
+
+console.log({
+    surchargeFare,
+    surchargeParking,
+    surchargeCongestion,
+    surchargeExtraDrop,
+});
 
   /* -------- EXTRA CHARGES -------- */
   const extraChargesTotal = sumExtraCharges(payload);
 
+  // const fareWithoutExtras =
+  //   vehicleAdjustedFare + airportPickup + airportDropoff;
+
   const fareWithoutExtras =
-    vehicleAdjustedFare + airportPickup + airportDropoff;
+    vehicleAdjustedFare +
+    surchargeFare +
+    airportPickup +
+    airportDropoff;
 
   const totalFare = fareWithoutExtras + extraChargesTotal;
 

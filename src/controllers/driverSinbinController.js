@@ -1,7 +1,9 @@
 const SinbinModel = require("../models/driverSinbinModel");
 const SettingsModel = require("../models/driverSinbinModelsettingsModel");
 
-// 1. Add / Update Driver Sin Bin Status (POST)
+// ---------------------------------------------------------
+// ADD OR UPDATE DRIVER SIN BIN STATUS
+// ---------------------------------------------------------
 exports.toggleDriverSinbin = async (req, res) => {
   try {
     const { company_id, driver_id, message, sinbin_time } = req.body;
@@ -24,7 +26,9 @@ exports.toggleDriverSinbin = async (req, res) => {
   }
 };
 
-// 2. Get All Sin Bin Active Drivers (GET)
+// ---------------------------------------------------------
+// GET ALL SIN BIN ACTIVE DRIVERS
+// ---------------------------------------------------------
 exports.getSinbinDrivers = async (req, res) => {
   try {
     const company_id = req.query.company_id;
@@ -61,7 +65,7 @@ exports.getSinbinSettings = async (req, res) => {
     let settings = await SettingsModel.getByCompanyId(company_id);
 
     if (!settings) {
-      settings = { id: 0, recoverjob: 0, rejectjob: 0, ignorejob: 0 };
+      settings = { id: 0,     recoverjob: 0, rejectjob: 0, ignorejob: 0 };
     }
 
     return res.status(200).json({
