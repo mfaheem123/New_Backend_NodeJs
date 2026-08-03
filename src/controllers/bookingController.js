@@ -1223,15 +1223,15 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
-    if (
-      driver.booking_status === "Unavailable" ||
-      driver.driver_status === "Unavailable"
-    ) {
-      return res.status(400).json({
-        status: false,
-        message: "Driver is already busy",
-      });
-    }
+    // if (
+    //   driver.booking_status === "Unavailable" ||
+    //   driver.driver_status === "Unavailable"
+    // ) {
+    //   return res.status(400).json({
+    //     status: false,
+    //     message: "Driver is already busy",
+    //   });
+    // }
     console.log("BOOKING DATA BEFORE ASSIGN DRIVER:", booking.rows[0]);
     // Call service
     const updatedBooking = await bookingService.assignDriverService(
