@@ -38,7 +38,6 @@ const getApplicableSurcharges = async (
   pickupDate,
   pickupTime,
 ) => {
-
   const { rows } = await db.query(
     `
       SELECT *
@@ -53,46 +52,36 @@ const getApplicableSurcharges = async (
   const bookingDay = getDayName(pickupDate);
 
   return rows.filter((s) => {
-const condition = (s.condition || "").toUpperCase();
+    const condition = (s.condition || "").toUpperCase();
 
-const surchargePostcode = (s.postcode || "")
-        .replace(/\s+/g, "")
-        .toUpperCase();
+    const surchargePostcode = (s.postcode || "")
+      .replace(/\s+/g, "")
+      .toUpperCase();
 
     // ---------- POSTCODE ----------
     let postcodeMatch = false;
 
     if (condition === "PICKUP") {
       postcodeMatch = pickupPostcode === surchargePostcode;
-    }
-
-    else if (condition === "DROPOFF") {
+    } else if (condition === "DROPOFF") {
       postcodeMatch = dropoffPostcode === surchargePostcode;
-    }
-
-    else if (condition === "BOTH") {
+    } else if (condition === "BOTH") {
       postcodeMatch =
-            pickupPostcode === surchargePostcode ||
-            dropoffPostcode === surchargePostcode;
+        pickupPostcode === surchargePostcode ||
+        dropoffPostcode === surchargePostcode;
     }
 
     if (!postcodeMatch) return false;
 
     // ---------- DATE ----------
     if (s.duration === "DATE WISE") {
-
-      return isDateInRange(
-        pickupDate,
-        s.from_date,
-        s.to_date,
-      );
+      return isDateInRange(pickupDate, s.from_date, s.to_date);
     }
 
     // ---------- DAY ----------
     if (s.duration === "DAY WISE") {
-
       return (
-        bookingDay.substring(0,3).toUpperCase() === s.day &&
+        bookingDay.substring(0, 3).toUpperCase() === s.day &&
         isTimeInRange(
           pickupTime,
           normalizeTime(s.from_time),
@@ -103,16 +92,14 @@ const surchargePostcode = (s.postcode || "")
 
     return false;
   });
-
 };
 
 // EXTRACT POSTCODE FROM ADDRESS
 const extractPostcode = (address = "") => {
+  const match = address.match(/[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}/i);
 
-    const match = address.match(/[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}/i);
-
-    return match ? match[0].replace(/\s/g,"").toUpperCase() : "";
-}
+  return match ? match[0].replace(/\s/g, "").toUpperCase() : "";
+};
 
 const days = [
   "Sunday",
@@ -235,10 +222,10 @@ const calculateSingleFare = async (payload) => {
   } = payload;
 
   const pickupPostcode = extractPostcode(pickup);
-const dropoffPostcode = extractPostcode(dropoff);
+  const dropoffPostcode = extractPostcode(dropoff);
 
-console.log("Pickup Postcode:", pickupPostcode);
-console.log("Dropoff Postcode:", dropoffPostcode);
+  console.log("Pickup Postcode:", pickupPostcode);
+  console.log("Dropoff Postcode:", dropoffPostcode);
 
   // safe miles
   if (
@@ -358,7 +345,6 @@ console.log("Dropoff Postcode:", dropoffPostcode);
     fareType = "DEFAULT";
   }
 
-
   /* -------- FARE BY VEHICLE CHARGES -------- */
   let vehicleAdjustedFare = await applyFareByVehicle(
     baseFare,
@@ -391,65 +377,61 @@ console.log("Dropoff Postcode:", dropoffPostcode);
     console.log("Increment Applied:", fareIncrementAmount.toFixed(2));
   }
 
-/* --------APPLY SURCHARGE CALCULATIONS -------- */
-  const applicableSurcharges =
-    await getApplicableSurcharges(
-        company_id,
-        pickupPostcode,
-        dropoffPostcode,
-        pickup_date,
-        pickup_time,
-    );
+  /* --------APPLY SURCHARGE CALCULATIONS -------- */
+  const applicableSurcharges = await getApplicableSurcharges(
+    company_id,
+    pickupPostcode,
+    dropoffPostcode,
+    pickup_date,
+    pickup_time,
+  );
 
-    let surchargeFare = 0.00;
-let surchargeParking = 0.00;
-let surchargeExtraDrop = 0.00;
-let surchargeCongestion = 0.00;
+  let surchargeFare = 0.0;
+  let surchargeParking = 0.0;
+  let surchargeExtraDrop = 0.0;
+  let surchargeCongestion = 0.0;
 
-for (const surcharge of applicableSurcharges) {
-
+  for (const surcharge of applicableSurcharges) {
     const operator = (surcharge.operator || "").toLowerCase();
 
     const apply = (base, value) => {
+      value = Number(value || 0);
 
-        value = Number(value || 0);
+      if (operator === "percentage") {
+        return (base * value) / 100;
+      }
 
-        if (operator === "percentage") {
-            return base * value / 100;
-        }
-
-        return value;
+      return value;
     };
 
     surchargeFare += apply(vehicleAdjustedFare, surcharge.fare);
 
     surchargeParking += apply(
-        Number(payload.parking_charges || 0),
-        surcharge.parking_charges,
+      Number(payload.parking_charges || 0),
+      surcharge.parking_charges,
     );
 
     surchargeExtraDrop += apply(
-        Number(payload.extra_drop_charges || 0),
-        surcharge.extra_drop_charges,
+      Number(payload.extra_drop_charges || 0),
+      surcharge.extra_drop_charges,
     );
 
     surchargeCongestion += apply(
-        Number(payload.congestion_charges || 0),
-        surcharge.congestion_charges,
+      Number(payload.congestion_charges || 0),
+      surcharge.congestion_charges,
     );
-}
+  }
 
-payload.parking_charges =
+  payload.parking_charges =
     Number(payload.parking_charges || 0) + surchargeParking;
 
-payload.extra_drop_charges =
+  payload.extra_drop_charges =
     Number(payload.extra_drop_charges || 0) + surchargeExtraDrop;
 
-payload.congestion_charges =
+  payload.congestion_charges =
     Number(payload.congestion_charges || 0) + surchargeCongestion;
 
-
-     /* -------- AIRPORT CHARGES -------- */
+  /* -------- AIRPORT CHARGES -------- */
   let airportPickup = 0;
   let airportDropoff = 0;
 
@@ -494,28 +476,30 @@ payload.congestion_charges =
 
   console.log("============= SURCHARGE SUMMARY =============");
 
-console.log("Pickup Postcode :", pickupPostcode);
-console.log("Dropoff Postcode :", dropoffPostcode);
+  console.log("Pickup Postcode :", pickupPostcode);
+  console.log("Dropoff Postcode :", dropoffPostcode);
 
-console.log("Matched :", applicableSurcharges.length);
+  console.log("Matched :", applicableSurcharges.length);
 
-console.table(applicableSurcharges.map(s => ({
-    id: s.id,
-    postcode: s.postcode,
-    condition: s.condition,
-    operator: s.operator,
-    fare: s.fare,
-    parking: s.parking_charges,
-    congestion: s.congestion_charges,
-    extra_drop: s.extra_drop_charges
-})));
+  console.table(
+    applicableSurcharges.map((s) => ({
+      id: s.id,
+      postcode: s.postcode,
+      condition: s.condition,
+      operator: s.operator,
+      fare: s.fare,
+      parking: s.parking_charges,
+      congestion: s.congestion_charges,
+      extra_drop: s.extra_drop_charges,
+    })),
+  );
 
-console.log({
+  console.log({
     surchargeFare,
     surchargeParking,
     surchargeCongestion,
     surchargeExtraDrop,
-});
+  });
 
   /* -------- EXTRA CHARGES -------- */
   const extraChargesTotal = sumExtraCharges(payload);
@@ -524,10 +508,7 @@ console.log({
   //   vehicleAdjustedFare + airportPickup + airportDropoff;
 
   const fareWithoutExtras =
-    vehicleAdjustedFare +
-    surchargeFare +
-    airportPickup +
-    airportDropoff;
+    vehicleAdjustedFare + surchargeFare + airportPickup + airportDropoff;
 
   const totalFare = fareWithoutExtras + extraChargesTotal;
 

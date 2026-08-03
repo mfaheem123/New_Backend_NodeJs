@@ -282,3 +282,19 @@
 {"level":"info","message":"GET /api/location-types 200 15.392 ms","timestamp":"2026-08-03T18:34:08.861Z"}
 {"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-03T18:34:08.909Z"}
 {"level":"info","message":"GET /api/location-types 200 64.044 ms","timestamp":"2026-08-03T18:34:08.911Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-03T18:37:24.325Z"}
+{"level":"info","message":"GET /api/location-types 200 11.864 ms","timestamp":"2026-08-03T18:37:24.331Z"}
+{"duration":153,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-03T18:37:24.474Z"}
+{"level":"info","message":"GET /api/location-types 200 154.139 ms","timestamp":"2026-08-03T18:37:24.475Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-03T18:37:48.137Z"}
+{"level":"info","message":"GET /api/location-types 200 12.839 ms","timestamp":"2026-08-03T18:37:48.145Z"}
+{"duration":52,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-03T18:37:48.184Z"}
+{"level":"info","message":"GET /api/location-types 200 53.793 ms","timestamp":"2026-08-03T18:37:48.186Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-03T18:38:11.814Z"}
+{"level":"info","message":"GET /api/location-types 200 11.362 ms","timestamp":"2026-08-03T18:38:11.820Z"}
+{"duration":50,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-03T18:38:11.860Z"}
+{"level":"info","message":"GET /api/location-types 200 51.668 ms","timestamp":"2026-08-03T18:38:11.862Z"}
+{"duration":58,"level":"info","message":"db-query","rows":5,"text":"SELECT id, name FROM template_types WHERE company_id = $1 ORDER BY id ASC","timestamp":"2026-08-03T18:41:27.680Z"}
+{"level":"info","message":"GET /api/templates/template_types?company_id=1 200 60.980 ms","timestamp":"2026-08-03T18:41:27.681Z"}
+{"duration":72,"level":"info","message":"db-query","rows":1,"text":"SELECT \n        t.id,\n        t.template_type_id,\n        t.name,\n        t.subject,\n        t.content,\n        t.body,\n        tt.id as template_type_id,\n        tt.name as template_type_name\n       FROM templates t\n       JOIN template_types tt ON t.template_type_id = tt.id\n       WHERE t.id = $1","timestamp":"2026-08-03T18:42:06.181Z"}
+{"level":"info","message":"GET /api/templates/template_setting?id=16 200 73.970 ms","timestamp":"2026-08-03T18:42:06.183Z"}

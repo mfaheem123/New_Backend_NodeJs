@@ -65,7 +65,7 @@ exports.getSinbinSettings = async (req, res) => {
     let settings = await SettingsModel.getByCompanyId(company_id);
 
     if (!settings) {
-      settings = { id: 0,     recoverjob: 0, rejectjob: 0, ignorejob: 0 };
+      settings = { id: 0, recoverjob: 0, rejectjob: 0, ignorejob: 0 };
     }
 
     return res.status(200).json({
