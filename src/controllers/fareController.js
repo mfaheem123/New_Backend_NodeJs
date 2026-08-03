@@ -5,7 +5,7 @@ const db = require("../db");
 const getApplicableFareIncrement = async (
   company_id,
   bookingDate,
-  type // "fix_fare" | "mileage"
+  type, // "fix_fare" | "mileage"
 ) => {
   const { rows } = await db.query(
     `
@@ -14,7 +14,7 @@ const getApplicableFareIncrement = async (
       WHERE company_id=$1
       ORDER BY id DESC
     `,
-    [company_id]
+    [company_id],
   );
 
   const booking = new Date(bookingDate);
@@ -318,27 +318,29 @@ const calculateSingleFare = async (payload) => {
   );
 
   /* -------- FARE INCREMENT CHARGES -------- */
-let fareIncrementAmount = 0;
-const increment = await getApplicableFareIncrement(
-  company_id,
-  pickup_date,
-  "fix_fare"
-);
+  let fareIncrementAmount = 0;
+  const increment = await getApplicableFareIncrement(
+    company_id,
+    pickup_date,
+    "fix_fare",
+  );
 
-if (increment) {
-  const value = Number(increment.amount);
+  if (increment) {
+    const value = Number(increment.amount);
 
-  if ((increment.operator || "").toLowerCase() === "percentage") {
-    fareIncrementAmount  = (vehicleAdjustedFare * value) / 100;
-  } else {
-    fareIncrementAmount  = value;
-  }
-  vehicleAdjustedFare += fareIncrementAmount;
-  console.log("============================== FARE INCREMENT APPLIED ==============================")
+    if ((increment.operator || "").toLowerCase() === "percentage") {
+      fareIncrementAmount = (vehicleAdjustedFare * value) / 100;
+    } else {
+      fareIncrementAmount = value;
+    }
+    vehicleAdjustedFare += fareIncrementAmount;
+    console.log(
+      "============================== FARE INCREMENT APPLIED ==============================",
+    );
     console.log("Operator:", increment.operator);
-  console.log("Increment Value:", value);
-  console.log("Increment Applied:", fareIncrementAmount.toFixed(2));
-}
+    console.log("Increment Value:", value);
+    console.log("Increment Applied:", fareIncrementAmount.toFixed(2));
+  }
 
   /* -------- EXTRA CHARGES -------- */
   const extraChargesTotal = sumExtraCharges(payload);
