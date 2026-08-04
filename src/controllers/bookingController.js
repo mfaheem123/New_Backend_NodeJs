@@ -581,7 +581,12 @@ exports.updateBookingStatus = async (req, res) => {
 
     //RIDE ACCEPTED
     if (booking_status_id == 15) {
+      if(booking.rows[0].futrue == true){
+        await Driver.updateDriverStatus(driverId, "Accepted", "Available");
+      }else{
       await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
+
+      }
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
       if (booking_source == "app") {
@@ -610,37 +615,6 @@ exports.updateBookingStatus = async (req, res) => {
       const day = String(now.getDate()).padStart(2, "0");
       const today = `${year}-${month}-${day}`;
 
-      // Booking date must be today
-      // if (pickupDate !== today) {
-      //   return res.status(400).json({
-      //     status: false,
-      //     message: "You cannot mark Arrived before the booking date.",
-      //   });
-      // }
-
-      // Parse pickup time
-      // const [hours, minutes, seconds = 0] = pickupTime.split(":").map(Number);
-
-      // // Pickup DateTime
-      // const pickupDateTime = new Date(
-      //   year,
-      //   now.getMonth(),
-      //   now.getDate(),
-      //   hours,
-      //   minutes,
-      //   seconds
-      // );
-
-      // // Allow Arrived only within 2 hours before pickup
-      // const allowedTime = new Date(pickupDateTime.getTime() - 2 * 60 * 60 * 1000);
-
-      // if (now < allowedTime) {
-      //   return res.status(400).json({
-      //     status: false,
-      //     message:
-      //       "You cannot mark Arrived more than 2 hours before the pickup time.",
-      //   });
-      // }
       // Parse booking date
       const [bookingYear, bookingMonth, bookingDay] = pickupDate
         .split("-")
@@ -668,13 +642,16 @@ exports.updateBookingStatus = async (req, res) => {
       console.log("Hours Remaining:", diffHours);
 
       // More than 2 hours remaining
-      if (diffHours > 2) {
+      if(booking.rows[0].futrue == true){
+        if (diffHours > 2) {
         return res.status(400).json({
           status: false,
           message:
             "You cannot mark Arrived more than 2 hours before the pickup time.",
         });
       }
+    }
+      
 
       await updateBookingonRoute(bookingId, false, false, true);
       await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
@@ -738,13 +715,24 @@ exports.updateBookingStatus = async (req, res) => {
 
     const unavailableStatuses = [15];
 
-    if (unavailableStatuses.includes(booking_status_ids)) {
-      await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
+    // if (unavailableStatuses.includes(booking_status_ids)) {
+    //   await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
 
-      const driver = await Driver.getById(driverId);
-      console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
-      notifyBusyDriverUpdate(driver);
-    }
+    //   const driver = await Driver.getById(driverId);
+    //   console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+    //   notifyBusyDriverUpdate(driver);
+    // }
+
+    if (
+    booking_status_ids == 15 &&
+    booking.rows[0].future !== true
+) {
+    await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
+
+    const driver = await Driver.getById(driverId);
+    console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+    notifyBusyDriverUpdate(driver);
+}
 
     return res.status(200).json({
       status: true,
@@ -1223,15 +1211,15 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
-    // if (
-    //   driver.booking_status === "Unavailable" ||
-    //   driver.driver_status === "Unavailable"
-    // ) {
-    //   return res.status(400).json({
-    //     status: false,
-    //     message: "Driver is already busy",
-    //   });
-    // }
+    if (
+      driver.booking_status === "Unavailable" ||
+      driver.driver_status === "Unavailable"
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver is already busy",
+      });
+    }
     console.log("BOOKING DATA BEFORE ASSIGN DRIVER:", booking.rows[0]);
     // Call service
     const updatedBooking = await bookingService.assignDriverService(
@@ -1750,17 +1738,17 @@ exports.assignFutureBookingToDriver = async (req, res) => {
     }
 
     // Assign FOB Booking to Driver
-    const updatedBooking =
-      await bookingService.assignFutureBookingDriverService(
-        booking_id,
-        driver_id,
-        company_id,
-      );
+    // const updatedBooking =
+    //   await bookingService.assignFutureBookingDriverService(
+    //     booking_id,
+    //     driver_id,
+    //     company_id,
+    //   );
 
     return res.status(200).json({
       status: true,
-      message: "Driver Assigned For Future Booking Successfully",
-      booking: updatedBooking,
+      message: "Under Development",
+      // booking: updatedBooking,
     });
   } catch (error) {
     console.error("Assign Driver Error:", error);
