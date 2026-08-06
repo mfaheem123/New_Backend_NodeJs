@@ -77,7 +77,9 @@ exports.getAccounts = async (req, res) => {
   }
 };
 
-// READ: single account with relations
+// ---------------------------------------------------------
+// GET ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.getAccountById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -95,7 +97,10 @@ exports.getAccountById = async (req, res) => {
   }
 };
 
-// ✅ UPDATE (Edit Account + Relations)
+
+// ---------------------------------------------------------
+// UPDATE ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.updateAccount = async (req, res) => {
   try {
     const { id } = req.params;
@@ -122,7 +127,9 @@ exports.updateAccount = async (req, res) => {
   }
 };
 
-// ✅ DELETE (Delete Account + Child relations)
+// ---------------------------------------------------------
+// DELETE ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.deleteAccount = async (req, res) => {
   try {
     const { id } = req.params;
@@ -148,6 +155,9 @@ exports.deleteAccount = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ACCOUNT BY SUBSIDIARY ID
+// ---------------------------------------------------------
 exports.getAccountsBySubsidiary = async (req, res) => {
   try {
     const { subsidiary_id } = req.params;

@@ -581,11 +581,10 @@ exports.updateBookingStatus = async (req, res) => {
 
     //RIDE ACCEPTED
     if (booking_status_id == 15) {
-      if(booking.rows[0].future == true){
+      if (booking.rows[0].future == true) {
         await Driver.updateDriverStatus(driverId, "Accepted", "Available");
-      }else{
-      await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
-
+      } else {
+        await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
       }
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
@@ -642,16 +641,15 @@ exports.updateBookingStatus = async (req, res) => {
       console.log("Hours Remaining:", diffHours);
 
       // More than 2 hours remaining
-      if(booking.rows[0].future == true){
+      if (booking.rows[0].future == true) {
         if (diffHours > 2) {
-        return res.status(400).json({
-          status: false,
-          message:
-            "You cannot mark Arrived more than 2 hours before the pickup time.",
-        });
+          return res.status(400).json({
+            status: false,
+            message:
+              "You cannot mark Arrived more than 2 hours before the pickup time.",
+          });
+        }
       }
-    }
-      
 
       await updateBookingonRoute(bookingId, false, false, true);
       await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
@@ -723,16 +721,13 @@ exports.updateBookingStatus = async (req, res) => {
     //   notifyBusyDriverUpdate(driver);
     // }
 
-    if (
-    booking_status_ids == 15 &&
-    booking.rows[0].future !== true
-) {
-    await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
+    if (booking_status_ids == 15 && booking.rows[0].future !== true) {
+      await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
 
-    const driver = await Driver.getById(driverId);
-    console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
-    notifyBusyDriverUpdate(driver);
-}
+      const driver = await Driver.getById(driverId);
+      console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+      notifyBusyDriverUpdate(driver);
+    }
 
     return res.status(200).json({
       status: true,

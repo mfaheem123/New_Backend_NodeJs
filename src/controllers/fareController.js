@@ -11,8 +11,8 @@ const postcodeMatches = (bookingPostcode, dbPostcode) => {
   dbPostcode = normalizePostcode(dbPostcode);
 
   return (
-    bookingPostcode === dbPostcode ||           // Full postcode
-    bookingPostcode.startsWith(dbPostcode)      // Area postcode
+    bookingPostcode === dbPostcode || // Full postcode
+    bookingPostcode.startsWith(dbPostcode) // Area postcode
   );
 };
 
@@ -76,22 +76,20 @@ const getApplicableSurcharges = async (
     let postcodeMatch = false;
 
     if (condition === "PICKUP") {
-      postcodeMatch = postcodeMatches(
-        pickupPostcode,
-        surchargePostcode
-    );
+      postcodeMatch = postcodeMatches(pickupPostcode, surchargePostcode);
     } else if (condition === "DROPOFF") {
-      postcodeMatch = postcodeMatches(
-        dropoffPostcode,
-        surchargePostcode
-    );
+      postcodeMatch = postcodeMatches(dropoffPostcode, surchargePostcode);
     } else if (condition === "BOTH") {
       postcodeMatch =
         postcodeMatches(pickupPostcode, surchargePostcode) ||
         postcodeMatches(dropoffPostcode, surchargePostcode);
-    } else 
+    } else {
+  return false;
+}
 
-    if (!postcodeMatch) return false;
+    if (!postcodeMatch) {
+  return false;
+}
 
     // ---------- DATE ----------
     if (s.duration === "DATE WISE") {
@@ -111,13 +109,13 @@ const getApplicableSurcharges = async (
     }
 
     // ---------- TIME ----------
-if (s.duration === "TIME WISE") {
-    return isTimeInRange(
+    if (s.duration === "TIME WISE") {
+      return isTimeInRange(
         pickupTime,
         normalizeTime(s.from_time),
-        normalizeTime(s.to_time)
-    );
-}
+        normalizeTime(s.to_time),
+      );
+    }
 
     return false;
   });
@@ -548,7 +546,7 @@ const calculateSingleFare = async (payload) => {
   console.log("airportPickup: ", airportPickup);
   console.log("airportDropoff: ", airportDropoff);
   console.log("extraChargesTotal: ", extraChargesTotal);
-  console.log("fareWithoutExtras: ",fareWithoutExtras)
+  console.log("fareWithoutExtras: ", fareWithoutExtras);
   console.log("totalFare: ", totalFare);
 
   return {

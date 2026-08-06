@@ -1245,7 +1245,7 @@ async function assignDriverService(bookingId, driverId, company_id) {
   });
 
   if (!updated) return null;
-
+console.log("=================== FARE METER STATUS =================", fare_meter)
   // 2️ Get enriched booking
   const enriched = await getBookingByIdEnriched(bookingId);
 
@@ -1310,7 +1310,11 @@ async function assignFOBDriverService(bookingId, driverId, company_id) {
     dispatched_at: new Date(),
   });
 
+
   if (!updated) return null;
+
+  console.log("=================== FARE METER STATUS =================", fare_meter)
+
 
   // 2️ Get enriched booking
   const enriched = await getBookingByIdEnriched(bookingId);

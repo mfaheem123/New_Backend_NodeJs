@@ -1,6 +1,9 @@
 const db = require("../db");
 const bcrypt = require("bcrypt");
 
+// ---------------------------------------------------------
+// CREATE ACCOUNT
+// ---------------------------------------------------------
 exports.createAccountWithRelations = async (data) => {
   try {
     await db.query("BEGIN");
@@ -172,7 +175,9 @@ exports.createAccountWithRelations = async (data) => {
   }
 };
 
-// --- GET ACCOUNTS WITH JOINS + PAGINATION + SEARCH ---
+// ---------------------------------------------------------
+// GET ALL ACCOUNT WITH JOINS + PAGINATION + SEARCH
+// ---------------------------------------------------------
 exports.getAccounts = async ({ offset = 0, limit = 100, filters = {} }) => {
   const {
     account_type,
@@ -340,7 +345,9 @@ OFFSET $${idx++} LIMIT $${idx++};
   };
 };
 
-// --- GET SINGLE ACCOUNT WITH RELATIONS ---
+// ---------------------------------------------------------
+// GET ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.getAccountById = async (id) => {
   const result = await db.query(
     `
@@ -365,7 +372,9 @@ exports.getAccountById = async (id) => {
   return result.rows[0];
 };
 
-// Update account with all nested relations
+// ---------------------------------------------------------
+// UPDATE ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.updateAccountWithRelations = async (id, data) => {
   try {
     await db.query("BEGIN");
@@ -488,7 +497,9 @@ exports.updateAccountWithRelations = async (id, data) => {
   }
 };
 
-// Delete account with all child relations
+// ---------------------------------------------------------
+// DELETE ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.deleteAccountWithRelations = async (id) => {
   try {
     await db.query("BEGIN");
@@ -511,6 +522,9 @@ exports.deleteAccountWithRelations = async (id) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ACCOUNT BY SUBSIDIARY ID
+// ---------------------------------------------------------
 exports.getAccountsBySubsidiary = async (subsidiary_id, company_id) => {
   const query = `
     SELECT
@@ -533,3 +547,5 @@ exports.getAccountsBySubsidiary = async (subsidiary_id, company_id) => {
   const result = await db.query(query, [subsidiary_id, company_id]);
   return result.rows;
 };
+
+
