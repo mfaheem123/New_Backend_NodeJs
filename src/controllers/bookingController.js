@@ -581,7 +581,7 @@ exports.updateBookingStatus = async (req, res) => {
 
     //RIDE ACCEPTED
     if (booking_status_id == 15) {
-      if(booking.rows[0].futrue == true){
+      if(booking.rows[0].future == true){
         await Driver.updateDriverStatus(driverId, "Accepted", "Available");
       }else{
       await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
@@ -642,7 +642,7 @@ exports.updateBookingStatus = async (req, res) => {
       console.log("Hours Remaining:", diffHours);
 
       // More than 2 hours remaining
-      if(booking.rows[0].futrue == true){
+      if(booking.rows[0].future == true){
         if (diffHours > 2) {
         return res.status(400).json({
           status: false,
@@ -1737,18 +1737,18 @@ exports.assignFutureBookingToDriver = async (req, res) => {
       });
     }
 
-    // Assign FOB Booking to Driver
-    // const updatedBooking =
-    //   await bookingService.assignFutureBookingDriverService(
-    //     booking_id,
-    //     driver_id,
-    //     company_id,
-    //   );
+    // Assign Future Booking to Driver
+    const updatedBooking =
+      await bookingService.assignFutureBookingDriverService(
+        booking_id,
+        driver_id,
+        company_id,
+      );
 
     return res.status(200).json({
       status: true,
-      message: "Under Development",
-      // booking: updatedBooking,
+      message: "Future Booking Assign To Driver Successfully",
+      booking: updatedBooking,
     });
   } catch (error) {
     console.error("Assign Driver Error:", error);

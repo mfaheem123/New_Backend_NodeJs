@@ -2,6 +2,20 @@ const db = require("../db");
 
 /* ---------------- HELPERS ---------------- */
 
+// POSTCODE HELPER
+const normalizePostcode = (postcode = "") =>
+  postcode.replace(/\s+/g, "").toUpperCase();
+
+const postcodeMatches = (bookingPostcode, dbPostcode) => {
+  bookingPostcode = normalizePostcode(bookingPostcode);
+  dbPostcode = normalizePostcode(dbPostcode);
+
+  return (
+    bookingPostcode === dbPostcode ||           // Full postcode
+    bookingPostcode.startsWith(dbPostcode)      // Area postcode
+  );
+};
+
 // FARE INCREMENT HELPER FUNCTION
 const getApplicableFareIncrement = async (
   company_id,
@@ -62,14 +76,20 @@ const getApplicableSurcharges = async (
     let postcodeMatch = false;
 
     if (condition === "PICKUP") {
-      postcodeMatch = pickupPostcode === surchargePostcode;
+      postcodeMatch = postcodeMatches(
+        pickupPostcode,
+        surchargePostcode
+    );
     } else if (condition === "DROPOFF") {
-      postcodeMatch = dropoffPostcode === surchargePostcode;
+      postcodeMatch = postcodeMatches(
+        dropoffPostcode,
+        surchargePostcode
+    );
     } else if (condition === "BOTH") {
       postcodeMatch =
-        pickupPostcode === surchargePostcode ||
-        dropoffPostcode === surchargePostcode;
-    }
+        postcodeMatches(pickupPostcode, surchargePostcode) ||
+        postcodeMatches(dropoffPostcode, surchargePostcode);
+    } else 
 
     if (!postcodeMatch) return false;
 
@@ -89,6 +109,15 @@ const getApplicableSurcharges = async (
         )
       );
     }
+
+    // ---------- TIME ----------
+if (s.duration === "TIME WISE") {
+    return isTimeInRange(
+        pickupTime,
+        normalizeTime(s.from_time),
+        normalizeTime(s.to_time)
+    );
+}
 
     return false;
   });
@@ -519,6 +548,7 @@ const calculateSingleFare = async (payload) => {
   console.log("airportPickup: ", airportPickup);
   console.log("airportDropoff: ", airportDropoff);
   console.log("extraChargesTotal: ", extraChargesTotal);
+  console.log("fareWithoutExtras: ",fareWithoutExtras)
   console.log("totalFare: ", totalFare);
 
   return {
