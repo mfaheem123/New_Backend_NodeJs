@@ -655,6 +655,13 @@ exports.updateBookingStatus = async (req, res) => {
       await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
+
+      if (booking.rows[0].future == true) {
+     
+      const driver = await Driver.getById(driverId);
+      console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+      notifyBusyDriverUpdate(driver);
+    }
     }
 
     // SOON TO CLEAR

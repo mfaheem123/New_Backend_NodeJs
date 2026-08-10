@@ -187,14 +187,24 @@ function notifyBusyDriverUpdate(driver) {
     driver.booking_status === "Available" &&
     driver.driver_status === "Available"
   ) {
+    // Driver busy list se remove
     busyDrivers.delete(driver.id);
-    const existing = loggedInDrivers.get(driver.id);
+    // =================================================
+    // 🚫 ALREADY AVAILABLE → DO NOT SEND AGAIN
+    // =================================================
+    const existingAvailable = loggedInDrivers.get(driver.id);
 
-    // Already available → skip
-    if (!hasDriverStateChanged(existing, driver)) {
+    if (existingAvailable) {
+      logger.info("Already available, skip", {
+        driverId: driver.id,
+      });
+
       return;
     }
-    // available dashboard ke liye (existing logic)
+
+    // =================================================
+    // FIRST TIME AVAILABLE
+    // =================================================
     loggedInDrivers.set(driver.id, driver);
 
     const payload = JSON.stringify({
@@ -203,6 +213,7 @@ function notifyBusyDriverUpdate(driver) {
     });
     console.log("Driver Company ID: ", driver.company_id);
 
+    // AVAILABLE DASHBOARD
     dashboardClients.forEach((client) => {
       if (
         client.readyState === WebSocket.OPEN &&
@@ -212,7 +223,9 @@ function notifyBusyDriverUpdate(driver) {
       }
     });
 
-    // 🔥 BUSY SOCKET → REMOVE (important for Flutter)
+    // =================================================
+    // 🔥 BUSY SOCKET → REMOVE DRIVER
+    // =================================================
     const busyPayload = JSON.stringify({
       event: "BUSY_DRIVER_REMOVE", // ⚠️ Flutter me else hit karega
       data: {
@@ -232,16 +245,21 @@ function notifyBusyDriverUpdate(driver) {
 
     return;
   }
-  // BUSY
+
+  // =====================================================
+  // 🔴 DRIVER BUSY
+  // =====================================================
   const existingBusy = busyDrivers.get(driver.id);
-  // 🚫 Already busy → skip
+  // 🚫 ALREADY BUSY → DO NOT SEND AGAIN
   if (existingBusy) {
     logger.info("Already busy, skip");
     return;
   }
 
+  // Available list se remove
   loggedInDrivers.delete(driver.id);
 
+  // Busy list mein add
   busyDrivers.set(driver.id, driver);
   // 🔴 DRIVER BUSY → ADD
   const payload = JSON.stringify({
