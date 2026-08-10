@@ -31,7 +31,7 @@ exports.create = async (req, res) => {
 exports.getDistinct = async (req, res) => {
   try {
     const offset = parseInt(req.query.offset) || 0;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 100;
     const company_id = req.query.company_id;
 
     const result = await DriverCommission.getDistinct(

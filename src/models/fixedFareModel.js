@@ -51,7 +51,7 @@ const FixedFare = {
   // ✅ READ ALL (with pagination)
   async getAll({
     offset = 0,
-    limit = 10,
+    limit = 100,
     vehicle_type_name,
     fares,
     area1,

@@ -1362,7 +1362,7 @@ const getDriverEarningsStatistics = async ({
 // ---------------------------------------------------------
 const getBookingStatisticsData = async ({
   page = 1,
-  limit = 20,
+  limit = 100,
   filters = {},
 }) => {
   const offset = (page - 1) * limit;

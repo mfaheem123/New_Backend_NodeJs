@@ -547,5 +547,3 @@ exports.getAccountsBySubsidiary = async (subsidiary_id, company_id) => {
   const result = await db.query(query, [subsidiary_id, company_id]);
   return result.rows;
 };
-
-

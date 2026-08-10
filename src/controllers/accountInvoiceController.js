@@ -26,7 +26,7 @@ exports.getAll = async (req, res) => {
   try {
     const {
       page = 1,
-      limit = 10,
+      limit = 100,
       search,
       from_date,
       to_date,

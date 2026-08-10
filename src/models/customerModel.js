@@ -156,7 +156,7 @@ RETURNING id
 
   getAll: async ({
     offset = 0,
-    limit = 10,
+    limit = 100,
     blacklist = false,
     filters = {},
   }) => {

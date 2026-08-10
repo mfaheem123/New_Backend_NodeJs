@@ -46,7 +46,7 @@ exports.create = async (req, res) => {
 exports.getAll = async (req, res) => {
   try {
     const offset = Number(req.query.offset || 0);
-    const limit = Number(req.query.limit || 10);
+    const limit = Number(req.query.limit || 100);
     const { company_id } = req.query;
     console.log(req.query);
 

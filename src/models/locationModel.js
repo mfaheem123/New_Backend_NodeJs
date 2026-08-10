@@ -21,7 +21,7 @@ const COLUMNS = [
 // Get all locations with location_type + zone details
 const getAll = async ({
   page = 1,
-  limit = 10,
+  limit = 100,
   name,
   postcode,
   shortcut,

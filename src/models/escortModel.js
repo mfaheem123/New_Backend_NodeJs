@@ -46,7 +46,7 @@ const Escort = {
 
   async findAll({
     page = 1,
-    limit = 10,
+    limit = 100,
     name,
     safeguarding_expiry,
     pat_expiry,

@@ -60,7 +60,7 @@ const CompanyVehicle = {
   // 🔹 Get all vehicles
   async findAll({
     page = 1,
-    limit = 10,
+    limit = 100,
     owner,
     vehicle_number,
     vehicle_type,

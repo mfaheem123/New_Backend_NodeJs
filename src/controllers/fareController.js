@@ -84,12 +84,12 @@ const getApplicableSurcharges = async (
         postcodeMatches(pickupPostcode, surchargePostcode) ||
         postcodeMatches(dropoffPostcode, surchargePostcode);
     } else {
-  return false;
-}
+      return false;
+    }
 
     if (!postcodeMatch) {
-  return false;
-}
+      return false;
+    }
 
     // ---------- DATE ----------
     if (s.duration === "DATE WISE") {
