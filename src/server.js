@@ -3,6 +3,7 @@ const http = require("http");
 const app = require("./app");
 const client = require("prom-client");
 const initWebSocket = require("./sockets");
+const { startSubscriptionScheduler } = require("./services/subscriptionScheduler");
 
 // const { Server } = require("socket.io");
 // const { initIO } = require("./sockets/io");
@@ -53,4 +54,6 @@ app.get("/metrics", async (req, res) => {
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ HTTP running on http://192.168.110.5:${PORT}`);
   console.log(`🔌 WebSocket running on ws://192.168.110.5:${PORT}`);
+  // 🚀 Start background warning interval and midnight cron job
+  startSubscriptionScheduler();
 });

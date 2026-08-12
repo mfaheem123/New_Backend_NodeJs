@@ -1,0 +1,146 @@
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-10T19:04:06.617Z"}
+{"level":"info","message":"GET /api/location-types 200 14.289 ms","timestamp":"2026-08-10T19:04:06.625Z"}
+{"duration":57,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-10T19:04:06.669Z"}
+{"level":"info","message":"GET /api/location-types 200 58.047 ms","timestamp":"2026-08-10T19:04:06.671Z"}
+{"duration":310,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T10:53:21.245Z"}
+{"level":"info","message":"GET /api/location-types 200 315.221 ms","timestamp":"2026-08-11T10:53:21.251Z"}
+{"duration":321,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T10:53:21.253Z"}
+{"level":"info","message":"GET /api/location-types 200 322.966 ms","timestamp":"2026-08-11T10:53:21.255Z"}
+{"duration":67,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T12:13:11.663Z"}
+{"level":"info","message":"GET /api/location-types 200 73.518 ms","timestamp":"2026-08-11T12:13:11.669Z"}
+{"duration":67,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT COUNT(*) AS total\n    FROM escorts\n    WHERE company_id = $1;\n  ","timestamp":"2026-08-11T12:54:55.988Z"}
+{"duration":3,"level":"info","message":"db-query","rows":4,"text":"\n    SELECT *\n    FROM escorts\n    WHERE company_id = $1\n    ORDER BY id DESC\n    OFFSET $2 LIMIT $3;\n  ","timestamp":"2026-08-11T12:54:55.992Z"}
+{"level":"info","message":"GET /api/escorts/get?page=1&limit=5&company_id=1 200 73.347 ms","timestamp":"2026-08-11T12:54:55.993Z"}
+{"level":"info","message":"GET /favicon.ico 404 3.535 ms","timestamp":"2026-08-11T12:54:56.079Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:15:40.123Z"}
+{"level":"info","message":"GET /api/location-types 200 16.496 ms","timestamp":"2026-08-11T13:15:40.133Z"}
+{"duration":72,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:15:40.190Z"}
+{"level":"info","message":"GET /api/location-types 200 72.919 ms","timestamp":"2026-08-11T13:15:40.191Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:15:48.169Z"}
+{"level":"info","message":"GET /api/location-types 200 14.270 ms","timestamp":"2026-08-11T13:15:48.176Z"}
+{"duration":155,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:15:48.319Z"}
+{"level":"info","message":"GET /api/location-types 200 157.136 ms","timestamp":"2026-08-11T13:15:48.321Z"}
+{"duration":12,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:15:56.488Z"}
+{"level":"info","message":"GET /api/location-types 200 20.650 ms","timestamp":"2026-08-11T13:15:56.496Z"}
+{"duration":57,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:15:56.537Z"}
+{"level":"info","message":"GET /api/location-types 200 59.034 ms","timestamp":"2026-08-11T13:15:56.539Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:16:22.635Z"}
+{"level":"info","message":"GET /api/location-types 200 11.864 ms","timestamp":"2026-08-11T13:16:22.642Z"}
+{"duration":59,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:16:22.690Z"}
+{"level":"info","message":"GET /api/location-types 200 60.941 ms","timestamp":"2026-08-11T13:16:22.692Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:16:31.992Z"}
+{"level":"info","message":"GET /api/location-types 200 11.387 ms","timestamp":"2026-08-11T13:16:31.999Z"}
+{"duration":52,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:16:32.041Z"}
+{"level":"info","message":"GET /api/location-types 200 54.029 ms","timestamp":"2026-08-11T13:16:32.043Z"}
+{"duration":9,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:37:11.037Z"}
+{"level":"info","message":"GET /api/location-types 200 16.575 ms","timestamp":"2026-08-11T13:37:11.045Z"}
+{"duration":76,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:37:11.107Z"}
+{"level":"info","message":"GET /api/location-types 200 78.145 ms","timestamp":"2026-08-11T13:37:11.109Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:37:22.901Z"}
+{"level":"info","message":"GET /api/location-types 200 13.619 ms","timestamp":"2026-08-11T13:37:22.909Z"}
+{"duration":53,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:37:22.950Z"}
+{"level":"info","message":"GET /api/location-types 200 55.137 ms","timestamp":"2026-08-11T13:37:22.953Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:37:28.692Z"}
+{"level":"info","message":"GET /api/location-types 200 17.185 ms","timestamp":"2026-08-11T13:37:28.702Z"}
+{"duration":92,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:37:28.778Z"}
+{"level":"info","message":"GET /api/location-types 200 93.563 ms","timestamp":"2026-08-11T13:37:28.780Z"}
+{"duration":11,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:37:40.381Z"}
+{"level":"info","message":"GET /api/location-types 200 22.726 ms","timestamp":"2026-08-11T13:37:40.391Z"}
+{"duration":181,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:37:40.555Z"}
+{"level":"info","message":"GET /api/location-types 200 182.697 ms","timestamp":"2026-08-11T13:37:40.557Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:37:45.394Z"}
+{"level":"info","message":"GET /api/location-types 200 12.826 ms","timestamp":"2026-08-11T13:37:45.401Z"}
+{"duration":56,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:37:45.446Z"}
+{"level":"info","message":"GET /api/location-types 200 57.798 ms","timestamp":"2026-08-11T13:37:45.448Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:38:18.304Z"}
+{"level":"info","message":"GET /api/location-types 200 20.954 ms","timestamp":"2026-08-11T13:38:18.314Z"}
+{"duration":60,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:38:18.359Z"}
+{"level":"info","message":"GET /api/location-types 200 62.338 ms","timestamp":"2026-08-11T13:38:18.361Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:38:28.431Z"}
+{"level":"info","message":"GET /api/location-types 200 12.543 ms","timestamp":"2026-08-11T13:38:28.438Z"}
+{"duration":51,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T13:38:28.478Z"}
+{"level":"info","message":"GET /api/location-types 200 52.544 ms","timestamp":"2026-08-11T13:38:28.479Z"}
+{"duration":212,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T14:58:27.761Z"}
+{"level":"info","message":"GET /api/location-types 200 214.370 ms","timestamp":"2026-08-11T14:58:27.763Z"}
+{"duration":70,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T16:18:27.625Z"}
+{"level":"info","message":"GET /api/location-types 200 74.600 ms","timestamp":"2026-08-11T16:18:27.628Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T16:49:09.103Z"}
+{"level":"info","message":"GET /api/location-types 200 19.334 ms","timestamp":"2026-08-11T16:49:09.113Z"}
+{"duration":65,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T16:49:09.161Z"}
+{"level":"info","message":"GET /api/location-types 200 66.888 ms","timestamp":"2026-08-11T16:49:09.163Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T16:49:51.309Z"}
+{"level":"info","message":"GET /api/location-types 200 20.220 ms","timestamp":"2026-08-11T16:49:51.321Z"}
+{"duration":64,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T16:49:51.366Z"}
+{"level":"info","message":"GET /api/location-types 200 65.371 ms","timestamp":"2026-08-11T16:49:51.367Z"}
+{"duration":6,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:49:55.812Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:50:00.811Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:50:05.817Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:50:10.831Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:50:15.840Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:50:20.851Z"}
+{"duration":8,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T16:50:26.553Z"}
+{"level":"info","message":"GET /api/location-types 200 16.574 ms","timestamp":"2026-08-11T16:50:26.561Z"}
+{"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T16:50:26.611Z"}
+{"level":"info","message":"GET /api/location-types 200 64.317 ms","timestamp":"2026-08-11T16:50:26.612Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T16:50:42.622Z"}
+{"level":"info","message":"GET /api/location-types 200 11.309 ms","timestamp":"2026-08-11T16:50:42.628Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T16:50:42.636Z"}
+{"level":"info","message":"GET /api/location-types 200 2.697 ms","timestamp":"2026-08-11T16:50:42.637Z"}
+{"duration":3,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:50:47.115Z"}
+{"duration":3,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:50:52.128Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:50:57.135Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:02.150Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:07.163Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:12.178Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:17.179Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:22.183Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:27.194Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:32.198Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:37.200Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:42.207Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:47.215Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:52.230Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:51:57.230Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:02.229Z"}
+{"duration":0,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:07.243Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:12.253Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:17.254Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:22.269Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:27.275Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:32.278Z"}
+{"duration":6,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:37.298Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:42.302Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:47.310Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:52.310Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:52:57.320Z"}
+{"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:53:02.326Z"}
+{"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:53:07.333Z"}
+{"duration":0,"level":"info","message":"db-query","rows":0,"text":"\n    SELECT company_id, grace_until, expiry_at\n    FROM company_subscriptions\n    WHERE (\n      (expiry_at <= NOW() AND grace_until IS NULL)\n      OR \n      (grace_until IS NOT NULL AND NOW() > grace_until)\n    )\n    AND payment_status != 'PAID'\n    AND status != 'CANCELLED'\n  ","timestamp":"2026-08-11T16:53:12.345Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T16:53:15.022Z"}
+{"level":"info","message":"GET /api/location-types 200 13.616 ms","timestamp":"2026-08-11T16:53:15.030Z"}
+{"duration":1,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T16:53:15.038Z"}
+{"level":"info","message":"GET /api/location-types 200 2.236 ms","timestamp":"2026-08-11T16:53:15.039Z"}
+{"duration":727,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T17:02:28.408Z"}
+{"level":"info","message":"GET /api/location-types 200 739.096 ms","timestamp":"2026-08-11T17:02:28.420Z"}
+{"duration":758,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T17:02:28.440Z"}
+{"level":"info","message":"GET /api/location-types 200 759.563 ms","timestamp":"2026-08-11T17:02:28.442Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T18:13:23.061Z"}
+{"level":"info","message":"GET /api/location-types 200 11.263 ms","timestamp":"2026-08-11T18:13:23.068Z"}
+{"duration":58,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T18:13:23.115Z"}
+{"level":"info","message":"GET /api/location-types 200 58.733 ms","timestamp":"2026-08-11T18:13:23.116Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T18:18:47.262Z"}
+{"level":"info","message":"GET /api/location-types 200 11.481 ms","timestamp":"2026-08-11T18:18:47.269Z"}
+{"duration":73,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T18:18:47.332Z"}
+{"level":"info","message":"GET /api/location-types 200 74.679 ms","timestamp":"2026-08-11T18:18:47.333Z"}
+{"duration":13,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T18:19:08.370Z"}
+{"level":"info","message":"GET /api/location-types 200 23.927 ms","timestamp":"2026-08-11T18:19:08.378Z"}
+{"duration":170,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T18:19:08.531Z"}
+{"level":"info","message":"GET /api/location-types 200 171.621 ms","timestamp":"2026-08-11T18:19:08.533Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T18:30:11.172Z"}
+{"level":"info","message":"GET /api/location-types 200 22.590 ms","timestamp":"2026-08-11T18:30:11.187Z"}
+{"duration":92,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T18:30:11.257Z"}
+{"level":"info","message":"GET /api/location-types 200 99.823 ms","timestamp":"2026-08-11T18:30:11.266Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T18:34:23.427Z"}
+{"level":"info","message":"GET /api/location-types 200 13.186 ms","timestamp":"2026-08-11T18:34:23.433Z"}
+{"duration":52,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-11T18:34:23.474Z"}
+{"level":"info","message":"GET /api/location-types 200 53.353 ms","timestamp":"2026-08-11T18:34:23.476Z"}

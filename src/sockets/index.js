@@ -18,6 +18,9 @@ const { handleBreakDriverSocket } = require("./breakSocket");
 
 const { handleDriverAppFeaturesSocket } = require("./driverAppFeaturesSocket");
 
+// 🚀 IMPORT COMPANY WEBSOCKET HANDLER
+const { handleCompanySubscriptionSocket } = require("./companyWebSocket");
+
 function initWebSockets(server) {
   const wss = new WebSocket.Server({ noServer: true });
 
@@ -85,6 +88,9 @@ function initWebSockets(server) {
         handleBreakDriverSocket(ws, req);
       } else if (url.startsWith("/websocket/driver-app-features")) {
         handleDriverAppFeaturesSocket(ws, req);
+      }else if (url.startsWith("/websocket/company-subscription")) {
+        // 🚀 COMPANY SUBSCRIPTION ROUTE REGISTERED
+        handleCompanySubscriptionSocket(ws, req);
       } else {
         logger.warn("ws:rejected", { url });
         ws.close();
