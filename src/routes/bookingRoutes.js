@@ -132,5 +132,6 @@ router.post(
 //BOOKING DELETE APIS ROUTES
 router.delete("/delete/:id", bookingController.deleteBooking);
 router.delete("/bulkdelete", bookingController.deleteMultipleBookings);
+router.delete("/permenant-delete/:id", bookingController.deleteBookingById);
 
 module.exports = router;

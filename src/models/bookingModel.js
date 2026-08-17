@@ -562,7 +562,7 @@ const getBookingsByTab = async ({
   // 📦 DATA QUERY
   const dataSql = `
   ${ENRICHED_SELECT}
-  ${whereClause} AND trash = false
+  ${whereClause}
   ORDER BY ${orderBy}
   OFFSET $${idx++} LIMIT $${idx++}
 `;
@@ -2325,6 +2325,21 @@ const getFutureBookingHIstoryByDriverId = async (driver_id) => {
   return res.rows;
 };
 
+// ---------------------------------------------------------
+// DELETE BOOKING BY ID
+// ---------------------------------------------------------
+const deleteBookingByIdModel = async (id) => {
+  const q = `
+    DELETE FROM bookings
+    WHERE id = $1
+    RETURNING *
+  `;
+
+  const { rows } = await pool.query(q, [id]);
+
+  return rows[0] || null;
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -2382,4 +2397,5 @@ module.exports = {
   getDriverEarningsBookings,
   noPickupDashboardBooking,
   getFutureBookingHIstoryByDriverId,
+  deleteBookingByIdModel
 };

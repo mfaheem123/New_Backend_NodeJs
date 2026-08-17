@@ -22,7 +22,6 @@ const getByCompanyId = async (companyId) => {
   return rows[0] || null;
 };
 
-
 const getValidSubscription = async (companyId) => {
   const query = `
     SELECT
@@ -47,7 +46,6 @@ const getValidSubscription = async (companyId) => {
   return rows[0] || null;
 };
 
-
 const getExpiredCompanies = async () => {
   const query = `
     SELECT
@@ -65,7 +63,6 @@ const getExpiredCompanies = async () => {
   return rows;
 };
 
-
 // Company ko Grace Period (Extra Days) dene ke liye
 const createGrace = async (company_id, days) => {
   const query = `
@@ -82,18 +79,10 @@ const createGrace = async (company_id, days) => {
   return rows[0];
 };
 
-
-const renewSubscription = async ({
-  companyId,
-  planId,
-  startAt,
-  expiryAt,
-}) => {
-
+const renewSubscription = async ({ companyId, planId, startAt, expiryAt }) => {
   const client = await pool.connect();
 
   try {
-
     await client.query("BEGIN");
 
     // Old subscription close
@@ -106,7 +95,7 @@ const renewSubscription = async ({
       WHERE company_id = $1
         AND status IN ('ACTIVE', 'EXPIRED')
       `,
-      [companyId]
+      [companyId],
     );
 
     const result = await client.query(
@@ -135,26 +124,17 @@ const renewSubscription = async ({
       )
       RETURNING *
       `,
-      [
-        companyId,
-        planId,
-        startAt,
-        expiryAt,
-      ]
+      [companyId, planId, startAt, expiryAt],
     );
 
     await client.query("COMMIT");
 
     return result.rows[0];
-
   } catch (error) {
-
     await client.query("ROLLBACK");
 
     throw error;
-
   } finally {
-
     client.release();
   }
 };
@@ -246,7 +226,7 @@ module.exports = {
   getExpiredCompanies,
   createGrace,
   renewSubscription,
-  getPreExpiryCompanies,  // <-- ADD THIS
+  getPreExpiryCompanies, // <-- ADD THIS
   getActiveGraceCompanies, // <-- ADD THIS
-  getLockedCompanies      // <-- ADD THIS
+  getLockedCompanies, // <-- ADD THIS
 };

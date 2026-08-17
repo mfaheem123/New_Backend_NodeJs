@@ -49,6 +49,7 @@ const {
   getDriverEarningsBookings,
   noPickupDashboardBooking,
   getFutureBookingHIstoryByDriverId,
+  deleteBookingByIdModel
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -2468,4 +2469,51 @@ exports.getFutureBookingHIstoryByDriverId = async (req, res) => {
     count: bookings.length,
     bookings: data,
   });
+};
+
+
+// ---------------------------------------------------------
+// DELETE BOOKING BY ID (PERMANENTLY)
+// ---------------------------------------------------------
+exports.deleteBookingById = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id, 10);
+
+    if (isNaN(bookingId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid booking ID",
+      });
+    }
+
+    const booking = await findBookingById(bookingId);
+
+    if (!booking || booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    const deletedBooking = await deleteBookingByIdModel(bookingId);
+
+    if (!deletedBooking) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking could not be deleted",
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Booking deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete Booking Error:", error);
+
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
 };

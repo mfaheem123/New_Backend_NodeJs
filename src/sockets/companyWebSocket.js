@@ -11,8 +11,9 @@ function handleCompanySubscriptionSocket(ws, req) {
     ws.send(
       JSON.stringify({
         event: "ERROR",
-        message: "company_id is required as query parameter (e.g. ?company_id=1)"
-      })
+        message:
+          "company_id is required as query parameter (e.g. ?company_id=1)",
+      }),
     );
     ws.close();
     return;
@@ -35,39 +36,45 @@ async function addCompanySocket(companyId, ws) {
   // 🚀 SOCKET CONNECT HOTE HI INSTANT WARNING CHECK
   try {
     const sub = await CompanySubscription.getByCompanyId(companyId);
-    if (sub && sub.payment_status !== 'PAID') {
+    if (sub && sub.payment_status !== "PAID") {
       const now = new Date();
       const expiryAt = new Date(sub.expiry_at);
       const graceUntil = sub.grace_until ? new Date(sub.grace_until) : null;
 
       // Agar Lock out stage par hai
       if ((graceUntil && now > graceUntil) || (!graceUntil && now > expiryAt)) {
-        ws.send(JSON.stringify({
-          event: "FORCE_LOGOUT",
-          company_id: companyId,
-          message: "Subscription expired. Access locked."
-        }));
-      } 
+        ws.send(
+          JSON.stringify({
+            event: "FORCE_LOGOUT",
+            company_id: companyId,
+            message: "Subscription expired. Access locked.",
+          }),
+        );
+      }
       // Agar Grace Period chal raha hai
       else if (graceUntil && now <= graceUntil) {
         const daysLeft = Math.ceil((graceUntil - now) / (1000 * 60 * 60 * 24));
-        ws.send(JSON.stringify({
-          event: "SUBSCRIPTION_GRACE_DAYS_LEFT",
-          company_id: companyId,
-          days_left: daysLeft,
-          message: `Notice: You are in grace period. ${daysLeft} day(s) left.`
-        }));
-      } 
+        ws.send(
+          JSON.stringify({
+            event: "SUBSCRIPTION_GRACE_DAYS_LEFT",
+            company_id: companyId,
+            days_left: daysLeft,
+            message: `Notice: You are in grace period. ${daysLeft} day(s) left.`,
+          }),
+        );
+      }
       // Agar Expiry se 3 din pehle wala time hai
       else if (now <= expiryAt) {
         const daysLeft = Math.ceil((expiryAt - now) / (1000 * 60 * 60 * 24));
         if (daysLeft <= 3) {
-          ws.send(JSON.stringify({
-            event: "SUBSCRIPTION_PRE_EXPIRY_WARNING",
-            company_id: companyId,
-            days_left: daysLeft,
-            message: `Warning: Your subscription expires in ${daysLeft} day(s).`
-          }));
+          ws.send(
+            JSON.stringify({
+              event: "SUBSCRIPTION_PRE_EXPIRY_WARNING",
+              company_id: companyId,
+              days_left: daysLeft,
+              message: `Warning: Your subscription expires in ${daysLeft} day(s).`,
+            }),
+          );
         }
       }
     }
@@ -80,12 +87,8 @@ async function addCompanySocket(companyId, ws) {
   });
 }
 
-
 function removeCompanySocket(companyId, ws) {
-
-  const sockets = companySockets.get(
-    Number(companyId)
-  );
+  const sockets = companySockets.get(Number(companyId));
 
   if (!sockets) {
     return;
@@ -94,76 +97,49 @@ function removeCompanySocket(companyId, ws) {
   sockets.delete(ws);
 
   if (sockets.size === 0) {
-    companySockets.delete(
-      Number(companyId)
-    );
+    companySockets.delete(Number(companyId));
   }
 }
 
-
 function sendToCompany(companyId, payload) {
-
-  const sockets = companySockets.get(
-    Number(companyId)
-  );
+  const sockets = companySockets.get(Number(companyId));
 
   if (!sockets) {
     return;
   }
 
-  const message =
-    JSON.stringify(payload);
+  const message = JSON.stringify(payload);
 
   for (const ws of sockets) {
-
     if (ws.readyState === 1) {
-
       ws.send(message);
-
     }
   }
 }
 
+function sendSubscriptionWarning(companyId, data = {}) {
+  sendToCompany(companyId, {
+    event: "SUBSCRIPTION_EXPIRY_WARNING",
 
-function sendSubscriptionWarning(
-  companyId,
-  data = {}
-) {
+    company_id: Number(companyId),
 
-  sendToCompany(
-    companyId,
-    {
-      event: "SUBSCRIPTION_EXPIRY_WARNING",
+    ...data,
 
-      company_id: Number(companyId),
-
-      ...data,
-
-      timestamp: new Date().toISOString()
-    }
-  );
+    timestamp: new Date().toISOString(),
+  });
 }
 
+function sendGraceStarted(companyId, graceUntil) {
+  sendToCompany(companyId, {
+    event: "SUBSCRIPTION_GRACE_STARTED",
 
-function sendGraceStarted(
-  companyId,
-  graceUntil
-) {
+    company_id: Number(companyId),
 
-  sendToCompany(
-    companyId,
-    {
-      event: "SUBSCRIPTION_GRACE_STARTED",
+    grace_until: graceUntil,
 
-      company_id: Number(companyId),
-
-      grace_until: graceUntil,
-
-      timestamp: new Date().toISOString()
-    }
-  );
+    timestamp: new Date().toISOString(),
+  });
 }
-
 
 // Force logout event
 function sendForceLogout(companyId) {
@@ -172,7 +148,7 @@ function sendForceLogout(companyId) {
     company_id: Number(companyId),
     reason: "SUBSCRIPTION_EXPIRED_AND_LOCKED",
     message: "Your subscription and grace period have ended. Access locked.",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 }
 
@@ -183,7 +159,7 @@ function sendPreExpiryWarning(companyId, daysLeft) {
     company_id: Number(companyId),
     days_left: Number(daysLeft),
     message: `Warning: Your subscription will expire in ${daysLeft} day(s). Please make payment to avoid account lock.`,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 }
 
@@ -194,7 +170,7 @@ function sendGraceDaysLeftWarning(companyId, daysLeft) {
     company_id: Number(companyId),
     days_left: Number(daysLeft),
     message: `Notice: You are in grace period. ${daysLeft} day(s) left before total lockout.`,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 }
 
@@ -207,5 +183,5 @@ module.exports = {
   sendForceLogout,
   sendPreExpiryWarning,
   sendGraceDaysLeftWarning,
-  handleCompanySubscriptionSocket // <-- ADD THIS EXPORT
+  handleCompanySubscriptionSocket, // <-- ADD THIS EXPORT
 };

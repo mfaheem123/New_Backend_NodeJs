@@ -88,7 +88,7 @@ function initWebSockets(server) {
         handleBreakDriverSocket(ws, req);
       } else if (url.startsWith("/websocket/driver-app-features")) {
         handleDriverAppFeaturesSocket(ws, req);
-      }else if (url.startsWith("/websocket/company-subscription")) {
+      } else if (url.startsWith("/websocket/company-subscription")) {
         // 🚀 COMPANY SUBSCRIPTION ROUTE REGISTERED
         handleCompanySubscriptionSocket(ws, req);
       } else {

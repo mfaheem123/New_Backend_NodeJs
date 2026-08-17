@@ -3,7 +3,9 @@ const http = require("http");
 const app = require("./app");
 const client = require("prom-client");
 const initWebSocket = require("./sockets");
-const { startSubscriptionScheduler } = require("./services/subscriptionScheduler");
+const {
+  startSubscriptionScheduler,
+} = require("./services/subscriptionScheduler");
 
 // const { Server } = require("socket.io");
 // const { initIO } = require("./sockets/io");

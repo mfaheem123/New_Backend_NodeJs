@@ -61,6 +61,7 @@ const complaintRoutes = require("./routes/complaintRoutes");
 const customerInvoiceRoutes = require("./routes/customerInvoiceRoutes");
 const companyConfigurationRoutes = require("./routes/companyConfigurationRoutes");
 const clinetSubscriptionsRoutes = require("./routes/clinetSubscriptionsRoutes");
+const recordingRoutes = require('./routes/callRecordingRoutes');
 
 const app = express();
 
@@ -108,6 +109,7 @@ const skipFileUploadRoutes = [
   "/api/employees",
   "/api/drivers-app",
   "/api/customers",
+  "/api/call-recordings",
 ];
 
 app.use((req, res, next) => {
@@ -175,6 +177,7 @@ app.use("/api/complaint", complaintRoutes);
 app.use("/api/customer-invoice", customerInvoiceRoutes);
 app.use("/api/company-configuration", companyConfigurationRoutes);
 app.use("/api/client-subscriptions", clinetSubscriptionsRoutes);
+app.use('/api/call-recordings', recordingRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

@@ -3,7 +3,6 @@ const CompanySubscription = require("../models/companySubscriptionModel");
 const companyWebSocket = require("../sockets/companyWebSocket");
 
 function startSubscriptionScheduler() {
-
   // ========================================================
   // 1. ROZANA SUBAH 09:00 AM — WARNINGS & DAYS LEFT POPUPS
   // ========================================================
@@ -20,13 +19,15 @@ function startSubscriptionScheduler() {
       // B) Extra days (Grace Period) chalne wali companies
       const graceList = await CompanySubscription.getActiveGraceCompanies();
       for (const comp of graceList) {
-        companyWebSocket.sendGraceDaysLeftWarning(comp.company_id, comp.days_left);
+        companyWebSocket.sendGraceDaysLeftWarning(
+          comp.company_id,
+          comp.days_left,
+        );
       }
     } catch (error) {
       console.error("Error sending daily warnings:", error);
     }
   });
-
 
   // ========================================================
   // 2. ROZANA RAAT 12:00 AM (00:00) — ACCOUNT LOCK & LOGOUT
@@ -39,7 +40,9 @@ function startSubscriptionScheduler() {
       for (const comp of lockedCompanies) {
         // Send Force Logout event
         companyWebSocket.sendForceLogout(comp.company_id);
-        console.log(`🔒 Force logout triggered for Company ID: ${comp.company_id}`);
+        console.log(
+          `🔒 Force logout triggered for Company ID: ${comp.company_id}`,
+        );
       }
     } catch (error) {
       console.error("Error in Midnight Lock Cron:", error);
