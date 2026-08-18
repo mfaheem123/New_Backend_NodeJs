@@ -300,16 +300,20 @@ const getDriverLoginHistory = async (filters) => {
     count++;
   }
 
-  // BOOKING SEARCH
-  if (filters.booking) {
-    query += `
-      AND dsh.booking ILIKE $${count}
-    `;
+  // BOOKING COUNT FILTER
+if (
+  filters.booking !== undefined &&
+  filters.booking !== null &&
+  filters.booking !== ""
+) {
+  query += `
+    AND COALESCE(cardinality(dsh.booking), 0) = $${count}
+  `;
 
-    values.push(`%${filters.booking}%`);
+  values.push(Number(filters.booking));
 
-    count++;
-  }
+  count++;
+}
 
   // LOGIN DATE SEARCH
   if (filters.login_date) {

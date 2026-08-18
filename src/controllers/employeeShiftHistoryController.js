@@ -2,7 +2,20 @@ const employeeShiftHistoryModel = require("../models/employeeShiftHistoryModel")
 
 exports.getEmployeeShiftHistory = async (req, res) => {
   try {
-    const { employee_id, from_date, to_date, from_time, to_time } = req.query;
+    const {
+      employee_id,
+      from_date,
+      to_date,
+      from_time,
+      to_time,
+      // Column Search Params
+      search_login,
+      search_logout,
+      search_bookings_created,
+      search_bookings_dispatched,
+      search_bookings_cancelled,
+      search_calls_answered,
+    } = req.query;
 
     if (!employee_id) {
       return res.status(400).json({
@@ -17,6 +30,12 @@ exports.getEmployeeShiftHistory = async (req, res) => {
       to_date,
       from_time,
       to_time,
+      search_login,
+      search_logout,
+      search_bookings_created,
+      search_bookings_dispatched,
+      search_bookings_cancelled,
+      search_calls_answered,
     });
 
     return res.status(200).json({

@@ -50,7 +50,7 @@ const {
   noPickupDashboardBooking,
   getFutureBookingHIstoryByDriverId,
   deleteBookingByIdModel,
-  findBookingforDelete
+  findBookingforDelete,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -1799,6 +1799,28 @@ exports.getBookingStatistics = async (req, res) => {
       dropoff,
       driver_id,
 
+      invoice_number,
+      datetime,          // NEW
+      account_name,      // NEW (ACC)
+      payment_type_name, // NEW (P/T)
+      driver_name,       // NEW (DRV)
+      subsidiary_name,   // NEW (SUBS)
+      status_name,       // NEW (STATUS)
+      journey_type,
+      vehicle_type,
+      fare,
+      acc_fare,
+
+
+      // NEW CHARGES & TOTAL FILTERS
+      pc,        // Parking Charges
+      wc,        // Waiting Charges
+      edc,       // Extra Driver/Distance Charges
+      mg,        // Meet & Greet
+      cc,        // Congestion Charges
+      total_val, // Total Amount
+      
+
       sort_by = "datetime",
       sort_order = "ASC",
     } = req.query;
@@ -1833,6 +1855,26 @@ exports.getBookingStatistics = async (req, res) => {
         pickup,
         dropoff,
         driver_id,
+
+        invoice_number,
+        datetime,
+        account_name,
+        payment_type_name,
+        driver_name,
+        subsidiary_name,
+        status_name,
+        journey_type,
+        vehicle_type,
+        fare,
+        acc_fare,
+
+        // NEW FILTERS
+        pc,
+        wc,
+        edc,
+        mg,
+        cc,
+        total_val,
 
         sort_by,
         sort_order,
@@ -1905,12 +1947,24 @@ exports.getIncomeReport = async (req, res) => {
     const {
       from_date,
       to_date,
-
       driver_id,
       account_id,
       subsidiary_id,
+      payment_type_id,
 
-      payment_type_id, // 1,2,3
+      // Column Specific Searches
+      search_ref,
+      search_datetime,
+      search_pickup,
+      search_dropoff,
+      search_vehicle,
+      search_driver,
+      search_account,
+      search_fares,
+      search_parking,
+      search_waiting,
+      search_extra_drop,
+      search_total,
     } = req.query;
 
     const result = await getIncomeReportData({
@@ -1920,6 +1974,19 @@ exports.getIncomeReport = async (req, res) => {
       account_id,
       subsidiary_id,
       payment_type_id,
+
+      search_ref,
+      search_datetime,
+      search_pickup,
+      search_dropoff,
+      search_vehicle,
+      search_driver,
+      search_account,
+      search_fares,
+      search_parking,
+      search_waiting,
+      search_extra_drop,
+      search_total,
     });
 
     res.json({

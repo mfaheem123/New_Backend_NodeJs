@@ -6,9 +6,15 @@ const getEmployeeShiftHistory = async ({
   to_date,
   from_time,
   to_time,
+  search_login,
+  search_logout,
+  search_bookings_created,
+  search_bookings_dispatched,
+  search_bookings_cancelled,
+  search_calls_answered,
 }) => {
   let query = `
-    SELECT
+    SELECT 
       esh.id,
       esh.employee_id,
       esh.login_datetime,
@@ -35,27 +41,68 @@ const getEmployeeShiftHistory = async ({
 
   // DATE FILTER
   if (from_date && to_date) {
-    query += `
-      AND DATE(esh.login_datetime)
-      BETWEEN $${index} AND $${index + 1}
-    `;
+    query += ` AND DATE(esh.login_datetime) BETWEEN $${index} AND $${index + 1}`;
     values.push(from_date, to_date);
     index += 2;
   }
 
   // TIME FILTER
   if (from_time && to_time) {
-    query += `
-      AND TO_CHAR(esh.login_datetime, 'HH24:MI')
-      BETWEEN $${index} AND $${index + 1}
-    `;
+    query += ` AND TO_CHAR(esh.login_datetime, 'HH24:MI') BETWEEN $${index} AND $${index + 1}`;
     values.push(from_time, to_time);
     index += 2;
   }
 
-  query += `
-    ORDER BY esh.login_datetime ASC
-  `;
+  // --- INDIVIDUAL COLUMN SEARCH FILTERS ---
+
+  // 1. LOGIN DATETIME SEARCH
+  if (search_login) {
+  query += ` AND (
+    TO_CHAR(esh.login_datetime, 'DD-MM-YY HH24:MI:SS') ILIKE $${index}
+    OR TO_CHAR(esh.login_datetime, 'YYYY-MM-DD HH24:MI:SS') ILIKE $${index}
+  )`;
+  values.push(`%${search_login}%`);
+  index++;
+}
+
+if (search_logout) {
+  query += ` AND (
+    TO_CHAR(esh.logout_datetime, 'DD-MM-YY HH24:MI:SS') ILIKE $${index}
+    OR TO_CHAR(esh.logout_datetime, 'YYYY-MM-DD HH24:MI:SS') ILIKE $${index}
+  )`;
+  values.push(`%${search_logout}%`);
+  index++;
+}
+
+  // 3. BOOKINGS CREATED SEARCH
+  if (search_bookings_created) {
+    query += ` AND COALESCE(esh.bookings_created, 0)::text ILIKE $${index}`;
+    values.push(`%${search_bookings_created}%`);
+    index++;
+  }
+
+  // 4. BOOKINGS DISPATCHED SEARCH
+  if (search_bookings_dispatched) {
+    query += ` AND COALESCE(esh.bookings_dispatched, 0)::text ILIKE $${index}`;
+    values.push(`%${search_bookings_dispatched}%`);
+    index++;
+  }
+
+  // 5. BOOKINGS CANCELLED SEARCH
+  if (search_bookings_cancelled) {
+    query += ` AND COALESCE(esh.bookings_cancelled, 0)::text ILIKE $${index}`;
+    values.push(`%${search_bookings_cancelled}%`);
+    index++;
+  }
+
+  // 6. CALLS ANSWERED SEARCH
+  if (search_calls_answered) {
+    query += ` AND COALESCE(esh.calls_answered, 0)::text ILIKE $${index}`;
+    values.push(`%${search_calls_answered}%`);
+    index++;
+  }
+
+  query += ` ORDER BY esh.login_datetime ASC`;
 
   const { rows } = await pool.query(query, values);
 

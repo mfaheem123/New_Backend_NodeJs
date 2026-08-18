@@ -118,12 +118,10 @@ const create = async (req, res) => {
       company_id,
     );
     if (existing) {
-      return res
-        .status(400)
-        .json({
-          status: false,
-          message: "Username already exists for this company",
-        });
+      return res.status(400).json({
+        status: false,
+        message: "Username already exists for this company",
+      });
     }
 
     // Hash password
@@ -340,13 +338,16 @@ const login = async (req, res) => {
     // =========================================================
     // 🔒 CHECK COMPANY SUBSCRIPTION LOCK STATUS
     // =========================================================
-    const subStatus = await Employee.checkCompanySubscriptionStatus(employee.company_id);
+    const subStatus = await Employee.checkCompanySubscriptionStatus(
+      employee.company_id,
+    );
 
     if (subStatus && subStatus.calculated_status === "LOCKED") {
       return res.status(400).json({
         status: false,
         code: "SUBSCRIPTION_EXPIRED",
-        message: "Your account is expired. Please pay to continue your subscription.",
+        message:
+          "Your account is expired. Please pay to continue your subscription.",
       });
     }
     // =========================================================

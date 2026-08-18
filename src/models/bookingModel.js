@@ -1419,27 +1419,25 @@ const getBookingStatisticsData = async ({
   // =========================
   // DATE RANGE
   // =========================
-
   if (filters.from_date) {
     conditions.push(`
-    TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD')
-    >= TO_DATE($${idx++}, 'YYYY-MM-DD')
-  `);
+      TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD')
+      >= TO_DATE($${idx++}, 'YYYY-MM-DD')
+    `);
     params.push(filters.from_date);
   }
 
   if (filters.to_date) {
     conditions.push(`
-    TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD')
-    <= TO_DATE($${idx++}, 'YYYY-MM-DD')
-  `);
+      TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD')
+      <= TO_DATE($${idx++}, 'YYYY-MM-DD')
+    `);
     params.push(filters.to_date);
   }
 
   // =========================
   // TIME RANGE
   // =========================
-
   if (filters.from_time) {
     conditions.push(`TRIM(b.pickup_time)::time >= $${idx++}::time`);
     params.push(filters.from_time);
@@ -1451,9 +1449,8 @@ const getBookingStatisticsData = async ({
   }
 
   // =========================
-  // STATUS
+  // DROPDOWN / ID FILTERS
   // =========================
-
   if (filters.booking_status_id) {
     const statuses = String(filters.booking_status_id)
       .split(",")
@@ -1468,10 +1465,6 @@ const getBookingStatisticsData = async ({
       params.push(statuses);
     }
   }
-
-  // =========================
-  // PAYMENT TYPE
-  // =========================
 
   if (filters.payment_type_id) {
     const paymentTypes = String(filters.payment_type_id)
@@ -1488,10 +1481,29 @@ const getBookingStatisticsData = async ({
     }
   }
 
-  // =========================
-  // CUSTOMER
-  // =========================
+  if (filters.account_id) {
+    conditions.push(`b.account_id = $${idx++}`);
+    params.push(filters.account_id);
+  }
 
+  if (filters.employee_id) {
+    conditions.push(`b.employee_id = $${idx++}`);
+    params.push(filters.employee_id);
+  }
+
+  if (filters.subsidiary_id) {
+    conditions.push(`b.subsidiary_id = $${idx++}`);
+    params.push(filters.subsidiary_id);
+  }
+
+  if (filters.driver_id) {
+    conditions.push(`b.driver_id = $${idx++}`);
+    params.push(Number(filters.driver_id));
+  }
+
+  // =========================
+  // TEXT & INLINE TABLE SEARCH FILTERS
+  // =========================
   if (filters.customer) {
     conditions.push(`b.name ILIKE $${idx++}`);
     params.push(`%${filters.customer}%`);
@@ -1507,93 +1519,130 @@ const getBookingStatisticsData = async ({
     params.push(`%${filters.telephone}%`);
   }
 
-  // =========================
-  // ACCOUNT
-  // =========================
-
-  if (filters.account_id) {
-    conditions.push(`b.account_id = $${idx++}`);
-    params.push(filters.account_id);
-  }
-
-  // =========================
-  // DEPARTMENT
-  // =========================
-
   if (filters.department) {
     conditions.push(`b.department ILIKE $${idx++}`);
     params.push(`%${filters.department}%`);
   }
-
-  // =========================
-  // ORDER NUMBER
-  // =========================
 
   if (filters.order_number) {
     conditions.push(`b.order_number ILIKE $${idx++}`);
     params.push(`%${filters.order_number}%`);
   }
 
-  // =========================
-  // BOOKED BY
-  // =========================
-
   if (filters.booked_by) {
     conditions.push(`b.booked_by ILIKE $${idx++}`);
     params.push(`%${filters.booked_by}%`);
   }
-
-  // =========================
-  // EMPLOYEE
-  // =========================
-
-  if (filters.employee_id) {
-    conditions.push(`b.employee_id = $${idx++}`);
-    params.push(filters.employee_id);
-  }
-
-  // =========================
-  // SUBSIDIARY
-  // =========================
-
-  if (filters.subsidiary_id) {
-    conditions.push(`b.subsidiary_id = $${idx++}`);
-    params.push(filters.subsidiary_id);
-  }
-
-  // =========================
-  // REFERENCE NUMBER
-  // =========================
 
   if (filters.reference_number) {
     conditions.push(`b.reference_number ILIKE $${idx++}`);
     params.push(`%${filters.reference_number}%`);
   }
 
-  // =========================
-  // PICKUP
-  // =========================
-
   if (filters.pickup) {
     conditions.push(`b.pickup ILIKE $${idx++}`);
     params.push(`%${filters.pickup}%`);
   }
-
-  // =========================
-  // DROPOFF
-  // =========================
 
   if (filters.dropoff) {
     conditions.push(`b.dropoff ILIKE $${idx++}`);
     params.push(`%${filters.dropoff}%`);
   }
 
+  if (filters.invoice_number) {
+    conditions.push(`b.invoice_number ILIKE $${idx++}`);
+    params.push(`%${filters.invoice_number}%`);
+  }
+
+  // DateTime text search
+  if (filters.datetime) {
+    conditions.push(`(b.pickup_date || ' ' || b.pickup_time) ILIKE $${idx++}`);
+    params.push(`%${filters.datetime}%`);
+  }
+
+  // Joined Tables
+  if (filters.account_name) {
+    conditions.push(`a.name ILIKE $${idx++}`);
+    params.push(`%${filters.account_name}%`);
+  }
+
+  if (filters.payment_type_name) {
+    conditions.push(`pt.name ILIKE $${idx++}`);
+    params.push(`%${filters.payment_type_name}%`);
+  }
+
+  if (filters.driver_name) {
+    conditions.push(`d.name ILIKE $${idx++}`);
+    params.push(`%${filters.driver_name}%`);
+  }
+
+  if (filters.subsidiary_name) {
+    conditions.push(`s.name ILIKE $${idx++}`);
+    params.push(`%${filters.subsidiary_name}%`);
+  }
+
+  if (filters.status_name) {
+    conditions.push(`bs.booking_status ILIKE $${idx++}`);
+    params.push(`%${filters.status_name}%`);
+  }
+
+  if (filters.journey_type) {
+    conditions.push(`jt.journey_type ILIKE $${idx++}`);
+    params.push(`%${filters.journey_type}%`);
+  }
+
+  if (filters.vehicle_type) {
+    conditions.push(`vt.name ILIKE $${idx++}`);
+    params.push(`%${filters.vehicle_type}%`);
+  }
+
+  if (filters.fare) {
+    conditions.push(`b.fares::text ILIKE $${idx++}`);
+    params.push(`%${filters.fare}%`);
+  }
+
+  if (filters.acc_fare) {
+    conditions.push(`b.account_fares::text ILIKE $${idx++}`);
+    params.push(`%${filters.acc_fare}%`);
+  }
+
   // =========================
-  // DRIVER
+  // CHARGES & TOTAL INLINE FILTERS
   // =========================
-  if (filters.driver_id) {
-    conditions.push(`b.driver_id = $${idx++}`);
-    params.push(Number(filters.driver_id));
+  // PC (Parking Charges) - Ensure column name matches your DB table (e.g. b.parking_charges or b.pc)
+  if (filters.pc) {
+    conditions.push(`b.parking_charges::text ILIKE $${idx++}`);
+    params.push(`%${filters.pc}%`);
+  }
+
+  // WC (Waiting Charges)
+  if (filters.wc) {
+    conditions.push(`b.waiting_charges::text ILIKE $${idx++}`);
+    params.push(`%${filters.wc}%`);
+  }
+
+  // EDC (Extra Charges / Extra Distance)
+  if (filters.edc) {
+    conditions.push(`b.extra_drop_charges::text ILIKE $${idx++}`);
+    params.push(`%${filters.edc}%`);
+  }
+
+  // M&G (Meet & Greet)
+  if (filters.mg) {
+    conditions.push(`b.meet_and_greet::text ILIKE $${idx++}`);
+    params.push(`%${filters.mg}%`);
+  }
+
+  // CC (Congestion Charges)
+  if (filters.cc) {
+    conditions.push(`b.congestion_charges::text ILIKE $${idx++}`);
+    params.push(`%${filters.cc}%`);
+  }
+
+  // TOTAL
+  if (filters.total_val) {
+    conditions.push(`b.total_charges::text ILIKE $${idx++}`);
+    params.push(`%${filters.total_val}%`);
   }
 
   const whereClause = `
@@ -1601,12 +1650,25 @@ const getBookingStatisticsData = async ({
   `;
 
   // =========================
+  // COMMON JOINS
+  // =========================
+  const joinsClause = `
+    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id
+    LEFT JOIN journey_types jt ON b.journey_type_id = jt.id
+    LEFT JOIN accounts a ON b.account_id = a.id
+    LEFT JOIN payment_types pt ON b.payment_type_id = pt.id
+    LEFT JOIN drivers d ON b.driver_id = d.id
+    LEFT JOIN subsidiaries s ON b.subsidiary_id = s.id
+    LEFT JOIN booking_statuses bs ON b.booking_status_id = bs.id
+  `;
+
+  // =========================
   // TOTAL COUNT
   // =========================
-
   const countSql = `
     SELECT COUNT(*) AS total
     FROM bookings b
+    ${joinsClause}
     ${whereClause}
   `;
 
@@ -1616,13 +1678,10 @@ const getBookingStatisticsData = async ({
   // =========================
   // DASHBOARD TOTALS
   // =========================
-
   const totalsSql = `
     SELECT
       COUNT(*) AS total_bookings,
-
       COALESCE(SUM(b.fares), 0) AS total_earnings,
-
       COALESCE(
         SUM(
           CASE
@@ -1633,8 +1692,8 @@ const getBookingStatisticsData = async ({
         ),
         0
       ) AS total_account_earnings
-
     FROM bookings b
+    ${joinsClause}
     ${whereClause}
   `;
 
@@ -1643,7 +1702,6 @@ const getBookingStatisticsData = async ({
   // =========================
   // SORTING
   // =========================
-
   const sortDirection =
     filters.sort_order?.toUpperCase() === "DESC" ? "DESC" : "ASC";
 
@@ -1656,10 +1714,10 @@ const getBookingStatisticsData = async ({
 
     case "datetime":
       orderColumn = `(
-    TO_DATE(b.pickup_date,'YYYY-FMMM-FMDD')
-    +
-    TRIM(b.pickup_time)::time
-)`;
+        TO_DATE(b.pickup_date,'YYYY-FMMM-FMDD')
+        +
+        TRIM(b.pickup_time)::time
+      )`;
       break;
 
     case "customer":
@@ -1710,25 +1768,48 @@ const getBookingStatisticsData = async ({
       orderColumn = "bs.booking_status";
       break;
 
+    case "pc":
+      orderColumn = "b.parking_charges";
+      break;
+
+    case "wc":
+      orderColumn = "b.waiting_charges";
+      break;
+
+    case "edc":
+      orderColumn = "b.extra_charges";
+      break;
+
+    case "mg":
+      orderColumn = "b.meet_and_greet";
+      break;
+
+    case "cc":
+      orderColumn = "b.congestion_charges";
+      break;
+
+    case "total_val":
+      orderColumn = "b.total_amount";
+      break;
+
     default:
       orderColumn = `(
-    TO_DATE(b.pickup_date,'YYYY-FMMM-FMDD')
-    +
-    TRIM(b.pickup_time)::time
-)`;
+        TO_DATE(b.pickup_date,'YYYY-FMMM-FMDD')
+        +
+        TRIM(b.pickup_time)::time
+      )`;
   }
 
   // =========================
   // DATA QUERY
   // =========================
-
   const dataSql = `
-  ${ENRICHED_SELECT}
-  ${whereClause}
-  ORDER BY ${orderColumn} ${sortDirection}
-  OFFSET $${idx++}
-  LIMIT $${idx++}
-`;
+    ${ENRICHED_SELECT}
+    ${whereClause}
+    ORDER BY ${orderColumn} ${sortDirection}
+    OFFSET $${idx++}
+    LIMIT $${idx++}
+  `;
 
   const dataParams = [...params, offset, limit];
 
@@ -1883,6 +1964,20 @@ const getIncomeReportData = async ({
   account_id,
   subsidiary_id,
   payment_type_id,
+
+  // Column Specific Searches
+  search_ref,
+  search_datetime,
+  search_pickup,
+  search_dropoff,
+  search_vehicle,
+  search_driver,
+  search_account,
+  search_fares,
+  search_parking,
+  search_waiting,
+  search_extra_drop,
+  search_total,
 }) => {
   const conditions = [
     "b.trash = false",
@@ -1890,66 +1985,113 @@ const getIncomeReportData = async ({
   ];
 
   const params = [];
-
   let idx = 1;
 
   // =========================
-  // DATE FILTER
+  // MAIN FILTERS
   // =========================
 
   if (from_date) {
     conditions.push(
-      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`,
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`
     );
     params.push(from_date);
   }
 
   if (to_date) {
     conditions.push(
-      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`,
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`
     );
     params.push(to_date);
   }
-
-  // =========================
-  // DRIVER
-  // =========================
 
   if (driver_id) {
     conditions.push(`b.driver_id = $${idx++}`);
     params.push(driver_id);
   }
 
-  // =========================
-  // ACCOUNT
-  // =========================
-
   if (account_id) {
     conditions.push(`b.account_id = $${idx++}`);
     params.push(account_id);
   }
-
-  // =========================
-  // SUBSIDIARY
-  // =========================
 
   if (subsidiary_id) {
     conditions.push(`b.subsidiary_id = $${idx++}`);
     params.push(subsidiary_id);
   }
 
-  // =========================
-  // PAYMENT TYPE
-  // =========================
-
-  // ALL => no payment_type_id
-  // CASH => 1
-  // CARD => 2
-  // ACCOUNT => 3
-
   if (payment_type_id) {
     conditions.push(`b.payment_type_id = $${idx++}`);
     params.push(payment_type_id);
+  }
+
+  // =========================
+  // COLUMN SEARCH FILTERS
+  // =========================
+
+  if (search_ref) {
+    conditions.push(`b.reference_number ILIKE $${idx++}`);
+    params.push(`%${search_ref.trim()}%`);
+  }
+
+  if (search_datetime) {
+    conditions.push(
+      `(b.pickup_date || ' ' || b.pickup_time) ILIKE $${idx++}`
+    );
+    params.push(`%${search_datetime.trim()}%`);
+  }
+
+  if (search_pickup) {
+    conditions.push(`b.pickup ILIKE $${idx++}`);
+    params.push(`%${search_pickup.trim()}%`);
+  }
+
+  if (search_dropoff) {
+    conditions.push(`b.dropoff ILIKE $${idx++}`);
+    params.push(`%${search_dropoff.trim()}%`);
+  }
+
+  if (search_vehicle) {
+    conditions.push(`vt.name ILIKE $${idx++}`);
+    params.push(`%${search_vehicle.trim()}%`);
+  }
+
+  if (search_driver) {
+    conditions.push(
+      `(d.name ILIKE $${idx} OR d.username ILIKE $${idx})`
+    );
+    idx++;
+    params.push(`%${search_driver.trim()}%`);
+  }
+
+  if (search_account) {
+    conditions.push(`a.name ILIKE $${idx++}`);
+    params.push(`%${search_account.trim()}%`);
+  }
+
+  if (search_fares) {
+    conditions.push(`COALESCE(b.fares, 0)::text ILIKE $${idx++}`);
+    params.push(`%${search_fares.trim()}%`);
+  }
+
+  if (search_parking) {
+    conditions.push(`COALESCE(b.parking_charges, 0)::text ILIKE $${idx++}`);
+    params.push(`%${search_parking.trim()}%`);
+  }
+
+  if (search_waiting) {
+    conditions.push(`COALESCE(b.waiting_charges, 0)::text ILIKE $${idx++}`);
+    params.push(`%${search_waiting.trim()}%`);
+  }
+
+  if (search_extra_drop) {
+    conditions.push(`COALESCE(b.extra_drop_charges, 0)::text ILIKE $${idx++}`);
+    params.push(`%${search_extra_drop.trim()}%`);
+  }
+
+  if (search_total) {
+    conditions.push(`COALESCE(b.total_charges, 0)::text ILIKE $${idx++}`);
+    params.push(`%${search_total.trim()}%`);
   }
 
   const whereClause = `
@@ -1957,7 +2099,7 @@ const getIncomeReportData = async ({
   `;
 
   // =========================
-  // TOTALS
+  // TOTALS QUERY
   // =========================
 
   const totalsSql = `
@@ -1978,42 +2120,34 @@ const getIncomeReportData = async ({
       ) AS total_earnings
 
     FROM bookings b
+    LEFT JOIN drivers d ON d.id = b.driver_id
+    LEFT JOIN vehicle_types vt ON vt.id = b.vehicle_type_id
+    LEFT JOIN accounts a ON a.id = b.account_id
     ${whereClause}
   `;
 
   const totalsResult = await pool.query(totalsSql, params);
 
   // =========================
-  // DATA
+  // DATA QUERY
   // =========================
 
   const sql = `
     SELECT
       b.id,
-
       UPPER(b.reference_number) AS reference_number,
-
       b.pickup_date,
       b.pickup_time,
-
       b.pickup,
       b.dropoff,
-
       COALESCE(vt.name, '') AS vehicle,
-
       d.username AS driver_username,
       d.name AS driver_name,
-
       a.name AS account,
-
       COALESCE(b.fares, 0) AS fares,
-
       COALESCE(b.parking_charges, 0) AS parking,
-
       COALESCE(b.waiting_charges, 0) AS waiting,
-
       COALESCE(b.extra_drop_charges, 0) AS extra_drop,
-
       ROUND(
         (
           COALESCE(b.fares, 0)
@@ -2023,32 +2157,21 @@ const getIncomeReportData = async ({
         )::numeric,
         2
       ) AS total
-
     FROM bookings b
-
-    LEFT JOIN drivers d
-      ON d.id = b.driver_id
-
-    LEFT JOIN vehicle_types vt
-      ON vt.id = b.vehicle_type_id
-
-    LEFT JOIN accounts a
-      ON a.id = b.account_id
-
+    LEFT JOIN drivers d ON d.id = b.driver_id
+    LEFT JOIN vehicle_types vt ON vt.id = b.vehicle_type_id
+    LEFT JOIN accounts a ON a.id = b.account_id
     ${whereClause}
-
     ORDER BY
-  TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') ASC,
-  TRIM(b.pickup_time)::time ASC
+      TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') ASC,
+      TRIM(b.pickup_time)::time ASC
   `;
 
   const result = await pool.query(sql, params);
 
   return {
     rows: result.rows,
-
     total_bookings: Number(totalsResult.rows[0].total_bookings || 0),
-
     total_earnings: Number(totalsResult.rows[0].total_earnings || 0),
   };
 };
@@ -2355,7 +2478,6 @@ const deleteBookingByIdModel = async (id) => {
   return rows[0] || null;
 };
 
-
 // ---------------------------------------------------------
 // CHECKING ID IS PRESENT OR NOT (FOR PERMANENT DELETE)
 // ---------------------------------------------------------
@@ -2437,5 +2559,5 @@ module.exports = {
   noPickupDashboardBooking,
   getFutureBookingHIstoryByDriverId,
   deleteBookingByIdModel,
-  findBookingforDelete
+  findBookingforDelete,
 };

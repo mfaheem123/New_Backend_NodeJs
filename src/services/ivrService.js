@@ -48,7 +48,7 @@ async function getCompanyByIVR(number) {
     AND status='active'
     LIMIT 1
     `,
-    [number]
+    [number],
   );
 
   return result.rows[0] || null; // Returns object { id, company_name } or null
@@ -110,7 +110,7 @@ exports.handleMainIvr = async (body) => {
 
     return transfer(
       OFFICE_NUMBER,
-      `Welcome to ${companyName}. Thank you for using our service. Please hold while we transfer your call to an operator.`
+      `Welcome to ${companyName}. Thank you for using our service. Please hold while we transfer your call to an operator.`,
     );
   }
 
@@ -145,7 +145,7 @@ exports.handleMainIvr = async (body) => {
 
       return transfer(
         OFFICE_NUMBER,
-        `Welcome back to ${companyName}. Please hold while we transfer your call to an operator.`
+        `Welcome back to ${companyName}. Please hold while we transfer your call to an operator.`,
       );
     }
 
@@ -154,7 +154,7 @@ exports.handleMainIvr = async (body) => {
       console.log("FLOW: DRIVER MENU");
 
       return waitForKeypress(
-        `Welcome back to ${companyName}. Press 1 for your Customer. Press 0 for Operator`
+        `Welcome back to ${companyName}. Press 1 for your Customer. Press 0 for Operator`,
       );
     }
 
@@ -204,7 +204,7 @@ exports.handleMainIvr = async (body) => {
         console.log("FLOW: CUSTOMER ACTIVE BOOKING MENU");
 
         return waitForKeypress(
-          `Welcome back to ${companyName}. Press 1 for your Driver. Press 0 for Operator`
+          `Welcome back to ${companyName}. Press 1 for your Driver. Press 0 for Operator`,
         );
       }
 
@@ -284,7 +284,7 @@ exports.handleFallbackIvr = async (body) => {
   if (session.step === 1) {
     if (!text)
       return waitForKeypress(
-        `Welcome back to ${session.company_name}. Thank you for calling. Press 1 to book a cab. Press 0 to contact the operator.`
+        `Welcome back to ${session.company_name}. Thank you for calling. Press 1 to book a cab. Press 0 to contact the operator.`,
       );
 
     if (text === "0") return transfer(OFFICE_NUMBER);

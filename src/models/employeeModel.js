@@ -231,5 +231,5 @@ module.exports = {
   create,
   update,
   remove,
-  checkCompanySubscriptionStatus
+  checkCompanySubscriptionStatus,
 };

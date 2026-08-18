@@ -6,9 +6,13 @@ const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 
 exports.handleWebhook = async (req, res) => {
   try {
-    console.log("🚀 INCOMING CALL RECORDING BODY:", JSON.stringify(req.body, null, 2));
+    console.log(
+      "🚀 INCOMING CALL RECORDING BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
 
-    const uploadedFile = req.files && req.files.length > 0 ? req.files[0] : req.file;
+    const uploadedFile =
+      req.files && req.files.length > 0 ? req.files[0] : req.file;
 
     // 🖼️ URL Construction (Subsidiary format ke mutabiq)
     let completeFilePath = null;
@@ -17,10 +21,18 @@ exports.handleWebhook = async (req, res) => {
       completeFilePath = `${BASE_URL}${uploadedFile.filename}`;
     } else if (req.body.filename) {
       // Agar filename body se aa raha ho
-      const cleanFilename = req.body.filename.split("/").pop().split("\\").pop();
+      const cleanFilename = req.body.filename
+        .split("/")
+        .pop()
+        .split("\\")
+        .pop();
       completeFilePath = `${BASE_URL}${cleanFilename}`;
     } else if (req.body.file_path) {
-      const cleanFilename = req.body.file_path.split("/").pop().split("\\").pop();
+      const cleanFilename = req.body.file_path
+        .split("/")
+        .pop()
+        .split("\\")
+        .pop();
       completeFilePath = `${BASE_URL}${cleanFilename}`;
     }
 
@@ -36,7 +48,10 @@ exports.handleWebhook = async (req, res) => {
     // Har key variant ko fallback ke sath bind karein (camelCase, snake_case aur VoIP API format)
     const payload = {
       company_id: company ? company.id : null,
-      authenticationToken: req.body.authenticationToken || req.body.authentication_token || req.body.token,
+      authenticationToken:
+        req.body.authenticationToken ||
+        req.body.authentication_token ||
+        req.body.token,
       eventType: req.body.eventType || req.body.event_type,
       id: req.body.id || req.body.recording_id,
       callID: req.body.callID || req.body.call_id,
@@ -45,7 +60,8 @@ exports.handleWebhook = async (req, res) => {
       source: source,
       destination: destination,
       isProtected: req.body.isProtected || req.body.is_protected,
-      filename: req.body.filename || (uploadedFile ? uploadedFile.originalname : null),
+      filename:
+        req.body.filename || (uploadedFile ? uploadedFile.originalname : null),
       file_path: completeFilePath,
       url: req.body.url || req.body.remote_url,
     };
@@ -55,7 +71,9 @@ exports.handleWebhook = async (req, res) => {
     return res.status(200).json({
       status: "success",
       message: "Call recording stored successfully",
-      company_matched: company ? company.company_name : "No matching active company found",
+      company_matched: company
+        ? company.company_name
+        : "No matching active company found",
       data: savedRecord,
     });
   } catch (error) {

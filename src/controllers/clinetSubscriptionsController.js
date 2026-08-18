@@ -11,7 +11,7 @@ const createTestSubscription = async (req, res) => {
     // STEP 1: Database se Plan Details fetch karein
     const planResult = await pool.query(
       `SELECT id, name, duration_days FROM subscription_plans WHERE id = $1`,
-      [targetPlanId]
+      [targetPlanId],
     );
 
     if (planResult.rows.length === 0) {
@@ -48,7 +48,7 @@ const createTestSubscription = async (req, res) => {
     // Previous active/expired sub close karein
     await pool.query(
       `UPDATE company_subscriptions SET status = 'CANCELLED' WHERE company_id = $1`,
-      [company_id]
+      [company_id],
     );
 
     const status = daysOffset <= 0 ? "EXPIRED" : "ACTIVE";
