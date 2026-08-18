@@ -49,7 +49,8 @@ const {
   getDriverEarningsBookings,
   noPickupDashboardBooking,
   getFutureBookingHIstoryByDriverId,
-  deleteBookingByIdModel
+  deleteBookingByIdModel,
+  findBookingforDelete
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -319,7 +320,7 @@ exports.getBookingByTabs = async (req, res) => {
 
       case 10:
         tabName = "PENDING BOOKINGS";
-        tabWhere = `b.booking_status_id != 11`;
+        tabWhere = `b.booking_status_id != 11 AND b.trash = false`;
         orderBy = `
   (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
 `;
@@ -2471,7 +2472,6 @@ exports.getFutureBookingHIstoryByDriverId = async (req, res) => {
   });
 };
 
-
 // ---------------------------------------------------------
 // DELETE BOOKING BY ID (PERMANENTLY)
 // ---------------------------------------------------------
@@ -2486,7 +2486,7 @@ exports.deleteBookingById = async (req, res) => {
       });
     }
 
-    const booking = await findBookingById(bookingId);
+    const booking = await findBookingforDelete(bookingId);
 
     if (!booking || booking.rowCount === 0) {
       return res.status(404).json({

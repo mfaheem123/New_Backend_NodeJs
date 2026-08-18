@@ -1774,9 +1774,24 @@ const getBookingStatisticsGraphData = async (filters = {}) => {
   // BOOKING STATUS
   // =========================
 
+  // if (filters.booking_status_id) {
+  //   conditions.push(`b.booking_status_id = $${idx++}`);
+  //   params.push(filters.booking_status_id);
+  // }
+
   if (filters.booking_status_id) {
-    conditions.push(`b.booking_status_id = $${idx++}`);
-    params.push(filters.booking_status_id);
+    const statuses = String(filters.booking_status_id)
+      .split(",")
+      .map((id) => Number(id.trim()))
+      .filter((id) => !isNaN(id));
+
+    if (statuses.length === 1) {
+      conditions.push(`b.booking_status_id = $${idx++}`);
+      params.push(statuses[0]);
+    } else if (statuses.length > 1) {
+      conditions.push(`b.booking_status_id = ANY($${idx++}::int[])`);
+      params.push(statuses);
+    }
   }
 
   // =========================
@@ -2340,6 +2355,30 @@ const deleteBookingByIdModel = async (id) => {
   return rows[0] || null;
 };
 
+
+// ---------------------------------------------------------
+// CHECKING ID IS PRESENT OR NOT (FOR PERMANENT DELETE)
+// ---------------------------------------------------------
+const findBookingforDelete = async (id) => {
+  const query = `
+    SELECT 
+      b.*,
+      vt.name as vehicle_type_name,
+      d.name as driver_name,
+      v.color,
+      v.make,
+      v.model,
+      v.vehicle_number
+    FROM bookings b
+    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id
+    LEFT JOIN drivers d ON b.driver_id = d.id
+    LEFT JOIN vehicles v ON d.vehicle_id = v.id
+    WHERE b.id = $1
+  `;
+
+  return pool.query(query, [id]);
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -2397,5 +2436,6 @@ module.exports = {
   getDriverEarningsBookings,
   noPickupDashboardBooking,
   getFutureBookingHIstoryByDriverId,
-  deleteBookingByIdModel
+  deleteBookingByIdModel,
+  findBookingforDelete
 };

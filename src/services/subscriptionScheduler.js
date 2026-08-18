@@ -7,7 +7,7 @@ function startSubscriptionScheduler() {
   // 1. ROZANA SUBAH 09:00 AM — WARNINGS & DAYS LEFT POPUPS
   // ========================================================
   // Cron syntax: '0 9 * * *' = Daily at 09:00 AM
-  cron.schedule("2 2 * * *", async () => {
+  cron.schedule("0 9 * * *", async () => {
     console.log("⏰ Running Daily Subscription Warnings Job...");
     try {
       // A) Expiry se 3 din pehle wali companies

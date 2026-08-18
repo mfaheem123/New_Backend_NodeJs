@@ -8,7 +8,7 @@ const createTestSubscription = async (req, res) => {
     const { company_id, plan_id, payment_status } = req.body;
     const targetPlanId = plan_id || 1;
 
-    // 🚀 STEP 1: Database se Plan Details aur uske Duration Days fetch karein
+    // STEP 1: Database se Plan Details fetch karein
     const planResult = await pool.query(
       `SELECT id, name, duration_days FROM subscription_plans WHERE id = $1`,
       [targetPlanId]
@@ -22,12 +22,9 @@ const createTestSubscription = async (req, res) => {
     }
 
     const plan = planResult.rows[0];
-    // Plan ke duration_days uthain (agar DB mein null ho toh default 30)
     const planDuration = Number(plan.duration_days) || 30;
 
-    // 🚀 STEP 2: Expiry Days decide karein
-    // Agar request body mein custom `days_offset` bheja hai (testing ke liye), toh woh use karein.
-    // Agar body mein `days_offset` nahi hai, toh Plan ke apne `duration_days` (e.g. Monthly=30, Yearly=365) apply honge.
+    // Days offset handle karein
     const daysOffset =
       req.body.days_offset !== undefined
         ? Number(req.body.days_offset)
@@ -36,10 +33,19 @@ const createTestSubscription = async (req, res) => {
     const startAt = new Date();
     const expiryAt = new Date();
 
-    // 🚀 STEP 3: Start Date mein Plan / Offset Days add karein
-    expiryAt.setDate(startAt.getDate() + daysOffset);
+    // 🚀 FIX: DB Constraint Violation Fix
+    if (daysOffset <= 0) {
+      // Agar subscription expired test karni hai (e.g. daysOffset = -1):
+      // Expiry date = Aaj se 1 din pehle
+      expiryAt.setDate(startAt.getDate() + daysOffset);
+      // Start date = Expiry date se plan duration peeche (e.g. 30 din pehle)
+      startAt.setDate(expiryAt.getDate() - planDuration);
+    } else {
+      // Normal / Active test scenario
+      expiryAt.setDate(startAt.getDate() + daysOffset);
+    }
 
-    // Previous active/expired subscription close karein
+    // Previous active/expired sub close karein
     await pool.query(
       `UPDATE company_subscriptions SET status = 'CANCELLED' WHERE company_id = $1`,
       [company_id]
@@ -65,7 +71,7 @@ const createTestSubscription = async (req, res) => {
 
     return res.status(200).json({
       status: true,
-      message: `Subscription created successfully for plan '${plan.name}' (${planDuration} days)`,
+      message: `Test subscription created successfully (${status})`,
       subscription: rows[0],
     });
   } catch (error) {

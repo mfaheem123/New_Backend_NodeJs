@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require("../db");
 
 class CallRecordingModel {
   static async create(data) {
@@ -13,18 +13,18 @@ class CallRecordingModel {
 
     const values = [
       data.company_id,
-      data.authenticationToken || null,
-      data.eventType || null,
-      data.id || null,
-      data.callID || null,
+      data.token || null,
+      data.event_type || null,
+      data.recording_id || null,
+      data.call_id || null,
       data.duration ? parseInt(data.duration, 10) : null,
       data.datetime ? new Date(data.datetime) : null,
       data.source || null,
       data.destination || null,
-      data.isProtected === 'true' || data.isProtected === true,
+      data.is_protected === "true" || data.is_protected === true,
       data.filename || null,
       data.file_path || null,
-      data.url || null
+      data.url || null,
     ];
 
     const result = await db.query(query, values);

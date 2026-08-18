@@ -1,9 +1,9 @@
-const db = require('../db');
+const db = require("../db");
 
 class CompanyClientModel {
   /**
    * Source ya Destination phone number se active company lookup karein
-   * @param {string} phoneNumber 
+   * @param {string} phoneNumber
    */
   static async findCompanyByPhone(phoneNumber) {
     if (!phoneNumber) return null;
@@ -19,8 +19,10 @@ class CompanyClientModel {
     `;
 
     // Normal search & leading zero sanitize format check
-    const formattedWithZero = cleanNumber.startsWith('0') ? cleanNumber : '0' + cleanNumber;
-    
+    const formattedWithZero = cleanNumber.startsWith("0")
+      ? cleanNumber
+      : "0" + cleanNumber;
+
     const result = await db.query(query, [cleanNumber, formattedWithZero]);
     return result.rows[0] || null;
   }

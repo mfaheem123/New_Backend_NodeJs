@@ -337,6 +337,20 @@ const login = async (req, res) => {
         .json({ status: false, message: "Invalid username or password" });
     }
 
+    // =========================================================
+    // 🔒 CHECK COMPANY SUBSCRIPTION LOCK STATUS
+    // =========================================================
+    const subStatus = await Employee.checkCompanySubscriptionStatus(employee.company_id);
+
+    if (subStatus && subStatus.calculated_status === "LOCKED") {
+      return res.status(400).json({
+        status: false,
+        code: "SUBSCRIPTION_EXPIRED",
+        message: "Your account is expired. Please pay to continue your subscription.",
+      });
+    }
+    // =========================================================
+
     // CHECK ACTIVE SHIFT
     const activeShift = await ShiftHistory.getActiveShift(employee.id);
 

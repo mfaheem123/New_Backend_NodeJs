@@ -200,6 +200,30 @@ const remove = async (id) => {
   return rows[0] || null;
 };
 
+// Employee Model ya Company Subscription Model file mein adds karein
+const checkCompanySubscriptionStatus = async (company_id) => {
+  const query = `
+    SELECT 
+      cs.*,
+      CASE 
+        -- 1. Expiry ke baad Grace Period active hai
+        WHEN cs.grace_until IS NOT NULL AND cs.grace_until >= NOW() THEN 'GRACE'
+        -- 2. Expiry ho chuki hai aur Grace Period bhi khatam/null hai
+        WHEN (cs.status = 'EXPIRED' OR cs.expiry_at <= NOW()) 
+             AND (cs.grace_until IS NULL OR cs.grace_until < NOW()) THEN 'LOCKED'
+        -- 3. Subscription active hai
+        ELSE 'ACTIVE'
+      END AS calculated_status
+    FROM company_subscriptions cs
+    WHERE cs.company_id = $1
+    ORDER BY cs.id DESC
+    LIMIT 1;
+  `;
+
+  const { rows } = await pool.query(query, [company_id]);
+  return rows[0] || null;
+};
+
 module.exports = {
   getAll,
   getById,
@@ -207,4 +231,5 @@ module.exports = {
   create,
   update,
   remove,
+  checkCompanySubscriptionStatus
 };
