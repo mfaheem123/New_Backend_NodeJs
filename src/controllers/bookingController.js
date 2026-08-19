@@ -51,7 +51,8 @@ const {
   getFutureBookingHIstoryByDriverId,
   deleteBookingByIdModel,
   findBookingforDelete,
-  getSearchBookingsData
+  getSearchBookingsData,
+  getDriverBookingStatisticsData
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -2650,13 +2651,151 @@ exports.getPickBookings = async (req, res) => {
       status: true,
       count: result.rows.length,
       bookings: result.rows,
-      
     });
   } catch (error) {
     console.error("Error fetching pick bookings:", error);
 
     res.status(500).json({
       status: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// ---------------------------------------------------------
+// GET DRIVER BOOKINGS STATISTICS DATA
+// ---------------------------------------------------------
+exports.getDriverBookingStatistics = async (req, res) => {
+  try {
+    const { driver_id } = req.params;
+
+    if (!driver_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Driver ID is required",
+      });
+    }
+
+    const {
+      page = 1,
+      limit = 100,
+
+      from_date,
+      to_date,
+
+      from_time,
+      to_time,
+
+      booking_status_id,
+      payment_type_id, // "all" ya single/multiple IDs e.g. "1" ya "1,2"
+
+      customer,
+      mobile,
+      telephone,
+
+      account_id,
+      department,
+
+      order_number,
+      booked_by,
+
+      employee_id,
+      subsidiary_id,
+
+      reference_number,
+      pickup,
+      dropoff,
+
+      invoice_number,
+      datetime,
+      account_name,
+      payment_type_name,
+      driver_name,
+      subsidiary_name,
+      status_name,
+      journey_type,
+      vehicle_type,
+      fare,
+      acc_fare,
+
+      pc,
+      wc,
+      edc,
+      mg,
+      cc,
+      total_val,
+
+      sort_by = "datetime",
+      sort_order = "DESC",
+    } = req.query;
+
+    const result = await getDriverBookingStatisticsData({
+      driver_id: Number(driver_id),
+      page: Number(page),
+      limit: Number(limit),
+      filters: {
+        from_date,
+        to_date,
+        from_time,
+        to_time,
+        booking_status_id,
+        payment_type_id,
+        customer,
+        mobile,
+        telephone,
+        account_id,
+        department,
+        order_number,
+        booked_by,
+        employee_id,
+        subsidiary_id,
+        reference_number,
+        pickup,
+        dropoff,
+        invoice_number,
+        datetime,
+        account_name,
+        payment_type_name,
+        driver_name,
+        subsidiary_name,
+        status_name,
+        journey_type,
+        vehicle_type,
+        fare,
+        acc_fare,
+        pc,
+        wc,
+        edc,
+        mg,
+        cc,
+        total_val,
+        sort_by,
+        sort_order,
+      },
+    });
+
+    res.json({
+      success: true,
+      page: Number(page),
+      limit: Number(limit),
+      total: result.total,
+      total_pages: Math.ceil(result.total / limit),
+      count: result.rows.length,
+
+      // Mobile Dashboard Cards Data
+      summary_cards: result.summaryCards,
+
+      // Query Totals
+      totals: result.totals,
+
+      // Enriched Data Response
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error("Error in getDriverBookingStatistics:", error);
+    res.status(500).json({
+      success: false,
       message: error.message,
     });
   }

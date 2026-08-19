@@ -32,4 +32,6 @@ router.post(
   callRecordingController.handleWebhook,
 );
 
+router.get("/recordings", callRecordingController.getCallRecordings);
+
 module.exports = router;

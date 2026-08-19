@@ -332,10 +332,11 @@ const getDriverLoginHistory = async (filters) => {
 
   const result = await db.query(query, values);
 
-  const totalRecords = result.rows.length > 0 ? parseInt(result.rows[0].total_count, 10) : 0;
-  
+  const totalRecords =
+    result.rows.length > 0 ? parseInt(result.rows[0].total_count, 10) : 0;
+
   // Clean 'total_count' from individual row objects
-  const data = result.rows.map(row => {
+  const data = result.rows.map((row) => {
     const { total_count, ...record } = row;
     return record;
   });

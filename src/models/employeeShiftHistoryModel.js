@@ -125,7 +125,8 @@ const getEmployeeShiftHistory = async ({
 
   const { rows: resultRows } = await pool.query(fullQuery, values);
 
-  const totalRecords = resultRows.length > 0 ? parseInt(resultRows[0].total_count, 10) : 0;
+  const totalRecords =
+    resultRows.length > 0 ? parseInt(resultRows[0].total_count, 10) : 0;
 
   // Cleanup total_count key from output objects
   const data = resultRows.map((row) => {
