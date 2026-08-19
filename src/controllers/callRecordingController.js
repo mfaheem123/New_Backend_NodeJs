@@ -46,25 +46,25 @@ exports.handleWebhook = async (req, res) => {
     }
 
     // Har key variant ko fallback ke sath bind karein (camelCase, snake_case aur VoIP API format)
-    const payload = {
-      company_id: company ? company.id : null,
-      authenticationToken:
-        req.body.authenticationToken ||
-        req.body.authentication_token ||
-        req.body.token,
-      eventType: req.body.eventType || req.body.event_type,
-      id: req.body.id || req.body.recording_id,
-      callID: req.body.callID || req.body.call_id,
-      duration: req.body.duration,
-      datetime: req.body.datetime || req.body.recording_datetime,
-      source: source,
-      destination: destination,
-      isProtected: req.body.isProtected || req.body.is_protected,
-      filename:
-        req.body.filename || (uploadedFile ? uploadedFile.originalname : null),
-      file_path: completeFilePath,
-      url: req.body.url || req.body.remote_url,
-    };
+  const payload = {
+  company_id: company ? company.id : null,
+  token:
+    req.body.authenticationToken ||
+    req.body.authentication_token ||
+    req.body.token,
+  event_type: req.body.eventType || req.body.event_type,
+  recording_id: req.body.id || req.body.recording_id,
+  call_id: req.body.callID || req.body.call_id,
+  duration: req.body.duration,
+  datetime: req.body.datetime || req.body.recording_datetime,
+  source: source,
+  destination: destination,
+  is_protected: req.body.isProtected || req.body.is_protected,
+  filename:
+    req.body.filename || (uploadedFile ? uploadedFile.originalname : null),
+  file_path: completeFilePath,
+  url: req.body.url || req.body.remote_url,
+};
 
     const savedRecord = await CallRecordingModel.create(payload);
 

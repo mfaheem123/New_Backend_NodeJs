@@ -238,7 +238,9 @@ const getDriverLoginHistory = async (filters) => {
       json_build_object(
         'username',
         d.username
-      ) AS driver
+      ) AS driver,
+
+      COUNT(*) OVER() AS total_count
 
     FROM driver_shift_histories dsh
 
@@ -249,123 +251,103 @@ const getDriverLoginHistory = async (filters) => {
   `;
 
   const values = [];
-
   let count = 1;
 
   // DRIVER ID FILTER
   if (filters.driver_id) {
-    query += `
-      AND dsh.driver_id = $${count}
-    `;
-
+    query += ` AND dsh.driver_id = $${count} `;
     values.push(filters.driver_id);
-
     count++;
   }
 
   // FROM DATE - TO DATE FILTER
   if (filters.from_date && filters.to_date) {
-    query += `
-      AND dsh.login_date
-      BETWEEN $${count}
-      AND $${count + 1}
-    `;
-
+    query += ` AND dsh.login_date BETWEEN $${count} AND $${count + 1} `;
     values.push(filters.from_date, filters.to_date);
-
     count += 2;
   }
 
   // FROM TIME - TO TIME FILTER
   if (filters.from_time && filters.to_time) {
-    query += `
-      AND dsh.login_time
-      BETWEEN $${count}
-      AND $${count + 1}
-    `;
-
+    query += ` AND dsh.login_time BETWEEN $${count} AND $${count + 1} `;
     values.push(filters.from_time, filters.to_time);
-
     count += 2;
   }
 
   // USERNAME SEARCH
   if (filters.username) {
-    query += `
-      AND d.username ILIKE $${count}
-    `;
-
+    query += ` AND d.username ILIKE $${count} `;
     values.push(`%${filters.username}%`);
-
     count++;
   }
 
   // BOOKING COUNT FILTER
-if (
-  filters.booking !== undefined &&
-  filters.booking !== null &&
-  filters.booking !== ""
-) {
-  query += `
-    AND COALESCE(cardinality(dsh.booking), 0) = $${count}
-  `;
-
-  values.push(Number(filters.booking));
-
-  count++;
-}
+  if (
+    filters.booking !== undefined &&
+    filters.booking !== null &&
+    filters.booking !== ""
+  ) {
+    query += ` AND COALESCE(cardinality(dsh.booking), 0) = $${count} `;
+    values.push(Number(filters.booking));
+    count++;
+  }
 
   // LOGIN DATE SEARCH
   if (filters.login_date) {
-    query += `
-      AND dsh.login_date ILIKE $${count}
-    `;
-
+    query += ` AND dsh.login_date ILIKE $${count} `;
     values.push(`%${filters.login_date}%`);
-
     count++;
   }
 
   // LOGOUT DATE SEARCH
   if (filters.logout_date) {
-    query += `
-      AND dsh.logout_date ILIKE $${count}
-    `;
-
+    query += ` AND dsh.logout_date ILIKE $${count} `;
     values.push(`%${filters.logout_date}%`);
-
     count++;
   }
 
   // LOGIN TIME SEARCH
   if (filters.login_time) {
-    query += `
-      AND dsh.login_time ILIKE $${count}
-    `;
-
+    query += ` AND dsh.login_time ILIKE $${count} `;
     values.push(`%${filters.login_time}%`);
-
     count++;
   }
 
   // LOGOUT TIME SEARCH
   if (filters.logout_time) {
-    query += `
-      AND dsh.logout_time ILIKE $${count}
-    `;
-
+    query += ` AND dsh.logout_time ILIKE $${count} `;
     values.push(`%${filters.logout_time}%`);
-
     count++;
   }
 
-  query += `
-    ORDER BY dsh.id DESC
-  `;
+  query += ` ORDER BY dsh.id DESC `;
+
+  // PAGINATION LOGIC
+  const page = parseInt(filters.page, 10) || 1;
+  const limit = parseInt(filters.limit, 10) || 20;
+  const offset = (page - 1) * limit;
+
+  query += ` LIMIT $${count} OFFSET $${count + 1} `;
+  values.push(limit, offset);
 
   const result = await db.query(query, values);
 
-  return result.rows;
+  const totalRecords = result.rows.length > 0 ? parseInt(result.rows[0].total_count, 10) : 0;
+  
+  // Clean 'total_count' from individual row objects
+  const data = result.rows.map(row => {
+    const { total_count, ...record } = row;
+    return record;
+  });
+
+  return {
+    data,
+    total: totalRecords,
+    total_pages: Math.ceil(totalRecords / limit),
+    page,
+    limit,
+    count: data.length,
+  };
 };
 
 const addBookingToShift = async (driver_id, booking_id) => {

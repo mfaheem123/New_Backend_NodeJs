@@ -51,6 +51,7 @@ const {
   getFutureBookingHIstoryByDriverId,
   deleteBookingByIdModel,
   findBookingforDelete,
+  getSearchBookingsData
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -1619,9 +1620,13 @@ exports.getCompletedBookingLogsByDriverId = async (req, res) => {
       dropoff,
       fares,
       datetime,
+
+      // PAGINATION FILTERS
+      page = 1,
+      limit = 20,
     } = req.query;
 
-    const bookings = await getCompletedBookingLogsByDriverId(driver_id, {
+    const result = await getCompletedBookingLogsByDriverId(driver_id, {
       from_date,
       to_date,
       from_time,
@@ -1633,26 +1638,26 @@ exports.getCompletedBookingLogsByDriverId = async (req, res) => {
       dropoff,
       fares,
       datetime,
+
+      page,
+      limit,
     });
 
-    if (!bookings || bookings.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Booking Not Found",
-      });
-    }
+    const parsedData = result.data.map((b) => parseJSONFields(b));
 
-    const data = bookings.map((b) => parseJSONFields(b));
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      count: bookings.length,
-      bookings: data,
+      page: result.page,
+      limit: result.limit,
+      total: result.total,
+      total_pages: result.total_pages,
+      count: result.count,
+      bookings: parsedData,
     });
   } catch (error) {
     console.log(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -1800,26 +1805,24 @@ exports.getBookingStatistics = async (req, res) => {
       driver_id,
 
       invoice_number,
-      datetime,          // NEW
-      account_name,      // NEW (ACC)
+      datetime, // NEW
+      account_name, // NEW (ACC)
       payment_type_name, // NEW (P/T)
-      driver_name,       // NEW (DRV)
-      subsidiary_name,   // NEW (SUBS)
-      status_name,       // NEW (STATUS)
+      driver_name, // NEW (DRV)
+      subsidiary_name, // NEW (SUBS)
+      status_name, // NEW (STATUS)
       journey_type,
       vehicle_type,
       fare,
       acc_fare,
 
-
       // NEW CHARGES & TOTAL FILTERS
-      pc,        // Parking Charges
-      wc,        // Waiting Charges
-      edc,       // Extra Driver/Distance Charges
-      mg,        // Meet & Greet
-      cc,        // Congestion Charges
+      pc, // Parking Charges
+      wc, // Waiting Charges
+      edc, // Extra Driver/Distance Charges
+      mg, // Meet & Greet
+      cc, // Congestion Charges
       total_val, // Total Amount
-      
 
       sort_by = "datetime",
       sort_order = "ASC",
@@ -1965,6 +1968,10 @@ exports.getIncomeReport = async (req, res) => {
       search_waiting,
       search_extra_drop,
       search_total,
+
+      // Pagination
+      page = 1,
+      limit = 20,
     } = req.query;
 
     const result = await getIncomeReportData({
@@ -1987,10 +1994,17 @@ exports.getIncomeReport = async (req, res) => {
       search_waiting,
       search_extra_drop,
       search_total,
+
+      page,
+      limit,
     });
 
     res.json({
       success: true,
+      page: result.page,
+      limit: result.limit,
+      total_pages: result.total_pages,
+      count: result.count,
       total_bookings: result.total_bookings,
       total_earnings: result.total_earnings,
       bookings: result.rows,
@@ -2581,6 +2595,69 @@ exports.deleteBookingById = async (req, res) => {
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET PICK BOOKING DATA
+// ---------------------------------------------------------
+exports.getPickBookings = async (req, res) => {
+  try {
+    const {
+      // Top Main Filters
+      name,
+      mobile,
+      telephone,
+      from_date,
+      to_date,
+
+      // Column Specific Filters
+      search_ref,
+      search_datetime,
+      search_vehicle,
+      search_pickup,
+      search_dropoff,
+      search_fares,
+      search_customer,
+      search_account,
+      search_driver,
+      search_payment_type,
+      search_status,
+    } = req.query;
+
+    const result = await getSearchBookingsData({
+      name,
+      mobile,
+      telephone,
+      from_date,
+      to_date,
+
+      search_ref,
+      search_datetime,
+      search_vehicle,
+      search_pickup,
+      search_dropoff,
+      search_fares,
+      search_customer,
+      search_account,
+      search_driver,
+      search_payment_type,
+      search_status,
+    });
+
+    res.json({
+      status: true,
+      count: result.rows.length,
+      bookings: result.rows,
+      
+    });
+  } catch (error) {
+    console.error("Error fetching pick bookings:", error);
+
+    res.status(500).json({
+      status: false,
+      message: error.message,
     });
   }
 };

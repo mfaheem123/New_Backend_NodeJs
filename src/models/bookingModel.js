@@ -1129,6 +1129,9 @@ const getCompletedBookingLogsByDriverId = async (driver_id, filters = {}) => {
     dropoff,
     fares,
     datetime,
+
+    page = 1,
+    limit = 20,
   } = filters;
 
   let whereClause = `
@@ -1142,9 +1145,9 @@ const getCompletedBookingLogsByDriverId = async (driver_id, filters = {}) => {
   // DATE RANGE FILTER
   if (from_date && to_date) {
     whereClause += `
-    AND b.pickup_date::DATE
-    BETWEEN $${index}::DATE AND $${index + 1}::DATE
-  `;
+      AND b.pickup_date::DATE
+      BETWEEN $${index}::DATE AND $${index + 1}::DATE
+    `;
 
     values.push(from_date, to_date);
     index += 2;
@@ -1223,17 +1226,45 @@ const getCompletedBookingLogsByDriverId = async (driver_id, filters = {}) => {
     index++;
   }
 
+  // PAGINATION LOGIC
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+  const offset = (pageNum - 1) * limitNum;
+
+  // Wrapper Query approach to safely combine ENRICHED_SELECT with window function
   const sql = `
-    ${ENRICHED_SELECT}
-    ${whereClause}
-    ORDER BY
-      b.pickup_date DESC,
-      b.pickup_time DESC
+    WITH main_query AS (
+      ${ENRICHED_SELECT}
+      ${whereClause}
+      ORDER BY
+        b.pickup_date DESC,
+        b.pickup_time DESC
+    )
+    SELECT *, COUNT(*) OVER() AS total_count
+    FROM main_query
+    LIMIT $${index} OFFSET $${index + 1}
   `;
+
+  values.push(limitNum, offset);
 
   const res = await pool.query(sql, values);
 
-  return res.rows;
+  const totalRecords = res.rows.length > 0 ? parseInt(res.rows[0].total_count, 10) : 0;
+
+  // Clean total_count key from output rows
+  const rows = res.rows.map((row) => {
+    const { total_count, ...record } = row;
+    return record;
+  });
+
+  return {
+    data: rows,
+    total: totalRecords,
+    total_pages: Math.ceil(totalRecords / limitNum),
+    page: pageNum,
+    limit: limitNum,
+    count: rows.length,
+  };
 };
 
 // ---------------------------------------------------------
@@ -1978,6 +2009,10 @@ const getIncomeReportData = async ({
   search_waiting,
   search_extra_drop,
   search_total,
+
+  // Pagination Params
+  page = 1,
+  limit = 20,
 }) => {
   const conditions = [
     "b.trash = false",
@@ -2035,9 +2070,7 @@ const getIncomeReportData = async ({
   }
 
   if (search_datetime) {
-    conditions.push(
-      `(b.pickup_date || ' ' || b.pickup_time) ILIKE $${idx++}`
-    );
+    conditions.push(`(b.pickup_date || ' ' || b.pickup_time) ILIKE $${idx++}`);
     params.push(`%${search_datetime.trim()}%`);
   }
 
@@ -2057,9 +2090,7 @@ const getIncomeReportData = async ({
   }
 
   if (search_driver) {
-    conditions.push(
-      `(d.name ILIKE $${idx} OR d.username ILIKE $${idx})`
-    );
+    conditions.push(`(d.name ILIKE $${idx} OR d.username ILIKE $${idx})`);
     idx++;
     params.push(`%${search_driver.trim()}%`);
   }
@@ -2099,7 +2130,7 @@ const getIncomeReportData = async ({
   `;
 
   // =========================
-  // TOTALS QUERY
+  // TOTALS QUERY (Calculates grand total for filtered records)
   // =========================
 
   const totalsSql = `
@@ -2128,8 +2159,21 @@ const getIncomeReportData = async ({
 
   const totalsResult = await pool.query(totalsSql, params);
 
+  const totalBookingsCount = Number(totalsResult.rows[0].total_bookings || 0);
+  const totalEarningsAmount = Number(totalsResult.rows[0].total_earnings || 0);
+
   // =========================
-  // DATA QUERY
+  // PAGINATION LOGIC
+  // =========================
+
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+  const offset = (pageNum - 1) * limitNum;
+
+  const dataParams = [...params, limitNum, offset];
+
+  // =========================
+  // DATA QUERY WITH PAGINATION
   // =========================
 
   const sql = `
@@ -2165,14 +2209,19 @@ const getIncomeReportData = async ({
     ORDER BY
       TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') ASC,
       TRIM(b.pickup_time)::time ASC
+    LIMIT $${idx} OFFSET $${idx + 1}
   `;
 
-  const result = await pool.query(sql, params);
+  const result = await pool.query(sql, dataParams);
 
   return {
     rows: result.rows,
-    total_bookings: Number(totalsResult.rows[0].total_bookings || 0),
-    total_earnings: Number(totalsResult.rows[0].total_earnings || 0),
+    total_bookings: totalBookingsCount,
+    total_earnings: totalEarningsAmount,
+    page: pageNum,
+    limit: limitNum,
+    total_pages: Math.ceil(totalBookingsCount / limitNum),
+    count: result.rows.length,
   };
 };
 
@@ -2501,6 +2550,179 @@ const findBookingforDelete = async (id) => {
   return pool.query(query, [id]);
 };
 
+// ---------------------------------------------------------
+// GET SEARCH BOOKINGS DATA
+// ---------------------------------------------------------
+const getSearchBookingsData = async ({
+  // Top Filters
+  name,
+  mobile,
+  telephone,
+  from_date,
+  to_date,
+
+  // Table Column Specific Searches
+  search_ref,
+  search_datetime,
+  search_vehicle,
+  search_pickup,
+  search_dropoff,
+  search_fares,
+  search_customer,
+  search_account,
+  search_driver,
+  search_payment_type,
+  search_status,
+}) => {
+  const conditions = ["b.trash = false"];
+  const params = [];
+  let idx = 1;
+
+  // =========================
+  // TOP FILTERS LOGIC
+  // =========================
+
+  if (name) {
+    conditions.push(`b.name ILIKE $${idx++}`);
+    params.push(`%${name.trim()}%`);
+  }
+
+  if (mobile) {
+    conditions.push(`b.mobile ILIKE $${idx++}`);
+    params.push(`%${mobile.trim()}%`);
+  }
+
+  if (telephone) {
+    conditions.push(`b.telephone ILIKE $${idx++}`);
+    params.push(`%${telephone.trim()}%`);
+  }
+
+  if (from_date) {
+    conditions.push(
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`
+    );
+    params.push(from_date);
+  }
+
+  if (to_date) {
+    conditions.push(
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`
+    );
+    params.push(to_date);
+  }
+
+  // =========================
+  // COLUMN SEARCH FILTERS
+  // =========================
+
+  if (search_ref) {
+    conditions.push(`b.reference_number ILIKE $${idx++}`);
+    params.push(`%${search_ref.trim()}%`);
+  }
+
+  if (search_datetime) {
+    conditions.push(`(b.pickup_date || ' ' || b.pickup_time) ILIKE $${idx++}`);
+    params.push(`%${search_datetime.trim()}%`);
+  }
+
+  if (search_vehicle) {
+    conditions.push(`vt.name ILIKE $${idx++}`);
+    params.push(`%${search_vehicle.trim()}%`);
+  }
+
+  if (search_pickup) {
+    conditions.push(`b.pickup ILIKE $${idx++}`);
+    params.push(`%${search_pickup.trim()}%`);
+  }
+
+  if (search_dropoff) {
+    conditions.push(`b.dropoff ILIKE $${idx++}`);
+    params.push(`%${search_dropoff.trim()}%`);
+  }
+
+  if (search_fares) {
+    conditions.push(`COALESCE(b.fares, 0)::text ILIKE $${idx++}`);
+    params.push(`%${search_fares.trim()}%`);
+  }
+
+  if (search_customer) {
+    conditions.push(`b.name ILIKE $${idx++}`);
+    params.push(`%${search_customer.trim()}%`);
+  }
+
+  if (search_account) {
+    conditions.push(`a.name ILIKE $${idx++}`);
+    params.push(`%${search_account.trim()}%`);
+  }
+
+  if (search_driver) {
+    conditions.push(`(d.name ILIKE $${idx} OR d.username ILIKE $${idx})`);
+    idx++;
+    params.push(`%${search_driver.trim()}%`);
+  }
+
+  if (search_payment_type) {
+    conditions.push(`pt.name ILIKE $${idx++}`);
+    params.push(`%${search_payment_type.trim()}%`);
+  }
+
+  if (search_status) {
+    conditions.push(`bs.booking_status ILIKE $${idx++}`);
+    params.push(`%${search_status.trim()}%`);
+  }
+
+  const whereClause = `WHERE ${conditions.join(" AND ")}`;
+
+  // =========================
+  // MAIN QUERY
+  // =========================
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    ${whereClause}
+    ORDER BY
+      TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') DESC,
+      TRIM(b.pickup_time)::time DESC
+  `;
+
+  const result = await pool.query(sql, params);
+
+  // =========================
+  // STATS QUERY
+  // =========================
+
+  const countsSql = `
+    SELECT 
+      COUNT(CASE WHEN bs.booking_status = 'prebooking' THEN 1 END) AS prebookings,
+      COUNT(CASE WHEN bs.booking_status = 'quoted' THEN 1 END) AS quoted,
+      COUNT(CASE WHEN b.booking_source = 'ivr' THEN 1 END) AS ivr,
+      COUNT(CASE WHEN b.booking_source = 'web' THEN 1 END) AS web,
+      COUNT(CASE WHEN b.booking_source = 'app' THEN 1 END) AS app,
+      COUNT(CASE WHEN b.created_at >= NOW() - INTERVAL '1 day' THEN 1 END) AS recent,
+      COUNT(*) AS total_bookings
+    FROM bookings b
+    LEFT JOIN booking_statuses bs ON b.booking_status_id = bs.id
+    WHERE b.trash = false
+  `;
+
+  const countsResult = await pool.query(countsSql);
+  const countsData = countsResult.rows[0];
+
+  return {
+    rows: result.rows,
+    bookingCount: {
+      status: true,
+      bookings: parseInt(countsData.total_bookings, 10) || 0,
+      prebookings: parseInt(countsData.prebookings, 10) || 0,
+      recent: parseInt(countsData.recent, 10) || 0,
+      quoted: parseInt(countsData.quoted, 10) || 0,
+      web: parseInt(countsData.web, 10) || 0,
+      app: parseInt(countsData.app, 10) || 0,
+      ivr: parseInt(countsData.ivr, 10) || 0,
+    },
+  };
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -2560,4 +2782,5 @@ module.exports = {
   getFutureBookingHIstoryByDriverId,
   deleteBookingByIdModel,
   findBookingforDelete,
+  getSearchBookingsData
 };

@@ -15,6 +15,9 @@ exports.getEmployeeShiftHistory = async (req, res) => {
       search_bookings_dispatched,
       search_bookings_cancelled,
       search_calls_answered,
+      // Pagination Params
+      page = 1,
+      limit = 20,
     } = req.query;
 
     if (!employee_id) {
@@ -24,7 +27,7 @@ exports.getEmployeeShiftHistory = async (req, res) => {
       });
     }
 
-    const data = await employeeShiftHistoryModel.getEmployeeShiftHistory({
+    const result = await employeeShiftHistoryModel.getEmployeeShiftHistory({
       employee_id,
       from_date,
       to_date,
@@ -36,11 +39,18 @@ exports.getEmployeeShiftHistory = async (req, res) => {
       search_bookings_dispatched,
       search_bookings_cancelled,
       search_calls_answered,
+      page,
+      limit,
     });
 
     return res.status(200).json({
       status: true,
-      employee_shift_history: data,
+      page: result.page,
+      limit: result.limit,
+      total: result.total,
+      total_pages: result.total_pages,
+      count: result.count,
+      employee_shift_history: result.data,
     });
   } catch (error) {
     console.error("EMPLOYEE SHIFT HISTORY ERROR:", error);

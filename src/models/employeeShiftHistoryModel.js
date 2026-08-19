@@ -12,8 +12,10 @@ const getEmployeeShiftHistory = async ({
   search_bookings_dispatched,
   search_bookings_cancelled,
   search_calls_answered,
+  page = 1,
+  limit = 20,
 }) => {
-  let query = `
+  let innerQuery = `
     SELECT 
       esh.id,
       esh.employee_id,
@@ -41,14 +43,14 @@ const getEmployeeShiftHistory = async ({
 
   // DATE FILTER
   if (from_date && to_date) {
-    query += ` AND DATE(esh.login_datetime) BETWEEN $${index} AND $${index + 1}`;
+    innerQuery += ` AND DATE(esh.login_datetime) BETWEEN $${index} AND $${index + 1}`;
     values.push(from_date, to_date);
     index += 2;
   }
 
   // TIME FILTER
   if (from_time && to_time) {
-    query += ` AND TO_CHAR(esh.login_datetime, 'HH24:MI') BETWEEN $${index} AND $${index + 1}`;
+    innerQuery += ` AND TO_CHAR(esh.login_datetime, 'HH24:MI') BETWEEN $${index} AND $${index + 1}`;
     values.push(from_time, to_time);
     index += 2;
   }
@@ -57,56 +59,88 @@ const getEmployeeShiftHistory = async ({
 
   // 1. LOGIN DATETIME SEARCH
   if (search_login) {
-  query += ` AND (
-    TO_CHAR(esh.login_datetime, 'DD-MM-YY HH24:MI:SS') ILIKE $${index}
-    OR TO_CHAR(esh.login_datetime, 'YYYY-MM-DD HH24:MI:SS') ILIKE $${index}
-  )`;
-  values.push(`%${search_login}%`);
-  index++;
-}
+    innerQuery += ` AND (
+      TO_CHAR(esh.login_datetime, 'DD-MM-YY HH24:MI:SS') ILIKE $${index}
+      OR TO_CHAR(esh.login_datetime, 'YYYY-MM-DD HH24:MI:SS') ILIKE $${index}
+    )`;
+    values.push(`%${search_login}%`);
+    index++;
+  }
 
-if (search_logout) {
-  query += ` AND (
-    TO_CHAR(esh.logout_datetime, 'DD-MM-YY HH24:MI:SS') ILIKE $${index}
-    OR TO_CHAR(esh.logout_datetime, 'YYYY-MM-DD HH24:MI:SS') ILIKE $${index}
-  )`;
-  values.push(`%${search_logout}%`);
-  index++;
-}
+  // 2. LOGOUT DATETIME SEARCH
+  if (search_logout) {
+    innerQuery += ` AND (
+      TO_CHAR(esh.logout_datetime, 'DD-MM-YY HH24:MI:SS') ILIKE $${index}
+      OR TO_CHAR(esh.logout_datetime, 'YYYY-MM-DD HH24:MI:SS') ILIKE $${index}
+    )`;
+    values.push(`%${search_logout}%`);
+    index++;
+  }
 
   // 3. BOOKINGS CREATED SEARCH
   if (search_bookings_created) {
-    query += ` AND COALESCE(esh.bookings_created, 0)::text ILIKE $${index}`;
+    innerQuery += ` AND COALESCE(esh.bookings_created, 0)::text ILIKE $${index}`;
     values.push(`%${search_bookings_created}%`);
     index++;
   }
 
   // 4. BOOKINGS DISPATCHED SEARCH
   if (search_bookings_dispatched) {
-    query += ` AND COALESCE(esh.bookings_dispatched, 0)::text ILIKE $${index}`;
+    innerQuery += ` AND COALESCE(esh.bookings_dispatched, 0)::text ILIKE $${index}`;
     values.push(`%${search_bookings_dispatched}%`);
     index++;
   }
 
   // 5. BOOKINGS CANCELLED SEARCH
   if (search_bookings_cancelled) {
-    query += ` AND COALESCE(esh.bookings_cancelled, 0)::text ILIKE $${index}`;
+    innerQuery += ` AND COALESCE(esh.bookings_cancelled, 0)::text ILIKE $${index}`;
     values.push(`%${search_bookings_cancelled}%`);
     index++;
   }
 
   // 6. CALLS ANSWERED SEARCH
   if (search_calls_answered) {
-    query += ` AND COALESCE(esh.calls_answered, 0)::text ILIKE $${index}`;
+    innerQuery += ` AND COALESCE(esh.calls_answered, 0)::text ILIKE $${index}`;
     values.push(`%${search_calls_answered}%`);
     index++;
   }
 
-  query += ` ORDER BY esh.login_datetime ASC`;
+  // PAGINATION PARSING
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+  const offset = (pageNum - 1) * limitNum;
 
-  const { rows } = await pool.query(query, values);
+  // CTE Wrapper for Safe Window Function Execution
+  const fullQuery = `
+    WITH main_query AS (
+      ${innerQuery}
+      ORDER BY esh.login_datetime ASC
+    )
+    SELECT *, COUNT(*) OVER() AS total_count
+    FROM main_query
+    LIMIT $${index} OFFSET $${index + 1}
+  `;
 
-  return rows;
+  values.push(limitNum, offset);
+
+  const { rows: resultRows } = await pool.query(fullQuery, values);
+
+  const totalRecords = resultRows.length > 0 ? parseInt(resultRows[0].total_count, 10) : 0;
+
+  // Cleanup total_count key from output objects
+  const data = resultRows.map((row) => {
+    const { total_count, ...record } = row;
+    return record;
+  });
+
+  return {
+    data,
+    total: totalRecords,
+    total_pages: Math.ceil(totalRecords / limitNum),
+    page: pageNum,
+    limit: limitNum,
+    count: data.length,
+  };
 };
 
 // LOGIN ENTRY CREATE

@@ -112,51 +112,50 @@ exports.getDriverLoginHistory = async (req, res) => {
   try {
     const {
       driver_id,
-
       from_date,
       to_date,
-
       from_time,
       to_time,
-
       username,
       booking,
-
       login_date,
       logout_date,
-
       login_time,
       logout_time,
+      page = 1,
+      limit = 20,
     } = req.query;
 
-    const histories = await model.getDriverLoginHistory({
+    const result = await model.getDriverLoginHistory({
       driver_id,
-
       from_date,
       to_date,
-
       from_time,
       to_time,
-
       username,
       booking,
-
       login_date,
       logout_date,
-
       login_time,
       logout_time,
+      page,
+      limit,
     });
 
     return res.status(200).json({
-      status: true,
-      driver_shift_histories: histories,
+      success: true,
+      page: result.page,
+      limit: result.limit,
+      total: result.total,
+      total_pages: result.total_pages,
+      count: result.count,
+      driver_shift_histories: result.data,
     });
   } catch (error) {
     console.error(error);
 
     return res.status(500).json({
-      status: false,
+      success: false,
       message: error.message,
     });
   }
