@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 module.exports = (req, res, next) => {
-  const incomingToken = req.body.token;
+  const incomingToken = req.body.token || req.body.authenticationToken;
 
   if (!incomingToken) {
     return res.status(400).json({
