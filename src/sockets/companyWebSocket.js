@@ -72,7 +72,7 @@ async function addCompanySocket(companyId, ws) {
               event: "SUBSCRIPTION_PRE_EXPIRY_WARNING",
               company_id: companyId,
               days_left: daysLeft,
-              message: `Warning: Your subscription expires in ${daysLeft} day(s).`,
+              message: `Warning: Your subscription expires in ${daysLeft} day(s). Please make payment to avoid account lock.`,
             }),
           );
         }

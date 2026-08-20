@@ -22,7 +22,11 @@ router.get("/income-report", bookingController.getIncomeReport);
 router.get("/clear", bookingController.getClearBookings);
 router.get("/driver-earnings", bookingController.getDriverEarningsBookings);
 router.get("/pick-bookings", bookingController.getPickBookings);
-router.get("/driver-statistics/:driver_id", bookingController.getDriverBookingStatistics);
+
+router.get(
+  "/driver-statistics/:driver_id",
+  bookingController.getDriverBookingStatistics,
+);
 
 router.get(
   "/check-status-customer/:booking_id",

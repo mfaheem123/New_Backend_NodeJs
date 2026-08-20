@@ -33,7 +33,14 @@ class CallRecordingModel {
 
   // 🔍 Get Recordings with Filters, Search, Customer JOIN & Pagination
   static async getRecordings(filters = {}) {
-    const { offset = 0, limit = 15, mobile, from_date, to_date, company_id } = filters;
+    const {
+      offset = 0,
+      limit = 15,
+      mobile,
+      from_date,
+      to_date,
+      company_id,
+    } = filters;
 
     let conditions = [];
     let values = [];

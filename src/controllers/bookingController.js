@@ -52,7 +52,7 @@ const {
   deleteBookingByIdModel,
   findBookingforDelete,
   getSearchBookingsData,
-  getDriverBookingStatisticsData
+  getDriverBookingStatisticsData,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -2342,6 +2342,7 @@ exports.getClearBookings = async (req, res) => {
       dropoff,
       driver,
       booking_status,
+      company_id,
     } = req.query;
 
     const result = await getClearBookings({
@@ -2354,6 +2355,7 @@ exports.getClearBookings = async (req, res) => {
       dropoff,
       driver,
       booking_status,
+      company_id,
     });
 
     res.json({
@@ -2661,7 +2663,6 @@ exports.getPickBookings = async (req, res) => {
     });
   }
 };
-
 
 // ---------------------------------------------------------
 // GET DRIVER BOOKINGS STATISTICS DATA

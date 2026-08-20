@@ -305,6 +305,7 @@ const EnumerationsModel = {
           WHEN 2 THEN (
             SELECT COUNT(*) FROM bookings 
             WHERE DATE(pickup_date) > CURRENT_DATE 
+            AND booking_status_id NOT IN (11)
             AND trash = false
             AND company_id = $1
           )

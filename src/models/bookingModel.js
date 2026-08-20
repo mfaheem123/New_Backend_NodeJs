@@ -2299,6 +2299,7 @@ const getClearBookings = async ({
   dropoff,
   driver,
   booking_status,
+  company_id,
 }) => {
   const values = [];
   let index = 1;
@@ -2347,6 +2348,11 @@ const getClearBookings = async ({
   if (booking_status) {
     where += ` AND LOWER(bs.booking_status) LIKE LOWER($${index})`;
     values.push(`%${booking_status}%`);
+    index++;
+  }
+  if (company_id) {
+    where += ` AND b.company_id = $${index}`;
+    values.push(Number(company_id));
     index++;
   }
 
@@ -2727,7 +2733,12 @@ const getSearchBookingsData = async ({
 // ---------------------------------------------------------
 // GET DRIVER BOOKINGS STATISTICS DATA
 // ---------------------------------------------------------
-const getDriverBookingStatisticsData = async ({ driver_id, page = 1, limit = 100, filters = {} }) => {
+const getDriverBookingStatisticsData = async ({
+  driver_id,
+  page = 1,
+  limit = 100,
+  filters = {},
+}) => {
   const offset = (page - 1) * limit;
 
   // Base Condition: Non-trashed bookings for given Driver
@@ -2753,11 +2764,15 @@ const getDriverBookingStatisticsData = async ({ driver_id, page = 1, limit = 100
 
   // Custom Date Filters
   if (filters.from_date) {
-    conditions.push(`TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`);
+    conditions.push(
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`,
+    );
     params.push(filters.from_date);
   }
   if (filters.to_date) {
-    conditions.push(`TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`);
+    conditions.push(
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`,
+    );
     params.push(filters.to_date);
   }
 
@@ -2773,7 +2788,10 @@ const getDriverBookingStatisticsData = async ({ driver_id, page = 1, limit = 100
 
   // Dropdown / ID Filters
   if (filters.booking_status_id) {
-    const statuses = String(filters.booking_status_id).split(",").map((id) => Number(id.trim())).filter((id) => !isNaN(id));
+    const statuses = String(filters.booking_status_id)
+      .split(",")
+      .map((id) => Number(id.trim()))
+      .filter((id) => !isNaN(id));
     if (statuses.length === 1) {
       conditions.push(`b.booking_status_id = $${idx++}`);
       params.push(statuses[0]);
@@ -2783,41 +2801,128 @@ const getDriverBookingStatisticsData = async ({ driver_id, page = 1, limit = 100
     }
   }
 
-  if (filters.account_id) { conditions.push(`b.account_id = $${idx++}`); params.push(filters.account_id); }
-  if (filters.employee_id) { conditions.push(`b.employee_id = $${idx++}`); params.push(filters.employee_id); }
-  if (filters.subsidiary_id) { conditions.push(`b.subsidiary_id = $${idx++}`); params.push(filters.subsidiary_id); }
+  if (filters.account_id) {
+    conditions.push(`b.account_id = $${idx++}`);
+    params.push(filters.account_id);
+  }
+  if (filters.employee_id) {
+    conditions.push(`b.employee_id = $${idx++}`);
+    params.push(filters.employee_id);
+  }
+  if (filters.subsidiary_id) {
+    conditions.push(`b.subsidiary_id = $${idx++}`);
+    params.push(filters.subsidiary_id);
+  }
 
   // Search Filters
-  if (filters.customer) { conditions.push(`b.name ILIKE $${idx++}`); params.push(`%${filters.customer}%`); }
-  if (filters.mobile) { conditions.push(`b.mobile ILIKE $${idx++}`); params.push(`%${filters.mobile}%`); }
-  if (filters.telephone) { conditions.push(`b.telephone ILIKE $${idx++}`); params.push(`%${filters.telephone}%`); }
-  if (filters.department) { conditions.push(`b.department ILIKE $${idx++}`); params.push(`%${filters.department}%`); }
-  if (filters.order_number) { conditions.push(`b.order_number ILIKE $${idx++}`); params.push(`%${filters.order_number}%`); }
-  if (filters.booked_by) { conditions.push(`b.booked_by ILIKE $${idx++}`); params.push(`%${filters.booked_by}%`); }
-  if (filters.reference_number) { conditions.push(`b.reference_number ILIKE $${idx++}`); params.push(`%${filters.reference_number}%`); }
-  if (filters.pickup) { conditions.push(`b.pickup ILIKE $${idx++}`); params.push(`%${filters.pickup}%`); }
-  if (filters.dropoff) { conditions.push(`b.dropoff ILIKE $${idx++}`); params.push(`%${filters.dropoff}%`); }
-  if (filters.invoice_number) { conditions.push(`b.invoice_number ILIKE $${idx++}`); params.push(`%${filters.invoice_number}%`); }
-  if (filters.datetime) { conditions.push(`(b.pickup_date || ' ' || b.pickup_time) ILIKE $${idx++}`); params.push(`%${filters.datetime}%`); }
+  if (filters.customer) {
+    conditions.push(`b.name ILIKE $${idx++}`);
+    params.push(`%${filters.customer}%`);
+  }
+  if (filters.mobile) {
+    conditions.push(`b.mobile ILIKE $${idx++}`);
+    params.push(`%${filters.mobile}%`);
+  }
+  if (filters.telephone) {
+    conditions.push(`b.telephone ILIKE $${idx++}`);
+    params.push(`%${filters.telephone}%`);
+  }
+  if (filters.department) {
+    conditions.push(`b.department ILIKE $${idx++}`);
+    params.push(`%${filters.department}%`);
+  }
+  if (filters.order_number) {
+    conditions.push(`b.order_number ILIKE $${idx++}`);
+    params.push(`%${filters.order_number}%`);
+  }
+  if (filters.booked_by) {
+    conditions.push(`b.booked_by ILIKE $${idx++}`);
+    params.push(`%${filters.booked_by}%`);
+  }
+  if (filters.reference_number) {
+    conditions.push(`b.reference_number ILIKE $${idx++}`);
+    params.push(`%${filters.reference_number}%`);
+  }
+  if (filters.pickup) {
+    conditions.push(`b.pickup ILIKE $${idx++}`);
+    params.push(`%${filters.pickup}%`);
+  }
+  if (filters.dropoff) {
+    conditions.push(`b.dropoff ILIKE $${idx++}`);
+    params.push(`%${filters.dropoff}%`);
+  }
+  if (filters.invoice_number) {
+    conditions.push(`b.invoice_number ILIKE $${idx++}`);
+    params.push(`%${filters.invoice_number}%`);
+  }
+  if (filters.datetime) {
+    conditions.push(`(b.pickup_date || ' ' || b.pickup_time) ILIKE $${idx++}`);
+    params.push(`%${filters.datetime}%`);
+  }
 
   // Joined Tables Text Filters
-  if (filters.account_name) { conditions.push(`a.name ILIKE $${idx++}`); params.push(`%${filters.account_name}%`); }
-  if (filters.payment_type_name) { conditions.push(`pt.name ILIKE $${idx++}`); params.push(`%${filters.payment_type_name}%`); }
-  if (filters.driver_name) { conditions.push(`d.name ILIKE $${idx++}`); params.push(`%${filters.driver_name}%`); }
-  if (filters.subsidiary_name) { conditions.push(`s.name ILIKE $${idx++}`); params.push(`%${filters.subsidiary_name}%`); }
-  if (filters.status_name) { conditions.push(`bs.booking_status ILIKE $${idx++}`); params.push(`%${filters.status_name}%`); }
-  if (filters.journey_type) { conditions.push(`jt.journey_type ILIKE $${idx++}`); params.push(`%${filters.journey_type}%`); }
-  if (filters.vehicle_type) { conditions.push(`vt.name ILIKE $${idx++}`); params.push(`%${filters.vehicle_type}%`); }
-  if (filters.fare) { conditions.push(`b.fares::text ILIKE $${idx++}`); params.push(`%${filters.fare}%`); }
-  if (filters.acc_fare) { conditions.push(`b.company_price::text ILIKE $${idx++}`); params.push(`%${filters.acc_fare}%`); }
+  if (filters.account_name) {
+    conditions.push(`a.name ILIKE $${idx++}`);
+    params.push(`%${filters.account_name}%`);
+  }
+  if (filters.payment_type_name) {
+    conditions.push(`pt.name ILIKE $${idx++}`);
+    params.push(`%${filters.payment_type_name}%`);
+  }
+  if (filters.driver_name) {
+    conditions.push(`d.name ILIKE $${idx++}`);
+    params.push(`%${filters.driver_name}%`);
+  }
+  if (filters.subsidiary_name) {
+    conditions.push(`s.name ILIKE $${idx++}`);
+    params.push(`%${filters.subsidiary_name}%`);
+  }
+  if (filters.status_name) {
+    conditions.push(`bs.booking_status ILIKE $${idx++}`);
+    params.push(`%${filters.status_name}%`);
+  }
+  if (filters.journey_type) {
+    conditions.push(`jt.journey_type ILIKE $${idx++}`);
+    params.push(`%${filters.journey_type}%`);
+  }
+  if (filters.vehicle_type) {
+    conditions.push(`vt.name ILIKE $${idx++}`);
+    params.push(`%${filters.vehicle_type}%`);
+  }
+  if (filters.fare) {
+    conditions.push(`b.fares::text ILIKE $${idx++}`);
+    params.push(`%${filters.fare}%`);
+  }
+  if (filters.acc_fare) {
+    conditions.push(`b.company_price::text ILIKE $${idx++}`);
+    params.push(`%${filters.acc_fare}%`);
+  }
 
   // Charge Filters
-  if (filters.pc) { conditions.push(`b.parking_charges::text ILIKE $${idx++}`); params.push(`%${filters.pc}%`); }
-  if (filters.wc) { conditions.push(`b.waiting_charges::text ILIKE $${idx++}`); params.push(`%${filters.wc}%`); }
-  if (filters.edc) { conditions.push(`b.extra_drop_charges::text ILIKE $${idx++}`); params.push(`%${filters.edc}%`); }
-  if (filters.mg) { conditions.push(`b.meet_and_greet::text ILIKE $${idx++}`); params.push(`%${filters.mg}%`); }
-  if (filters.cc) { conditions.push(`b.congestion_charges::text ILIKE $${idx++}`); params.push(`%${filters.cc}%`); }
-  if (filters.total_val) { conditions.push(`b.total_charges::text ILIKE $${idx++}`); params.push(`%${filters.total_val}%`); }
+  if (filters.pc) {
+    conditions.push(`b.parking_charges::text ILIKE $${idx++}`);
+    params.push(`%${filters.pc}%`);
+  }
+  if (filters.wc) {
+    conditions.push(`b.waiting_charges::text ILIKE $${idx++}`);
+    params.push(`%${filters.wc}%`);
+  }
+  if (filters.edc) {
+    conditions.push(`b.extra_drop_charges::text ILIKE $${idx++}`);
+    params.push(`%${filters.edc}%`);
+  }
+  if (filters.mg) {
+    conditions.push(`b.meet_and_greet::text ILIKE $${idx++}`);
+    params.push(`%${filters.mg}%`);
+  }
+  if (filters.cc) {
+    conditions.push(`b.congestion_charges::text ILIKE $${idx++}`);
+    params.push(`%${filters.cc}%`);
+  }
+  if (filters.total_val) {
+    conditions.push(`b.total_charges::text ILIKE $${idx++}`);
+    params.push(`%${filters.total_val}%`);
+  }
 
   const whereClause = `WHERE ${conditions.join(" AND ")}`;
 
@@ -2848,7 +2953,10 @@ const getDriverBookingStatisticsData = async ({ driver_id, page = 1, limit = 100
   let pTypeCardCondition = "";
   let cardParams = [driver_id];
   if (filters.payment_type_id && filters.payment_type_id !== "all") {
-    const paymentTypes = String(filters.payment_type_id).split(",").map((id) => Number(id.trim())).filter((id) => !isNaN(id));
+    const paymentTypes = String(filters.payment_type_id)
+      .split(",")
+      .map((id) => Number(id.trim()))
+      .filter((id) => !isNaN(id));
     if (paymentTypes.length === 1) {
       pTypeCardCondition = "AND b.payment_type_id = $2";
       cardParams.push(paymentTypes[0]);
@@ -2895,10 +3003,13 @@ const getDriverBookingStatisticsData = async ({ driver_id, page = 1, limit = 100
   `;
 
   // Dynamic Sorting
-  const sortDirection = filters.sort_order?.toUpperCase() === "ASC" ? "ASC" : "DESC";
-  let orderColumn = "(TO_DATE(b.pickup_date,'YYYY-FMMM-FMDD') + TRIM(b.pickup_time)::time)";
+  const sortDirection =
+    filters.sort_order?.toUpperCase() === "ASC" ? "ASC" : "DESC";
+  let orderColumn =
+    "(TO_DATE(b.pickup_date,'YYYY-FMMM-FMDD') + TRIM(b.pickup_time)::time)";
 
-  if (filters.sort_by === "reference_number") orderColumn = "b.reference_number";
+  if (filters.sort_by === "reference_number")
+    orderColumn = "b.reference_number";
   if (filters.sort_by === "fare") orderColumn = "b.fares";
   if (filters.sort_by === "customer") orderColumn = "b.name";
 
@@ -2928,15 +3039,29 @@ const getDriverBookingStatisticsData = async ({ driver_id, page = 1, limit = 100
     rows: dataRes.rows,
     total: parseInt(countRes.rows[0].total),
     summaryCards: {
-      today: { earnings: Number(cards.today_earnings), bookings: Number(cards.today_bookings) },
-      yesterday: { earnings: Number(cards.yesterday_earnings), bookings: Number(cards.yesterday_bookings) },
-      last_week: { earnings: Number(cards.last_week_earnings), bookings: Number(cards.last_week_bookings) },
-      last_month: { earnings: Number(cards.last_month_earnings), bookings: Number(cards.last_month_bookings) },
+      today: {
+        earnings: Number(cards.today_earnings),
+        bookings: Number(cards.today_bookings),
+      },
+      yesterday: {
+        earnings: Number(cards.yesterday_earnings),
+        bookings: Number(cards.yesterday_bookings),
+      },
+      last_week: {
+        earnings: Number(cards.last_week_earnings),
+        bookings: Number(cards.last_week_bookings),
+      },
+      last_month: {
+        earnings: Number(cards.last_month_earnings),
+        bookings: Number(cards.last_month_bookings),
+      },
     },
     totals: {
       total_bookings: Number(totalsRes.rows[0].total_bookings || 0),
       total_earnings: Number(totalsRes.rows[0].total_earnings || 0),
-      total_account_earnings: Number(totalsRes.rows[0].total_account_earnings || 0),
+      total_account_earnings: Number(
+        totalsRes.rows[0].total_account_earnings || 0,
+      ),
     },
   };
 };
@@ -3001,5 +3126,5 @@ module.exports = {
   deleteBookingByIdModel,
   findBookingforDelete,
   getSearchBookingsData,
-  getDriverBookingStatisticsData
+  getDriverBookingStatisticsData,
 };

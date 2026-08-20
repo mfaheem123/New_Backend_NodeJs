@@ -52,7 +52,7 @@ exports.getById = async (req, res) => {
 
     res.status(200).json({
       status: true,
-      company_configuration: data,
+      company_configuration: data || [],
     });
   } catch (error) {
     res.status(500).json({
