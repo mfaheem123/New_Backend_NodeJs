@@ -33,70 +33,70 @@ class CallRecordingModel {
 
   // 🔍 Get Recordings with Filters, Search, Customer JOIN & Pagination
   static async getRecordings(filters = {}) {
-  const {
-    offset = 0,
-    limit = 100,
-    mobile,
-    from_date,
-    to_date,
-    company_id,
-  } = filters;
+    const {
+      offset = 0,
+      limit = 100,
+      mobile,
+      from_date,
+      to_date,
+      company_id,
+    } = filters;
 
-  let conditions = [];
-  let values = [];
-  let paramIndex = 1;
+    let conditions = [];
+    let values = [];
+    let paramIndex = 1;
 
-  // Base Query: Customer JOIN mein company_id check kar rahe hain
-  // is se customer name sirf tabhi milega jab wo specific company ka customer ho
-  let baseQuery = `
+    // Base Query: Customer JOIN mein company_id check kar rahe hain
+    // is se customer name sirf tabhi milega jab wo specific company ka customer ho
+    let baseQuery = `
     FROM call_recordings cr
     LEFT JOIN customers cust 
       ON (cust.mobile = cr.source OR cust.mobile = cr.destination)
-      ${company_id ? `AND cust.company_id = cr.company_id` : ''}
+      ${company_id ? `AND cust.company_id = cr.company_id` : ""}
     WHERE 1=1
   `;
 
-  // 1. Company Filter (Call Recordings ke record filter karne ke liye)
-  if (company_id) {
-    conditions.push(`cr.company_id = $${paramIndex++}`);
-    values.push(company_id);
-  }
+    // 1. Company Filter (Call Recordings ke record filter karne ke liye)
+    if (company_id) {
+      conditions.push(`cr.company_id = $${paramIndex++}`);
+      values.push(company_id);
+    }
 
-  // 2. Mobile / Search Filter
-  if (mobile) {
-    conditions.push(`(
+    // 2. Mobile / Search Filter
+    if (mobile) {
+      conditions.push(`(
       cr.source LIKE $${paramIndex} OR 
       cr.destination LIKE $${paramIndex} OR 
       LOWER(cust.name) LIKE LOWER($${paramIndex})
     )`);
-    values.push(`%${mobile}%`);
-    paramIndex++;
-  }
+      values.push(`%${mobile}%`);
+      paramIndex++;
+    }
 
- // 3. Date Range Filters (FIX HERE 🛠️)
-  if (from_date) {
-    conditions.push(`cr.recording_datetime >= $${paramIndex++}`);
-    // Din ki shuruat: 2026-08-17 00:00:00
-    values.push(`${from_date} 00:00:00`);
-  }
+    // 3. Date Range Filters (FIX HERE 🛠️)
+    if (from_date) {
+      conditions.push(`cr.recording_datetime >= $${paramIndex++}`);
+      // Din ki shuruat: 2026-08-17 00:00:00
+      values.push(`${from_date} 00:00:00`);
+    }
 
-  if (to_date) {
-    conditions.push(`cr.recording_datetime <= $${paramIndex++}`);
-    // Din ka aakhr: 2026-08-17 23:59:59
-    values.push(`${to_date} 23:59:59`);
-  }
+    if (to_date) {
+      conditions.push(`cr.recording_datetime <= $${paramIndex++}`);
+      // Din ka aakhr: 2026-08-17 23:59:59
+      values.push(`${to_date} 23:59:59`);
+    }
 
-  if (conditions.length > 0) {
-    baseQuery += ` AND ` + conditions.join(" AND ");
-  }
+    if (conditions.length > 0) {
+      baseQuery += ` AND ` + conditions.join(" AND ");
+    }
 
-  // Total Count Query
-  const countQuery = `SELECT COUNT(DISTINCT cr.id) ${baseQuery}`;
-  const countResult = await db.query(countQuery, values);
-  const totalCount = parseInt(countResult.rows[0].count, 10);
+    // Total Count Query
+    const countQuery = `SELECT COUNT(DISTINCT cr.id) ${baseQuery}`;
+    const countResult = await db.query(countQuery, values);
+    const totalCount = parseInt(countResult.rows[0].count, 10);
 
-  // Data Fetch Query
-  const dataQuery = `
+    // Data Fetch Query
+    const dataQuery = `
     SELECT 
       cr.id AS _id,
       cr.recording_id,
@@ -114,15 +114,15 @@ class CallRecordingModel {
     LIMIT $${paramIndex++} OFFSET $${paramIndex++}
   `;
 
-  values.push(parseInt(limit, 10), parseInt(offset, 10));
+    values.push(parseInt(limit, 10), parseInt(offset, 10));
 
-  const result = await db.query(dataQuery, values);
+    const result = await db.query(dataQuery, values);
 
-  return {
-    count: totalCount,
-    recordings: result.rows,
-  };
-}
+    return {
+      count: totalCount,
+      recordings: result.rows,
+    };
+  }
 }
 
 module.exports = CallRecordingModel;
