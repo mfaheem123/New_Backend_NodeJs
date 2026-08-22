@@ -2746,7 +2746,7 @@ const getDriverBookingStatisticsData = async ({
   const params = [driver_id];
   let idx = 2;
 
-  // Payment Type Filter ("all", null ya 특정 IDs)
+  // Payment Type Filter ("all", null ya specific IDs e.g. "1,2")
   if (filters.payment_type_id && filters.payment_type_id !== "all") {
     const paymentTypes = String(filters.payment_type_id)
       .split(",")
@@ -2765,13 +2765,13 @@ const getDriverBookingStatisticsData = async ({
   // Custom Date Filters
   if (filters.from_date) {
     conditions.push(
-      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`,
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`
     );
     params.push(filters.from_date);
   }
   if (filters.to_date) {
     conditions.push(
-      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`,
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`
     );
     params.push(filters.to_date);
   }
@@ -2926,30 +2926,7 @@ const getDriverBookingStatisticsData = async ({
 
   const whereClause = `WHERE ${conditions.join(" AND ")}`;
 
-  const joinsClause = `
-    LEFT JOIN booking_statuses bs ON b.booking_status_id = bs.id
-    LEFT JOIN booking_types bt ON b.booking_type_id = bt.id
-    LEFT JOIN journey_types jt ON b.journey_type_id = jt.id
-    LEFT JOIN subsidiaries s ON b.subsidiary_id = s.id
-    LEFT JOIN vehicle_types vt ON b.vehicle_type_id = vt.id
-    LEFT JOIN payment_types pt ON b.payment_type_id = pt.id
-    LEFT JOIN accounts a ON b.account_id = a.id
-    LEFT JOIN drivers d ON b.driver_id = d.id
-    LEFT JOIN vehicles v ON d.vehicle_id = v.id
-    LEFT JOIN customers c ON b.customer_id = c.id
-    LEFT JOIN employees e ON b.employee_id = e.id
-    LEFT JOIN LATERAL (
-      SELECT l.* FROM locations l WHERE l.location_type_id = 2 AND b.pickup ILIKE '%' || l.name || '%' ORDER BY LENGTH(l.name) DESC, l.id ASC LIMIT 1
-    ) lp ON true
-    LEFT JOIN LATERAL (
-      SELECT l.* FROM locations l WHERE l.location_type_id = 2 AND b.dropoff ILIKE '%' || l.name || '%' ORDER BY LENGTH(l.name) DESC, l.id ASC LIMIT 1
-    ) ld ON true
-    LEFT JOIN location_types ltp ON lp.location_type_id = ltp.id
-    LEFT JOIN location_types ltd ON ld.location_type_id = ltd.id
-  `;
-
-  // 1. Mobile Cards Query (Today, Yesterday, Last Week, Last Month)
-  // Payment Type filter applies here too
+  // 1. Summary Cards Query
   let pTypeCardCondition = "";
   let cardParams = [driver_id];
   if (filters.payment_type_id && filters.payment_type_id !== "all") {
@@ -2968,19 +2945,15 @@ const getDriverBookingStatisticsData = async ({
 
   const summaryCardsSql = `
     SELECT
-      -- TODAY
       COALESCE(SUM(CASE WHEN TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') = CURRENT_DATE THEN COALESCE(b.fares, 0) ELSE 0 END), 0) AS today_earnings,
       COUNT(CASE WHEN TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') = CURRENT_DATE THEN 1 END) AS today_bookings,
 
-      -- YESTERDAY
       COALESCE(SUM(CASE WHEN TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') = CURRENT_DATE - INTERVAL '1 day' THEN COALESCE(b.fares, 0) ELSE 0 END), 0) AS yesterday_earnings,
       COUNT(CASE WHEN TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') = CURRENT_DATE - INTERVAL '1 day' THEN 1 END) AS yesterday_bookings,
 
-      -- LAST WEEK
       COALESCE(SUM(CASE WHEN TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= CURRENT_DATE - INTERVAL '7 days' THEN COALESCE(b.fares, 0) ELSE 0 END), 0) AS last_week_earnings,
       COUNT(CASE WHEN TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) AS last_week_bookings,
 
-      -- LAST MONTH
       COALESCE(SUM(CASE WHEN TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= CURRENT_DATE - INTERVAL '30 days' THEN COALESCE(b.fares, 0) ELSE 0 END), 0) AS last_month_earnings,
       COUNT(CASE WHEN TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) AS last_month_bookings
 
@@ -2988,8 +2961,11 @@ const getDriverBookingStatisticsData = async ({
     WHERE b.trash = false AND b.driver_id = $1 ${pTypeCardCondition}
   `;
 
-  // 2. Total Record Count
-  const countSql = `SELECT COUNT(*) AS total FROM bookings b ${joinsClause} ${whereClause}`;
+  // Base query without SELECT for aggregations
+  const baseFromAndJoins = ENRICHED_SELECT.substring(ENRICHED_SELECT.indexOf("FROM bookings b"));
+
+  // 2. Count Query
+  const countSql = `SELECT COUNT(*) AS total ${baseFromAndJoins} ${whereClause}`;
 
   // 3. Totals Query
   const totalsSql = `
@@ -2997,8 +2973,7 @@ const getDriverBookingStatisticsData = async ({
       COUNT(*) AS total_bookings,
       COALESCE(SUM(b.fares), 0) AS total_earnings,
       COALESCE(SUM(CASE WHEN b.account_id IS NOT NULL THEN b.fares ELSE 0 END), 0) AS total_account_earnings
-    FROM bookings b
-    ${joinsClause}
+    ${baseFromAndJoins}
     ${whereClause}
   `;
 
@@ -3008,16 +2983,13 @@ const getDriverBookingStatisticsData = async ({
   let orderColumn =
     "(TO_DATE(b.pickup_date,'YYYY-FMMM-FMDD') + TRIM(b.pickup_time)::time)";
 
-  if (filters.sort_by === "reference_number")
-    orderColumn = "b.reference_number";
+  if (filters.sort_by === "reference_number") orderColumn = "b.reference_number";
   if (filters.sort_by === "fare") orderColumn = "b.fares";
   if (filters.sort_by === "customer") orderColumn = "b.name";
 
-  // 4. Main Enriched Data Query
+  // 4. Main Data Query (Uses full ENRICHED_SELECT as provided)
   const dataSql = `
     ${ENRICHED_SELECT}
-    FROM bookings b
-    ${joinsClause}
     ${whereClause}
     ORDER BY ${orderColumn} ${sortDirection}
     OFFSET $${idx++} LIMIT $${idx++}
@@ -3025,7 +2997,7 @@ const getDriverBookingStatisticsData = async ({
 
   const dataParams = [...params, offset, limit];
 
-  // Execute Parallel Queries
+  // Parallel Execution
   const [cardsRes, countRes, totalsRes, dataRes] = await Promise.all([
     pool.query(summaryCardsSql, cardParams),
     pool.query(countSql, params),
@@ -3060,7 +3032,7 @@ const getDriverBookingStatisticsData = async ({
       total_bookings: Number(totalsRes.rows[0].total_bookings || 0),
       total_earnings: Number(totalsRes.rows[0].total_earnings || 0),
       total_account_earnings: Number(
-        totalsRes.rows[0].total_account_earnings || 0,
+        totalsRes.rows[0].total_account_earnings || 0
       ),
     },
   };

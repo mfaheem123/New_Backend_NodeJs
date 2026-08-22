@@ -105,6 +105,7 @@ const deduplicateBookings = (bookings) => {
 //   };
 // };
 
+
 /**
  * Find customer & last 15 days unique bookings (Max 5 Latest)
  */

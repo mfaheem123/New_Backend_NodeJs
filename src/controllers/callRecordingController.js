@@ -14,38 +14,59 @@ exports.handleWebhook = async (req, res) => {
     const uploadedFile =
       req.files && req.files.length > 0 ? req.files[0] : req.file;
 
-    // 🖼️ URL Construction (Subsidiary format ke mutabiq)
+    // 🖼️ URL Construction
     let completeFilePath = null;
+    let rawFilename = req.body.filename || (uploadedFile ? uploadedFile.originalname : null);
 
     if (uploadedFile) {
       completeFilePath = `${BASE_URL}${uploadedFile.filename}`;
-    } else if (req.body.filename) {
-      // Agar filename body se aa raha ho
-      const cleanFilename = req.body.filename
-        .split("/")
-        .pop()
-        .split("\\")
-        .pop();
+    } else if (rawFilename) {
+      const cleanFilename = rawFilename.split("/").pop().split("\\").pop();
       completeFilePath = `${BASE_URL}${cleanFilename}`;
     } else if (req.body.file_path) {
-      const cleanFilename = req.body.file_path
-        .split("/")
-        .pop()
-        .split("\\")
-        .pop();
+      const cleanFilename = req.body.file_path.split("/").pop().split("\\").pop();
       completeFilePath = `${BASE_URL}${cleanFilename}`;
     }
 
-    const source = req.body.source;
-    const destination = req.body.destination;
+    let source = req.body.source;
+    let destination = req.body.destination;
 
-    // Company Search by Phone Number
-    let company = await CompanyClientModel.findCompanyByPhone(source);
-    if (!company) {
-      company = await CompanyClientModel.findCompanyByPhone(destination);
+    // 1. Filename se Main Trunk/Office Phone Number Extract karein (Agar Filename mojood ho)
+    let extractedPhoneNumbers = [];
+    if (rawFilename) {
+      // Filename se tamam 10-13 digit wale numbers nikalega (e.g. 442036030511, 07590455507)
+      const matches = rawFilename.match(/(?:44|0)[0-9]{9,11}/g);
+      if (matches) {
+        extractedPhoneNumbers = matches;
+      }
     }
 
-    // Har key variant ko fallback ke sath bind karein (camelCase, snake_case aur VoIP API format)
+    // 2. Matching ke liye saare Possible Numbers combine karein
+    const candidateNumbers = [
+      source,
+      destination,
+      ...extractedPhoneNumbers
+    ].filter(Boolean); // NULL / Undefined remove karne ke liye
+
+    // 3. Company Match Logic with Fallback Array
+    let company = null;
+    for (const phone of candidateNumbers) {
+      if (!phone) continue;
+
+      // Direct Match Check
+      company = await CompanyClientModel.findCompanyByPhone(phone);
+      
+      // Agar direct match na mile to '44' ko '0' se strip karke try karein (UK Format handling)
+      if (!company && phone.startsWith("44")) {
+        const localFormat = "0" + phone.slice(2);
+        company = await CompanyClientModel.findCompanyByPhone(localFormat);
+      }
+
+      // Agar Company mil gayi to Loop break kar dein
+      if (company) break;
+    }
+
+    // 4. Payload for Model
     const payload = {
       company_id: company ? company.id : null,
       token:
@@ -60,8 +81,7 @@ exports.handleWebhook = async (req, res) => {
       source: source,
       destination: destination,
       is_protected: req.body.isProtected || req.body.is_protected,
-      filename:
-        req.body.filename || (uploadedFile ? uploadedFile.originalname : null),
+      filename: rawFilename,
       file_path: completeFilePath,
       url: req.body.url || req.body.remote_url,
     };
