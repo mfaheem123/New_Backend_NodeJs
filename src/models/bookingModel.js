@@ -580,10 +580,23 @@ const getBookingsByTab = async ({
 const getBookingByIdEnriched = async (id) => {
   const sql = `
     ${ENRICHED_SELECT}
-    WHERE b.id = $1
+    WHERE b.id = $1 OR b.associated_booking = $1
+    ORDER BY b.id ASC
   `;
+
   const res = await pool.query(sql, [id]);
-  return res.rows[0];
+
+  if (res.rows.length === 0) {
+    return null;
+  }
+
+  // Single booking
+  if (res.rows.length === 1) {
+    return res.rows[0];
+  }
+
+  // Main + associated bookings
+  return res.rows;
 };
 
 // ---------------------------------------------------------
@@ -2765,13 +2778,13 @@ const getDriverBookingStatisticsData = async ({
   // Custom Date Filters
   if (filters.from_date) {
     conditions.push(
-      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') >= TO_DATE($${idx++}, 'YYYY-MM-DD')`,
     );
     params.push(filters.from_date);
   }
   if (filters.to_date) {
     conditions.push(
-      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`
+      `TO_DATE(b.pickup_date, 'YYYY-FMMM-FMDD') <= TO_DATE($${idx++}, 'YYYY-MM-DD')`,
     );
     params.push(filters.to_date);
   }
@@ -2962,7 +2975,9 @@ const getDriverBookingStatisticsData = async ({
   `;
 
   // Base query without SELECT for aggregations
-  const baseFromAndJoins = ENRICHED_SELECT.substring(ENRICHED_SELECT.indexOf("FROM bookings b"));
+  const baseFromAndJoins = ENRICHED_SELECT.substring(
+    ENRICHED_SELECT.indexOf("FROM bookings b"),
+  );
 
   // 2. Count Query
   const countSql = `SELECT COUNT(*) AS total ${baseFromAndJoins} ${whereClause}`;
@@ -2983,7 +2998,8 @@ const getDriverBookingStatisticsData = async ({
   let orderColumn =
     "(TO_DATE(b.pickup_date,'YYYY-FMMM-FMDD') + TRIM(b.pickup_time)::time)";
 
-  if (filters.sort_by === "reference_number") orderColumn = "b.reference_number";
+  if (filters.sort_by === "reference_number")
+    orderColumn = "b.reference_number";
   if (filters.sort_by === "fare") orderColumn = "b.fares";
   if (filters.sort_by === "customer") orderColumn = "b.name";
 
@@ -3032,7 +3048,7 @@ const getDriverBookingStatisticsData = async ({
       total_bookings: Number(totalsRes.rows[0].total_bookings || 0),
       total_earnings: Number(totalsRes.rows[0].total_earnings || 0),
       total_account_earnings: Number(
-        totalsRes.rows[0].total_account_earnings || 0
+        totalsRes.rows[0].total_account_earnings || 0,
       ),
     },
   };

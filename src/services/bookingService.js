@@ -718,19 +718,20 @@ async function createMultiReservationBooking(payload) {
       customerId = res.rows[0].id;
     }
 
-    /* -----------------------------
-     * GENERATE MULTI BOOKING ID
-     * ----------------------------- */
-    const multiBookingIdRes = await pool.query(
-      "SELECT nextval('bookings_id_seq') AS nextid",
-    );
-    const multiBookingId = parseInt(multiBookingIdRes.rows[0].nextid, 10);
+    // /* -----------------------------
+    //  * GENERATE MULTI BOOKING ID
+    //  * ----------------------------- */
+    // const multiBookingIdRes = await pool.query(
+    //   "SELECT nextval('bookings_id_seq') AS nextid",
+    // );
+    // const multiBookingId = parseInt(multiBookingIdRes.rows[0].nextid, 10);
 
     /* -----------------------------
      * INSERT BOOKINGS
      * ----------------------------- */
     const createdBookingIds = [];
-
+    
+    let multiBookingId = null;
     /* ==========================
      MULTI RESERVATION WITH FARE
   ========================== */
@@ -763,15 +764,54 @@ async function createMultiReservationBooking(payload) {
       outboundClone.fares = outboundFare.fare;
       outboundClone.total_charges = outboundFare.total_fare;
 
+      //OLD BOOKING ID FOR MULTI RESERVATION
+      // const normalizedOutbound = await normalizeBookingPayload(outboundClone);
+
+      // normalizedOutbound.customer_id = customerId;
+      // normalizedOutbound.multi_booking_id = multiBookingId;
+      // normalizedOutbound.reference_number = await genRef();
+
+      // const outboundInserted = await createBookingRow(pool, normalizedOutbound);
+
+      // createdBookingIds.push(outboundInserted.id);
+
       const normalizedOutbound = await normalizeBookingPayload(outboundClone);
 
-      normalizedOutbound.customer_id = customerId;
-      normalizedOutbound.multi_booking_id = multiBookingId;
-      normalizedOutbound.reference_number = await genRef();
+normalizedOutbound.customer_id = customerId;
+normalizedOutbound.reference_number = await genRef();
 
-      const outboundInserted = await createBookingRow(pool, normalizedOutbound);
+// IMPORTANT:
+// First booking ka multi_booking_id pehle set nahi hoga.
+// Pehle booking INSERT hogi aur uska actual ID milega.
+delete normalizedOutbound.multi_booking_id;
 
-      createdBookingIds.push(outboundInserted.id);
+const outboundInserted = await createBookingRow(
+  pool,
+  normalizedOutbound
+);
+
+// First booking ka actual ID hi multi_booking_id hoga
+if (multiBookingId === null) {
+  multiBookingId = Number(outboundInserted.id);
+
+  // First booking ko usi ki ID ke saath update karo
+  await pool.query(
+    `UPDATE bookings
+     SET multi_booking_id = $1
+     WHERE id = $1`,
+    [multiBookingId]
+  );
+} else {
+  // Baqi outbound bookings ko same group ID do
+  await pool.query(
+    `UPDATE bookings
+     SET multi_booking_id = $1
+     WHERE id = $2`,
+    [multiBookingId, outboundInserted.id]
+  );
+}
+
+createdBookingIds.push(outboundInserted.id);
 
       /* ==========================
      RETURN BOOKING

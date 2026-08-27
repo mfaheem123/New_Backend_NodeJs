@@ -16,7 +16,8 @@ exports.handleWebhook = async (req, res) => {
 
     // 🖼️ URL Construction
     let completeFilePath = null;
-    let rawFilename = req.body.filename || (uploadedFile ? uploadedFile.originalname : null);
+    let rawFilename =
+      req.body.filename || (uploadedFile ? uploadedFile.originalname : null);
 
     if (uploadedFile) {
       completeFilePath = `${BASE_URL}${uploadedFile.filename}`;
@@ -24,7 +25,11 @@ exports.handleWebhook = async (req, res) => {
       const cleanFilename = rawFilename.split("/").pop().split("\\").pop();
       completeFilePath = `${BASE_URL}${cleanFilename}`;
     } else if (req.body.file_path) {
-      const cleanFilename = req.body.file_path.split("/").pop().split("\\").pop();
+      const cleanFilename = req.body.file_path
+        .split("/")
+        .pop()
+        .split("\\")
+        .pop();
       completeFilePath = `${BASE_URL}${cleanFilename}`;
     }
 
@@ -45,7 +50,7 @@ exports.handleWebhook = async (req, res) => {
     const candidateNumbers = [
       source,
       destination,
-      ...extractedPhoneNumbers
+      ...extractedPhoneNumbers,
     ].filter(Boolean); // NULL / Undefined remove karne ke liye
 
     // 3. Company Match Logic with Fallback Array
@@ -55,7 +60,7 @@ exports.handleWebhook = async (req, res) => {
 
       // Direct Match Check
       company = await CompanyClientModel.findCompanyByPhone(phone);
-      
+
       // Agar direct match na mile to '44' ko '0' se strip karke try karein (UK Format handling)
       if (!company && phone.startsWith("44")) {
         const localFormat = "0" + phone.slice(2);

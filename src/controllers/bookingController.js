@@ -76,7 +76,10 @@ const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 
 function parseJSONFields(row) {
   if (!row) return row;
-
+// Agar array hai to har booking ko individually parse karo
+  if (Array.isArray(row)) {
+    return row.map((item) => parseJSONFields(item));
+  }
   const jsonFields = [
     "viapoints",
     "restricted_drivers",

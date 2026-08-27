@@ -130,16 +130,21 @@ exports.create = async (data) => {
   }
 };
 
+// ACCOUNT INVOICE MODEL
 exports.getAll = async ({
   page = 1,
   limit = 100,
-  search,
   from_date,
   to_date,
   status,
   invoice_number,
   account_name,
   department_name,
+  order_number,
+  amount,
+  subsidiary_name,
+  invoice_date,
+  invoice_due_date,
   company_id,
 }) => {
   try {
@@ -149,76 +154,78 @@ exports.getAll = async ({
 
     const offset = (page - 1) * limit;
 
-    // 🔎 Exact Invoice Number Filter
-    if (invoice_number) {
-      conditions.push(`ai.invoice_number ILIKE $${idx++}`);
-      values.push(`%${invoice_number}%`);
-    }
-
-    // ✅ Account Name Filter
-    if (account_name) {
-      conditions.push(`a.name ILIKE $${idx++}`);
-      values.push(`%${account_name}%`);
-    }
-
-    // ✅ Department Name Filter
-    if (department_name) {
-      conditions.push(`d.name ILIKE $${idx++}`);
-      values.push(`%${department_name}%`);
-    }
-    if (company_id) {
+    // 🏢 Company ID Filter
+    if (company_id && company_id.trim() !== "") {
       conditions.push(`ai.company_id = $${idx++}`);
       values.push(company_id);
     }
 
-    // =========================
-    // 🔍 GLOBAL SEARCH
-    // =========================
-    if (search) {
-      conditions.push(`
-        (
-          ai.invoice_number ILIKE $${idx}
-          OR a.name ILIKE $${idx}
-          OR d.name ILIKE $${idx}
-          OR ai.order_number ILIKE $${idx}
-          OR CAST(ai.invoice_date AS TEXT) ILIKE $${idx}
-          OR CAST(ai.invoice_due_date AS TEXT) ILIKE $${idx}
-          OR ai.status ILIKE $${idx}
-          OR CAST(ai.amount AS TEXT) ILIKE $${idx}
-          OR s.name ILIKE $${idx}
-        )
-      `);
-      values.push(`%${search}%`);
-      idx++;
+    // 🔎 Case-Insensitive String Filters (ILIKE / LOWER)
+    if (invoice_number && invoice_number.trim() !== "") {
+      conditions.push(`ai.invoice_number ILIKE $${idx++}`);
+      values.push(`%${invoice_number.trim()}%`);
     }
 
-    // =========================
-    // 📅 DATE FILTER
-    // =========================
-    if (from_date) {
+    if (account_name && account_name.trim() !== "") {
+      conditions.push(`a.name ILIKE $${idx++}`);
+      values.push(`%${account_name.trim()}%`);
+    }
+
+    if (department_name && department_name.trim() !== "") {
+      conditions.push(`d.name ILIKE $${idx++}`);
+      values.push(`%${department_name.trim()}%`);
+    }
+
+    if (order_number && order_number.trim() !== "") {
+      conditions.push(`ai.order_number ILIKE $${idx++}`);
+      values.push(`%${order_number.trim()}%`);
+    }
+
+    if (subsidiary_name && subsidiary_name.trim() !== "") {
+      conditions.push(`s.name ILIKE $${idx++}`);
+      values.push(`%${subsidiary_name.trim()}%`);
+    }
+
+    if (amount && amount.trim() !== "") {
+      conditions.push(`CAST(ai.amount AS TEXT) ILIKE $${idx++}`);
+      values.push(`%${amount.trim()}%`);
+    }
+
+    if (invoice_date && invoice_date.trim() !== "") {
+      conditions.push(`CAST(ai.invoice_date AS TEXT) ILIKE $${idx++}`);
+      values.push(`%${invoice_date.trim()}%`);
+    }
+
+    if (invoice_due_date && invoice_due_date.trim() !== "") {
+      conditions.push(`CAST(ai.invoice_due_date AS TEXT) ILIKE $${idx++}`);
+      values.push(`%${invoice_due_date.trim()}%`);
+    }
+
+    // 📅 Date Range Filter
+    if (from_date && from_date.trim() !== "") {
       conditions.push(`ai.invoice_date >= $${idx++}`);
       values.push(from_date);
     }
 
-    if (to_date) {
+    if (to_date && to_date.trim() !== "") {
       conditions.push(`ai.invoice_date <= $${idx++}`);
       values.push(to_date);
     }
 
-    // =========================
-    // 📌 STATUS FILTER
-    // =========================
-    if (status && status !== "all") {
-      conditions.push(`ai.status = $${idx++}`);
-      values.push(status.toLowerCase());
+    // 📌 Status Filter (Uppercased input like "PAID" ko bhi sahi handle karega)
+    if (
+      status &&
+      status.trim() !== "" &&
+      status.toLowerCase() !== "all"
+    ) {
+      conditions.push(`LOWER(ai.status) = LOWER($${idx++})`);
+      values.push(status.trim());
     }
 
     const whereClause =
       conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-    // =========================
     // 🔢 COUNT QUERY
-    // =========================
     const countQuery = `
       SELECT COUNT(*)
       FROM account_invoices ai
@@ -232,9 +239,7 @@ exports.getAll = async ({
     const count = parseInt(countRes.rows[0].count);
     const total_pages = Math.ceil(count / limit);
 
-    // =========================
     // 📄 DATA QUERY
-    // =========================
     const dataQuery = `
       SELECT 
         ai.*,
@@ -275,7 +280,6 @@ exports.getAll = async ({
     values.push(limit);
 
     const dataRes = await pool.query(dataQuery, values);
-    // ❌ REMOVE company_id
     const cleanedInvoices = dataRes.rows.map(({ company_id, ...rest }) => rest);
 
     return {

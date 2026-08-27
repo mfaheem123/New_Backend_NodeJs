@@ -22,31 +22,40 @@ exports.create = async (req, res) => {
   }
 };
 
+// ACCOUNT INVOICE CONTROLLER
 exports.getAll = async (req, res) => {
   try {
     const {
       page = 1,
       limit = 100,
-      search,
       from_date,
       to_date,
       status,
       invoice_number,
       account_name,
       department_name,
+      order_number,
+      amount,
+      subsidiary_name,
+      invoice_date,
+      invoice_due_date,
       company_id,
     } = req.query;
 
     const result = await InvoiceModel.getAll({
       page: Number(page),
       limit: Number(limit),
-      search,
       from_date,
       to_date,
       status,
       invoice_number,
       account_name,
       department_name,
+      order_number,
+      amount,
+      subsidiary_name,
+      invoice_date,
+      invoice_due_date,
       company_id,
     });
 
