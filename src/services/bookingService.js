@@ -5,6 +5,7 @@ const {
   findBookingById,
   findBookingsById,
   getBookingByIdEnriched,
+  findBookingPairById
 } = require("../models/bookingModel");
 const {
   sendBookingNotification,
@@ -730,7 +731,7 @@ async function createMultiReservationBooking(payload) {
      * INSERT BOOKINGS
      * ----------------------------- */
     const createdBookingIds = [];
-    
+
     let multiBookingId = null;
     /* ==========================
      MULTI RESERVATION WITH FARE
@@ -777,41 +778,38 @@ async function createMultiReservationBooking(payload) {
 
       const normalizedOutbound = await normalizeBookingPayload(outboundClone);
 
-normalizedOutbound.customer_id = customerId;
-normalizedOutbound.reference_number = await genRef();
+      normalizedOutbound.customer_id = customerId;
+      normalizedOutbound.reference_number = await genRef();
 
-// IMPORTANT:
-// First booking ka multi_booking_id pehle set nahi hoga.
-// Pehle booking INSERT hogi aur uska actual ID milega.
-delete normalizedOutbound.multi_booking_id;
+      // IMPORTANT:
+      // First booking ka multi_booking_id pehle set nahi hoga.
+      // Pehle booking INSERT hogi aur uska actual ID milega.
+      delete normalizedOutbound.multi_booking_id;
 
-const outboundInserted = await createBookingRow(
-  pool,
-  normalizedOutbound
-);
+      const outboundInserted = await createBookingRow(pool, normalizedOutbound);
 
-// First booking ka actual ID hi multi_booking_id hoga
-if (multiBookingId === null) {
-  multiBookingId = Number(outboundInserted.id);
+      // First booking ka actual ID hi multi_booking_id hoga
+      if (multiBookingId === null) {
+        multiBookingId = Number(outboundInserted.id);
 
-  // First booking ko usi ki ID ke saath update karo
-  await pool.query(
-    `UPDATE bookings
+        // First booking ko usi ki ID ke saath update karo
+        await pool.query(
+          `UPDATE bookings
      SET multi_booking_id = $1
      WHERE id = $1`,
-    [multiBookingId]
-  );
-} else {
-  // Baqi outbound bookings ko same group ID do
-  await pool.query(
-    `UPDATE bookings
+          [multiBookingId],
+        );
+      } else {
+        // Baqi outbound bookings ko same group ID do
+        await pool.query(
+          `UPDATE bookings
      SET multi_booking_id = $1
      WHERE id = $2`,
-    [multiBookingId, outboundInserted.id]
-  );
-}
+          [multiBookingId, outboundInserted.id],
+        );
+      }
 
-createdBookingIds.push(outboundInserted.id);
+      createdBookingIds.push(outboundInserted.id);
 
       /* ==========================
      RETURN BOOKING
@@ -966,68 +964,295 @@ async function create(payload) {
   return createSimpleBooking(payload);
 }
 
-// UPDATE BOOKINGS BY ID
+// ============================== OLD UPDATE BOOKINGS BY ID ==============================
+// async function updateBookingService(bookingId, payload) {
+//   //  COMPLETED STATUS
+//   const COMPLETED_STATUS_ID = 11;
+
+//   // 0️ Existing booking fetch
+//   const existing = await findBookingsById(bookingId);
+//   if (!existing) return null;
+
+//   const isCompleted =
+//     Number(existing.booking_status_id) === COMPLETED_STATUS_ID;
+
+//   // 1 Allowed columns (UPDATE ke liye)
+//   // const allowed = [
+//   //   "booking_status_id",
+//   //   "driver_id",
+//   //   "vehicle_id",
+//   //   "pickup",
+//   //   "dropoff",
+//   //   "pickup_date",
+//   //   "pickup_time",
+//   //   "dropoff_date",
+//   //   "dropoff_time",
+//   //   "pickup_latitude",
+//   //   "pickup_longitude",
+//   //   "dropoff_latitude",
+//   //   "dropoff_longitude",
+//   //   "pickup_door_number",
+//   //   "dropoff_door_number",
+//   //   "pickup_plot",
+//   //   "drpoff_plot",
+//   //   "notes",
+//   //   "viapoints",
+//   //   "restricted_drivers",
+//   //   "child_seat",
+//   //   "fares",
+//   //   "total_charges",
+//   //   "waiting_charges",
+//   //   "parking_charges",
+//   //   "extra_drop_charges",
+//   //   "payment_type_id",
+//   //   "account_id",
+//   //   "on_route",
+//   //   "arrived",
+//   //   "passenger_on_board",
+//   //   "completed",
+//   //   "cancelled_reason",
+//   //   "dispatch",
+//   //   "dispatch_as",
+//   //   "department",
+//   //   "passengers",
+//   //   "luggages",
+//   //   "hand_luggages"
+//   // ];
+
+//   // ALL FILEDS ALLOWED
+//   const allowed = [
+//     // Booking operational
+//     "booking_status_id",
+//     "driver_id",
+//     "vehicle_id",
+//     "vehicle_type_id",
+//     "pickup",
+//     "dropoff",
+//     "pickup_date",
+//     "pickup_time",
+//     "dropoff_date",
+//     "dropoff_time",
+//     "pickup_latitude",
+//     "pickup_longitude",
+//     "dropoff_latitude",
+//     "dropoff_longitude",
+//     "pickup_door_number",
+//     "dropoff_door_number",
+//     "pickup_plot",
+//     "dropoff_plot",
+//     "viapoints",
+//     "restricted_drivers",
+//     "child_seat",
+//     "notes",
+//     "special_instructions",
+//     "fares",
+//     "total_charges",
+//     "waiting_charges",
+//     "parking_charges",
+//     "extra_drop_charges",
+//     "congestion_charges",
+//     "credit_card_charges",
+//     "company_price",
+//     "eta",
+//     "miles",
+//     "payment_type_id",
+//     "account_id",
+//     "on_route",
+//     "arrived",
+//     "passenger_on_board",
+//     "completed",
+//     "cancelled_reason",
+//     "dispatch",
+//     "dispatch_as",
+
+//     // Passenger / booking info
+//     "passengers",
+//     "luggages",
+//     "hand_luggages",
+//     "name",
+//     "email",
+//     "mobile",
+//     "telephone",
+//     "department",
+//     "journey_type_id",
+//     "booking_type_id",
+//     "booking_source",
+//     "quotation",
+//     "sms",
+//     "emailFlag",
+//     "escort_id",
+//     "meet_and_greet",
+//     "add_return_fare",
+//     "fare_meter_status",
+//     "fare_meter",
+//     "toggle_driver_text",
+//     "toggle_passenger_text",
+//     "permanent",
+//     "multi_booking_id",
+//     "associated_booking",
+//     "invoice_status",
+//     "commission_status",
+//     "commission",
+//     "skipped_bookings",
+//     "booked_by",
+//     "booked_at",
+//     "stripe_customer_id",
+//     "stripe_payment_id",
+//     "invoice_number",
+//     "initial_subsidiary_id",
+//     "lead_time",
+//     "company_id",
+//   ];
+
+//   // 2️ Filter payload
+//   const updates = {};
+//   for (const key of allowed) {
+//     if (payload[key] !== undefined) {
+//       updates[key] = payload[key];
+//     }
+//   }
+
+//   // 3️ JSON stringify
+//   const jsonFields = ["viapoints", "restricted_drivers", "child_seat", "notes"];
+//   for (const f of jsonFields) {
+//     if (updates[f] !== undefined) {
+//       updates[f] =
+//         typeof updates[f] === "string"
+//           ? updates[f]
+//           : JSON.stringify(updates[f]);
+//     }
+//   }
+
+//   if (Object.keys(updates).length === 0) {
+//     throw new Error("No valid fields provided for update");
+//   }
+
+//   // =====================================================
+//   //  CASE 1: BOOKING NOT COMPLETED → NORMAL UPDATE
+//   // =====================================================
+//   if (!isCompleted) {
+//     const oldDriverId = existing.driver_id;
+//     const updated = await updateBooking(bookingId, updates);
+//     if (!updated) return null;
+
+//     const enriched = await getBookingByIdEnriched(updated.id);
+//     const clean = parseJSONFields(enriched);
+//     // 🔔 SEND NOTIFICATION IF DRIVER ASSIGNED / CHANGED
+//     if (
+//       updates.driver_id &&
+//       Number(updates.driver_id) !== Number(oldDriverId)
+//     ) {
+//       await sendBookingNotification(updates.driver_id, clean);
+//     }
+
+//     return clean;
+//   }
+
+//   // =====================================================
+//   //  CASE 2: BOOKING COMPLETED → CREATE NEW BOOKING
+//   // =====================================================
+//   const newBookingPayload = {
+//     ...existing,
+//     ...updates,
+
+//     id: undefined,
+//     booking_status_id: payload.booking_status_id || 1, // Saved / Pending
+//     completed: false,
+//     reference_number: await genRef(),
+//     created_at: new Date(),
+//     updated_at: new Date(),
+//     company_id: payload.company_id,
+//   };
+
+//   //  Remove non-insertable fields
+//   delete newBookingPayload.id;
+
+//   // Normalize JSON fields again
+//   const normalized = await normalizeBookingPayload(newBookingPayload);
+
+//   const inserted = await createBookingRow(pool, normalized);
+
+//   const enriched = await getBookingByIdEnriched(inserted.id);
+//   const clean = parseJSONFields(enriched);
+
+//   // 8️ SEND NOTIFICATION
+//   if (clean.driver_id) {
+//     await sendBookingNotification(clean.driver_id, clean);
+//   }
+
+//   return clean;
+// }
+
+// ---------------------------------------------------------
+// UPDATE BOOKING BY ID
+// SUPPORTS NORMAL + RETURN WAY BOOKINGS
+// ---------------------------------------------------------
 async function updateBookingService(bookingId, payload) {
-  //  COMPLETED STATUS
   const COMPLETED_STATUS_ID = 11;
 
-  // 0️ Existing booking fetch
-  const existing = await findBookingsById(bookingId);
-  if (!existing) return null;
+  // =====================================================
+  // 1. FIND BOOKING + ASSOCIATED BOOKING
+  // =====================================================
+
+  const bookingPair = await findBookingPairById(bookingId);
+
+  if (!bookingPair || bookingPair.length === 0) {
+    return null;
+  }
+
+  // -----------------------------------------------------
+  // Find primary/outbound booking
+  // associated_booking = null
+  // -----------------------------------------------------
+
+  const primaryBooking =
+    bookingPair.find(
+      (booking) =>
+        booking.associated_booking === null ||
+        booking.associated_booking === undefined,
+    ) || bookingPair[0];
+
+  // -----------------------------------------------------
+  // Find associated/return booking
+  // -----------------------------------------------------
+
+  const returnBooking =
+    bookingPair.find(
+      (booking) =>
+        Number(booking.associated_booking) ===
+        Number(primaryBooking.id),
+    ) || null;
+
+  console.log("==========================================");
+  console.log("EDIT BOOKING ID:", bookingId);
+  console.log("PRIMARY BOOKING ID:", primaryBooking.id);
+  console.log(
+    "RETURN BOOKING ID:",
+    returnBooking ? returnBooking.id : null,
+  );
+  console.log("JOURNEY TYPE:", payload.journey_type_id);
+  console.log("==========================================");
+
+  // =====================================================
+  // 2. CHECK COMPLETED
+  // =====================================================
 
   const isCompleted =
-    Number(existing.booking_status_id) === COMPLETED_STATUS_ID;
+    Number(primaryBooking.booking_status_id) ===
+    COMPLETED_STATUS_ID;
 
-  // 1 Allowed columns (UPDATE ke liye)
-  // const allowed = [
-  //   "booking_status_id",
-  //   "driver_id",
-  //   "vehicle_id",
-  //   "pickup",
-  //   "dropoff",
-  //   "pickup_date",
-  //   "pickup_time",
-  //   "dropoff_date",
-  //   "dropoff_time",
-  //   "pickup_latitude",
-  //   "pickup_longitude",
-  //   "dropoff_latitude",
-  //   "dropoff_longitude",
-  //   "pickup_door_number",
-  //   "dropoff_door_number",
-  //   "pickup_plot",
-  //   "drpoff_plot",
-  //   "notes",
-  //   "viapoints",
-  //   "restricted_drivers",
-  //   "child_seat",
-  //   "fares",
-  //   "total_charges",
-  //   "waiting_charges",
-  //   "parking_charges",
-  //   "extra_drop_charges",
-  //   "payment_type_id",
-  //   "account_id",
-  //   "on_route",
-  //   "arrived",
-  //   "passenger_on_board",
-  //   "completed",
-  //   "cancelled_reason",
-  //   "dispatch",
-  //   "dispatch_as",
-  //   "department",
-  //   "passengers",
-  //   "luggages",
-  //   "hand_luggages"
-  // ];
+  // =====================================================
+  // 3. ALLOWED NORMAL BOOKING FIELDS
+  // =====================================================
 
-  // ALL FILEDS ALLOWED
   const allowed = [
     // Booking operational
     "booking_status_id",
     "driver_id",
     "vehicle_id",
     "vehicle_type_id",
+
+    // Locations
     "pickup",
     "dropoff",
     "pickup_date",
@@ -1042,10 +1267,25 @@ async function updateBookingService(bookingId, payload) {
     "dropoff_door_number",
     "pickup_plot",
     "dropoff_plot",
+    "pickup_location_type_id",
+    "dropoff_location_type_id",
+
+    // JSON
     "viapoints",
     "restricted_drivers",
     "child_seat",
     "notes",
+
+    // Passenger
+    "passengers",
+    "luggages",
+    "hand_luggages",
+    "name",
+    "email",
+    "mobile",
+    "telephone",
+
+    // Booking
     "special_instructions",
     "fares",
     "total_charges",
@@ -1057,24 +1297,23 @@ async function updateBookingService(bookingId, payload) {
     "company_price",
     "eta",
     "miles",
+
+    // Payment
     "payment_type_id",
     "account_id",
+
+    // Status
     "on_route",
     "arrived",
     "passenger_on_board",
     "completed",
     "cancelled_reason",
+
+    // Dispatch
     "dispatch",
     "dispatch_as",
 
-    // Passenger / booking info
-    "passengers",
-    "luggages",
-    "hand_luggages",
-    "name",
-    "email",
-    "mobile",
-    "telephone",
+    // Other
     "department",
     "journey_type_id",
     "booking_type_id",
@@ -1090,100 +1329,483 @@ async function updateBookingService(bookingId, payload) {
     "toggle_driver_text",
     "toggle_passenger_text",
     "permanent",
-    "multi_booking_id",
-    "associated_booking",
+
+    // Finance
     "invoice_status",
     "commission_status",
     "commission",
+
+    // Misc
     "skipped_bookings",
     "booked_by",
-    "booked_at",
-    "stripe_customer_id",
-    "stripe_payment_id",
-    "invoice_number",
-    "initial_subsidiary_id",
     "lead_time",
     "company_id",
   ];
 
-  // 2️ Filter payload
+  // =====================================================
+  // 4. CREATE NORMAL/OUTBOUND UPDATES
+  // =====================================================
+
   const updates = {};
+
   for (const key of allowed) {
     if (payload[key] !== undefined) {
       updates[key] = payload[key];
     }
   }
 
-  // 3️ JSON stringify
-  const jsonFields = ["viapoints", "restricted_drivers", "child_seat", "notes"];
-  for (const f of jsonFields) {
-    if (updates[f] !== undefined) {
-      updates[f] =
-        typeof updates[f] === "string"
-          ? updates[f]
-          : JSON.stringify(updates[f]);
+  // =====================================================
+  // 5. JSON STRINGIFY NORMAL BOOKING FIELDS
+  // =====================================================
+
+  const jsonFields = [
+    "viapoints",
+    "restricted_drivers",
+    "child_seat",
+    "notes",
+    "skipped_bookings",
+  ];
+
+  for (const field of jsonFields) {
+    if (updates[field] !== undefined) {
+      updates[field] =
+        typeof updates[field] === "string"
+          ? updates[field]
+          : JSON.stringify(updates[field]);
     }
   }
 
-  if (Object.keys(updates).length === 0) {
-    throw new Error("No valid fields provided for update");
+  // =====================================================
+  // 6. JOURNEY TYPE 3 = RETURN WAY
+  // =====================================================
+
+  if (
+    Number(payload.journey_type_id) === 3 &&
+    returnBooking
+  ) {
+    console.log("🔄 RETURN WAY EDIT DETECTED");
+
+    // ===================================================
+    // REMOVE ANY RETURN_* FROM NORMAL UPDATE
+    // ===================================================
+
+    // Payload ke normal fields primary booking ko jayenge.
+    // Return fields alag se returnUpdates mein jayenge.
+
+    // ===================================================
+    // RETURN BOOKING UPDATES
+    // ===================================================
+
+    const returnUpdates = {};
+
+    // ---------------------------------------------------
+    // Locations
+    // ---------------------------------------------------
+
+    if (payload.return_pickup !== undefined) {
+      returnUpdates.pickup = payload.return_pickup;
+    }
+
+    if (payload.return_dropoff !== undefined) {
+      returnUpdates.dropoff = payload.return_dropoff;
+    }
+
+    if (payload.return_pickup_latitude !== undefined) {
+      returnUpdates.pickup_latitude =
+        payload.return_pickup_latitude;
+    }
+
+    if (payload.return_pickup_longitude !== undefined) {
+      returnUpdates.pickup_longitude =
+        payload.return_pickup_longitude;
+    }
+
+    if (payload.return_dropoff_latitude !== undefined) {
+      returnUpdates.dropoff_latitude =
+        payload.return_dropoff_latitude;
+    }
+
+    if (payload.return_dropoff_longitude !== undefined) {
+      returnUpdates.dropoff_longitude =
+        payload.return_dropoff_longitude;
+    }
+
+    if (payload.return_pickup_door_number !== undefined) {
+      returnUpdates.pickup_door_number =
+        payload.return_pickup_door_number;
+    }
+
+    if (payload.return_dropoff_door_number !== undefined) {
+      returnUpdates.dropoff_door_number =
+        payload.return_dropoff_door_number;
+    }
+
+    if (payload.return_pickup_plot !== undefined) {
+      returnUpdates.pickup_plot =
+        payload.return_pickup_plot;
+    }
+
+    if (payload.return_dropoff_plot !== undefined) {
+      returnUpdates.dropoff_plot =
+        payload.return_dropoff_plot;
+    }
+
+    if (payload.return_pickup_location_type_id !== undefined) {
+      returnUpdates.pickup_location_type_id =
+        payload.return_pickup_location_type_id;
+    }
+
+    if (payload.return_dropoff_location_type_id !== undefined) {
+      returnUpdates.dropoff_location_type_id =
+        payload.return_dropoff_location_type_id;
+    }
+
+    // ---------------------------------------------------
+    // Date / Time
+    // ---------------------------------------------------
+
+    if (payload.return_pickup_date !== undefined) {
+      returnUpdates.pickup_date =
+        payload.return_pickup_date;
+    }
+
+    if (payload.return_pickup_time !== undefined) {
+      returnUpdates.pickup_time =
+        payload.return_pickup_time;
+    }
+
+    // ---------------------------------------------------
+    // Return Flight
+    // ---------------------------------------------------
+
+    if (payload.return_flight_number !== undefined) {
+      returnUpdates.flight_number =
+        payload.return_flight_number;
+    }
+
+    if (payload.return_arriving_from !== undefined) {
+      returnUpdates.arriving_from =
+        payload.return_arriving_from;
+    }
+
+    // ---------------------------------------------------
+    // Return Via Points
+    // ---------------------------------------------------
+
+    if (payload.return_viapoints !== undefined) {
+      returnUpdates.viapoints =
+        typeof payload.return_viapoints === "string"
+          ? payload.return_viapoints
+          : JSON.stringify(payload.return_viapoints);
+    }
+
+    // ---------------------------------------------------
+    // Return Notes
+    // ---------------------------------------------------
+
+    if (payload.return_notes !== undefined) {
+      returnUpdates.notes =
+        typeof payload.return_notes === "string"
+          ? payload.return_notes
+          : JSON.stringify(payload.return_notes);
+    }
+
+    // ---------------------------------------------------
+    // Return Special Instructions
+    // ---------------------------------------------------
+
+    if (payload.return_special_instructions !== undefined) {
+      returnUpdates.special_instructions =
+        payload.return_special_instructions;
+    }
+
+    // ---------------------------------------------------
+    // Return Vehicle
+    // ---------------------------------------------------
+
+    if (payload.return_vehicle_type_id !== undefined) {
+      returnUpdates.vehicle_type_id =
+        payload.return_vehicle_type_id;
+    }
+
+    if (payload.return_vehicle_id !== undefined) {
+      returnUpdates.vehicle_id =
+        payload.return_vehicle_id;
+    }
+
+    if (payload.return_driver_id !== undefined) {
+      returnUpdates.driver_id =
+        payload.return_driver_id;
+    }
+
+    // ---------------------------------------------------
+    // Return Fare
+    // ---------------------------------------------------
+
+    if (payload.return_fare !== undefined) {
+      returnUpdates.fares =
+        payload.return_fare;
+    }
+
+    if (payload.return_company_price !== undefined) {
+      returnUpdates.company_price =
+        payload.return_company_price;
+    }
+
+    if (payload.return_total_charges !== undefined) {
+      returnUpdates.total_charges =
+        payload.return_total_charges;
+    }
+
+    if (payload.return_waiting_charges !== undefined) {
+      returnUpdates.waiting_charges =
+        payload.return_waiting_charges;
+    }
+
+    if (payload.return_parking_charges !== undefined) {
+      returnUpdates.parking_charges =
+        payload.return_parking_charges;
+    }
+
+    if (payload.return_extra_drop_charges !== undefined) {
+      returnUpdates.extra_drop_charges =
+        payload.return_extra_drop_charges;
+    }
+
+    if (payload.return_congestion_charges !== undefined) {
+      returnUpdates.congestion_charges =
+        payload.return_congestion_charges;
+    }
+
+    if (payload.return_credit_card_charges !== undefined) {
+      returnUpdates.credit_card_charges =
+        payload.return_credit_card_charges;
+    }
+
+    if (payload.return_meet_and_greet !== undefined) {
+      returnUpdates.meet_and_greet =
+        payload.return_meet_and_greet;
+    }
+
+    // ---------------------------------------------------
+    // Return Passenger / Common Fields
+    // ---------------------------------------------------
+
+    if (payload.return_passengers !== undefined) {
+      returnUpdates.passengers =
+        payload.return_passengers;
+    }
+
+    if (payload.return_luggages !== undefined) {
+      returnUpdates.luggages =
+        payload.return_luggages;
+    }
+
+    if (payload.return_hand_luggages !== undefined) {
+      returnUpdates.hand_luggages =
+        payload.return_hand_luggages;
+    }
+
+    if (payload.return_child_seat !== undefined) {
+      returnUpdates.child_seat =
+        typeof payload.return_child_seat === "string"
+          ? payload.return_child_seat
+          : JSON.stringify(payload.return_child_seat);
+    }
+
+    // ---------------------------------------------------
+    // Return Payment
+    // ---------------------------------------------------
+
+    if (payload.return_payment_type_id !== undefined) {
+      returnUpdates.payment_type_id =
+        payload.return_payment_type_id;
+    }
+
+    // ---------------------------------------------------
+    // Return Lead Time
+    // ---------------------------------------------------
+
+    if (payload.return_lead_time !== undefined) {
+      returnUpdates.lead_time =
+        payload.return_lead_time;
+    }
+
+    // ---------------------------------------------------
+    // RETURN JOURNEY TYPE
+    // ---------------------------------------------------
+
+    returnUpdates.journey_type_id = 3;
+
+    // ---------------------------------------------------
+    // UPDATE RETURN BOOKING
+    // ---------------------------------------------------
+
+    if (Object.keys(returnUpdates).length > 0) {
+      console.log(
+        "🔄 RETURN UPDATES:",
+        returnUpdates,
+      );
+
+      await updateBooking(
+        returnBooking.id,
+        returnUpdates,
+      );
+    }
   }
 
   // =====================================================
-  //  CASE 1: BOOKING NOT COMPLETED → NORMAL UPDATE
+  // 7. SINGLE BOOKING / PRIMARY BOOKING UPDATE
   // =====================================================
-  if (!isCompleted) {
-    const oldDriverId = existing.driver_id;
-    const updated = await updateBooking(bookingId, updates);
-    if (!updated) return null;
 
-    const enriched = await getBookingByIdEnriched(updated.id);
-    const clean = parseJSONFields(enriched);
-    // 🔔 SEND NOTIFICATION IF DRIVER ASSIGNED / CHANGED
+  // Agar completed hai to aapka existing completed logic
+  // neeche handle hoga.
+  //
+  // Filhaal normal update ke liye primary booking update.
+
+  if (!isCompleted) {
+    console.log(
+      "📝 PRIMARY UPDATES:",
+      updates,
+    );
+
+    const oldDriverId = primaryBooking.driver_id;
+
+    const updated = await updateBooking(
+      primaryBooking.id,
+      updates,
+    );
+
+    if (!updated) {
+      return null;
+    }
+
+    // ---------------------------------------------------
+    // GET FRESH PRIMARY BOOKING
+    // ---------------------------------------------------
+
+    const primaryEnriched =
+      await getBookingByIdEnriched(
+        primaryBooking.id,
+      );
+
+    const primaryClean =
+      parseJSONFields(primaryEnriched);
+
+    // ---------------------------------------------------
+    // DRIVER NOTIFICATION - PRIMARY
+    // ---------------------------------------------------
+
     if (
       updates.driver_id &&
-      Number(updates.driver_id) !== Number(oldDriverId)
+      Number(updates.driver_id) !==
+        Number(oldDriverId)
     ) {
-      await sendBookingNotification(updates.driver_id, clean);
+      await sendBookingNotification(
+        updates.driver_id,
+        primaryClean,
+      );
     }
 
-    return clean;
+    // ===================================================
+    // RETURN WAY
+    // ===================================================
+
+    if (
+      Number(payload.journey_type_id) === 3 &&
+      returnBooking
+    ) {
+      const returnEnriched =
+        await getBookingByIdEnriched(
+          returnBooking.id,
+        );
+
+      const returnClean =
+        parseJSONFields(returnEnriched);
+
+      // -------------------------------------------------
+      // DRIVER NOTIFICATION - RETURN
+      // -------------------------------------------------
+
+      if (
+        payload.return_driver_id &&
+        Number(payload.return_driver_id) !==
+          Number(returnBooking.driver_id)
+      ) {
+        await sendBookingNotification(
+          payload.return_driver_id,
+          returnClean,
+        );
+      }
+
+      return {
+        booking: primaryClean,
+        return_booking: returnClean,
+      };
+    }
+
+    // ===================================================
+    // SINGLE BOOKING
+    // ===================================================
+
+    return primaryClean;
   }
 
   // =====================================================
-  //  CASE 2: BOOKING COMPLETED → CREATE NEW BOOKING
+  // 8. COMPLETED BOOKING
   // =====================================================
+  //
+  // Yahan aapka existing CASE 2 wala code rahega.
+  // Isko abhi remove mat karein.
+  //
+  // IMPORTANT:
+  // Agar completed Return Way ko edit karna allowed hai,
+  // to us case ke liye separate logic banana hoga.
+  // =====================================================
+
   const newBookingPayload = {
-    ...existing,
+    ...primaryBooking,
     ...updates,
 
     id: undefined,
-    booking_status_id: payload.booking_status_id || 1, // Saved / Pending
+
+    booking_status_id:
+      payload.booking_status_id || 1,
+
     completed: false,
+
     reference_number: await genRef(),
+
     created_at: new Date(),
     updated_at: new Date(),
+
     company_id: payload.company_id,
   };
 
-  //  Remove non-insertable fields
   delete newBookingPayload.id;
 
-  // Normalize JSON fields again
-  const normalized = await normalizeBookingPayload(newBookingPayload);
+  const normalized =
+    await normalizeBookingPayload(
+      newBookingPayload,
+    );
 
-  const inserted = await createBookingRow(pool, normalized);
+  const inserted =
+    await insertBookingRow(
+      pool,
+      normalized,
+    );
 
-  const enriched = await getBookingByIdEnriched(inserted.id);
-  const clean = parseJSONFields(enriched);
+  const enriched =
+    await getBookingByIdEnriched(
+      inserted.id,
+    );
 
-  // 8️ SEND NOTIFICATION
-  if (clean.driver_id) {
-    await sendBookingNotification(clean.driver_id, clean);
-  }
+  const clean =
+    parseJSONFields(enriched);
 
   return clean;
 }
+
 
 //CREATE CLI BOOKING
 async function cloneOneWayBookingService(payload) {

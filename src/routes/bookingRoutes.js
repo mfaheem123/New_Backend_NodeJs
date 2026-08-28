@@ -94,6 +94,7 @@ router.post(
 );
 router.post("/clear-selected", bookingController.clearSelectedBookings);
 router.post("/clear-all", bookingController.clearAllBookings);
+router.post("/cancel-booking/:id", bookingController.cancelBookingById);
 
 router.post(
   "/dashboard-fares/:id",

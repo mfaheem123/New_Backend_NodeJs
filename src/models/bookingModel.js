@@ -3054,6 +3054,44 @@ const getDriverBookingStatisticsData = async ({
   };
 };
 
+// ---------------------------------------------------------
+// FIND BOOKING + ASSOCIATED RETURN BOOKING
+// ---------------------------------------------------------
+const findBookingPairById = async (id) => {
+  const query = `
+    SELECT *
+    FROM bookings
+    WHERE id = $1
+       OR associated_booking = $1
+       OR id = (
+         SELECT associated_booking
+         FROM bookings
+         WHERE id = $1
+       )
+    ORDER BY id ASC
+  `;
+
+  const result = await pool.query(query, [id]);
+
+  return result.rows;
+};
+
+// ---------------------------------------------------------
+// UPDATE BOOKING STATUS TO CANCELLED (ID 12)
+// ---------------------------------------------------------
+const cancelBookingById = async (id,cancelled_reason) => {
+  const query = `
+    UPDATE bookings
+    SET booking_status_id = 12,
+        updated_at = NOW(),
+        cancelled_reason = $2
+    WHERE id = $1
+    RETURNING *
+  `;
+  const result = await pool.query(query, [id, cancelled_reason]);
+  return result.rows[0];
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -3115,4 +3153,6 @@ module.exports = {
   findBookingforDelete,
   getSearchBookingsData,
   getDriverBookingStatisticsData,
+  findBookingPairById,
+  cancelBookingById
 };

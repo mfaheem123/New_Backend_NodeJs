@@ -213,11 +213,7 @@ exports.getAll = async ({
     }
 
     // 📌 Status Filter (Uppercased input like "PAID" ko bhi sahi handle karega)
-    if (
-      status &&
-      status.trim() !== "" &&
-      status.toLowerCase() !== "all"
-    ) {
+    if (status && status.trim() !== "" && status.toLowerCase() !== "all") {
       conditions.push(`LOWER(ai.status) = LOWER($${idx++})`);
       values.push(status.trim());
     }

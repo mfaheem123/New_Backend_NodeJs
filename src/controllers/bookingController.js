@@ -53,6 +53,7 @@ const {
   findBookingforDelete,
   getSearchBookingsData,
   getDriverBookingStatisticsData,
+  cancelBookingById
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -76,7 +77,7 @@ const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 
 function parseJSONFields(row) {
   if (!row) return row;
-// Agar array hai to har booking ko individually parse karo
+  // Agar array hai to har booking ko individually parse karo
   if (Array.isArray(row)) {
     return row.map((item) => parseJSONFields(item));
   }
@@ -419,7 +420,12 @@ exports.getBookingById = async (req, res) => {
     });
   }
 
-  const data = parseJSONFields(booking);
+  // ---------------------------------------------------------
+  // ALWAYS PARSE AS ARRAY (Single object ya Array handle karne ke liye)
+  // ---------------------------------------------------------
+  const normalizedBooking = Array.isArray(booking) ? booking : [booking];
+
+  const data = parseJSONFields(normalizedBooking);
 
   res.status(200).json({
     success: true,
@@ -435,8 +441,9 @@ exports.updateBooking = async (req, res) => {
     const bookingId = parseInt(req.params.id);
     console.log(
       "🚀 INCOMING UPDATE BOOKING BODY:",
-      JSON.stringify(req.body, null, 2),
+      JSON.stringify(req.body, null, 2)
     );
+    
     if (!bookingId) {
       return res.status(400).json({
         success: false,
@@ -446,7 +453,7 @@ exports.updateBooking = async (req, res) => {
 
     const updated = await bookingService.updateBookingService(
       bookingId,
-      req.body,
+      req.body
     );
 
     if (!updated) {
@@ -456,9 +463,30 @@ exports.updateBooking = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    // ---------------------------------------------------------
+    // ARRAY FORMAT NORMALIZATION FOR RESPONSE
+    // ---------------------------------------------------------
+    let bookingArray = [];
+
+    if (Array.isArray(updated)) {
+      bookingArray = updated;
+    } else if (updated.booking) {
+      if (Array.isArray(updated.booking)) {
+        bookingArray = updated.booking;
+      } else if (typeof updated.booking === "object") {
+        // Agar response Object me Key-Values hain ("0": {}, "1": {})
+        bookingArray = Object.values(updated.booking);
+      }
+    } else {
+      bookingArray = [updated];
+    }
+
+    // JSON String fields parse karein
+    const formattedBookings = bookingArray.map(parseJSONFields);
+
+    return res.status(200).json({
       success: true,
-      booking: updated,
+      booking: formattedBookings,
     });
   } catch (err) {
     console.error("updateBooking error:", err);
@@ -2798,6 +2826,45 @@ exports.getDriverBookingStatistics = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in getDriverBookingStatistics:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+// ---------------------------------------------------------
+// UPDATE BOOKING STATUS TO CANCELLED (ID 12)
+// ---------------------------------------------------------
+exports.cancelBookingById = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id, 10);
+    const { cancelled_reason } = req.body;
+
+    if (!bookingId) {
+      return res.status(400).json({
+        success: false,
+        message: "Booking ID is required",
+      });
+    }
+
+    if (!cancelled_reason) {
+      return res.status(400).json({
+        success: false,
+        message: "Cancelled reason is required",
+      });
+    }
+
+    const result = await cancelBookingById(bookingId, cancelled_reason);
+
+    res.json({
+      success: true,
+      message: "Booking Cancelled Successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error in cancelBookingById:", error);
     res.status(500).json({
       success: false,
       message: error.message,
