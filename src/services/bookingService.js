@@ -5,7 +5,7 @@ const {
   findBookingById,
   findBookingsById,
   getBookingByIdEnriched,
-  findBookingPairById
+  findBookingPairById,
 } = require("../models/bookingModel");
 const {
   sendBookingNotification,
@@ -1219,17 +1219,13 @@ async function updateBookingService(bookingId, payload) {
   const returnBooking =
     bookingPair.find(
       (booking) =>
-        Number(booking.associated_booking) ===
-        Number(primaryBooking.id),
+        Number(booking.associated_booking) === Number(primaryBooking.id),
     ) || null;
 
   console.log("==========================================");
   console.log("EDIT BOOKING ID:", bookingId);
   console.log("PRIMARY BOOKING ID:", primaryBooking.id);
-  console.log(
-    "RETURN BOOKING ID:",
-    returnBooking ? returnBooking.id : null,
-  );
+  console.log("RETURN BOOKING ID:", returnBooking ? returnBooking.id : null);
   console.log("JOURNEY TYPE:", payload.journey_type_id);
   console.log("==========================================");
 
@@ -1238,8 +1234,7 @@ async function updateBookingService(bookingId, payload) {
   // =====================================================
 
   const isCompleted =
-    Number(primaryBooking.booking_status_id) ===
-    COMPLETED_STATUS_ID;
+    Number(primaryBooking.booking_status_id) === COMPLETED_STATUS_ID;
 
   // =====================================================
   // 3. ALLOWED NORMAL BOOKING FIELDS
@@ -1379,10 +1374,7 @@ async function updateBookingService(bookingId, payload) {
   // 6. JOURNEY TYPE 3 = RETURN WAY
   // =====================================================
 
-  if (
-    Number(payload.journey_type_id) === 3 &&
-    returnBooking
-  ) {
+  if (Number(payload.journey_type_id) === 3 && returnBooking) {
     console.log("🔄 RETURN WAY EDIT DETECTED");
 
     // ===================================================
@@ -1411,43 +1403,35 @@ async function updateBookingService(bookingId, payload) {
     }
 
     if (payload.return_pickup_latitude !== undefined) {
-      returnUpdates.pickup_latitude =
-        payload.return_pickup_latitude;
+      returnUpdates.pickup_latitude = payload.return_pickup_latitude;
     }
 
     if (payload.return_pickup_longitude !== undefined) {
-      returnUpdates.pickup_longitude =
-        payload.return_pickup_longitude;
+      returnUpdates.pickup_longitude = payload.return_pickup_longitude;
     }
 
     if (payload.return_dropoff_latitude !== undefined) {
-      returnUpdates.dropoff_latitude =
-        payload.return_dropoff_latitude;
+      returnUpdates.dropoff_latitude = payload.return_dropoff_latitude;
     }
 
     if (payload.return_dropoff_longitude !== undefined) {
-      returnUpdates.dropoff_longitude =
-        payload.return_dropoff_longitude;
+      returnUpdates.dropoff_longitude = payload.return_dropoff_longitude;
     }
 
     if (payload.return_pickup_door_number !== undefined) {
-      returnUpdates.pickup_door_number =
-        payload.return_pickup_door_number;
+      returnUpdates.pickup_door_number = payload.return_pickup_door_number;
     }
 
     if (payload.return_dropoff_door_number !== undefined) {
-      returnUpdates.dropoff_door_number =
-        payload.return_dropoff_door_number;
+      returnUpdates.dropoff_door_number = payload.return_dropoff_door_number;
     }
 
     if (payload.return_pickup_plot !== undefined) {
-      returnUpdates.pickup_plot =
-        payload.return_pickup_plot;
+      returnUpdates.pickup_plot = payload.return_pickup_plot;
     }
 
     if (payload.return_dropoff_plot !== undefined) {
-      returnUpdates.dropoff_plot =
-        payload.return_dropoff_plot;
+      returnUpdates.dropoff_plot = payload.return_dropoff_plot;
     }
 
     if (payload.return_pickup_location_type_id !== undefined) {
@@ -1465,13 +1449,11 @@ async function updateBookingService(bookingId, payload) {
     // ---------------------------------------------------
 
     if (payload.return_pickup_date !== undefined) {
-      returnUpdates.pickup_date =
-        payload.return_pickup_date;
+      returnUpdates.pickup_date = payload.return_pickup_date;
     }
 
     if (payload.return_pickup_time !== undefined) {
-      returnUpdates.pickup_time =
-        payload.return_pickup_time;
+      returnUpdates.pickup_time = payload.return_pickup_time;
     }
 
     // ---------------------------------------------------
@@ -1479,13 +1461,11 @@ async function updateBookingService(bookingId, payload) {
     // ---------------------------------------------------
 
     if (payload.return_flight_number !== undefined) {
-      returnUpdates.flight_number =
-        payload.return_flight_number;
+      returnUpdates.flight_number = payload.return_flight_number;
     }
 
     if (payload.return_arriving_from !== undefined) {
-      returnUpdates.arriving_from =
-        payload.return_arriving_from;
+      returnUpdates.arriving_from = payload.return_arriving_from;
     }
 
     // ---------------------------------------------------
@@ -1515,8 +1495,7 @@ async function updateBookingService(bookingId, payload) {
     // ---------------------------------------------------
 
     if (payload.return_special_instructions !== undefined) {
-      returnUpdates.special_instructions =
-        payload.return_special_instructions;
+      returnUpdates.special_instructions = payload.return_special_instructions;
     }
 
     // ---------------------------------------------------
@@ -1524,18 +1503,15 @@ async function updateBookingService(bookingId, payload) {
     // ---------------------------------------------------
 
     if (payload.return_vehicle_type_id !== undefined) {
-      returnUpdates.vehicle_type_id =
-        payload.return_vehicle_type_id;
+      returnUpdates.vehicle_type_id = payload.return_vehicle_type_id;
     }
 
     if (payload.return_vehicle_id !== undefined) {
-      returnUpdates.vehicle_id =
-        payload.return_vehicle_id;
+      returnUpdates.vehicle_id = payload.return_vehicle_id;
     }
 
     if (payload.return_driver_id !== undefined) {
-      returnUpdates.driver_id =
-        payload.return_driver_id;
+      returnUpdates.driver_id = payload.return_driver_id;
     }
 
     // ---------------------------------------------------
@@ -1543,48 +1519,39 @@ async function updateBookingService(bookingId, payload) {
     // ---------------------------------------------------
 
     if (payload.return_fare !== undefined) {
-      returnUpdates.fares =
-        payload.return_fare;
+      returnUpdates.fares = payload.return_fare;
     }
 
     if (payload.return_company_price !== undefined) {
-      returnUpdates.company_price =
-        payload.return_company_price;
+      returnUpdates.company_price = payload.return_company_price;
     }
 
     if (payload.return_total_charges !== undefined) {
-      returnUpdates.total_charges =
-        payload.return_total_charges;
+      returnUpdates.total_charges = payload.return_total_charges;
     }
 
     if (payload.return_waiting_charges !== undefined) {
-      returnUpdates.waiting_charges =
-        payload.return_waiting_charges;
+      returnUpdates.waiting_charges = payload.return_waiting_charges;
     }
 
     if (payload.return_parking_charges !== undefined) {
-      returnUpdates.parking_charges =
-        payload.return_parking_charges;
+      returnUpdates.parking_charges = payload.return_parking_charges;
     }
 
     if (payload.return_extra_drop_charges !== undefined) {
-      returnUpdates.extra_drop_charges =
-        payload.return_extra_drop_charges;
+      returnUpdates.extra_drop_charges = payload.return_extra_drop_charges;
     }
 
     if (payload.return_congestion_charges !== undefined) {
-      returnUpdates.congestion_charges =
-        payload.return_congestion_charges;
+      returnUpdates.congestion_charges = payload.return_congestion_charges;
     }
 
     if (payload.return_credit_card_charges !== undefined) {
-      returnUpdates.credit_card_charges =
-        payload.return_credit_card_charges;
+      returnUpdates.credit_card_charges = payload.return_credit_card_charges;
     }
 
     if (payload.return_meet_and_greet !== undefined) {
-      returnUpdates.meet_and_greet =
-        payload.return_meet_and_greet;
+      returnUpdates.meet_and_greet = payload.return_meet_and_greet;
     }
 
     // ---------------------------------------------------
@@ -1592,18 +1559,15 @@ async function updateBookingService(bookingId, payload) {
     // ---------------------------------------------------
 
     if (payload.return_passengers !== undefined) {
-      returnUpdates.passengers =
-        payload.return_passengers;
+      returnUpdates.passengers = payload.return_passengers;
     }
 
     if (payload.return_luggages !== undefined) {
-      returnUpdates.luggages =
-        payload.return_luggages;
+      returnUpdates.luggages = payload.return_luggages;
     }
 
     if (payload.return_hand_luggages !== undefined) {
-      returnUpdates.hand_luggages =
-        payload.return_hand_luggages;
+      returnUpdates.hand_luggages = payload.return_hand_luggages;
     }
 
     if (payload.return_child_seat !== undefined) {
@@ -1618,8 +1582,7 @@ async function updateBookingService(bookingId, payload) {
     // ---------------------------------------------------
 
     if (payload.return_payment_type_id !== undefined) {
-      returnUpdates.payment_type_id =
-        payload.return_payment_type_id;
+      returnUpdates.payment_type_id = payload.return_payment_type_id;
     }
 
     // ---------------------------------------------------
@@ -1627,8 +1590,7 @@ async function updateBookingService(bookingId, payload) {
     // ---------------------------------------------------
 
     if (payload.return_lead_time !== undefined) {
-      returnUpdates.lead_time =
-        payload.return_lead_time;
+      returnUpdates.lead_time = payload.return_lead_time;
     }
 
     // ---------------------------------------------------
@@ -1642,15 +1604,9 @@ async function updateBookingService(bookingId, payload) {
     // ---------------------------------------------------
 
     if (Object.keys(returnUpdates).length > 0) {
-      console.log(
-        "🔄 RETURN UPDATES:",
-        returnUpdates,
-      );
+      console.log("🔄 RETURN UPDATES:", returnUpdates);
 
-      await updateBooking(
-        returnBooking.id,
-        returnUpdates,
-      );
+      await updateBooking(returnBooking.id, returnUpdates);
     }
   }
 
@@ -1664,17 +1620,11 @@ async function updateBookingService(bookingId, payload) {
   // Filhaal normal update ke liye primary booking update.
 
   if (!isCompleted) {
-    console.log(
-      "📝 PRIMARY UPDATES:",
-      updates,
-    );
+    console.log("📝 PRIMARY UPDATES:", updates);
 
     const oldDriverId = primaryBooking.driver_id;
 
-    const updated = await updateBooking(
-      primaryBooking.id,
-      updates,
-    );
+    const updated = await updateBooking(primaryBooking.id, updates);
 
     if (!updated) {
       return null;
@@ -1684,13 +1634,9 @@ async function updateBookingService(bookingId, payload) {
     // GET FRESH PRIMARY BOOKING
     // ---------------------------------------------------
 
-    const primaryEnriched =
-      await getBookingByIdEnriched(
-        primaryBooking.id,
-      );
+    const primaryEnriched = await getBookingByIdEnriched(primaryBooking.id);
 
-    const primaryClean =
-      parseJSONFields(primaryEnriched);
+    const primaryClean = parseJSONFields(primaryEnriched);
 
     // ---------------------------------------------------
     // DRIVER NOTIFICATION - PRIMARY
@@ -1698,30 +1644,19 @@ async function updateBookingService(bookingId, payload) {
 
     if (
       updates.driver_id &&
-      Number(updates.driver_id) !==
-        Number(oldDriverId)
+      Number(updates.driver_id) !== Number(oldDriverId)
     ) {
-      await sendBookingNotification(
-        updates.driver_id,
-        primaryClean,
-      );
+      await sendBookingNotification(updates.driver_id, primaryClean);
     }
 
     // ===================================================
     // RETURN WAY
     // ===================================================
 
-    if (
-      Number(payload.journey_type_id) === 3 &&
-      returnBooking
-    ) {
-      const returnEnriched =
-        await getBookingByIdEnriched(
-          returnBooking.id,
-        );
+    if (Number(payload.journey_type_id) === 3 && returnBooking) {
+      const returnEnriched = await getBookingByIdEnriched(returnBooking.id);
 
-      const returnClean =
-        parseJSONFields(returnEnriched);
+      const returnClean = parseJSONFields(returnEnriched);
 
       // -------------------------------------------------
       // DRIVER NOTIFICATION - RETURN
@@ -1729,13 +1664,9 @@ async function updateBookingService(bookingId, payload) {
 
       if (
         payload.return_driver_id &&
-        Number(payload.return_driver_id) !==
-          Number(returnBooking.driver_id)
+        Number(payload.return_driver_id) !== Number(returnBooking.driver_id)
       ) {
-        await sendBookingNotification(
-          payload.return_driver_id,
-          returnClean,
-        );
+        await sendBookingNotification(payload.return_driver_id, returnClean);
       }
 
       return {
@@ -1769,8 +1700,7 @@ async function updateBookingService(bookingId, payload) {
 
     id: undefined,
 
-    booking_status_id:
-      payload.booking_status_id || 1,
+    booking_status_id: payload.booking_status_id || 1,
 
     completed: false,
 
@@ -1784,28 +1714,16 @@ async function updateBookingService(bookingId, payload) {
 
   delete newBookingPayload.id;
 
-  const normalized =
-    await normalizeBookingPayload(
-      newBookingPayload,
-    );
+  const normalized = await normalizeBookingPayload(newBookingPayload);
 
-  const inserted =
-    await insertBookingRow(
-      pool,
-      normalized,
-    );
+  const inserted = await insertBookingRow(pool, normalized);
 
-  const enriched =
-    await getBookingByIdEnriched(
-      inserted.id,
-    );
+  const enriched = await getBookingByIdEnriched(inserted.id);
 
-  const clean =
-    parseJSONFields(enriched);
+  const clean = parseJSONFields(enriched);
 
   return clean;
 }
-
 
 //CREATE CLI BOOKING
 async function cloneOneWayBookingService(payload) {

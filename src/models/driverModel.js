@@ -1,7 +1,10 @@
 const db = require("../db");
 const bcrypt = require("bcrypt");
 
-//  Helper: Format date as DD-MM-YYYY
+
+// ---------------------------------------------------------
+// HELPER: FORMAT DATES AS DD-MM-YYYY
+// ---------------------------------------------------------
 function formatDateOnly(date) {
   if (!date) return null;
   const d = new Date(date);
@@ -17,7 +20,9 @@ function formatDateOnly(date) {
   return `${day}-${month}-${year}`;
 }
 
-// 🧰 Normalize driver and nested vehicle dates
+// ---------------------------------------------------------
+// NORMALIZE DRIVER AND NESTED VEHICLE DATES
+// ---------------------------------------------------------
 function normalizeDriverDates(driver) {
   if (!driver) return driver;
 
@@ -58,6 +63,9 @@ function normalizeDriverDates(driver) {
   return driver;
 }
 
+// ---------------------------------------------------------
+// FORMAT VEHICLE DATA
+// ---------------------------------------------------------
 function formatVehicle(v) {
   if (!v) return null;
 
@@ -136,13 +144,19 @@ function formatVehicle(v) {
     vehicle_type: v.vehicle_type,
   };
 }
-// Generate driveraccessToken NTG+2 digits
+
+// ---------------------------------------------------------
+// GENERATE DRIVER ACCESS TOKEN (NTG+2 digits)
+// ---------------------------------------------------------
 function generateSecurityCode() {
   let result = "NTG";
   const digits = Math.floor(10 + Math.random() * 90).toString();
   return result + digits;
 }
 
+// ---------------------------------------------------------
+// CHECK UNIQUE DRIVER ACCESS TOKEN (NTG+2 digits)
+// ---------------------------------------------------------
 async function generateUniqueDriverAccessToken(db) {
   while (true) {
     const token = generateSecurityCode();
@@ -161,7 +175,9 @@ async function generateUniqueDriverAccessToken(db) {
 }
 
 const Driver = {
-  // Check if username already exists
+  // ---------------------------------------------------------
+// CHECK IF USERNAME EXISTS
+// ---------------------------------------------------------
   async checkUsernameExists(username) {
     const query = `
       SELECT id FROM drivers 
@@ -172,6 +188,9 @@ const Driver = {
     return result.rows.length > 0;
   },
 
+  // ---------------------------------------------------------
+// CREATE DRIVER WITH DOCUMENTS
+// ---------------------------------------------------------
   async create(data) {
     try {
       await db.query("BEGIN");
@@ -582,6 +601,9 @@ const Driver = {
     }
   },
 
+  // ---------------------------------------------------------
+// GET ALL DRIVERS
+// ---------------------------------------------------------
   async getAll({
     page = 1,
     limit = 50,
@@ -742,6 +764,9 @@ const Driver = {
     };
   },
 
+  // ---------------------------------------------------------
+// GET DRIVER BY ID
+// ---------------------------------------------------------
   async getById(id) {
     try {
       await db.query("BEGIN");
@@ -837,6 +862,9 @@ const Driver = {
     }
   },
 
+  // ---------------------------------------------------------
+// UPDATE DRIVER BY ID
+// ---------------------------------------------------------
   async update(driverId, data) {
     try {
       await db.query("BEGIN");
@@ -1045,6 +1073,9 @@ const Driver = {
     }
   },
 
+  // ---------------------------------------------------------
+// DELETE DRIVER BY ID
+// ---------------------------------------------------------
   async delete(id) {
     try {
       await db.query("BEGIN");
@@ -1078,7 +1109,10 @@ const Driver = {
       throw err;
     }
   },
-  // Find driver by username (case-insensitive)
+
+  // ---------------------------------------------------------
+// FIND DRIVER BY USERNAME (CASE-INSENSITIVE)
+// ---------------------------------------------------------
   async findDriverByUsername(username) {
     const query = `
         SELECT * FROM drivers 
@@ -1090,7 +1124,10 @@ const Driver = {
     return result.rows[0];
   },
 
-  //Update Driver Login Status With Location
+
+  // ---------------------------------------------------------
+// UPDATE DRIVER LOGIN STATUS WITH LOCATION
+// ---------------------------------------------------------
   async updateDriverLoginStatus(driverId, latitude, longitude) {
     const query = `
         UPDATE drivers
@@ -1106,6 +1143,9 @@ const Driver = {
     return db.query(query, [latitude, longitude, driverId]);
   },
 
+  // ---------------------------------------------------------
+// UPDATE DRIVER LOGOUT STATUS
+// ---------------------------------------------------------
   async updateDriverLogoutStatus(id) {
     const query = `
     UPDATE drivers
@@ -1120,6 +1160,9 @@ const Driver = {
     return true;
   },
 
+  // ---------------------------------------------------------
+// GET DRIVER BY COMPANY ID
+// ---------------------------------------------------------
   async getByCompany(company_id) {
     const query = `
     SELECT 
@@ -1155,6 +1198,9 @@ const Driver = {
     return result.rows;
   },
 
+  // ---------------------------------------------------------
+// UPDATE DRIVER FCM TOKEN AT LOGIN
+// ---------------------------------------------------------
   async updateDriverFcmToken(driverId, fcmToken) {
     const query = `
     UPDATE drivers
@@ -1167,12 +1213,18 @@ const Driver = {
     return true;
   },
 
+  // ---------------------------------------------------------
+// CLEAR DRIVER FCM TOKEN ON LOGOUT
+// ---------------------------------------------------------
   async clearDriverFcmToken(driverId) {
     await db.query(`UPDATE drivers SET fcm_token = NULL WHERE id = $1`, [
       driverId,
     ]);
   },
 
+  // ---------------------------------------------------------
+// GET LOGGED IN DRIVER BY ID
+// ---------------------------------------------------------
   async getLoginDriverById(id) {
     const { rows } = await db.query(
       `SELECT * FROM drivers WHERE id = $1 LIMIT 1`,
@@ -1182,6 +1234,9 @@ const Driver = {
     return rows[0] || null;
   },
 
+  // ---------------------------------------------------------
+// GET ALL DRIVERS BY COMMISSION TYPE
+// ---------------------------------------------------------
   async getAllDriverByCommissionType(active, driver_type, company_id) {
     const conditions = [];
     const params = [];
@@ -1281,6 +1336,9 @@ const Driver = {
     };
   },
 
+  // ---------------------------------------------------------
+// GET DRIVERS BY SESSION STATUS (LOGGED IN / LOGGED OUT)
+// ---------------------------------------------------------
   async getBySessionStatus({
     page = 1,
     limit = 50,
@@ -1459,6 +1517,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     };
   },
 
+  // ---------------------------------------------------------
+// GET AVAILABLE LOGGED IN DRIVERS
+// ---------------------------------------------------------
   async getAvailableLoggedInDrivers() {
     const query = `
     SELECT 
@@ -1485,6 +1546,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return result.rows;
   },
 
+  // ---------------------------------------------------------
+// GET BUSY LOGGED IN DRIVERS
+// ---------------------------------------------------------
   async getBusyLoggedInDrivers() {
     const result = await db.query(
       `
@@ -1510,6 +1574,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return result.rows;
   },
 
+  // ---------------------------------------------------------
+// UPDATE DRIVER STATUS (BOOKING STATUS & DRIVER STATUS)
+// ---------------------------------------------------------
   async updateDriverStatus(driverId, booking_status, driver_status) {
     const query = `
     UPDATE drivers
@@ -1522,6 +1589,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return true;
   },
 
+  // ---------------------------------------------------------
+// GET LOGGED IN DRIVERS BY COMPANY ID
+// ---------------------------------------------------------
   async getLoginDrivers(company_id) {
     const query = `
     SELECT 
@@ -1569,6 +1639,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return result.rows;
   },
 
+  // ---------------------------------------------------------
+// GET BUSY LOGGED IN DRIVERS BY COMPANY ID
+// ---------------------------------------------------------
   async getBusyDrivers(company_id) {
     const query = `
     SELECT 
@@ -1617,6 +1690,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return result.rows;
   },
 
+  // ---------------------------------------------------------
+// GET LOGGED IN DRIVERS FOR TRACKING BY COMPANY ID
+// ---------------------------------------------------------
   async getLoginDriverTracking(company_id) {
     const query = `
     SELECT 
@@ -1663,6 +1739,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return result.rows;
   },
 
+  // ---------------------------------------------------------
+// GET FOB DRIVERS BY COMPANY ID
+// ---------------------------------------------------------
   async getFOBDrivers(company_id) {
     const dataQuery = `
   SELECT 
@@ -1787,6 +1866,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     }));
   },
 
+  // ---------------------------------------------------------
+// UPDATE DRIVER TO INACTIVE
+// ---------------------------------------------------------
   async updateDriverInactive(driverId) {
     const query = `
         UPDATE drivers
@@ -1796,6 +1878,20 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       `;
     return db.query(query, [driverId]);
   },
+
+  // ---------------------------------------------------------
+  // GET COMPANY NUMBER BY COMPANY ID FROM COMPANY_CLIENTS TABLE
+  // ---------------------------------------------------------
+  async getCompanyNumberByCompanyId(company_id) {
+    const query = `
+      SELECT *
+      FROM company_clients
+      WHERE id = $1
+      LIMIT 1
+    `;
+    const result = await db.query(query, [company_id]);
+    return result.rows[0] ? result.rows[0] : null;
+  }
 };
 
 module.exports = Driver;

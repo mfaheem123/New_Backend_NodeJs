@@ -37,6 +37,7 @@ router.get("/login-busy", driverController.getLoginDrivers);
 router.get("/tracking-drivers", driverController.getLoginDriverTracking);
 router.get("/fob-drivers", driverController.getFOBDrivers);
 router.get("/panic-disable/:driver_id", driverController.onPanicStatusDriver);
+router.get("/company-number/:company_id", driverController.getCompanyNumberByCompanyId);
 router.get(
   "/driver-expiry-documents",
   driverController.getDriverExpiryDocuments,

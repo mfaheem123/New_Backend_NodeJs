@@ -8,17 +8,15 @@ const redis = new Redis({
   retryStrategy(times) {
     const delay = Math.min(times * 50, 2000);
     return delay;
-  }
+  },
 });
 
 redis.on("connect", () => {
-
-console.log('✅ Connected to Redis on WSL successfully');
-
+  console.log("✅ Connected to Redis on WSL successfully");
 });
 
-redis.on('error', (err) => {
-  console.error('❌ Redis Connection Error:', err);
-})
+redis.on("error", (err) => {
+  console.error("❌ Redis Connection Error:", err);
+});
 
 module.exports = redis;

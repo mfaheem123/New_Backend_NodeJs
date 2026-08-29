@@ -2,16 +2,16 @@ const CustomerModel = require("../models/customerModel");
 const BookingModel = require("../models/bookingModel");
 
 const getViaSignature = (booking) => {
-  if (!booking.via || booking.via.length === 0) {
+  if (!booking.viapoints || booking.viapoints.length === 0) {
     return "NO_VIA";
   }
 
-  // assuming via is array OR string
-  if (Array.isArray(booking.via)) {
-    return "VIA:" + booking.via.sort().join("|");
+  // assuming viapoints is array OR string
+  if (Array.isArray(booking.viapoints)) {
+    return "VIA:" + booking.viapoints.sort().join("|");
   }
 
-  return "VIA:" + String(booking.via).trim();
+  return "VIA:" + String(booking.viapoints).trim();
 };
 
 /**

@@ -3079,7 +3079,7 @@ const findBookingPairById = async (id) => {
 // ---------------------------------------------------------
 // UPDATE BOOKING STATUS TO CANCELLED (ID 12)
 // ---------------------------------------------------------
-const cancelBookingById = async (id,cancelled_reason) => {
+const cancelBookingById = async (id, cancelled_reason) => {
   const query = `
     UPDATE bookings
     SET booking_status_id = 12,
@@ -3154,5 +3154,5 @@ module.exports = {
   getSearchBookingsData,
   getDriverBookingStatisticsData,
   findBookingPairById,
-  cancelBookingById
+  cancelBookingById,
 };

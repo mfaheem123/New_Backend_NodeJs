@@ -53,7 +53,7 @@ const {
   findBookingforDelete,
   getSearchBookingsData,
   getDriverBookingStatisticsData,
-  cancelBookingById
+  cancelBookingById,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -441,9 +441,9 @@ exports.updateBooking = async (req, res) => {
     const bookingId = parseInt(req.params.id);
     console.log(
       "🚀 INCOMING UPDATE BOOKING BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
-    
+
     if (!bookingId) {
       return res.status(400).json({
         success: false,
@@ -453,7 +453,7 @@ exports.updateBooking = async (req, res) => {
 
     const updated = await bookingService.updateBookingService(
       bookingId,
-      req.body
+      req.body,
     );
 
     if (!updated) {
@@ -2832,7 +2832,6 @@ exports.getDriverBookingStatistics = async (req, res) => {
     });
   }
 };
-
 
 // ---------------------------------------------------------
 // UPDATE BOOKING STATUS TO CANCELLED (ID 12)
