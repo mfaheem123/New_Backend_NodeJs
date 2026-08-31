@@ -35,18 +35,21 @@ class CallRecordingModel {
 static async getRecordings(filters = {}) {
   const {
     offset = 0,
-    limit = 100,
+    limit = 20,
     mobile,
     from_date,
     to_date,
     company_id,
   } = filters;
 
+  const parsedLimit = parseInt(limit, 10);
+  const parsedOffset = parseInt(offset, 10);
+
   let conditions = [];
   let values = [];
   let paramIndex = 1;
 
-  // Base Query: 44 <-> 0 conversion handle kar ke Customer JOIN banaya gaya hai
+  // Base Query
   let baseQuery = `
     FROM call_recordings cr
     LEFT JOIN customers cust 
@@ -62,7 +65,7 @@ static async getRecordings(filters = {}) {
     WHERE 1=1
   `;
 
-  // 1. Company Filter (Call Recordings ke record filter karne ke liye)
+  // 1. Company Filter
   if (company_id) {
     conditions.push(`cr.company_id = $${paramIndex++}`);
     values.push(company_id);
@@ -118,12 +121,22 @@ static async getRecordings(filters = {}) {
     LIMIT $${paramIndex++} OFFSET $${paramIndex++}
   `;
 
-  values.push(parseInt(limit, 10), parseInt(offset, 10));
+  values.push(parsedLimit, parsedOffset);
 
   const result = await db.query(dataQuery, values);
 
+  // Pagination Math
+  const currentPage = Math.floor(parsedOffset / parsedLimit) + 1;
+  const totalPages = Math.ceil(totalCount / parsedLimit);
+
   return {
     count: totalCount,
+    currentPage,
+    totalPages,
+    limit: parsedLimit,
+    offset: parsedOffset,
+    hasNextPage: currentPage < totalPages,
+    hasPrevPage: currentPage > 1,
     recordings: result.rows,
   };
 }

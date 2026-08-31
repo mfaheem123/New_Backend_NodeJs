@@ -111,17 +111,27 @@ exports.handleWebhook = async (req, res) => {
 exports.getCallRecordings = async (req, res) => {
   try {
     const {
-      offset = 0,
-      limit = 15,
+      page,
+      limit = 20,
+      offset,
       mobile,
       from_date,
       to_date,
       company_id,
     } = req.query;
 
+    const parsedLimit = parseInt(limit, 10) || 15;
+    
+    // Support both page-based and offset-based query
+    let calculatedOffset = parseInt(offset, 10);
+    if (isNaN(calculatedOffset)) {
+      const parsedPage = parseInt(page, 10) || 1;
+      calculatedOffset = (parsedPage - 1) * parsedLimit;
+    }
+
     const result = await CallRecordingModel.getRecordings({
-      offset,
-      limit,
+      offset: calculatedOffset,
+      limit: parsedLimit,
       mobile,
       from_date,
       to_date,
@@ -130,7 +140,15 @@ exports.getCallRecordings = async (req, res) => {
 
     return res.status(200).json({
       status: true,
-      count: result.count,
+      pagination: {
+        totalItems: result.count,
+        currentPage: result.currentPage,
+        totalPages: result.totalPages,
+        limit: result.limit,
+        offset: result.offset,
+        hasNextPage: result.hasNextPage,
+        hasPrevPage: result.hasPrevPage,
+      },
       recordings: result.recordings,
     });
   } catch (error) {

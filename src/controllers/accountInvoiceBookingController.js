@@ -1,5 +1,8 @@
 const Model = require("../models/accountInvoiceBookingModel");
 
+// ---------------------------------------------------------
+// GET BOOKING FOR ACCOUNT INVOICE
+// ---------------------------------------------------------
 exports.getBookingsForInvoice = async (req, res) => {
   try {
     const {

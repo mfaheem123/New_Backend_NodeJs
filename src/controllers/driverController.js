@@ -1278,27 +1278,27 @@ exports.updateDriverInactive = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-  // GET COMPANY NUMBER BY COMPANY ID FROM COMPANY_CLIENTS TABLE
-  // ---------------------------------------------------------
-  exports.getCompanyNumberByCompanyId = async (req, res) => {
-    try {
-      const { company_id } = req.params;
-      if (!company_id) {
-        return res.status(400).json({
-          status: false,
-          message: "company_id is required",
-        });
-      }
-      const companyNumber = await Driver.getCompanyNumberByCompanyId(company_id);
-      return res.status(200).json({
-        status: true,
-        data:companyNumber,
-      });
-    } catch (error) {
-      console.error("Error fetching company number:", error);
-      return res.status(500).json({
+// GET COMPANY NUMBER BY COMPANY ID FROM COMPANY_CLIENTS TABLE
+// ---------------------------------------------------------
+exports.getCompanyNumberByCompanyId = async (req, res) => {
+  try {
+    const { company_id } = req.params;
+    if (!company_id) {
+      return res.status(400).json({
         status: false,
-        message: "An error occurred while fetching company number",
+        message: "company_id is required",
       });
     }
-  };
+    const companyNumber = await Driver.getCompanyNumberByCompanyId(company_id);
+    return res.status(200).json({
+      status: true,
+      data: companyNumber,
+    });
+  } catch (error) {
+    console.error("Error fetching company number:", error);
+    return res.status(500).json({
+      status: false,
+      message: "An error occurred while fetching company number",
+    });
+  }
+};

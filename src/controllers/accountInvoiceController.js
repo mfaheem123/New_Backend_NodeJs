@@ -1,5 +1,8 @@
 const InvoiceModel = require("../models/accountInvoiceModel");
 
+// ---------------------------------------------------------
+// CREATE ACCOUNT INVOICE
+// ---------------------------------------------------------
 exports.create = async (req, res) => {
   try {
     console.log(
@@ -22,7 +25,9 @@ exports.create = async (req, res) => {
   }
 };
 
-// ACCOUNT INVOICE CONTROLLER
+// ---------------------------------------------------------
+// GET ALL ACCOUNT INVOICES
+// ---------------------------------------------------------
 exports.getAll = async (req, res) => {
   try {
     const {
@@ -69,6 +74,9 @@ exports.getAll = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ACCOUNT INVOICES BY ID
+// ---------------------------------------------------------
 exports.getById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -94,6 +102,9 @@ exports.getById = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE ACCOUNT INVOICE BY ID
+// ---------------------------------------------------------
 exports.update = async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -117,6 +128,9 @@ exports.update = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// DELETE ACCOUNT INVOICE BY ID
+// ---------------------------------------------------------
 exports.delete = async (req, res) => {
   try {
     const id = Number(req.params.id);

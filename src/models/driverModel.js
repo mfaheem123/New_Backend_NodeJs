@@ -1,7 +1,6 @@
 const db = require("../db");
 const bcrypt = require("bcrypt");
 
-
 // ---------------------------------------------------------
 // HELPER: FORMAT DATES AS DD-MM-YYYY
 // ---------------------------------------------------------
@@ -176,8 +175,8 @@ async function generateUniqueDriverAccessToken(db) {
 
 const Driver = {
   // ---------------------------------------------------------
-// CHECK IF USERNAME EXISTS
-// ---------------------------------------------------------
+  // CHECK IF USERNAME EXISTS
+  // ---------------------------------------------------------
   async checkUsernameExists(username) {
     const query = `
       SELECT id FROM drivers 
@@ -189,8 +188,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// CREATE DRIVER WITH DOCUMENTS
-// ---------------------------------------------------------
+  // CREATE DRIVER WITH DOCUMENTS
+  // ---------------------------------------------------------
   async create(data) {
     try {
       await db.query("BEGIN");
@@ -602,8 +601,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// GET ALL DRIVERS
-// ---------------------------------------------------------
+  // GET ALL DRIVERS
+  // ---------------------------------------------------------
   async getAll({
     page = 1,
     limit = 50,
@@ -765,8 +764,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// GET DRIVER BY ID
-// ---------------------------------------------------------
+  // GET DRIVER BY ID
+  // ---------------------------------------------------------
   async getById(id) {
     try {
       await db.query("BEGIN");
@@ -863,8 +862,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// UPDATE DRIVER BY ID
-// ---------------------------------------------------------
+  // UPDATE DRIVER BY ID
+  // ---------------------------------------------------------
   async update(driverId, data) {
     try {
       await db.query("BEGIN");
@@ -1074,8 +1073,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// DELETE DRIVER BY ID
-// ---------------------------------------------------------
+  // DELETE DRIVER BY ID
+  // ---------------------------------------------------------
   async delete(id) {
     try {
       await db.query("BEGIN");
@@ -1111,8 +1110,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// FIND DRIVER BY USERNAME (CASE-INSENSITIVE)
-// ---------------------------------------------------------
+  // FIND DRIVER BY USERNAME (CASE-INSENSITIVE)
+  // ---------------------------------------------------------
   async findDriverByUsername(username) {
     const query = `
         SELECT * FROM drivers 
@@ -1124,10 +1123,9 @@ const Driver = {
     return result.rows[0];
   },
 
-
   // ---------------------------------------------------------
-// UPDATE DRIVER LOGIN STATUS WITH LOCATION
-// ---------------------------------------------------------
+  // UPDATE DRIVER LOGIN STATUS WITH LOCATION
+  // ---------------------------------------------------------
   async updateDriverLoginStatus(driverId, latitude, longitude) {
     const query = `
         UPDATE drivers
@@ -1144,8 +1142,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// UPDATE DRIVER LOGOUT STATUS
-// ---------------------------------------------------------
+  // UPDATE DRIVER LOGOUT STATUS
+  // ---------------------------------------------------------
   async updateDriverLogoutStatus(id) {
     const query = `
     UPDATE drivers
@@ -1161,8 +1159,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// GET DRIVER BY COMPANY ID
-// ---------------------------------------------------------
+  // GET DRIVER BY COMPANY ID
+  // ---------------------------------------------------------
   async getByCompany(company_id) {
     const query = `
     SELECT 
@@ -1199,8 +1197,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// UPDATE DRIVER FCM TOKEN AT LOGIN
-// ---------------------------------------------------------
+  // UPDATE DRIVER FCM TOKEN AT LOGIN
+  // ---------------------------------------------------------
   async updateDriverFcmToken(driverId, fcmToken) {
     const query = `
     UPDATE drivers
@@ -1214,8 +1212,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// CLEAR DRIVER FCM TOKEN ON LOGOUT
-// ---------------------------------------------------------
+  // CLEAR DRIVER FCM TOKEN ON LOGOUT
+  // ---------------------------------------------------------
   async clearDriverFcmToken(driverId) {
     await db.query(`UPDATE drivers SET fcm_token = NULL WHERE id = $1`, [
       driverId,
@@ -1223,8 +1221,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// GET LOGGED IN DRIVER BY ID
-// ---------------------------------------------------------
+  // GET LOGGED IN DRIVER BY ID
+  // ---------------------------------------------------------
   async getLoginDriverById(id) {
     const { rows } = await db.query(
       `SELECT * FROM drivers WHERE id = $1 LIMIT 1`,
@@ -1235,8 +1233,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// GET ALL DRIVERS BY COMMISSION TYPE
-// ---------------------------------------------------------
+  // GET ALL DRIVERS BY COMMISSION TYPE
+  // ---------------------------------------------------------
   async getAllDriverByCommissionType(active, driver_type, company_id) {
     const conditions = [];
     const params = [];
@@ -1337,8 +1335,8 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// GET DRIVERS BY SESSION STATUS (LOGGED IN / LOGGED OUT)
-// ---------------------------------------------------------
+  // GET DRIVERS BY SESSION STATUS (LOGGED IN / LOGGED OUT)
+  // ---------------------------------------------------------
   async getBySessionStatus({
     page = 1,
     limit = 50,
@@ -1518,8 +1516,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   },
 
   // ---------------------------------------------------------
-// GET AVAILABLE LOGGED IN DRIVERS
-// ---------------------------------------------------------
+  // GET AVAILABLE LOGGED IN DRIVERS
+  // ---------------------------------------------------------
   async getAvailableLoggedInDrivers() {
     const query = `
     SELECT 
@@ -1547,8 +1545,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   },
 
   // ---------------------------------------------------------
-// GET BUSY LOGGED IN DRIVERS
-// ---------------------------------------------------------
+  // GET BUSY LOGGED IN DRIVERS
+  // ---------------------------------------------------------
   async getBusyLoggedInDrivers() {
     const result = await db.query(
       `
@@ -1575,8 +1573,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   },
 
   // ---------------------------------------------------------
-// UPDATE DRIVER STATUS (BOOKING STATUS & DRIVER STATUS)
-// ---------------------------------------------------------
+  // UPDATE DRIVER STATUS (BOOKING STATUS & DRIVER STATUS)
+  // ---------------------------------------------------------
   async updateDriverStatus(driverId, booking_status, driver_status) {
     const query = `
     UPDATE drivers
@@ -1590,8 +1588,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   },
 
   // ---------------------------------------------------------
-// GET LOGGED IN DRIVERS BY COMPANY ID
-// ---------------------------------------------------------
+  // GET LOGGED IN DRIVERS BY COMPANY ID
+  // ---------------------------------------------------------
   async getLoginDrivers(company_id) {
     const query = `
     SELECT 
@@ -1640,8 +1638,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   },
 
   // ---------------------------------------------------------
-// GET BUSY LOGGED IN DRIVERS BY COMPANY ID
-// ---------------------------------------------------------
+  // GET BUSY LOGGED IN DRIVERS BY COMPANY ID
+  // ---------------------------------------------------------
   async getBusyDrivers(company_id) {
     const query = `
     SELECT 
@@ -1691,8 +1689,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   },
 
   // ---------------------------------------------------------
-// GET LOGGED IN DRIVERS FOR TRACKING BY COMPANY ID
-// ---------------------------------------------------------
+  // GET LOGGED IN DRIVERS FOR TRACKING BY COMPANY ID
+  // ---------------------------------------------------------
   async getLoginDriverTracking(company_id) {
     const query = `
     SELECT 
@@ -1740,8 +1738,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   },
 
   // ---------------------------------------------------------
-// GET FOB DRIVERS BY COMPANY ID
-// ---------------------------------------------------------
+  // GET FOB DRIVERS BY COMPANY ID
+  // ---------------------------------------------------------
   async getFOBDrivers(company_id) {
     const dataQuery = `
   SELECT 
@@ -1867,8 +1865,8 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   },
 
   // ---------------------------------------------------------
-// UPDATE DRIVER TO INACTIVE
-// ---------------------------------------------------------
+  // UPDATE DRIVER TO INACTIVE
+  // ---------------------------------------------------------
   async updateDriverInactive(driverId) {
     const query = `
         UPDATE drivers
@@ -1891,7 +1889,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     `;
     const result = await db.query(query, [company_id]);
     return result.rows[0] ? result.rows[0] : null;
-  }
+  },
 };
 
 module.exports = Driver;

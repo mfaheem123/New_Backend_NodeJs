@@ -1802,7 +1802,7 @@ async function cloneOneWayBookingService(payload) {
   return clean;
 }
 
-// ASSIGN DRIVER TO BOOKINGS
+// ASSIGN DRIVER TO PRESENT BOOKINGS
 async function assignDriverService(bookingId, driverId, company_id) {
   let fare_meter = false;
   if (driverId) {
@@ -1871,6 +1871,7 @@ async function assignDriverService(bookingId, driverId, company_id) {
   return enriched;
 }
 
+// ASSIGN DRIVER TO FOLLOW ON BOOKINGS
 async function assignFOBDriverService(bookingId, driverId, company_id) {
   let fare_meter = false;
   if (driverId) {
@@ -1942,6 +1943,7 @@ async function assignFOBDriverService(bookingId, driverId, company_id) {
   return enriched;
 }
 
+// ASSIGN DRIVER TO FUTURE ON BOOKINGS
 async function assignFutureBookingDriverService(
   bookingId,
   driverId,
