@@ -994,6 +994,44 @@ async function sendPermissionNotification() {
   }
 }
 
+// ---------------------------------------------------------
+// SEND SIN BIN NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendSINBINotification(driverId) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Sin Bin Update",
+      body: "You Have Been Placed In Sin Bin.",
+    },
+    data: {
+      driver_id: String(driverId),
+      type: "SIN_BIN_UPDATE",
+      message: "You Have Been Placed In Sin Bin.",
+    },
+  };
+
+  console.log("SIN BIN Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
@@ -1013,4 +1051,5 @@ module.exports = {
   sendRejectNoPickupBookingNotification,
   sendNoPickupBookingNotification,
   sendPermissionNotification,
+  sendSINBINotification,
 };

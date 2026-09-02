@@ -121,7 +121,7 @@ exports.getCallRecordings = async (req, res) => {
     } = req.query;
 
     const parsedLimit = parseInt(limit, 10) || 15;
-    
+
     // Support both page-based and offset-based query
     let calculatedOffset = parseInt(offset, 10);
     if (isNaN(calculatedOffset)) {

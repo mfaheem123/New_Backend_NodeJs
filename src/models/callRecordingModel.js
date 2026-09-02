@@ -32,25 +32,25 @@ class CallRecordingModel {
   }
 
   // 🔍 Get Recordings with Filters, Search, Customer JOIN & Pagination
-static async getRecordings(filters = {}) {
-  const {
-    offset = 0,
-    limit = 20,
-    mobile,
-    from_date,
-    to_date,
-    company_id,
-  } = filters;
+  static async getRecordings(filters = {}) {
+    const {
+      offset = 0,
+      limit = 20,
+      mobile,
+      from_date,
+      to_date,
+      company_id,
+    } = filters;
 
-  const parsedLimit = parseInt(limit, 10);
-  const parsedOffset = parseInt(offset, 10);
+    const parsedLimit = parseInt(limit, 10);
+    const parsedOffset = parseInt(offset, 10);
 
-  let conditions = [];
-  let values = [];
-  let paramIndex = 1;
+    let conditions = [];
+    let values = [];
+    let paramIndex = 1;
 
-  // Base Query
-  let baseQuery = `
+    // Base Query
+    let baseQuery = `
     FROM call_recordings cr
     LEFT JOIN customers cust 
       ON (
@@ -65,45 +65,45 @@ static async getRecordings(filters = {}) {
     WHERE 1=1
   `;
 
-  // 1. Company Filter
-  if (company_id) {
-    conditions.push(`cr.company_id = $${paramIndex++}`);
-    values.push(company_id);
-  }
+    // 1. Company Filter
+    if (company_id) {
+      conditions.push(`cr.company_id = $${paramIndex++}`);
+      values.push(company_id);
+    }
 
-  // 2. Mobile / Search Filter
-  if (mobile) {
-    conditions.push(`(
+    // 2. Mobile / Search Filter
+    if (mobile) {
+      conditions.push(`(
       cr.source LIKE $${paramIndex} OR 
       cr.destination LIKE $${paramIndex} OR 
       LOWER(cust.name) LIKE LOWER($${paramIndex})
     )`);
-    values.push(`%${mobile}%`);
-    paramIndex++;
-  }
+      values.push(`%${mobile}%`);
+      paramIndex++;
+    }
 
-  // 3. Date Range Filters
-  if (from_date) {
-    conditions.push(`cr.recording_datetime >= $${paramIndex++}`);
-    values.push(`${from_date} 00:00:00`);
-  }
+    // 3. Date Range Filters
+    if (from_date) {
+      conditions.push(`cr.recording_datetime >= $${paramIndex++}`);
+      values.push(`${from_date} 00:00:00`);
+    }
 
-  if (to_date) {
-    conditions.push(`cr.recording_datetime <= $${paramIndex++}`);
-    values.push(`${to_date} 23:59:59`);
-  }
+    if (to_date) {
+      conditions.push(`cr.recording_datetime <= $${paramIndex++}`);
+      values.push(`${to_date} 23:59:59`);
+    }
 
-  if (conditions.length > 0) {
-    baseQuery += ` AND ` + conditions.join(" AND ");
-  }
+    if (conditions.length > 0) {
+      baseQuery += ` AND ` + conditions.join(" AND ");
+    }
 
-  // Total Count Query
-  const countQuery = `SELECT COUNT(DISTINCT cr.id) ${baseQuery}`;
-  const countResult = await db.query(countQuery, values);
-  const totalCount = parseInt(countResult.rows[0].count, 10);
+    // Total Count Query
+    const countQuery = `SELECT COUNT(DISTINCT cr.id) ${baseQuery}`;
+    const countResult = await db.query(countQuery, values);
+    const totalCount = parseInt(countResult.rows[0].count, 10);
 
-  // Data Fetch Query
-  const dataQuery = `
+    // Data Fetch Query
+    const dataQuery = `
     SELECT 
       cr.id AS _id,
       cr.recording_id,
@@ -121,25 +121,25 @@ static async getRecordings(filters = {}) {
     LIMIT $${paramIndex++} OFFSET $${paramIndex++}
   `;
 
-  values.push(parsedLimit, parsedOffset);
+    values.push(parsedLimit, parsedOffset);
 
-  const result = await db.query(dataQuery, values);
+    const result = await db.query(dataQuery, values);
 
-  // Pagination Math
-  const currentPage = Math.floor(parsedOffset / parsedLimit) + 1;
-  const totalPages = Math.ceil(totalCount / parsedLimit);
+    // Pagination Math
+    const currentPage = Math.floor(parsedOffset / parsedLimit) + 1;
+    const totalPages = Math.ceil(totalCount / parsedLimit);
 
-  return {
-    count: totalCount,
-    currentPage,
-    totalPages,
-    limit: parsedLimit,
-    offset: parsedOffset,
-    hasNextPage: currentPage < totalPages,
-    hasPrevPage: currentPage > 1,
-    recordings: result.rows,
-  };
-}
+    return {
+      count: totalCount,
+      currentPage,
+      totalPages,
+      limit: parsedLimit,
+      offset: parsedOffset,
+      hasNextPage: currentPage < totalPages,
+      hasPrevPage: currentPage > 1,
+      recordings: result.rows,
+    };
+  }
 }
 
 module.exports = CallRecordingModel;

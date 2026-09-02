@@ -1,0 +1,13 @@
+{"duration":87,"level":"info","message":"db-query","rows":1,"text":"\n    SELECT company_id\n    FROM company_subscriptions\n    WHERE payment_status != 'PAID'\n      AND status != 'CANCELLED'\n      AND (\n        (grace_until IS NOT NULL AND NOW() > grace_until)\n        OR\n        (grace_until IS NULL AND NOW() > expiry_at)\n      )\n  ","timestamp":"2026-09-01T19:00:00.102Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-01T19:03:50.106Z"}
+{"level":"info","message":"GET /api/location-types 200 11.709 ms","timestamp":"2026-09-01T19:03:50.113Z"}
+{"duration":50,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-01T19:03:50.152Z"}
+{"level":"info","message":"GET /api/location-types 200 51.355 ms","timestamp":"2026-09-01T19:03:50.153Z"}
+{"duration":663,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-02T10:56:45.014Z"}
+{"level":"info","message":"GET /api/location-types 200 669.966 ms","timestamp":"2026-09-02T10:56:45.020Z"}
+{"duration":669,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-02T10:56:45.021Z"}
+{"level":"info","message":"GET /api/location-types 200 670.322 ms","timestamp":"2026-09-02T10:56:45.023Z"}
+{"duration":11,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-02T10:56:57.753Z"}
+{"level":"info","message":"GET /api/location-types 200 18.515 ms","timestamp":"2026-09-02T10:56:57.761Z"}
+{"duration":59,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-02T10:56:57.805Z"}
+{"level":"info","message":"GET /api/location-types 200 60.301 ms","timestamp":"2026-09-02T10:56:57.807Z"}

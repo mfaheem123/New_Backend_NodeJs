@@ -139,3 +139,5 @@
 {"level":"info","message":"GET /api/location-types 200 12.547 ms","timestamp":"2026-08-31T17:36:14.734Z"}
 {"duration":55,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-31T17:36:14.777Z"}
 {"level":"info","message":"GET /api/location-types 200 55.766 ms","timestamp":"2026-08-31T17:36:14.778Z"}
+{"duration":59,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-08-31T18:56:13.897Z"}
+{"level":"info","message":"GET /api/location-types 200 65.313 ms","timestamp":"2026-08-31T18:56:13.902Z"}
