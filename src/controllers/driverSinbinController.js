@@ -18,7 +18,7 @@ exports.toggleDriverSinbin = async (req, res) => {
       driver_id,
       message,
       sinbin_time,
-      is_active
+      is_active,
     });
 
     return res.status(200).json({ status: true });

@@ -1603,23 +1603,48 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status,
       d.driver_status,
       d.last_login_at,
+      d.has_pda,
       
-      -- vehicle type name (dynamic)
+      -- Vehicle Type (Dynamic)
       CASE 
         WHEN d.use_company_vehicle = true THEN vt_cv.name
         ELSE vt_v.name
-      END AS vehicle_type
+      END AS vehicle_type,
+
+      -- Vehicle Number (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
+        ELSE v.vehicle_number
+      END AS vehicle_no,
+
+      -- Vehicle Make (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.make
+        ELSE v.make
+      END AS make,
+
+      -- Vehicle Model (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.model
+        ELSE v.model
+      END AS model,
+
+      -- Vehicle Color (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.color
+        ELSE v.color
+      END AS color
 
     FROM drivers d
 
-    -- company vehicle
+    -- Company vehicle joins
     LEFT JOIN company_vehicles cv 
       ON cv.id = d.company_vehicle_id
 
     LEFT JOIN vehicle_types vt_cv 
       ON vt_cv.id = cv.vehicle_type_id
 
-    -- personal vehicle
+    -- Personal vehicle joins
     LEFT JOIN vehicles v 
       ON v.id = d.vehicle_id
 
@@ -1653,23 +1678,48 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status,
       d.driver_status,
       d.last_login_at,
+      d.has_pda,
       
-      -- vehicle type name (dynamic)
+      -- Vehicle Type (Dynamic)
       CASE 
         WHEN d.use_company_vehicle = true THEN vt_cv.name
         ELSE vt_v.name
-      END AS vehicle_type
+      END AS vehicle_type,
+
+      -- Vehicle Number (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
+        ELSE v.vehicle_number
+      END AS vehicle_no,
+
+      -- Vehicle Make (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.make
+        ELSE v.make
+      END AS make,
+
+      -- Vehicle Model (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.model
+        ELSE v.model
+      END AS model,
+
+      -- Vehicle Color (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.color
+        ELSE v.color
+      END AS color
 
     FROM drivers d
 
-    -- company vehicle
+    -- Company vehicle joins
     LEFT JOIN company_vehicles cv 
       ON cv.id = d.company_vehicle_id
 
     LEFT JOIN vehicle_types vt_cv 
       ON vt_cv.id = cv.vehicle_type_id
 
-    -- personal vehicle
+    -- Personal vehicle joins
     LEFT JOIN vehicles v 
       ON v.id = d.vehicle_id
 
@@ -1704,23 +1754,48 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status,
       d.driver_status,
       d.last_login_at,
+      d.has_pda,
       
-      -- vehicle type name (dynamic)
+      -- Vehicle Type (Dynamic)
       CASE 
         WHEN d.use_company_vehicle = true THEN vt_cv.name
         ELSE vt_v.name
-      END AS vehicle_type
+      END AS vehicle_type,
+
+      -- Vehicle Number (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
+        ELSE v.vehicle_number
+      END AS vehicle_no,
+
+      -- Vehicle Make (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.make
+        ELSE v.make
+      END AS make,
+
+      -- Vehicle Model (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.model
+        ELSE v.model
+      END AS model,
+
+      -- Vehicle Color (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.color
+        ELSE v.color
+      END AS color
 
     FROM drivers d
 
-    -- company vehicle
+    -- Company vehicle joins
     LEFT JOIN company_vehicles cv 
       ON cv.id = d.company_vehicle_id
 
     LEFT JOIN vehicle_types vt_cv 
       ON vt_cv.id = cv.vehicle_type_id
 
-    -- personal vehicle
+    -- Personal vehicle joins
     LEFT JOIN vehicles v 
       ON v.id = d.vehicle_id
 

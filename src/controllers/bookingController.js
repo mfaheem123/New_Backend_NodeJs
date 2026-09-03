@@ -843,7 +843,13 @@ exports.updateBookingFares = async (req, res) => {
 exports.getBookingByDriverId = async (req, res) => {
   const driver_id = parseInt(req.params.id);
   const lastdays = req.query.lastdays ? parseInt(req.query.lastdays) : null;
-
+// Validate that driverId is actually a valid integer
+    if (isNaN(driver_id) || driver_id <= 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid driver ID provided." 
+      });
+    }
   const bookings = await getBookingByDriverId(driver_id, lastdays);
 
   if (!bookings || bookings.length === 0) {

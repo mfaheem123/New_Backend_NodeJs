@@ -42,6 +42,10 @@ function formatDriverData(driver) {
     driver_status: driver.driver_status,
     vehicle_type: driver.vehicle?.vehicle_type?.name || null,
     last_login_at: driver.last_login_at,
+    vehicle_no: driver.vehicle?.vehicle_number || null,
+    make: driver.vehicle?.make || null,
+    model: driver.vehicle?.model || null,
+    color: driver.vehicle?.color || null,
   };
 }
 
@@ -285,24 +289,64 @@ async function notifyDriverBookingStatusWeb(driverId) {
   try {
     const result = await db.query(
       `
-      SELECT
-        d.id,
-        d.name,
-        d.username,
-        d.zone,
-        d.latitude,
-        d.longitude,
-        d.booking_status,
-        d.session_status,
-        d.driver_status,
-        d.last_login_at,
-        d.company_id,
-        vt.name AS vehicle_type
-      FROM drivers d
-      LEFT JOIN vehicles v
-        ON d.vehicle_id=v.id
-      LEFT JOIN vehicle_types vt
-        ON v.vehicle_type_id=vt.id
+      SELECT 
+      d.id,
+      d.name,
+      d.username,
+      d.zone,
+      d.latitude,
+      d.longitude,
+      d.booking_status,
+      d.session_status,
+      d.driver_status,
+      d.last_login_at,
+      d.has_pda,
+      
+      -- Vehicle Type (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN vt_cv.name
+        ELSE vt_v.name
+      END AS vehicle_type,
+
+      -- Vehicle Number (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
+        ELSE v.vehicle_number
+      END AS vehicle_no,
+
+      -- Vehicle Make (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.make
+        ELSE v.make
+      END AS make,
+
+      -- Vehicle Model (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.model
+        ELSE v.model
+      END AS model,
+
+      -- Vehicle Color (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.color
+        ELSE v.color
+      END AS color
+
+    FROM drivers d
+
+    -- Company vehicle joins
+    LEFT JOIN company_vehicles cv 
+      ON cv.id = d.company_vehicle_id
+
+    LEFT JOIN vehicle_types vt_cv 
+      ON vt_cv.id = cv.vehicle_type_id
+
+    -- Personal vehicle joins
+    LEFT JOIN vehicles v 
+      ON v.id = d.vehicle_id
+
+    LEFT JOIN vehicle_types vt_v 
+      ON vt_v.id = v.vehicle_type_id
       WHERE d.id=$1
       `,
       [driverId],
@@ -370,24 +414,64 @@ async function notifyDriverBreakStatusWeb(driverId) {
   try {
     const result = await db.query(
       `
-      SELECT
-        d.id,
-        d.name,
-        d.username,
-        d.zone,
-        d.latitude,
-        d.longitude,
-        d.booking_status,
-        d.session_status,
-        d.driver_status,
-        d.last_login_at,
-        d.company_id,
-        vt.name AS vehicle_type
-      FROM drivers d
-      LEFT JOIN vehicles v
-        ON d.vehicle_id=v.id
-      LEFT JOIN vehicle_types vt
-        ON v.vehicle_type_id=vt.id
+      SELECT 
+      d.id,
+      d.name,
+      d.username,
+      d.zone,
+      d.latitude,
+      d.longitude,
+      d.booking_status,
+      d.session_status,
+      d.driver_status,
+      d.last_login_at,
+      d.has_pda,
+      
+      -- Vehicle Type (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN vt_cv.name
+        ELSE vt_v.name
+      END AS vehicle_type,
+
+      -- Vehicle Number (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
+        ELSE v.vehicle_number
+      END AS vehicle_no,
+
+      -- Vehicle Make (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.make
+        ELSE v.make
+      END AS make,
+
+      -- Vehicle Model (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.model
+        ELSE v.model
+      END AS model,
+
+      -- Vehicle Color (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.color
+        ELSE v.color
+      END AS color
+
+    FROM drivers d
+
+    -- Company vehicle joins
+    LEFT JOIN company_vehicles cv 
+      ON cv.id = d.company_vehicle_id
+
+    LEFT JOIN vehicle_types vt_cv 
+      ON vt_cv.id = cv.vehicle_type_id
+
+    -- Personal vehicle joins
+    LEFT JOIN vehicles v 
+      ON v.id = d.vehicle_id
+
+    LEFT JOIN vehicle_types vt_v 
+      ON vt_v.id = v.vehicle_type_id
       WHERE d.id=$1
       `,
       [driverId],
@@ -413,6 +497,11 @@ async function notifyDriverBreakStatusWeb(driverId) {
         driver_status: driver.driver_status,
         vehicle_type: driver.vehicle_type,
         last_login_at: driver.last_login_at,
+        vehicle_no: driver.vehicle_no,
+        make: driver.make,
+        model: driver.model,
+        color: driver.color,
+      
       },
     });
 
