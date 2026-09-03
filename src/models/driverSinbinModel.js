@@ -40,12 +40,18 @@ class SinbinModel {
       isActive,
     ]);
 
-    if(isActive == true) {
+    if (isActive == true) {
       // Send notification to the driver about being added to the sin bin
-      await sinBinNotificationService.sendSinBinNotification(driver_id, message);
+      await sinBinNotificationService.sendSinBinNotification(
+        driver_id,
+        message,
+      );
     } else {
       // Send notification to the driver about being removed from the sin bin
-      await sinBinNotificationService.sendSinBinRemovedNotification(driver_id, message);
+      await sinBinNotificationService.sendSinBinRemovedNotification(
+        driver_id,
+        message,
+      );
     }
 
     return rows[0];

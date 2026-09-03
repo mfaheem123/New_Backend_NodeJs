@@ -501,7 +501,6 @@ async function notifyDriverBreakStatusWeb(driverId) {
         make: driver.make,
         model: driver.model,
         color: driver.color,
-      
       },
     });
 

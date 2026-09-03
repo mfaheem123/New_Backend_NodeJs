@@ -1090,5 +1090,5 @@ module.exports = {
   sendNoPickupBookingNotification,
   sendPermissionNotification,
   sendSinBinNotification,
-  sendSinBinRemovedNotification
+  sendSinBinRemovedNotification,
 };

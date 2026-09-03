@@ -74,6 +74,7 @@ const {
   sendNoPickupBookingNotification,
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
+const SinbinService = require("../services/sinbinService");
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -733,6 +734,22 @@ exports.updateBookingStatus = async (req, res) => {
       await DriverShiftHistory.addBookingToShift(driverId, bookingId);
     }
 
+    //REJECTED
+    if (booking_status_id == 5) {
+      await Driver.updateDriverStatus(driverId, "Available", "Available");
+      await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
+      await SinbinService.checkAndApplySinbin(booking.rows[0].company_id, driverId, "REJECT");
+    }
+
+    //MISSED
+    if (booking_status_id == 4) {
+      await Driver.updateDriverStatus(driverId, "Available", "Available");
+      await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
+      await SinbinService.checkAndApplySinbin(booking.rows[0].company_id, driverId, "MISSED");
+    }
+
     // UPDATE BOOKING STATUS
     await updateBookingStatus(bookingId, booking_status_id);
 
@@ -843,13 +860,13 @@ exports.updateBookingFares = async (req, res) => {
 exports.getBookingByDriverId = async (req, res) => {
   const driver_id = parseInt(req.params.id);
   const lastdays = req.query.lastdays ? parseInt(req.query.lastdays) : null;
-// Validate that driverId is actually a valid integer
-    if (isNaN(driver_id) || driver_id <= 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid driver ID provided." 
-      });
-    }
+  // Validate that driverId is actually a valid integer
+  if (isNaN(driver_id) || driver_id <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid driver ID provided.",
+    });
+  }
   const bookings = await getBookingByDriverId(driver_id, lastdays);
 
   if (!bookings || bookings.length === 0) {

@@ -27,14 +27,14 @@ class SettingsModel {
     `;
 
     const { rows } = await db.query(query, [
-        parseInt(companyId),
-        parseInt(recoverJob) || 0,
-        parseInt(rejectJob) || 0,
-        parseInt(ignoreJob) || 0
+      parseInt(companyId),
+      parseInt(recoverJob) || 0,
+      parseInt(rejectJob) || 0,
+      parseInt(ignoreJob) || 0,
     ]);
 
     return rows[0];
-}
+  }
 }
 
 module.exports = SettingsModel;

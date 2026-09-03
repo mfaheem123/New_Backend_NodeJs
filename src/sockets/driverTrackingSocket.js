@@ -351,7 +351,6 @@ async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
         color: driver.color,
       },
     });
-      
 
     trackingDashboardClients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
