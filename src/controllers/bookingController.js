@@ -739,7 +739,11 @@ exports.updateBookingStatus = async (req, res) => {
       await Driver.updateDriverStatus(driverId, "Available", "Available");
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
-      await SinbinService.checkAndApplySinbin(booking.rows[0].company_id, driverId, "REJECT");
+      await SinbinService.checkAndApplySinbin(
+        booking.rows[0].company_id,
+        driverId,
+        "REJECT",
+      );
     }
 
     //MISSED
@@ -747,7 +751,11 @@ exports.updateBookingStatus = async (req, res) => {
       await Driver.updateDriverStatus(driverId, "Available", "Available");
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
-      await SinbinService.checkAndApplySinbin(booking.rows[0].company_id, driverId, "MISSED");
+      await SinbinService.checkAndApplySinbin(
+        booking.rows[0].company_id,
+        driverId,
+        "MISSED",
+      );
     }
 
     // UPDATE BOOKING STATUS
