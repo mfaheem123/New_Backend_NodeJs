@@ -4,9 +4,9 @@ const SinbinModel = require("../models/driverSinbinModel");
 class SinbinService {
   /**
    * Driver ko event ke basis par automatically Sin Bin me dalna
-   * @param {number} company_id 
-   * @param {number} driver_id 
-   * @param {'MISSED' | 'REJECT'} triggerType 
+   * @param {number} company_id
+   * @param {number} driver_id
+   * @param {'MISSED' | 'REJECT'} triggerType
    */
   static async checkAndApplySinbin(company_id, driver_id, triggerType) {
     try {
@@ -32,13 +32,18 @@ class SinbinService {
           driver_id,
           message,
           sinbin_time: timerMinutes,
-          is_active: true
+          is_active: true,
         });
 
-        console.log(`✅ Driver ${driver_id} added to Sin-Bin via ${triggerType} for ${timerMinutes} mins.`);
+        console.log(
+          `✅ Driver ${driver_id} added to Sin-Bin via ${triggerType} for ${timerMinutes} mins.`,
+        );
       }
     } catch (error) {
-      console.error(`❌ Error in Auto Sin-Bin (${triggerType}):`, error.message);
+      console.error(
+        `❌ Error in Auto Sin-Bin (${triggerType}):`,
+        error.message,
+      );
     }
   }
 }
