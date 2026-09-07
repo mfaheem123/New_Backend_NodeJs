@@ -6,7 +6,7 @@ console.log("🚀 Sin Bin Cron Scheduler Started!");
 
 // Har 30 second me check karega
 cron.schedule("*/60 * * * * *", async () => {
-    console.log("⏰ Checking expired Sin-Bins...");
+  console.log("⏰ Checking expired Sin-Bins...");
   try {
     // 1. Fetch drivers jinka sinbin time expire ho chuka hai
     const query = `
@@ -15,7 +15,7 @@ cron.schedule("*/60 * * * * *", async () => {
       WHERE is_active = TRUE 
       AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;
     `;
-    
+
     const { rows } = await db.query(query);
 
     if (rows.length === 0) return;
@@ -26,10 +26,12 @@ cron.schedule("*/60 * * * * *", async () => {
         driver_id: record.driver_id,
         message: "Your hold is lifted — welcome back!",
         sinbin_time: 0,
-        is_active: false // Explicitly passing false triggers the removal notification in Model
+        is_active: false, // Explicitly passing false triggers the removal notification in Model
       });
-      
-      console.log(`🔓 Auto-lifted Sin Bin and sent notification for Driver ID: ${record.driver_id}`);
+
+      console.log(
+        `🔓 Auto-lifted Sin Bin and sent notification for Driver ID: ${record.driver_id}`,
+      );
     }
   } catch (error) {
     console.error("❌ Sin Bin Cron Job Error:", error.message);

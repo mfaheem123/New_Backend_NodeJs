@@ -271,7 +271,7 @@ exports.getBookingByTabs = async (req, res) => {
 
       case 3:
         tabName = "RECENT BOOKINGS";
-        tabWhere = `b.booking_status_id NOT IN (1, 11, 4, 5, 13) AND b.trash = false`;
+        tabWhere = `b.booking_status_id NOT IN (1, 11, 4, 5, 13, 14, 12, 7, 8) AND b.trash = false`;
         orderBy = `
   (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
 `;
@@ -948,7 +948,7 @@ exports.getBookingByDriverCommission = async (req, res) => {
 // ---------------------------------------------------------
 exports.cloneOneWayBooking = async (req, res) => {
   try {
-    const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id } =
+    const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id, company_id } =
       req.body;
     console.log(
       "🚀 INCOMING ADD CLI BOOKING BODY:",
@@ -968,6 +968,7 @@ exports.cloneOneWayBooking = async (req, res) => {
       pickup_date,
       pickup_time,
       driver_id,
+      company_id,
     });
 
     return res.status(200).json({

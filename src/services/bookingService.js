@@ -1727,7 +1727,7 @@ async function updateBookingService(bookingId, payload) {
 
 //CREATE CLI BOOKING
 async function cloneOneWayBookingService(payload) {
-  const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id } =
+  const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id, company_id } =
     payload;
 
   // 1️ Fetch existing booking
@@ -1735,6 +1735,20 @@ async function cloneOneWayBookingService(payload) {
   if (!existing) {
     throw new Error("Original booking not found");
   }
+
+  // 2️ Determine fare_meter status based on driver features
+  let fare_meter = false;
+  if (driver_id) {
+    const driverFeatures = await driverAppFeatureModel.getByDriverId(
+      driver_id,
+      company_id
+    );
+    console.log("DRIVER FEATURES:", driverFeatures);
+    if (driverFeatures) {
+      fare_meter = Boolean(driverFeatures.fare_meter);
+    }
+  }
+  console.log("FARE METER STATUS FOR NEW BOOKING:", fare_meter);
 
   // 2️ Prepare new booking object
   const newBooking = {
@@ -1747,6 +1761,7 @@ async function cloneOneWayBookingService(payload) {
     pickup_time,
     driver_id: driver_id || null,
     booking_status_id: 1,
+    fare_meter: fare_meter, // Pass fare_meter status to new clone
     completed: false,
     on_route: false,
     arrived: false,
@@ -1755,7 +1770,7 @@ async function cloneOneWayBookingService(payload) {
     multi_booking_id: 0,
     created_at: new Date(),
     updated_at: new Date(),
-    dispatched_at: null,
+    dispatched_at: driver_id ? new Date() : null,
     invoice_number: null,
     invoice_status: "open",
   };

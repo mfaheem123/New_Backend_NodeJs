@@ -7,8 +7,6 @@ const path = require("path");
 const fs = require("fs");
 const upload = multer();
 
-
-
 // Routes
 const addressRoutes = require("./routes/addressRoutes");
 const locationRoutes = require("./routes/locationRoutes");
@@ -65,6 +63,7 @@ const companyConfigurationRoutes = require("./routes/companyConfigurationRoutes"
 const clinetSubscriptionsRoutes = require("./routes/clinetSubscriptionsRoutes");
 const recordingRoutes = require("./routes/callRecordingRoutes");
 const driverSinBinRoutes = require("./routes/driverSinbinRoutes");
+const fareConfigurationMileageRoutes = require("./routes/fareConfigurationMileageRoutes");
 
 const app = express();
 
@@ -182,6 +181,7 @@ app.use("/api/company-configuration", companyConfigurationRoutes);
 app.use("/api/client-subscriptions", clinetSubscriptionsRoutes);
 app.use("/api/call-recordings", recordingRoutes);
 app.use("/api/sinbin", driverSinBinRoutes);
+app.use("/api/fare-configuration-mileage", fareConfigurationMileageRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {
