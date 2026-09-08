@@ -54,6 +54,7 @@ const {
   getSearchBookingsData,
   getDriverBookingStatisticsData,
   cancelBookingById,
+  getBookingDriverCustomerById,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -2907,4 +2908,32 @@ exports.cancelBookingById = async (req, res) => {
       message: error.message,
     });
   }
+};
+
+
+// ---------------------------------------------------------
+// GET BOOKING BY ID (FOR DRIVER APP AND CUSTOMER APP)
+// ---------------------------------------------------------
+exports.getBookingDriverCustomerById = async (req, res) => {
+  const booking_id = parseInt(req.params.id);
+  console.log(
+    "🚀 INCOMING GET BOOKING BODY:",
+    JSON.stringify(req.params, null, 2),
+  );
+
+  const booking = await getBookingDriverCustomerById(booking_id);
+
+  if (!booking) {
+    return res.status(404).json({
+      success: false,
+      message: "Booking not found",
+    });
+  }
+
+  const data = parseJSONFields(booking);
+
+  res.status(200).json({
+    success: true,
+    booking: data,
+  });
 };

@@ -1,10 +1,7 @@
 const db = require("../db");
 const sinBinNotificationService = require("../services/notificationService");
 const driverModel = require("../models/driverModel");
-const {
-  notifyDriverSinBinStatusWeb,
-} = require("../sockets/driverWebSocket");
-
+const { notifyDriverSinBinStatusWeb } = require("../sockets/driverWebSocket");
 
 class SinbinModel {
   // Add or Update Driver Sinbin Status
@@ -48,7 +45,7 @@ class SinbinModel {
     if (isActive == true) {
       //Update the driver status to 'SinBin' in the drivers table
       await driverModel.updateDriverStatus(driver_id, "Available", "SinBin");
-      
+
       await notifyDriverSinBinStatusWeb(driver_id);
 
       // Send notification to the driver about being added to the sin bin
@@ -58,7 +55,7 @@ class SinbinModel {
       );
     } else {
       //Update the driver status to 'Available' in the drivers table
-     await driverModel.updateDriverStatus(driver_id, "Available", "Available");
+      await driverModel.updateDriverStatus(driver_id, "Available", "Available");
       await notifyDriverSinBinStatusWeb(driver_id);
       // Send notification to the driver about being removed from the sin bin
       await sinBinNotificationService.sendSinBinRemovedNotification(

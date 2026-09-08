@@ -85,7 +85,7 @@ const updateFareConfigurationMileage = async (id, data) => {
 
   const query = `
     UPDATE fare_configuration_mileage
-    SET ${fields.join(', ')}
+    SET ${fields.join(", ")}
     WHERE id = $${index}
     RETURNING *
   `;

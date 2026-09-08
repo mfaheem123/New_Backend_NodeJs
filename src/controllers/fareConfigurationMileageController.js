@@ -34,13 +34,22 @@ exports.createFareConfigurationMileage = async (req, res) => {
 // ---------------------------------------------------------
 exports.getAllFareConfigurationsMileage = async (req, res) => {
   try {
-    const {company_id} = req.query;
+    const { company_id } = req.query;
     if (!company_id) {
-      return res.status(400).json({status: false, message: "company_id query param is required" });
+      return res
+        .status(400)
+        .json({ status: false, message: "company_id query param is required" });
     }
     const fareConfigurationsMileage =
-      await fareConfigurationMileageModel.getAllFareConfigurationsMileage(company_id);
-    res.status(200).json({status: true, fareConfigurationsMileage:fareConfigurationsMileage});
+      await fareConfigurationMileageModel.getAllFareConfigurationsMileage(
+        company_id,
+      );
+    res
+      .status(200)
+      .json({
+        status: true,
+        fareConfigurationsMileage: fareConfigurationsMileage,
+      });
   } catch (error) {
     console.error("Error fetching fare configurations mileage:", error);
     res.status(500).json({ status: false, message: "Internal server error" });
@@ -59,9 +68,17 @@ exports.getFareConfigurationMileageById = async (req, res) => {
     if (!fareConfigurationMileage) {
       return res
         .status(404)
-        .json({status: false, message: "Fare configuration mileage not found" });
+        .json({
+          status: false,
+          message: "Fare configuration mileage not found",
+        });
     }
-    res.status(200).json({status: true, fareConfigurationMileage: fareConfigurationMileage});
+    res
+      .status(200)
+      .json({
+        status: true,
+        fareConfigurationMileage: fareConfigurationMileage,
+      });
   } catch (error) {
     console.error("Error fetching fare configuration mileage:", error);
     res.status(500).json({ status: false, message: "Internal server error" });
@@ -81,9 +98,17 @@ exports.updateFareConfigurationMileage = async (req, res) => {
     if (!fareConfigurationMileage) {
       return res
         .status(404)
-        .json({status: false, message: "Fare configuration mileage not found" });
+        .json({
+          status: false,
+          message: "Fare configuration mileage not found",
+        });
     }
-    res.status(200).json({status: true, fareConfigurationMileage: fareConfigurationMileage});
+    res
+      .status(200)
+      .json({
+        status: true,
+        fareConfigurationMileage: fareConfigurationMileage,
+      });
   } catch (error) {
     console.error("Error updating fare configuration mileage:", error);
     res.status(500).json({ status: false, message: "Internal server error" });
@@ -102,11 +127,17 @@ exports.deleteFareConfigurationMileage = async (req, res) => {
     if (!fareConfigurationMileage) {
       return res
         .status(404)
-        .json({status: false, message: "Fare configuration mileage not found" });
+        .json({
+          status: false,
+          message: "Fare configuration mileage not found",
+        });
     }
     res
       .status(200)
-      .json({status: true, message: "Fare Configuration Mileage Deleted Successfully" });
+      .json({
+        status: true,
+        message: "Fare Configuration Mileage Deleted Successfully",
+      });
   } catch (error) {
     console.error("Error deleting fare configuration mileage:", error);
     res.status(500).json({ status: false, message: "Internal server error" });

@@ -3092,6 +3092,18 @@ const cancelBookingById = async (id, cancelled_reason) => {
   return result.rows[0];
 };
 
+// ---------------------------------------------------------
+// GET BOOKINGS BY ID (FOR DRIVER APP AND CUSTOMER APP)
+// ---------------------------------------------------------
+const getBookingDriverCustomerById = async (id) => {
+  const sql = `
+    ${ENRICHED_SELECT}
+    WHERE b.id = $1
+  `;
+  const res = await pool.query(sql, [id]);
+  return res.rows[0];
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -3155,4 +3167,5 @@ module.exports = {
   getDriverBookingStatisticsData,
   findBookingPairById,
   cancelBookingById,
+  getBookingDriverCustomerById,
 };

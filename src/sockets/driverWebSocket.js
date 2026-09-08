@@ -597,7 +597,7 @@ async function notifyDriverSinBinStatusWeb(driverId) {
 
       WHERE d.id = $1
       `,
-      [driverId]
+      [driverId],
     );
 
     if (!result.rows.length) return;
@@ -647,8 +647,6 @@ async function notifyDriverSinBinStatusWeb(driverId) {
     });
   }
 }
-
-
 
 module.exports = {
   handleDriverLoginSocket,
