@@ -948,8 +948,14 @@ exports.getBookingByDriverCommission = async (req, res) => {
 // ---------------------------------------------------------
 exports.cloneOneWayBooking = async (req, res) => {
   try {
-    const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id, company_id } =
-      req.body;
+    const {
+      booking_id,
+      vehicle_type_id,
+      pickup_date,
+      pickup_time,
+      driver_id,
+      company_id,
+    } = req.body;
     console.log(
       "🚀 INCOMING ADD CLI BOOKING BODY:",
       JSON.stringify(req.body, null, 2),

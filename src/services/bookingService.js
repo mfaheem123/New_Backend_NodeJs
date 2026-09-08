@@ -1727,8 +1727,14 @@ async function updateBookingService(bookingId, payload) {
 
 //CREATE CLI BOOKING
 async function cloneOneWayBookingService(payload) {
-  const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id, company_id } =
-    payload;
+  const {
+    booking_id,
+    vehicle_type_id,
+    pickup_date,
+    pickup_time,
+    driver_id,
+    company_id,
+  } = payload;
 
   // 1️ Fetch existing booking
   const existing = await findBookingsById(booking_id);
@@ -1741,7 +1747,7 @@ async function cloneOneWayBookingService(payload) {
   if (driver_id) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(
       driver_id,
-      company_id
+      company_id,
     );
     console.log("DRIVER FEATURES:", driverFeatures);
     if (driverFeatures) {
