@@ -6,7 +6,7 @@ const initWebSocket = require("./sockets");
 const {
   startSubscriptionScheduler,
 } = require("./services/subscriptionScheduler");
-// require("./utils/sinbinCron");
+require("./utils/sinbinCron");
 
 // const { Server } = require("socket.io");
 // const { initIO } = require("./sockets/io");

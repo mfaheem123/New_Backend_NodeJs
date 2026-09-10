@@ -2910,7 +2910,6 @@ exports.cancelBookingById = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
 // GET BOOKING BY ID (FOR DRIVER APP AND CUSTOMER APP)
 // ---------------------------------------------------------
