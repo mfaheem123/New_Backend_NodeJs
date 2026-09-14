@@ -76,11 +76,11 @@ async function sendBookingNotification(driverId, booking) {
     },
     data: {
       // booking: JSON.stringify(bookingPayload),
-      booking_id: booking.id,
+      booking_id: String(booking.id),
       type: "NEW_BOOKING",
     },
   };
-
+console.log("BOOKING DISPATCH Notification Data:", message);
   // 3️⃣ Send
   // await admin.messaging().send(message);
   await safeSendNotification(message, { driverId });
@@ -119,7 +119,7 @@ async function sendRideAcceptedNotification(customerId, booking) {
       type: "RIDE_ACCEPTED",
     },
   };
-
+  console.log("RIDE ACCEPTED Notification Data:", message);
   // 3️⃣ Send
   // await admin.messaging().send(message);
   await safeSendNotification(message, { customerId });

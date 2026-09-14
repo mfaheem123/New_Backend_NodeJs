@@ -4,7 +4,7 @@ const {
   updateBooking,
   findBookingById,
   findBookingsById,
-  getBookingByIdEnriched,
+  getBookingDriverCustomerById,
   findBookingPairById,
 } = require("../models/bookingModel");
 const {
@@ -363,7 +363,7 @@ async function createSimpleBooking(payload) {
     const inserted = await createBookingRow(pool, normalized);
     console.log(inserted);
 
-    const enriched = await getBookingByIdEnriched(inserted.id);
+    const enriched = await getBookingDriverCustomerById(inserted.id);
     const clean = parseJSONFields(enriched);
 
     console.log("BOOKING DATA FOR SENDING SMS: ", clean);
@@ -454,8 +454,8 @@ async function createTwoWayBooking(payload) {
 
     const retInserted = await createBookingRow(pool, returnBooking);
 
-    const primaryEnriched = await getBookingByIdEnriched(primary.id);
-    const returnEnriched = await getBookingByIdEnriched(retInserted.id);
+    const primaryEnriched = await getBookingDriverCustomerById(primary.id);
+    const returnEnriched = await getBookingDriverCustomerById(retInserted.id);
     const clean = parseJSONFields(primaryEnriched);
     const returnClean = parseJSONFields(returnEnriched);
 
@@ -561,10 +561,10 @@ async function createReturnWayBooking(payload) {
 
     /* ---------------- ENRICHED ---------------- */
     const outboundEnriched = parseJSONFields(
-      await getBookingByIdEnriched(outboundInserted.id),
+      await getBookingDriverCustomerById(outboundInserted.id),
     );
     const returnEnriched = parseJSONFields(
-      await getBookingByIdEnriched(returnInserted.id),
+      await getBookingDriverCustomerById(returnInserted.id),
     );
 
     await pool.query("COMMIT");
@@ -667,7 +667,7 @@ async function createMultiVehicleBooking(payload) {
     const enrichedBookings = [];
 
     for (const id of createdBookingIds) {
-      const res = await getBookingByIdEnriched(id);
+      const res = await getBookingDriverCustomerById(id);
       const parsed = parseJSONFields(res);
       enrichedBookings.push(parsed);
     }
@@ -870,7 +870,7 @@ async function createMultiReservationBooking(payload) {
     const enrichedBookings = [];
 
     for (const id of createdBookingIds) {
-      const res = await getBookingByIdEnriched(id);
+      const res = await getBookingDriverCustomerById(id);
       enrichedBookings.push(parseJSONFields(res));
     }
 
@@ -1135,7 +1135,7 @@ async function create(payload) {
 //     const updated = await updateBooking(bookingId, updates);
 //     if (!updated) return null;
 
-//     const enriched = await getBookingByIdEnriched(updated.id);
+//     const enriched = await getBookingDriverCustomerById(updated.id);
 //     const clean = parseJSONFields(enriched);
 //     // 🔔 SEND NOTIFICATION IF DRIVER ASSIGNED / CHANGED
 //     if (
@@ -1172,7 +1172,7 @@ async function create(payload) {
 
 //   const inserted = await createBookingRow(pool, normalized);
 
-//   const enriched = await getBookingByIdEnriched(inserted.id);
+//   const enriched = await getBookingDriverCustomerById(inserted.id);
 //   const clean = parseJSONFields(enriched);
 
 //   // 8️ SEND NOTIFICATION
@@ -1324,6 +1324,8 @@ async function updateBookingService(bookingId, payload) {
     "toggle_driver_text",
     "toggle_passenger_text",
     "permanent",
+    "flight_number",
+    "arriving_from",
 
     // Finance
     "invoice_status",
@@ -1634,7 +1636,7 @@ async function updateBookingService(bookingId, payload) {
     // GET FRESH PRIMARY BOOKING
     // ---------------------------------------------------
 
-    const primaryEnriched = await getBookingByIdEnriched(primaryBooking.id);
+    const primaryEnriched = await getBookingDriverCustomerById(primaryBooking.id);
 
     const primaryClean = parseJSONFields(primaryEnriched);
 
@@ -1654,7 +1656,7 @@ async function updateBookingService(bookingId, payload) {
     // ===================================================
 
     if (Number(payload.journey_type_id) === 3 && returnBooking) {
-      const returnEnriched = await getBookingByIdEnriched(returnBooking.id);
+      const returnEnriched = await getBookingDriverCustomerById(returnBooking.id);
 
       const returnClean = parseJSONFields(returnEnriched);
 
@@ -1718,7 +1720,7 @@ async function updateBookingService(bookingId, payload) {
 
   const inserted = await insertBookingRow(pool, normalized);
 
-  const enriched = await getBookingByIdEnriched(inserted.id);
+  const enriched = await getBookingDriverCustomerById(inserted.id);
 
   const clean = parseJSONFields(enriched);
 
@@ -1812,7 +1814,7 @@ async function cloneOneWayBookingService(payload) {
   ]);
 
   // 7️ Enrich & return
-  const enriched = await getBookingByIdEnriched(inserted.id);
+  const enriched = await getBookingDriverCustomerById(inserted.id);
   const clean = parseJSONFields(enriched);
 
   // 8️ SEND NOTIFICATION
@@ -1851,7 +1853,7 @@ async function assignDriverService(bookingId, driverId, company_id) {
     fare_meter,
   );
   // 2️ Get enriched booking
-  const enriched = await getBookingByIdEnriched(bookingId);
+  const enriched = await getBookingDriverCustomerById(bookingId);
 
   console.log("ENRICHED BOOKING DATA", enriched);
 
@@ -1923,7 +1925,7 @@ async function assignFOBDriverService(bookingId, driverId, company_id) {
   );
 
   // 2️ Get enriched booking
-  const enriched = await getBookingByIdEnriched(bookingId);
+  const enriched = await getBookingDriverCustomerById(bookingId);
 
   console.log("ENRICHED BOOKING DATA", enriched);
 
@@ -2001,7 +2003,7 @@ async function assignFutureBookingDriverService(
   if (!updated) return null;
 
   // 2️ Get enriched booking
-  const enriched = await getBookingByIdEnriched(bookingId);
+  const enriched = await getBookingDriverCustomerById(bookingId);
 
   console.log("ENRICHED BOOKING DATA", enriched);
 
