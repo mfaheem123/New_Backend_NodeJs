@@ -257,7 +257,7 @@ exports.getBookingByTabs = async (req, res) => {
         tabName = "TODAY BOOKINGS";
         tabWhere = `
     DATE(b.pickup_date) = CURRENT_DATE
-    AND b.booking_status_id IN (1, 4, 5, 13)
+    AND b.booking_status_id IN (1, 4, 5, 13, 8)
     AND b.trash = false
   `;
         orderBy = `
@@ -2697,6 +2697,7 @@ exports.getPickBookings = async (req, res) => {
       search_driver,
       search_payment_type,
       search_status,
+      company_id,
     } = req.query;
 
     const result = await getSearchBookingsData({
@@ -2717,6 +2718,7 @@ exports.getPickBookings = async (req, res) => {
       search_driver,
       search_payment_type,
       search_status,
+      company_id,
     });
 
     res.json({

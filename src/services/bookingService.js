@@ -1636,7 +1636,9 @@ async function updateBookingService(bookingId, payload) {
     // GET FRESH PRIMARY BOOKING
     // ---------------------------------------------------
 
-    const primaryEnriched = await getBookingDriverCustomerById(primaryBooking.id);
+    const primaryEnriched = await getBookingDriverCustomerById(
+      primaryBooking.id,
+    );
 
     const primaryClean = parseJSONFields(primaryEnriched);
 
@@ -1656,7 +1658,9 @@ async function updateBookingService(bookingId, payload) {
     // ===================================================
 
     if (Number(payload.journey_type_id) === 3 && returnBooking) {
-      const returnEnriched = await getBookingDriverCustomerById(returnBooking.id);
+      const returnEnriched = await getBookingDriverCustomerById(
+        returnBooking.id,
+      );
 
       const returnClean = parseJSONFields(returnEnriched);
 

@@ -80,7 +80,7 @@ async function sendBookingNotification(driverId, booking) {
       type: "NEW_BOOKING",
     },
   };
-console.log("BOOKING DISPATCH Notification Data:", message);
+  console.log("BOOKING DISPATCH Notification Data:", message);
   // 3️⃣ Send
   // await admin.messaging().send(message);
   await safeSendNotification(message, { driverId });

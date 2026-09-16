@@ -2593,6 +2593,7 @@ const getSearchBookingsData = async ({
   search_driver,
   search_payment_type,
   search_status,
+  company_id,
 }) => {
   const conditions = ["b.trash = false"];
   const params = [];
@@ -2689,6 +2690,11 @@ const getSearchBookingsData = async ({
   if (search_status) {
     conditions.push(`bs.booking_status ILIKE $${idx++}`);
     params.push(`%${search_status.trim()}%`);
+  }
+
+  if (company_id) {
+    conditions.push(`b.company_id = $${idx++}`);
+    params.push(Number(company_id));
   }
 
   const whereClause = `WHERE ${conditions.join(" AND ")}`;
