@@ -18,175 +18,175 @@ const getAllAddresses = async (req, res) => {
 };
 
 // SEARCH LOCATION WITH POSTCODE EXACT
-const searchAddresses = async (req, res) => {
-  try {
-    const rawSearch = req.query.search.trim();
-    const search = rawSearch.toUpperCase();
-
-    // 🧠 Detect if input is a postcode or prefix of one
-    const isPostcodeLike = /^[A-Z]{1,2}\d{0,2}[A-Z]?\s*\d?[A-Z]{0,2}$/i.test(
-      search,
-    );
-
-    const response = await client.search({
-      index: "addresses",
-      size: 100,
-      query: {
-        bool: {
-          should: [
-            // 1️⃣ Exact postcode match (for full postcodes)
-            {
-              match_phrase: {
-                postcode: {
-                  query: search,
-                  boost: 10,
-                },
-              },
-            },
-            {
-              match_phrase: {
-                unit: {
-                  query: search,
-                  boost: 8,
-                },
-              },
-            },
-
-            // 2️⃣ Partial postcode prefix search (TN / TN3 / TN37 / TN37 6)
-            ...(isPostcodeLike
-              ? [
-                  {
-                    wildcard: {
-                      postcode: {
-                        value: `${search.replace(/\s/g, "")}*`,
-                        boost: 6,
-                      },
-                    },
-                  },
-                  {
-                    wildcard: {
-                      unit: {
-                        value: `${search.replace(/\s/g, "")}*`,
-                        boost: 5,
-                      },
-                    },
-                  },
-                ]
-              : []),
-
-            // 3️⃣ Street or building name fallback
-            {
-              match_phrase_prefix: {
-                name: {
-                  query: rawSearch,
-                  boost: 2,
-                },
-              },
-            },
-          ],
-          minimum_should_match: 1,
-        },
-      },
-    });
-
-    const hits = response.hits.hits.map((h) => h._source);
-
-    // 🧹 Clean duplicates
-    const unique = hits.filter(
-      (v, i, a) =>
-        a.findIndex((t) => t.name === v.name && t.postcode === v.postcode) ===
-        i,
-    );
-
-    res.status(200).json(unique);
-  } catch (err) {
-    console.error("Address search failed:", err);
-    res.status(500).json({ message: "Search failed" });
-  }
-};
-
 // const searchAddresses = async (req, res) => {
 //   try {
-//     const rawSearch = (req.query.search || "").trim();
-//     if (!rawSearch) return res.status(200).json([]);
-
+//     const rawSearch = req.query.search.trim();
 //     const search = rawSearch.toUpperCase();
-//     const cleanSearchNoSpace = search.replace(/\s+/g, "");
 
-//     // Regex check for postcode pattern
-//     const isPostcodeLike = /^[A-Z]{1,2}\d{0,2}[A-Z]?\s*\d?[A-Z]{0,2}$/i.test(search);
-
-//     const shouldQueries = [
-//       // 1️⃣ Exact match (High Priority)
-//       {
-//         match_phrase: {
-//           postcode: { query: search, boost: 10 }
-//         }
-//       },
-//       {
-//         match_phrase: {
-//           unit: { query: search, boost: 8 }
-//         }
-//       }
-//     ];
-
-//     // 2️⃣ Prefix Match (Ultra Fast alternative to Wildcard)
-//     if (isPostcodeLike) {
-//       shouldQueries.push(
-//         {
-//           prefix: {
-//             postcode: { value: cleanSearchNoSpace, boost: 6 }
-//           }
-//         },
-//         {
-//           prefix: {
-//             unit: { value: cleanSearchNoSpace, boost: 5 }
-//           }
-//         }
-//       );
-//     }
-
-//     // 3️⃣ Street / Name Partial Search
-//     shouldQueries.push({
-//       match_phrase_prefix: {
-//         name: { query: rawSearch, boost: 2 }
-//       }
-//     });
+//     // 🧠 Detect if input is a postcode or prefix of one
+//     const isPostcodeLike = /^[A-Z]{1,2}\d{0,2}[A-Z]?\s*\d?[A-Z]{0,2}$/i.test(
+//       search,
+//     );
 
 //     const response = await client.search({
 //       index: "addresses",
-//       size: 50, // Reduced from 100 for fast network transfer
+//       size: 100,
 //       query: {
 //         bool: {
-//           should: shouldQueries,
-//           minimum_should_match: 1
-//         }
-//       }
+//           should: [
+//             // 1️⃣ Exact postcode match (for full postcodes)
+//             {
+//               match_phrase: {
+//                 postcode: {
+//                   query: search,
+//                   boost: 10,
+//                 },
+//               },
+//             },
+//             {
+//               match_phrase: {
+//                 unit: {
+//                   query: search,
+//                   boost: 8,
+//                 },
+//               },
+//             },
+
+//             // 2️⃣ Partial postcode prefix search (TN / TN3 / TN37 / TN37 6)
+//             ...(isPostcodeLike
+//               ? [
+//                   {
+//                     wildcard: {
+//                       postcode: {
+//                         value: `${search.replace(/\s/g, "")}*`,
+//                         boost: 6,
+//                       },
+//                     },
+//                   },
+//                   {
+//                     wildcard: {
+//                       unit: {
+//                         value: `${search.replace(/\s/g, "")}*`,
+//                         boost: 5,
+//                       },
+//                     },
+//                   },
+//                 ]
+//               : []),
+
+//             // 3️⃣ Street or building name fallback
+//             {
+//               match_phrase_prefix: {
+//                 name: {
+//                   query: rawSearch,
+//                   boost: 2,
+//                 },
+//               },
+//             },
+//           ],
+//           minimum_should_match: 1,
+//         },
+//       },
 //     });
 
-//     const hits = response.hits.hits;
-    
-//     // 🧹 High Performance $O(N)$ Deduplication via Map
-//     const uniqueMap = new Map();
-//     for (let i = 0; i < hits.length; i++) {
-//       const source = hits[i]._source;
-//       const key = `${source.name}_${source.postcode}`;
-//       if (!uniqueMap.has(key)) {
-//         uniqueMap.set(key, {
-//           name: source.name,
-//           postcode: source.postcode,
-//           lat: source.lat,
-//           lon: source.lon
-//         });
-//       }
-//     }
+//     const hits = response.hits.hits.map((h) => h._source);
 
-//     res.status(200).json(Array.from(uniqueMap.values()));
+//     // 🧹 Clean duplicates
+//     const unique = hits.filter(
+//       (v, i, a) =>
+//         a.findIndex((t) => t.name === v.name && t.postcode === v.postcode) ===
+//         i,
+//     );
+
+//     res.status(200).json(unique);
 //   } catch (err) {
-//     console.error("❌ Address search failed:", err);
+//     console.error("Address search failed:", err);
 //     res.status(500).json({ message: "Search failed" });
 //   }
 // };
+
+const searchAddresses = async (req, res) => {
+  try {
+    const rawSearch = (req.query.search || "").trim();
+    if (!rawSearch) return res.status(200).json([]);
+
+    const search = rawSearch.toUpperCase();
+    const cleanSearchNoSpace = search.replace(/\s+/g, "");
+
+    // Regex check for postcode pattern
+    const isPostcodeLike = /^[A-Z]{1,2}\d{0,2}[A-Z]?\s*\d?[A-Z]{0,2}$/i.test(search);
+
+    const shouldQueries = [
+      // 1️⃣ Exact match (High Priority)
+      {
+        match_phrase: {
+          postcode: { query: search, boost: 10 }
+        }
+      },
+      {
+        match_phrase: {
+          unit: { query: search, boost: 8 }
+        }
+      }
+    ];
+
+    // 2️⃣ Prefix Match (Ultra Fast alternative to Wildcard)
+    if (isPostcodeLike) {
+      shouldQueries.push(
+        {
+          prefix: {
+            postcode: { value: cleanSearchNoSpace, boost: 6 }
+          }
+        },
+        {
+          prefix: {
+            unit: { value: cleanSearchNoSpace, boost: 5 }
+          }
+        }
+      );
+    }
+
+    // 3️⃣ Street / Name Partial Search
+    shouldQueries.push({
+      match_phrase_prefix: {
+        name: { query: rawSearch, boost: 2 }
+      }
+    });
+
+    const response = await client.search({
+      index: "addresses",
+      size: 50, // Reduced from 100 for fast network transfer
+      query: {
+        bool: {
+          should: shouldQueries,
+          minimum_should_match: 1
+        }
+      }
+    });
+
+    const hits = response.hits.hits;
+    
+    // 🧹 High Performance $O(N)$ Deduplication via Map
+    const uniqueMap = new Map();
+    for (let i = 0; i < hits.length; i++) {
+      const source = hits[i]._source;
+      const key = `${source.name}_${source.postcode}`;
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, {
+          name: source.name,
+          postcode: source.postcode,
+          lat: source.lat,
+          lon: source.lon
+        });
+      }
+    }
+
+    res.status(200).json(Array.from(uniqueMap.values()));
+  } catch (err) {
+    console.error("❌ Address search failed:", err);
+    res.status(500).json({ message: "Search failed" });
+  }
+};
 
 // Get Lat/Lon by Name + Postcode
 const getLatLon = async (req, res) => {

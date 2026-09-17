@@ -97,99 +97,99 @@
 
 
 
-// const axios = require("axios");
-// const { getLocationTypes } = require("../utils/locationTypeCache");
+const axios = require("axios");
+const { getLocationTypes } = require("../utils/locationTypeCache");
 
-// const BASE_URL = "http://192.168.110.5:5000/api";
-// const LOCATIONS_URL = `${BASE_URL}/locations/get`;
-// const ADDRESS_SEARCH_URL = `${BASE_URL}/addresses/search?search=`;
+const BASE_URL = "http://192.168.110.5:5000/api";
+const LOCATIONS_URL = `${BASE_URL}/locations/get`;
+const ADDRESS_SEARCH_URL = `${BASE_URL}/addresses/search?search=`;
 
-// // 🚀 In-Memory Cache for Static/Semi-static Locations Data
-// let cachedLocations = null;
-// let lastCacheTime = 0;
-// const CACHE_TTL = 10 * 60 * 1000; // 10 Minutes
+// 🚀 In-Memory Cache for Static/Semi-static Locations Data
+let cachedLocations = null;
+let lastCacheTime = 0;
+const CACHE_TTL = 10 * 60 * 1000; // 10 Minutes
 
-// async function getLocationsData() {
-//   const now = Date.now();
-//   if (cachedLocations && now - lastCacheTime < CACHE_TTL) {
-//     return cachedLocations;
-//   }
+async function getLocationsData() {
+  const now = Date.now();
+  if (cachedLocations && now - lastCacheTime < CACHE_TTL) {
+    return cachedLocations;
+  }
 
-//   try {
-//     const locRes = await axios.get(LOCATIONS_URL);
-//     cachedLocations = locRes.data.locations || [];
-//     lastCacheTime = now;
-//     return cachedLocations;
-//   } catch (err) {
-//     console.error("❌ Failed to fetch locations cache:", err.message);
-//     return cachedLocations || []; // Fallback to stale cache if API fails
-//   }
-// }
+  try {
+    const locRes = await axios.get(LOCATIONS_URL);
+    cachedLocations = locRes.data.locations || [];
+    lastCacheTime = now;
+    return cachedLocations;
+  } catch (err) {
+    console.error("❌ Failed to fetch locations cache:", err.message);
+    return cachedLocations || []; // Fallback to stale cache if API fails
+  }
+}
 
-// const searchAddressOrShortcut = async (query) => {
-//   const locationTypes = getLocationTypes();
-//   const searchTerm = query.trim().toLowerCase();
+const searchAddressOrShortcut = async (query) => {
+  const locationTypes = getLocationTypes();
+  const searchTerm = query.trim().toLowerCase();
 
-//   // Fetch from Memory Cache (0ms latency)
-//   const allLocations = await getLocationsData();
+  // Fetch from Memory Cache (0ms latency)
+  const allLocations = await getLocationsData();
 
-//   // Step 1️⃣ — Check in location types
-//   const matchedType = locationTypes.find(
-//     (t) => t.shortcut && t.shortcut.toLowerCase() === searchTerm
-//   );
+  // Step 1️⃣ — Check in location types
+  const matchedType = locationTypes.find(
+    (t) => t.shortcut && t.shortcut.toLowerCase() === searchTerm
+  );
 
-//   if (matchedType) {
-//     const filteredRaw = allLocations.filter(
-//       (loc) => loc.location_type_id === matchedType.id
-//     );
+  if (matchedType) {
+    const filteredRaw = allLocations.filter(
+      (loc) => loc.location_type_id === matchedType.id
+    );
 
-//     if (filteredRaw.length > 0) {
-//       const isAirport = filteredRaw[0].location_type_id === 2;
-//       return {
-//         status: true,
-//         source: isAirport ? "airport" : "locations",
-//         count: filteredRaw.length,
-//         result: filteredRaw.map((loc) => ({
-//           name: loc.name,
-//           postcode: loc.postcode,
-//           lat: loc.latitude,
-//           lon: loc.longitude,
-//         })),
-//       };
-//     }
-//   }
+    if (filteredRaw.length > 0) {
+      const isAirport = filteredRaw[0].location_type_id === 2;
+      return {
+        status: true,
+        source: isAirport ? "airport" : "locations",
+        count: filteredRaw.length,
+        result: filteredRaw.map((loc) => ({
+          name: loc.name,
+          postcode: loc.postcode,
+          lat: loc.latitude,
+          lon: loc.longitude,
+        })),
+      };
+    }
+  }
 
-//   // Step 2️⃣ — Check in locations.shortcut
-//   const shortcutMatchesRaw = allLocations.filter(
-//     (loc) => loc.shortcut && loc.shortcut.toLowerCase().trim() === searchTerm
-//   );
+  // Step 2️⃣ — Check in locations.shortcut
+  const shortcutMatchesRaw = allLocations.filter(
+    (loc) => loc.shortcut && loc.shortcut.toLowerCase().trim() === searchTerm
+  );
 
-//   if (shortcutMatchesRaw.length > 0) {
-//     const isAirport = shortcutMatchesRaw[0].location_type_id === 2;
-//     return {
-//       status: true,
-//       source: isAirport ? "airport" : "locations",
-//       count: shortcutMatchesRaw.length,
-//       result: shortcutMatchesRaw.map((loc) => ({
-//         name: loc.name,
-//         postcode: loc.postcode,
-//         lat: loc.latitude,
-//         lon: loc.longitude,
-//       })),
-//     };
-//   }
+  if (shortcutMatchesRaw.length > 0) {
+    const isAirport = shortcutMatchesRaw[0].location_type_id === 2;
+    return {
+      status: true,
+      source: isAirport ? "airport" : "locations",
+      count: shortcutMatchesRaw.length,
+      result: shortcutMatchesRaw.map((loc) => ({
+        name: loc.name,
+        postcode: loc.postcode,
+        lat: loc.latitude,
+        lon: loc.longitude,
+      })),
+    };
+  }
 
-//   // Step 3️⃣ — Fallback: Address search
-//   const addrRes = await axios.get(
-//     `${ADDRESS_SEARCH_URL}${encodeURIComponent(query)}`
-//   );
+  // Step 3️⃣ — Fallback: Address search
+  const addrRes = await axios.get(
+    `${ADDRESS_SEARCH_URL}${encodeURIComponent(query)}`
+  );
   
-//   return {
-//     status: true,
-//     source: "addresses",
-//     count: addrRes.data.length,
-//     result: addrRes.data,
-//   };
-// };
+  return {
+    status: true,
+    source: "addresses",
+    count: addrRes.data.length,
+    result: addrRes.data,
+  };
+};
 
-// module.exports = { searchAddressOrShortcut };
+module.exports = { searchAddressOrShortcut };

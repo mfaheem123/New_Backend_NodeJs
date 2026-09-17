@@ -93,13 +93,15 @@ async function resetIndex() {
             type: { type: "keyword" },
             location: { type: "geo_point" },
             lat: { type: "double" },
-            lon: { type: "double" }
-          }
-        }
-      }
+            lon: { type: "double" },
+          },
+        },
+      },
     });
 
-    console.log(`✅ Index '${indexName}' created successfully with new mappings!`);
+    console.log(
+      `✅ Index '${indexName}' created successfully with new mappings!`,
+    );
   } catch (error) {
     console.error("❌ Error resetting index:", error);
   }

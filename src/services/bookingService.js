@@ -360,36 +360,48 @@ async function createSimpleBooking(payload) {
     const normalized = await normalizeBookingPayload(payload);
     if (customerId) normalized.customer_id = customerId;
 
-    const inserted = await createBookingRow(pool, normalized);
-    console.log(inserted);
+    // Set dispatched_at here if driver exists to keep DB operations inside transaction
+    if (normalized.driver_id) {
+      normalized.dispatched_at = new Date();
+    }
 
+    const inserted = await createBookingRow(pool, normalized);
+   console.log("BOOKING INSERTED", inserted.id);
+
+   // Commit database state FIRST
+    await pool.query("COMMIT");
+    console.log("BOOKING COMMITTED", inserted.id);
+
+    // READ & SEND DATA AFTER COMMIT (DB is now consistent)
     const enriched = await getBookingDriverCustomerById(inserted.id);
     const clean = parseJSONFields(enriched);
 
     console.log("BOOKING DATA FOR SENDING SMS: ", clean);
-    //  SEND SMS
-    await sendBookingSMS(clean);
 
-    // SEND NOTIFICATION TO DRIVER
-    if (clean.driver_id) {
-      await sendBookingNotification(clean.driver_id, clean);
-      await updateBooking(clean.id, {
-        dispatched_at: new Date(),
-      });
-    }
+    // Run notifications asynchronously after commit
+    try {
+      // 1. SEND SMS
+      await sendBookingSMS(clean);
 
-    // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
-    if (clean.booking_source == "app") {
-      await sendAppBookingNotification(clean, payload.company_id);
-    }
-    // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
-    if (clean.booking_source == "web") {
-      await sendWebBookingNotification(clean, payload.company_id);
-    }
-    console.log("BOOKING INSERTED", inserted.id);
-    await pool.query("COMMIT");
-    console.log("BOOKING COMMITTED", inserted.id);
+      // 2. SEND NOTIFICATION TO DRIVER
+      if (clean.driver_id) {
+        await sendBookingNotification(clean.driver_id, clean);
+      }
 
+      // 3. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
+      if (clean.booking_source === "app") {
+        await sendAppBookingNotification(clean, payload.company_id);
+      }
+
+      // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
+      if (clean.booking_source === "web") {
+        await sendWebBookingNotification(clean, payload.company_id);
+      }
+    } catch (notifErr) {
+      // Log notification failure but don't fail the API call since DB commit succeeded
+      console.error("NOTIFICATION / SMS ERROR (Booking saved):", notifErr);
+    }
+   
     return { bookings: [clean] };
   } catch (err) {
     console.error("ROLLBACK ERROR", err);
@@ -506,6 +518,11 @@ async function createReturnWayBooking(payload) {
     outbound.customer_id = customerId;
     outbound.reference_number = await genRef();
 
+    // Driver notification timestamp update directly inside transaction
+    if (outbound.driver_id) {
+      outbound.dispatched_at = new Date();
+    }
+
     const outboundInserted = await createBookingRow(pool, outbound);
 
     /* ---------------- RETURN ---------------- */
@@ -557,9 +574,17 @@ async function createReturnWayBooking(payload) {
     normalizedReturn.customer_id = customerId;
     normalizedReturn.reference_number = await genRef();
 
+    if (normalizedReturn.driver_id) {
+      normalizedReturn.dispatched_at = new Date();
+    }
+
     const returnInserted = await createBookingRow(pool, normalizedReturn);
 
-    /* ---------------- ENRICHED ---------------- */
+    /* ---------------- COMMIT TRANSACTION FIRST ---------------- */
+    await pool.query("COMMIT");
+    console.log("RETURN-WAY BOOKINGS COMMITTED", outboundInserted.id, returnInserted.id);
+
+   /* ---------------- READ ENRICHED DATA POST-COMMIT ---------------- */
     const outboundEnriched = parseJSONFields(
       await getBookingDriverCustomerById(outboundInserted.id),
     );
@@ -567,35 +592,43 @@ async function createReturnWayBooking(payload) {
       await getBookingDriverCustomerById(returnInserted.id),
     );
 
-    await pool.query("COMMIT");
-    // OUTBOUND SMS
-    await sendBookingSMS(outboundEnriched);
+    /* ---------------- ASYNCHRONOUS NOTIFICATIONS (SAFE) ---------------- */
+    try {
+      // 1. OUTBOUND & RETURN SMS
+      await sendBookingSMS(outboundEnriched);
+      await sendBookingSMS(returnEnriched);
 
-    // RETURN SMS
-    await sendBookingSMS(returnEnriched);
+      // 2. DRIVER NOTIFICATIONS
+      if (outboundEnriched.driver_id) {
+        await sendBookingNotification(
+          outboundEnriched.driver_id,
+          outboundEnriched,
+        );
+      }
 
-    // SEND DRIVER NOTIFICATIONS
+      if (returnEnriched.driver_id) {
+        await sendBookingNotification(
+          returnEnriched.driver_id,
+          returnEnriched,
+        );
+      }
 
-    if (outboundEnriched.driver_id) {
-      await sendBookingNotification(
-        outboundEnriched.driver_id,
-        outboundEnriched,
-      );
-    }
-
-    if (returnEnriched.driver_id) {
-      await sendBookingNotification(returnEnriched.driver_id, returnEnriched);
-    }
-
-    // SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
-    if (outboundEnriched.booking_source == "web") {
-      await sendWebBookingNotification(outboundEnriched, payload.company_id);
+      // 3. WEB / APP SOURCE NOTIFICATIONS
+      if (outboundEnriched.booking_source === "web") {
+        await sendWebBookingNotification(outboundEnriched, payload.company_id);
+      } else if (outboundEnriched.booking_source === "app") {
+        await sendAppBookingNotification(outboundEnriched, payload.company_id);
+      }
+    } catch (notifErr) {
+      // Catch notification delivery issues without breaking response or rolling back
+      console.error("NOTIFICATION / SMS ERROR (Bookings saved):", notifErr);
     }
     return {
       bookings: [outboundEnriched],
       return_booking: [returnEnriched],
     };
   } catch (err) {
+    console.error("RETURN WAY BOOKING ROLLBACK ERROR:", err);
     await pool.query("ROLLBACK");
     throw err;
   }

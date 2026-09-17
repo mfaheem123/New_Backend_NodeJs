@@ -60,8 +60,6 @@
 
 // syncData();
 
-
-
 ///////////////////////////////////// INSERT ADDRESS IN ELASTICSEARCH WITH 350K REJECTED  ///////////////////////////////////////
 // const db = require("./src/db/index"); // db connection
 // const client = require("./elasticsearchClient");
@@ -194,9 +192,6 @@
 
 // verifySyncData();
 
-
-
-
 const db = require("./src/db/index"); // db connection
 const client = require("./elasticsearchClient");
 const fs = require("fs");
@@ -290,10 +285,12 @@ async function syncData() {
         // Har batch ke failed items file me append karein
         fs.appendFileSync(
           ERROR_LOG_FILE,
-          JSON.stringify(failedItems, null, 2) + ",\n"
+          JSON.stringify(failedItems, null, 2) + ",\n",
         );
 
-        console.log(`⚠️ Batch me ${failedItems.length} failed docs log file me save ho gaye.`);
+        console.log(
+          `⚠️ Batch me ${failedItems.length} failed docs log file me save ho gaye.`,
+        );
       }
 
       lastId = rows[rows.length - 1]._id;
@@ -301,7 +298,7 @@ async function syncData() {
 
       const percentage = ((processedCount / totalRows) * 100).toFixed(2);
       console.log(
-        `✅ Synced ${processedCount.toLocaleString()} / ${totalRows.toLocaleString()} (${percentage}%)`
+        `✅ Synced ${processedCount.toLocaleString()} / ${totalRows.toLocaleString()} (${percentage}%)`,
       );
     }
 
@@ -312,12 +309,13 @@ async function syncData() {
     console.log(`❌ Total Failed: ${totalFailedCount.toLocaleString()}`);
 
     if (totalFailedCount > 0) {
-      console.log(`📁 Saare failed documents ki details '${ERROR_LOG_FILE}' file me save hain.`);
+      console.log(
+        `📁 Saare failed documents ki details '${ERROR_LOG_FILE}' file me save hain.`,
+      );
     } else {
       console.log("✨ Perfect! Zero documents failed.");
     }
     console.log("==========================================\n");
-
   } catch (err) {
     console.error("❌ Fatal error during sync process:", err);
   } finally {
