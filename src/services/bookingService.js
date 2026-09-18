@@ -366,9 +366,9 @@ async function createSimpleBooking(payload) {
     }
 
     const inserted = await createBookingRow(pool, normalized);
-   console.log("BOOKING INSERTED", inserted.id);
+    console.log("BOOKING INSERTED", inserted.id);
 
-   // Commit database state FIRST
+    // Commit database state FIRST
     await pool.query("COMMIT");
     console.log("BOOKING COMMITTED", inserted.id);
 
@@ -401,7 +401,7 @@ async function createSimpleBooking(payload) {
       // Log notification failure but don't fail the API call since DB commit succeeded
       console.error("NOTIFICATION / SMS ERROR (Booking saved):", notifErr);
     }
-   
+
     return { bookings: [clean] };
   } catch (err) {
     console.error("ROLLBACK ERROR", err);
@@ -582,9 +582,13 @@ async function createReturnWayBooking(payload) {
 
     /* ---------------- COMMIT TRANSACTION FIRST ---------------- */
     await pool.query("COMMIT");
-    console.log("RETURN-WAY BOOKINGS COMMITTED", outboundInserted.id, returnInserted.id);
+    console.log(
+      "RETURN-WAY BOOKINGS COMMITTED",
+      outboundInserted.id,
+      returnInserted.id,
+    );
 
-   /* ---------------- READ ENRICHED DATA POST-COMMIT ---------------- */
+    /* ---------------- READ ENRICHED DATA POST-COMMIT ---------------- */
     const outboundEnriched = parseJSONFields(
       await getBookingDriverCustomerById(outboundInserted.id),
     );
@@ -607,10 +611,7 @@ async function createReturnWayBooking(payload) {
       }
 
       if (returnEnriched.driver_id) {
-        await sendBookingNotification(
-          returnEnriched.driver_id,
-          returnEnriched,
-        );
+        await sendBookingNotification(returnEnriched.driver_id, returnEnriched);
       }
 
       // 3. WEB / APP SOURCE NOTIFICATIONS

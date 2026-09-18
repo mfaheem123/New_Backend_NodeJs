@@ -95,8 +95,6 @@
 
 // module.exports = { searchAddressOrShortcut };
 
-
-
 const axios = require("axios");
 const { getLocationTypes } = require("../utils/locationTypeCache");
 
@@ -135,12 +133,12 @@ const searchAddressOrShortcut = async (query) => {
 
   // Step 1️⃣ — Check in location types
   const matchedType = locationTypes.find(
-    (t) => t.shortcut && t.shortcut.toLowerCase() === searchTerm
+    (t) => t.shortcut && t.shortcut.toLowerCase() === searchTerm,
   );
 
   if (matchedType) {
     const filteredRaw = allLocations.filter(
-      (loc) => loc.location_type_id === matchedType.id
+      (loc) => loc.location_type_id === matchedType.id,
     );
 
     if (filteredRaw.length > 0) {
@@ -161,7 +159,7 @@ const searchAddressOrShortcut = async (query) => {
 
   // Step 2️⃣ — Check in locations.shortcut
   const shortcutMatchesRaw = allLocations.filter(
-    (loc) => loc.shortcut && loc.shortcut.toLowerCase().trim() === searchTerm
+    (loc) => loc.shortcut && loc.shortcut.toLowerCase().trim() === searchTerm,
   );
 
   if (shortcutMatchesRaw.length > 0) {
@@ -181,9 +179,9 @@ const searchAddressOrShortcut = async (query) => {
 
   // Step 3️⃣ — Fallback: Address search
   const addrRes = await axios.get(
-    `${ADDRESS_SEARCH_URL}${encodeURIComponent(query)}`
+    `${ADDRESS_SEARCH_URL}${encodeURIComponent(query)}`,
   );
-  
+
   return {
     status: true,
     source: "addresses",
