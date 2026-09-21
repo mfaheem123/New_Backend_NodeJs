@@ -66,14 +66,14 @@ function handleDriverLoginSocket(ws, req) {
     (driver) =>
       driver.session_status === "logged_in" &&
       driver.booking_status === "Available" &&
-      driver.driver_status === "Available",
+      (driver.driver_status === "Available" || driver.driver_status === "SinBin")
   );
 
   // 2️⃣ Subscribe future updates
   const driverLoginListener = (driver) => {
     if (driver.session_status !== "logged_in") return;
     if (driver.booking_status !== "Available") return;
-    if (driver.driver_status !== "Available") return;
+    if (driver.driver_status !== "Available" && driver.driver_status !== "SinBin") return;
 
     ws.send(JSON.stringify({ event: "DRIVER_LOGIN", data: driver }));
   };
@@ -122,7 +122,7 @@ function notifyDriverLogin(driver) {
   if (
     driver.session_status !== "logged_in" ||
     driver.booking_status !== "Available" ||
-    driver.driver_status !== "Available"
+    (driver.driver_status !== "Available" && driver.driver_status !== "SinBin")
   ) {
     return;
   }
@@ -525,9 +525,7 @@ async function notifyDriverBreakStatusWeb(driverId) {
   }
 }
 
-// ==============================
-// 🚫 DRIVER SIN BIN STATUS UPDATE
-// ==============================
+
 // ==============================
 // 🚫 DRIVER SIN BIN STATUS UPDATE
 // ==============================
