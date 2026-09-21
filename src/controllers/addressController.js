@@ -291,8 +291,12 @@ const searchAddresses = async (req, res) => {
     const extractedNumber = numberMatch ? numberMatch[0] : null;
 
     // Postcode pattern match (e.g. TN37 7DN or TN37)
-    const postcodeMatch = rawSearch.match(/[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d?[A-Z]{2}/i);
-    const extractedPostcode = postcodeMatch ? postcodeMatch[0].toUpperCase() : null;
+    const postcodeMatch = rawSearch.match(
+      /[A-Z]{1,2}\d{1,2}[A-Z]?\s*\d?[A-Z]{2}/i,
+    );
+    const extractedPostcode = postcodeMatch
+      ? postcodeMatch[0].toUpperCase()
+      : null;
 
     const shouldQueries = [];
     const mustQueries = [];
@@ -302,50 +306,53 @@ const searchAddresses = async (req, res) => {
       // Must match exact postcode
       mustQueries.push({
         match_phrase: {
-          postcode: { query: extractedPostcode }
-        }
+          postcode: { query: extractedPostcode },
+        },
       });
 
       // Must match building/house number inside name field
       mustQueries.push({
         match_phrase_prefix: {
-          name: { query: extractedNumber }
-        }
+          name: { query: extractedNumber },
+        },
       });
     } else {
       // 3️⃣ Normal Combined Search (Postcode, Name or Prefix)
       const search = rawSearch.toUpperCase();
       const cleanSearchNoSpace = search.replace(/\s+/g, "");
-      const isPostcodeLike = /^[A-Z]{1,2}\d{0,2}[A-Z]?\s*\d?[A-Z]{0,2}$/i.test(search);
+      const isPostcodeLike = /^[A-Z]{1,2}\d{0,2}[A-Z]?\s*\d?[A-Z]{0,2}$/i.test(
+        search,
+      );
 
       shouldQueries.push(
         { match_phrase: { postcode: { query: search, boost: 10 } } },
-        { match_phrase: { unit: { query: search, boost: 8 } } }
+        { match_phrase: { unit: { query: search, boost: 8 } } },
       );
 
       if (isPostcodeLike) {
         shouldQueries.push(
           { prefix: { postcode: { value: cleanSearchNoSpace, boost: 6 } } },
-          { prefix: { unit: { value: cleanSearchNoSpace, boost: 5 } } }
+          { prefix: { unit: { value: cleanSearchNoSpace, boost: 5 } } },
         );
       }
 
       shouldQueries.push({
         match_phrase_prefix: {
-          name: { query: rawSearch, boost: 2 }
-        }
+          name: { query: rawSearch, boost: 2 },
+        },
       });
     }
 
     // Elasticsearch Query Building
-    const queryBody = mustQueries.length > 0
-      ? { bool: { must: mustQueries } }
-      : { bool: { should: shouldQueries, minimum_should_match: 1 } };
+    const queryBody =
+      mustQueries.length > 0
+        ? { bool: { must: mustQueries } }
+        : { bool: { should: shouldQueries, minimum_should_match: 1 } };
 
     const response = await client.search({
       index: "addresses",
       size: 50,
-      query: queryBody
+      query: queryBody,
     });
 
     const hits = response.hits.hits;
@@ -360,16 +367,16 @@ const searchAddresses = async (req, res) => {
           name: source.name,
           postcode: source.postcode,
           lat: source.lat,
-          lon: source.lon
+          lon: source.lon,
         });
       }
     }
 
     // Natural Sequence Sorting (1, 2, 10, 24...)
     const sortedResults = Array.from(uniqueMap.values()).sort((a, b) => {
-      return (a.name || "").localeCompare((b.name || ""), undefined, {
+      return (a.name || "").localeCompare(b.name || "", undefined, {
         numeric: true,
-        sensitivity: "base"
+        sensitivity: "base",
       });
     });
 
@@ -379,8 +386,6 @@ const searchAddresses = async (req, res) => {
     res.status(500).json({ message: "Search failed" });
   }
 };
-
-
 
 // Get Lat/Lon by Name + Postcode
 const getLatLon = async (req, res) => {
