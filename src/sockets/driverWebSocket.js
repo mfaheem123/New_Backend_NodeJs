@@ -306,7 +306,7 @@ async function notifyDriverBookingStatusWeb(driverId) {
       d.driver_status,
       d.last_login_at,
       d.has_pda,
-      d.company_id
+      d.company_id,
       
       -- Vehicle Type (Dynamic)
       CASE 
