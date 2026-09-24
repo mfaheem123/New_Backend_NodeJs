@@ -1627,7 +1627,53 @@ exports.updateDashboardBookingFares = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// RECOVER DASHBOARD BOOKING
+// RECOVER DASHBOARD BOOKING WITHOUT SIN BIN
+// ---------------------------------------------------------
+// exports.recoverDashboardBooking = async (req, res) => {
+//   try {
+//     const bookingId = parseInt(req.params.id);
+
+//     const bookingResult = await findBookingById(bookingId);
+
+//     if (bookingResult.rowCount === 0) {
+//       return res.status(404).json({
+//         status: false,
+//         message: "Booking not found",
+//       });
+//     }
+//     // ✅ Actual booking object
+//     const booking = bookingResult.rows[0];
+
+//     console.log("BOOKING:", booking);
+//     console.log(booking.id);
+//     await sendRecoverBookingNotification(booking.driver_id, booking);
+//     await recoverDashboardBooking(bookingId);
+//     await Driver.updateDriverStatus(
+//       booking.driver_id,
+//       "Available",
+//       "Available",
+//     );
+//     await notifyDriverBookingStatus(booking.driver_id);
+//     await notifyDriverBookingStatusWeb(booking.driver_id);
+
+//     const driver = await Driver.getById(booking.driver_id);
+
+//     notifyBusyDriverUpdate(driver);
+//     return res.status(200).json({
+//       status: true,
+//       message: "Recover Booking Successfully",
+//     });
+//   } catch (error) {
+//     console.error("Recover Booking Error:", error);
+//     return res.status(500).json({
+//       status: false,
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
+
+// ---------------------------------------------------------
+// RECOVER DASHBOARD BOOKING WITH SIN BIN UPDATE
 // ---------------------------------------------------------
 exports.recoverDashboardBooking = async (req, res) => {
   try {
@@ -1641,27 +1687,32 @@ exports.recoverDashboardBooking = async (req, res) => {
         message: "Booking not found",
       });
     }
-    // ✅ Actual booking object
+
     const booking = bookingResult.rows[0];
 
-    console.log("BOOKING:", booking);
-    console.log(booking.id);
+    // 1️⃣ Recover booking notification & DB update
     await sendRecoverBookingNotification(booking.driver_id, booking);
     await recoverDashboardBooking(bookingId);
-    await Driver.updateDriverStatus(
-      booking.driver_id,
-      "Available",
-      "Available",
-    );
-    await notifyDriverBookingStatus(booking.driver_id);
-    await notifyDriverBookingStatusWeb(booking.driver_id);
 
-    const driver = await Driver.getById(booking.driver_id);
+    // 2️⃣ Driver ko SinBinService ke zariye Sin Bin me bhejein
+    if (booking.driver_id) {
+      await SinbinService.checkAndApplySinbin(
+        booking.company_id,
+        booking.driver_id,
+        "RECOVER"
+      );
 
-    notifyBusyDriverUpdate(driver);
+      // 3️⃣ Booking & Busy WebSocket updates (Agar required hon)
+      await notifyDriverBookingStatus(booking.driver_id);
+      await notifyDriverBookingStatusWeb(booking.driver_id);
+
+      const driver = await Driver.getById(booking.driver_id);
+      notifyBusyDriverUpdate(driver);
+    }
+
     return res.status(200).json({
       status: true,
-      message: "Recover Booking Successfully",
+      message: "Booking recovered successfully",
     });
   } catch (error) {
     console.error("Recover Booking Error:", error);

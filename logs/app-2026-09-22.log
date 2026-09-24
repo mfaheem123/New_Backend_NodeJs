@@ -481,3 +481,9 @@
 {"level":"info","message":"GET /api/location-types 200 28.226 ms","timestamp":"2026-09-22T18:39:12.959Z"}
 {"duration":68,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-22T18:39:13.003Z"}
 {"level":"info","message":"GET /api/location-types 200 70.626 ms","timestamp":"2026-09-22T18:39:13.007Z"}
+{"duration":145,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-22T18:45:10.935Z"}
+{"level":"info","message":"GET /api/location-types 200 150.056 ms","timestamp":"2026-09-22T18:45:10.940Z"}
+{"duration":158,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-22T18:45:10.942Z"}
+{"level":"info","message":"GET /api/location-types 200 160.550 ms","timestamp":"2026-09-22T18:45:10.944Z"}
+{"duration":103,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-22T18:46:00.141Z"}
+{"duration":66,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-22T18:47:00.068Z"}

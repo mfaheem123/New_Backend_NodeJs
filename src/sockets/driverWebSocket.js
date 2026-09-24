@@ -66,14 +66,19 @@ function handleDriverLoginSocket(ws, req) {
     (driver) =>
       driver.session_status === "logged_in" &&
       driver.booking_status === "Available" &&
-      (driver.driver_status === "Available" || driver.driver_status === "SinBin")
+      (driver.driver_status === "Available" ||
+        driver.driver_status === "SinBin"),
   );
 
   // 2️⃣ Subscribe future updates
   const driverLoginListener = (driver) => {
     if (driver.session_status !== "logged_in") return;
     if (driver.booking_status !== "Available") return;
-    if (driver.driver_status !== "Available" && driver.driver_status !== "SinBin") return;
+    if (
+      driver.driver_status !== "Available" &&
+      driver.driver_status !== "SinBin"
+    )
+      return;
 
     ws.send(JSON.stringify({ event: "DRIVER_LOGIN", data: driver }));
   };
@@ -301,6 +306,7 @@ async function notifyDriverBookingStatusWeb(driverId) {
       d.driver_status,
       d.last_login_at,
       d.has_pda,
+      d.company_id
       
       -- Vehicle Type (Dynamic)
       CASE 
@@ -426,6 +432,7 @@ async function notifyDriverBreakStatusWeb(driverId) {
       d.driver_status,
       d.last_login_at,
       d.has_pda,
+      d.company_id,
       
       -- Vehicle Type (Dynamic)
       CASE 
@@ -524,7 +531,6 @@ async function notifyDriverBreakStatusWeb(driverId) {
     });
   }
 }
-
 
 // ==============================
 // 🚫 DRIVER SIN BIN STATUS UPDATE
@@ -656,4 +662,3 @@ module.exports = {
   notifyDriverBreakStatusWeb,
   notifyDriverSinBinStatusWeb,
 };
-

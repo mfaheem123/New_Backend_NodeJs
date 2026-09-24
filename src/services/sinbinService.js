@@ -6,7 +6,7 @@ class SinbinService {
    * Driver ko event ke basis par automatically Sin Bin me dalna
    * @param {number} company_id
    * @param {number} driver_id
-   * @param {'MISSED' | 'REJECT'} triggerType
+   * @param {'MISSED' | 'REJECT' | 'RECOVER'} triggerType
    */
   static async checkAndApplySinbin(company_id, driver_id, triggerType) {
     try {
@@ -24,6 +24,9 @@ class SinbinService {
       } else if (triggerType === "REJECT") {
         timerMinutes = parseInt(settings.rejectjob) || 0;
         message = `Auto Sin-Bin: You rejected an assigned job. Placed on hold for ${timerMinutes} minute(s).`;
+      } else if (triggerType === "RECOVER") {
+        timerMinutes = parseInt(settings.recoverjob) || 0;
+        message = `Auto Sin-Bin: Your assigned job was recovered. Placed on hold for ${timerMinutes} minute(s).`;
       }
 
       // 3. Agar timer > 0 hai tabhi Sin Bin me dalei
