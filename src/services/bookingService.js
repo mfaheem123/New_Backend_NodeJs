@@ -18,7 +18,7 @@ const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
 const driverAppFeatureModel = require("../models/driverAppFeaturesModel");
 const { sendSMSWithTemplate } = require("../services/smsService");
-const { sendEmailWithTemplate } = require("../services/emailService");
+// const { sendEmailWithTemplate } = require("../services/emailService");
 
 const DEFAULT_EMPLOYEE_ID = 28;
 
@@ -403,66 +403,66 @@ async function createSimpleBooking(payload) {
     console.log("BOOKING DATA FOR SENDING SMS: ", clean);
 
     // Run notifications asynchronously after commit Without Email
-    // try {
-    //   // 1. SEND SMS
-    //   await sendBookingSMS(clean);
+    try {
+      // 1. SEND SMS
+      await sendBookingSMS(clean);
 
-    //   // 2. SEND NOTIFICATION TO DRIVER
-    //   if (clean.driver_id) {
-    //     await sendBookingNotification(clean.driver_id, clean);
-    //   }
+      // 2. SEND NOTIFICATION TO DRIVER
+      if (clean.driver_id) {
+        await sendBookingNotification(clean.driver_id, clean);
+      }
 
-    //   // 3. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
-    //   if (clean.booking_source === "app") {
-    //     await sendAppBookingNotification(clean, payload.company_id);
-    //   }
+      // 3. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
+      if (clean.booking_source === "app") {
+        await sendAppBookingNotification(clean, payload.company_id);
+      }
 
-    //   // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
-    //   if (clean.booking_source === "web") {
-    //     await sendWebBookingNotification(clean, payload.company_id);
-    //   }
-    // } catch (notifErr) {
-    //   // Log notification failure but don't fail the API call since DB commit succeeded
-    //   console.error("NOTIFICATION / SMS ERROR (Booking saved):", notifErr);
-    // }
+      // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
+      if (clean.booking_source === "web") {
+        await sendWebBookingNotification(clean, payload.company_id);
+      }
+    } catch (notifErr) {
+      // Log notification failure but don't fail the API call since DB commit succeeded
+      console.error("NOTIFICATION / SMS ERROR (Booking saved):", notifErr);
+    }
 
 
     // Run notifications asynchronously after commit WITH EMAIL SUPPORT
-try {
-  // 1. SEND SMS
-  await sendBookingSMS(clean);
+// try {
+//   // 1. SEND SMS
+//   await sendBookingSMS(clean);
 
-  // 📧 2. SEND EMAIL (Check: emailflag is true and email present)
-  if (clean.emailflag && (clean.email || clean.customer?.email)) {
-    const recipientEmail = clean.email || clean.customer?.email;
-    const templateData = buildEmailData(clean);
+//   // 📧 2. SEND EMAIL (Check: emailflag is true and email present)
+//   if (clean.emailflag && (clean.email || clean.customer?.email)) {
+//     const recipientEmail = clean.email || clean.customer?.email;
+//     const templateData = buildEmailData(clean);
 
-    console.log("📩 Sending Confirmation Email to:", recipientEmail);
+//     console.log("📩 Sending Confirmation Email to:", recipientEmail);
 
-    await sendEmailWithTemplate({
-      template_id: 9, // Booking Confirmation Email Template ID (DB se)
-      to: recipientEmail,
-      data: templateData,
-    });
-  }
+//     await sendEmailWithTemplate({
+//       template_id: 9, // Booking Confirmation Email Template ID (DB se)
+//       to: recipientEmail,
+//       data: templateData,
+//     });
+//   }
 
-  // 3. SEND NOTIFICATION TO DRIVER
-  if (clean.driver_id) {
-    await sendBookingNotification(clean.driver_id, clean);
-  }
+//   // 3. SEND NOTIFICATION TO DRIVER
+//   if (clean.driver_id) {
+//     await sendBookingNotification(clean.driver_id, clean);
+//   }
 
-  // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
-  if (clean.booking_source === "app") {
-    await sendAppBookingNotification(clean, payload.company_id);
-  }
+//   // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
+//   if (clean.booking_source === "app") {
+//     await sendAppBookingNotification(clean, payload.company_id);
+//   }
 
-  // 5. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
-  if (clean.booking_source === "web") {
-    await sendWebBookingNotification(clean, payload.company_id);
-  }
-} catch (notifErr) {
-  console.error("NOTIFICATION / SMS / EMAIL ERROR (Booking saved):", notifErr);
-}
+//   // 5. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
+//   if (clean.booking_source === "web") {
+//     await sendWebBookingNotification(clean, payload.company_id);
+//   }
+// } catch (notifErr) {
+//   console.error("NOTIFICATION / SMS / EMAIL ERROR (Booking saved):", notifErr);
+// }
 
     return { bookings: [clean] };
   } catch (err) {
