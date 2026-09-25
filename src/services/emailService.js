@@ -20,7 +20,10 @@ async function sendEmailWithTemplate({ template_id, to, data }) {
     }
 
     // 2. Subject aur Content parser mein pass karo
-    const subject = parseTemplate(template.subject || "Booking Confirmation", data);
+    const subject = parseTemplate(
+      template.subject || "Booking Confirmation",
+      data,
+    );
     const htmlContent = parseTemplate(template.content || "", data);
 
     // 3. Email send karo

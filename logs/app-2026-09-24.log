@@ -893,3 +893,64 @@
 {"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:33:10.010Z"}
 {"duration":1,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:33:20.005Z"}
 {"duration":2,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:33:30.015Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:16.595Z"}
+{"level":"info","message":"GET /api/location-types 200 14.331 ms","timestamp":"2026-09-24T18:34:16.602Z"}
+{"duration":53,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:16.642Z"}
+{"level":"info","message":"GET /api/location-types 200 59.144 ms","timestamp":"2026-09-24T18:34:16.649Z"}
+{"duration":5,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:34:20.006Z"}
+{"duration":18,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:32.763Z"}
+{"level":"info","message":"GET /api/location-types 200 29.591 ms","timestamp":"2026-09-24T18:34:32.787Z"}
+{"duration":98,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:32.848Z"}
+{"level":"info","message":"GET /api/location-types 200 102.271 ms","timestamp":"2026-09-24T18:34:32.852Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:36.114Z"}
+{"level":"info","message":"GET /api/location-types 200 16.522 ms","timestamp":"2026-09-24T18:34:36.123Z"}
+{"duration":64,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:36.173Z"}
+{"level":"info","message":"GET /api/location-types 200 66.030 ms","timestamp":"2026-09-24T18:34:36.175Z"}
+{"duration":3,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:34:40.018Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:42.387Z"}
+{"level":"info","message":"GET /api/location-types 200 10.912 ms","timestamp":"2026-09-24T18:34:42.393Z"}
+{"duration":48,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:42.431Z"}
+{"level":"info","message":"GET /api/location-types 200 49.225 ms","timestamp":"2026-09-24T18:34:42.432Z"}
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:48.468Z"}
+{"level":"info","message":"GET /api/location-types 200 17.828 ms","timestamp":"2026-09-24T18:34:48.480Z"}
+{"duration":68,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:48.531Z"}
+{"level":"info","message":"GET /api/location-types 200 69.162 ms","timestamp":"2026-09-24T18:34:48.533Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:51.442Z"}
+{"level":"info","message":"GET /api/location-types 200 11.106 ms","timestamp":"2026-09-24T18:34:51.449Z"}
+{"duration":50,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:51.488Z"}
+{"level":"info","message":"GET /api/location-types 200 50.682 ms","timestamp":"2026-09-24T18:34:51.489Z"}
+{"duration":5,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:55.040Z"}
+{"level":"info","message":"GET /api/location-types 200 11.371 ms","timestamp":"2026-09-24T18:34:55.047Z"}
+{"duration":49,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:55.086Z"}
+{"level":"info","message":"GET /api/location-types 200 50.766 ms","timestamp":"2026-09-24T18:34:55.088Z"}
+{"duration":14,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:59.123Z"}
+{"level":"info","message":"GET /api/location-types 200 27.636 ms","timestamp":"2026-09-24T18:34:59.135Z"}
+{"duration":75,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:34:59.188Z"}
+{"level":"info","message":"GET /api/location-types 200 77.181 ms","timestamp":"2026-09-24T18:34:59.190Z"}
+{"duration":9,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:35:00.026Z"}
+{"duration":7,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:35:10.329Z"}
+{"level":"info","message":"GET /api/location-types 200 16.142 ms","timestamp":"2026-09-24T18:35:10.338Z"}
+{"duration":2,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:35:10.349Z"}
+{"level":"info","message":"GET /api/location-types 200 3.120 ms","timestamp":"2026-09-24T18:35:10.351Z"}
+{"duration":10,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:35:17.209Z"}
+{"level":"info","message":"GET /api/location-types 200 21.488 ms","timestamp":"2026-09-24T18:35:17.219Z"}
+{"duration":60,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-24T18:35:17.262Z"}
+{"level":"info","message":"GET /api/location-types 200 60.911 ms","timestamp":"2026-09-24T18:35:17.263Z"}
+{"duration":96,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:36:00.127Z"}
+{"duration":179,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:37:00.199Z"}
+{"duration":68,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:38:00.104Z"}
+{"duration":84,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:39:00.096Z"}
+{"duration":75,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:40:00.091Z"}
+{"duration":64,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:41:00.082Z"}
+{"duration":57,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:42:00.072Z"}
+{"duration":84,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:43:00.094Z"}
+{"duration":77,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:44:00.089Z"}
+{"duration":82,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:45:00.100Z"}
+{"duration":89,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:46:00.101Z"}
+{"duration":71,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:47:00.090Z"}
+{"duration":77,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:48:00.089Z"}
+{"duration":86,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:49:00.100Z"}
+{"duration":58,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:50:00.070Z"}
+{"duration":94,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:51:00.106Z"}
+{"duration":85,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:52:00.099Z"}
+{"duration":80,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-24T18:53:00.093Z"}

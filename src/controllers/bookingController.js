@@ -1699,7 +1699,7 @@ exports.recoverDashboardBooking = async (req, res) => {
       await SinbinService.checkAndApplySinbin(
         booking.company_id,
         booking.driver_id,
-        "RECOVER"
+        "RECOVER",
       );
 
       // 3️⃣ Booking & Busy WebSocket updates (Agar required hon)

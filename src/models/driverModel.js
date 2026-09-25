@@ -177,15 +177,32 @@ const Driver = {
   // ---------------------------------------------------------
   // CHECK IF USERNAME EXISTS
   // ---------------------------------------------------------
-  async checkUsernameExists(username) {
+  async checkUsernameExists(username, company_id) {
     const query = `
       SELECT id FROM drivers 
       WHERE LOWER(username) = LOWER($1)
+      AND company_id = $2
       LIMIT 1
     `;
-    const result = await db.query(query, [username]);
+    const result = await db.query(query, [username, company_id]);
     return result.rows.length > 0;
   },
+
+  // ---------------------------------------------------------
+// CHECK IF MOBILE NUMBER EXISTS
+// ---------------------------------------------------------
+async checkMobileNumberExists(mobileNumber, company_id) {
+  if (!mobileNumber) return false;
+
+  const query = `
+    SELECT id FROM drivers 
+    WHERE TRIM(mobile) = TRIM($1)
+    AND company_id = $2
+    LIMIT 1
+  `;
+  const result = await db.query(query, [String(mobileNumber), company_id]);
+  return result.rows.length > 0;
+},
 
   // ---------------------------------------------------------
   // CREATE DRIVER WITH DOCUMENTS

@@ -22,6 +22,35 @@ const { sendSMSWithTemplate } = require("../services/smsService");
 
 const DEFAULT_EMPLOYEE_ID = 28;
 
+// Helper Function: Upsert Customer by Mobile Number
+async function upsertCustomer(poolClient, payload) {
+  const c = payload.customer?.[0] || payload.customer || payload;
+
+  const name = c.name || payload.name || null;
+  const email = c.email || payload.email || null;
+  const mobile = c.mobile || payload.mobile || null;
+  const telephone = c.telephone || payload.telephone || null;
+  const companyId = c.company_id || payload.company_id || 1;
+
+  // Agar mobile number hi nahi diya gaya to logic skip karein
+  if (!mobile) {
+    return payload.customer_id || null;
+  }
+
+  const query = `
+    INSERT INTO public.customers (name, email, mobile, telephone, blacklist, company_id)
+    VALUES ($1, $2, $3, $4, false, $5)
+    ON CONFLICT (mobile) DO UPDATE SET
+      name = COALESCE(EXCLUDED.name, customers.name),
+      email = COALESCE(EXCLUDED.email, customers.email),
+      telephone = COALESCE(EXCLUDED.telephone, customers.telephone),
+      company_id = COALESCE(EXCLUDED.company_id, customers.company_id)
+    RETURNING id;
+  `;
+
+  const res = await poolClient.query(query, [name, email, mobile, telephone, companyId]);
+  return res.rows[0].id;
+}
 
 function buildEmailData(clean) {
   return {
@@ -334,39 +363,9 @@ async function createSimpleBooking(payload) {
 
     let customerId = payload.customer_id || null;
 
-    if (!customerId && payload.customer) {
-      const c = payload.customer;
-      const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
-         VALUES ($1,$2,$3,$4,$5,$6)
-         ON CONFLICT (email) DO UPDATE SET mobile=EXCLUDED.mobile
-         RETURNING id`,
-        [
-          c.name || payload.name,
-          c.email || payload.email,
-          c.mobile || payload.mobile,
-          c.telephone || payload.telephone,
-          false,
-          c.company_id || payload.company_id,
-        ],
-      );
-      customerId = res.rows[0].id;
-    } else if (!customerId && payload.email) {
-      const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
-         VALUES ($1,$2,$3,$4,$5,$6)
-         ON CONFLICT (email) DO UPDATE SET mobile=EXCLUDED.mobile
-         RETURNING id`,
-        [
-          payload.name,
-          payload.email,
-          payload.mobile,
-          payload.telephone,
-          false,
-          payload.company_id,
-        ],
-      );
-      customerId = res.rows[0].id;
+    // 🔥 Customer Upsert Logic (Insert if new, Update details if mobile exists)
+    if (!customerId) {
+      customerId = await upsertCustomer(pool, payload);
     }
     if (payload.driver_id) {
       const driverFeatures = await driverAppFeatureModel.getByDriverId(
@@ -426,43 +425,42 @@ async function createSimpleBooking(payload) {
       console.error("NOTIFICATION / SMS ERROR (Booking saved):", notifErr);
     }
 
-
     // Run notifications asynchronously after commit WITH EMAIL SUPPORT
-// try {
-//   // 1. SEND SMS
-//   await sendBookingSMS(clean);
+    // try {
+    //   // 1. SEND SMS
+    //   await sendBookingSMS(clean);
 
-//   // 📧 2. SEND EMAIL (Check: emailflag is true and email present)
-//   if (clean.emailflag && (clean.email || clean.customer?.email)) {
-//     const recipientEmail = clean.email || clean.customer?.email;
-//     const templateData = buildEmailData(clean);
+    //   // 📧 2. SEND EMAIL (Check: emailflag is true and email present)
+    //   if (clean.emailflag && (clean.email || clean.customer?.email)) {
+    //     const recipientEmail = clean.email || clean.customer?.email;
+    //     const templateData = buildEmailData(clean);
 
-//     console.log("📩 Sending Confirmation Email to:", recipientEmail);
+    //     console.log("📩 Sending Confirmation Email to:", recipientEmail);
 
-//     await sendEmailWithTemplate({
-//       template_id: 9, // Booking Confirmation Email Template ID (DB se)
-//       to: recipientEmail,
-//       data: templateData,
-//     });
-//   }
+    //     await sendEmailWithTemplate({
+    //       template_id: 9, // Booking Confirmation Email Template ID (DB se)
+    //       to: recipientEmail,
+    //       data: templateData,
+    //     });
+    //   }
 
-//   // 3. SEND NOTIFICATION TO DRIVER
-//   if (clean.driver_id) {
-//     await sendBookingNotification(clean.driver_id, clean);
-//   }
+    //   // 3. SEND NOTIFICATION TO DRIVER
+    //   if (clean.driver_id) {
+    //     await sendBookingNotification(clean.driver_id, clean);
+    //   }
 
-//   // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
-//   if (clean.booking_source === "app") {
-//     await sendAppBookingNotification(clean, payload.company_id);
-//   }
+    //   // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
+    //   if (clean.booking_source === "app") {
+    //     await sendAppBookingNotification(clean, payload.company_id);
+    //   }
 
-//   // 5. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
-//   if (clean.booking_source === "web") {
-//     await sendWebBookingNotification(clean, payload.company_id);
-//   }
-// } catch (notifErr) {
-//   console.error("NOTIFICATION / SMS / EMAIL ERROR (Booking saved):", notifErr);
-// }
+    //   // 5. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
+    //   if (clean.booking_source === "web") {
+    //     await sendWebBookingNotification(clean, payload.company_id);
+    //   }
+    // } catch (notifErr) {
+    //   console.error("NOTIFICATION / SMS / EMAIL ERROR (Booking saved):", notifErr);
+    // }
 
     return { bookings: [clean] };
   } catch (err) {
@@ -478,23 +476,9 @@ async function createTwoWayBooking(payload) {
     await pool.query("BEGIN");
 
     let customerId = payload.customer_id || null;
-    if (!customerId && payload.customer) {
-      const c = payload.customer;
-      const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
-         VALUES ($1,$2,$3,$4,$5,$6)
-         ON CONFLICT (email) DO UPDATE SET mobile=EXCLUDED.mobile
-         RETURNING id`,
-        [
-          c.name || payload.name,
-          c.email || payload.email,
-          c.mobile || payload.mobile,
-          c.telephone || payload.telephone,
-          false,
-          c.company_id || payload.company_id,
-        ],
-      );
-      customerId = res.rows[0].id;
+    // 🔥 Customer Upsert Logic (Insert if new, Update details if mobile exists)
+    if (!customerId) {
+      customerId = await upsertCustomer(pool, payload);
     }
 
     const normalized = await normalizeBookingPayload(payload);
@@ -550,25 +534,10 @@ async function createReturnWayBooking(payload) {
 
     /* ---------------- CUSTOMER ---------------- */
     let customerId = payload.customer_id || null;
-    const c = payload.customer?.[0] || payload.customer;
 
-    if (!customerId && c) {
-      const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
-         VALUES ($1,$2,$3,$4,$5,$6)
-         ON CONFLICT (email)
-         DO UPDATE SET mobile = EXCLUDED.mobile
-         RETURNING id`,
-        [
-          c.name || payload.name,
-          c.email || payload.email,
-          c.mobile || payload.mobile,
-          c.telephone || payload.telephone,
-          false,
-          c.company_id || payload.company_id,
-        ],
-      );
-      customerId = res.rows[0].id;
+    // 🔥 Customer Upsert Logic (Insert if new, Update details if mobile exists)
+    if (!customerId) {
+      customerId = await upsertCustomer(pool, payload);
     }
 
     /* ---------------- OUTBOUND ---------------- */
@@ -707,26 +676,8 @@ async function createMultiVehicleBooking(payload) {
     // -----------------------------
     let customerId = payload.customer_id || null;
 
-    if (!customerId && payload.customer) {
-      const c = payload.customer[0] || payload.customer;
-
-      const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
-         VALUES ($1,$2,$3,$4,$5,$6)
-         ON CONFLICT (email)
-         DO UPDATE SET mobile = EXCLUDED.mobile
-         RETURNING id`,
-        [
-          c.name || payload.name,
-          c.email || payload.email,
-          c.mobile || payload.mobile,
-          c.telephone || payload.telephone,
-          false,
-          c.company_id || payload.company_id,
-        ],
-      );
-
-      customerId = res.rows[0].id;
+    if (!customerId) {
+      customerId = await upsertCustomer(pool, payload);
     }
 
     // -----------------------------
@@ -796,23 +747,8 @@ async function createMultiReservationBooking(payload) {
     const customerPayload = payload.customer?.[0] || payload.customer;
     let customerId = payload.customer_id || null;
 
-    if (!customerId && customerPayload) {
-      const res = await pool.query(
-        `INSERT INTO customers (name,email,mobile,telephone,blacklist,company_id)
-         VALUES ($1,$2,$3,$4,$5,$6)
-         ON CONFLICT (email)
-         DO UPDATE SET mobile = EXCLUDED.mobile
-         RETURNING id`,
-        [
-          customerPayload.name || payload.name,
-          customerPayload.email || payload.email,
-          customerPayload.mobile || payload.mobile,
-          customerPayload.telephone || payload.telephone,
-          customerPayload.blacklist || false,
-          customerPayload.company_id || payload.company_id,
-        ],
-      );
-      customerId = res.rows[0].id;
+    if (!customerId) {
+      customerId = await upsertCustomer(pool, payload);
     }
 
     // /* -----------------------------

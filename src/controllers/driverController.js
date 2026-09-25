@@ -239,13 +239,25 @@ exports.create = async (req, res) => {
       req.body.vehicle = null;
     }
     // STEP 1: Check if username exists
-    const usernameExists = await Driver.checkUsernameExists(req.body.username);
+    const usernameExists = await Driver.checkUsernameExists(req.body.username, req.body.company_id);
 
     if (usernameExists) {
       return res.status(400).json({
         message: "Username Already Exists",
       });
     }
+
+// Check if mobile number exists
+const mobileNumber = req.body.mobile ? String(req.body.mobile).trim() : null;
+
+if (mobileNumber) {
+  const mobileExists = await Driver.checkMobileNumberExists(mobileNumber, req.body.company_id);
+  if (mobileExists) {
+    return res.status(400).json({
+      message: "Mobile Number Already Exists",
+    });
+  }
+}
 
     const driverData = cleanEmptyToNull(req.body);
     const result = await Driver.create(driverData);
