@@ -45,7 +45,11 @@ async function upsertCustomer(poolClient, payload) {
     )
     LIMIT 1;
   `;
-  const existing = await poolClient.query(checkQuery, [companyId, mobile, email]);
+  const existing = await poolClient.query(checkQuery, [
+    companyId,
+    mobile,
+    email,
+  ]);
 
   if (existing.rows.length > 0) {
     // 2. Agar Customer mil gaya to usko UPDATE karein
@@ -60,7 +64,13 @@ async function upsertCustomer(poolClient, payload) {
       WHERE id = $5
       RETURNING id;
     `;
-    const updatedRes = await poolClient.query(updateQuery, [name, email, mobile, telephone, existingId]);
+    const updatedRes = await poolClient.query(updateQuery, [
+      name,
+      email,
+      mobile,
+      telephone,
+      existingId,
+    ]);
     return updatedRes.rows[0].id;
   } else {
     // 3. Agar Naya Customer hai to INSERT karein
@@ -69,7 +79,13 @@ async function upsertCustomer(poolClient, payload) {
       VALUES ($1, $2, $3, $4, false, $5)
       RETURNING id;
     `;
-    const insertedRes = await poolClient.query(insertQuery, [name, email, mobile, telephone, companyId]);
+    const insertedRes = await poolClient.query(insertQuery, [
+      name,
+      email,
+      mobile,
+      telephone,
+      companyId,
+    ]);
     return insertedRes.rows[0].id;
   }
 }

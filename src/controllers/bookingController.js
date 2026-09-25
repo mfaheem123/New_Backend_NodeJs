@@ -1235,7 +1235,7 @@ exports.getDriverEarning = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// ASSIGN DRIVER TO BOOKING (DISPATCH)
+// ASSIGN DRIVER TO BOOKING (DISPATCH) WITH DRIVER VEHICLE CHECK
 // ---------------------------------------------------------
 exports.assignDriverToBooking = async (req, res) => {
   try {
@@ -1260,16 +1260,11 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
-    // if (booking.rows[0].driver_id) {
-    //   return res.status(400).json({
-    //     status: false,
-    //     message: "Driver already assigned",
-    //   });
-    // }
+    const bookingData = booking.rows[0];
 
     if (
-      booking.rows[0].booking_status_id === "11" ||
-      booking.rows[0].booking_status_id === 11
+      bookingData.booking_status_id === "11" ||
+      bookingData.booking_status_id === 11
     ) {
       return res.status(400).json({
         status: false,
@@ -1277,7 +1272,15 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
+    // Get Driver details
     const driver = await Driver.getById(driver_id);
+
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
 
     if (driver.session_status === "logged_out") {
       return res.status(400).json({
@@ -1295,7 +1298,30 @@ exports.assignDriverToBooking = async (req, res) => {
         message: "Driver is already busy",
       });
     }
-    console.log("BOOKING DATA BEFORE ASSIGN DRIVER:", booking.rows[0]);
+
+    // ---------------------------------------------------------
+    // 🚗 VEHICLE TYPE MATCHING VALIDATION
+    // ---------------------------------------------------------
+    const driverVehicleTypeId = 
+      driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+    if (!driverVehicleTypeId) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver has no vehicle or vehicle type assigned",
+      });
+    }
+
+    // Compare Booking Vehicle Type ID with Driver Vehicle Type ID
+    if (String(bookingData.vehicle_type_id) !== String(driverVehicleTypeId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver Vehicle Does Not Match Booking Vehicle Requirement",
+      });
+    }
+
+    console.log("BOOKING DATA BEFORE ASSIGN DRIVER:", bookingData);
+
     // Call service
     const updatedBooking = await bookingService.assignDriverService(
       booking_id,
@@ -1417,16 +1443,11 @@ exports.assignFOBBookingToDriver = async (req, res) => {
       });
     }
 
-    // if (booking.rows[0].driver_id) {
-    //   return res.status(400).json({
-    //     status: false,
-    //     message: "Driver already assigned",
-    //   });
-    // }
+    const bookingData = booking.rows[0];
 
     if (
-      booking.rows[0].booking_status_id === "11" ||
-      booking.rows[0].booking_status_id === 11
+      bookingData.booking_status_id === "11" ||
+      bookingData.booking_status_id === 11
     ) {
       return res.status(400).json({
         status: false,
@@ -1435,6 +1456,13 @@ exports.assignFOBBookingToDriver = async (req, res) => {
     }
 
     const driver = await Driver.getById(driver_id);
+
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
 
     if (driver.session_status === "logged_out") {
       return res.status(400).json({
@@ -1451,6 +1479,26 @@ exports.assignFOBBookingToDriver = async (req, res) => {
       return res.status(400).json({
         status: false,
         message: "FOB can only be assigned to a busy driver",
+      });
+    }
+
+    // ---------------------------------------------------------
+    // 🚗 VEHICLE TYPE MATCHING VALIDATION
+    // ---------------------------------------------------------
+    const driverVehicleTypeId =
+      driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+    if (!driverVehicleTypeId) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver has no vehicle or vehicle type assigned",
+      });
+    }
+
+    if (String(bookingData.vehicle_type_id) !== String(driverVehicleTypeId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver Vehicle Does Not Match Booking Vehicle Requirement",
       });
     }
 
@@ -1841,16 +1889,11 @@ exports.assignFutureBookingToDriver = async (req, res) => {
       });
     }
 
-    // if (booking.rows[0].driver_id) {
-    //   return res.status(400).json({
-    //     status: false,
-    //     message: "Driver already assigned",
-    //   });
-    // }
+    const bookingData = booking.rows[0];
 
     if (
-      booking.rows[0].booking_status_id === "11" ||
-      booking.rows[0].booking_status_id === 11
+      bookingData.booking_status_id === "11" ||
+      bookingData.booking_status_id === 11
     ) {
       return res.status(400).json({
         status: false,
@@ -1860,10 +1903,37 @@ exports.assignFutureBookingToDriver = async (req, res) => {
 
     const driver = await Driver.getById(driver_id);
 
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
+
     if (driver.session_status === "logged_out") {
       return res.status(400).json({
         status: false,
         message: "Driver is Logged Out",
+      });
+    }
+
+    // ---------------------------------------------------------
+    // 🚗 VEHICLE TYPE MATCHING VALIDATION
+    // ---------------------------------------------------------
+    const driverVehicleTypeId =
+      driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+    if (!driverVehicleTypeId) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver has no vehicle or vehicle type assigned",
+      });
+    }
+
+    if (String(bookingData.vehicle_type_id) !== String(driverVehicleTypeId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver Vehicle Does Not Match Booking Vehicle Requirement",
       });
     }
 

@@ -189,20 +189,20 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// CHECK IF MOBILE NUMBER EXISTS
-// ---------------------------------------------------------
-async checkMobileNumberExists(mobileNumber, company_id) {
-  if (!mobileNumber) return false;
+  // CHECK IF MOBILE NUMBER EXISTS
+  // ---------------------------------------------------------
+  async checkMobileNumberExists(mobileNumber, company_id) {
+    if (!mobileNumber) return false;
 
-  const query = `
+    const query = `
     SELECT id FROM drivers 
     WHERE TRIM(mobile) = TRIM($1)
     AND company_id = $2
     LIMIT 1
   `;
-  const result = await db.query(query, [String(mobileNumber), company_id]);
-  return result.rows.length > 0;
-},
+    const result = await db.query(query, [String(mobileNumber), company_id]);
+    return result.rows.length > 0;
+  },
 
   // ---------------------------------------------------------
   // CREATE DRIVER WITH DOCUMENTS
