@@ -553,19 +553,18 @@ exports.update = async (req, res) => {
       }
     }
 
-
     const companyId = req.body.company_id;
 
     // ---------------------------------------------------------
     // UNIQUE CHECKS BEFORE UPDATE
     // ---------------------------------------------------------
-    
+
     // 1. Check Username
     if (req.body.username) {
       const usernameExists = await Driver.checkUsernameExistsForUpdate(
         req.body.username,
         companyId,
-        driverId
+        driverId,
       );
       if (usernameExists) {
         return res.status(400).json({
@@ -576,17 +575,20 @@ exports.update = async (req, res) => {
     }
 
     // 2. Check Mobile
-    const mobileNumber = req.body.mobile ? String(req.body.mobile).trim() : null;
+    const mobileNumber = req.body.mobile
+      ? String(req.body.mobile).trim()
+      : null;
     if (mobileNumber) {
       const mobileExists = await Driver.checkMobileNumberExistsForUpdate(
         mobileNumber,
         companyId,
-        driverId
+        driverId,
       );
       if (mobileExists) {
         return res.status(400).json({
           status: false,
-          message: "Mobile Number Already Exists for another driver in this company",
+          message:
+            "Mobile Number Already Exists for another driver in this company",
         });
       }
     }

@@ -1090,38 +1090,42 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-// CHECK IF USERNAME EXISTS (EXCLUDING CURRENT DRIVER)
-// ---------------------------------------------------------
-async checkUsernameExistsForUpdate(username, companyId, driverId) {
-  if (!username) return false;
+  // CHECK IF USERNAME EXISTS (EXCLUDING CURRENT DRIVER)
+  // ---------------------------------------------------------
+  async checkUsernameExistsForUpdate(username, companyId, driverId) {
+    if (!username) return false;
 
-  const query = `
+    const query = `
     SELECT id FROM drivers 
     WHERE LOWER(username) = LOWER($1)
       AND company_id = $2
       AND id != $3
     LIMIT 1
   `;
-  const result = await db.query(query, [username, companyId, driverId]);
-  return result.rows.length > 0;
-},
+    const result = await db.query(query, [username, companyId, driverId]);
+    return result.rows.length > 0;
+  },
 
-// ---------------------------------------------------------
-// CHECK IF MOBILE NUMBER EXISTS (EXCLUDING CURRENT DRIVER)
-// ---------------------------------------------------------
-async checkMobileNumberExistsForUpdate(mobileNumber, companyId, driverId) {
-  if (!mobileNumber) return false;
+  // ---------------------------------------------------------
+  // CHECK IF MOBILE NUMBER EXISTS (EXCLUDING CURRENT DRIVER)
+  // ---------------------------------------------------------
+  async checkMobileNumberExistsForUpdate(mobileNumber, companyId, driverId) {
+    if (!mobileNumber) return false;
 
-  const query = `
+    const query = `
     SELECT id FROM drivers 
     WHERE TRIM(mobile) = TRIM($1)
       AND company_id = $2
       AND id != $3
     LIMIT 1
   `;
-  const result = await db.query(query, [String(mobileNumber), companyId, driverId]);
-  return result.rows.length > 0;
-},
+    const result = await db.query(query, [
+      String(mobileNumber),
+      companyId,
+      driverId,
+    ]);
+    return result.rows.length > 0;
+  },
 
   // ---------------------------------------------------------
   // DELETE DRIVER BY ID

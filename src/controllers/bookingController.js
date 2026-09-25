@@ -106,6 +106,38 @@ function parseJSONFields(row) {
   return parsed;
 }
 
+// Helper Function: Driver Vehicle Type Match Check
+const validateDriverVehicle = async (driverId, requiredVehicleTypeId, label = "Driver") => {
+  if (!driverId) return null;
+
+  // Extra whitespace trimming (jaise payload mein " 167" aa raha hai)
+  const cleanDriverId = String(driverId).trim();
+  if (!cleanDriverId) return null;
+
+  const driver = await Driver.getById(cleanDriverId);
+
+  if (!driver) {
+    return `${label} not found`;
+  }
+
+  if (driver.session_status === "logged_out") {
+    return `${label} is Logged Out`;
+  }
+
+  const driverVehicleTypeId =
+    driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+  if (!driverVehicleTypeId) {
+    return `${label} has no vehicle or vehicle type assigned`;
+  }
+
+  if (String(requiredVehicleTypeId).trim() !== String(driverVehicleTypeId)) {
+    return `${label} Vehicle Does Not Match Required Booking Vehicle`;
+  }
+
+  return null; // Sab kuch correct hai
+};
+
 // ---------------------------------------------------------
 // CREATE BOOKINGS CONTROLLER
 // ---------------------------------------------------------
@@ -117,6 +149,41 @@ exports.createBooking = async (req, res) => {
     );
 
     const payload = req.body;
+
+    // 1️⃣ Primary / Outbound Booking Driver Validation
+    if (payload.driver_id) {
+      const driverError = await validateDriverVehicle(
+        payload.driver_id,
+        payload.vehicle_type_id,
+        "Driver"
+      );
+      if (driverError) {
+        return res.status(400).json({ status: false, message: driverError });
+      }
+    }
+
+    // 2️⃣ Return Journey Validation (Journey Type 3 OR Return Driver Present)
+    const isReturnJourney =
+      String(payload.journey_type_id).trim() === "3" ||
+      Boolean(payload.return_driver_id);
+
+    if (isReturnJourney && payload.return_driver_id) {
+      // Return booking ke vehicle_type_id agar alag pass na hua ho tou fallback main vehicle_type_id hoga
+      const targetReturnVehicleTypeId =
+        payload.return_vehicle_type_id || payload.vehicle_type_id;
+
+      const returnDriverError = await validateDriverVehicle(
+        payload.return_driver_id,
+        targetReturnVehicleTypeId,
+        "Return Driver"
+      );
+
+      if (returnDriverError) {
+        return res.status(400).json({ status: false, message: returnDriverError });
+      }
+    }
+
+    // Process Booking
     const result = await bookingService.create(payload);
 
     // Parse JSON fields inside results before sending
@@ -957,16 +1024,57 @@ exports.cloneOneWayBooking = async (req, res) => {
       driver_id,
       company_id,
     } = req.body;
+
     console.log(
       "🚀 INCOMING ADD CLI BOOKING BODY:",
       JSON.stringify(req.body, null, 2),
     );
+
     if (!booking_id || !vehicle_type_id || !pickup_date || !pickup_time) {
       return res.status(400).json({
         success: false,
         message:
           "booking_id, vehicle_type_id, pickup_date and pickup_time are required",
       });
+    }
+
+    // ---------------------------------------------------------
+    // 🚗 VEHICLE TYPE MATCHING VALIDATION (IF DRIVER IS PROVIDED)
+    // ---------------------------------------------------------
+    if (driver_id) {
+      const driver = await Driver.getById(driver_id);
+
+      if (!driver) {
+        return res.status(404).json({
+          success: false,
+          message: "Driver not found",
+        });
+      }
+
+      if (driver.session_status === "logged_out") {
+        return res.status(400).json({
+          success: false,
+          message: "Driver is Logged Out",
+        });
+      }
+
+      const driverVehicleTypeId =
+        driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+      if (!driverVehicleTypeId) {
+        return res.status(400).json({
+          success: false,
+          message: "Driver has no vehicle or vehicle type assigned",
+        });
+      }
+
+      // Payload ka new vehicle_type_id compare karein
+      if (String(vehicle_type_id) !== String(driverVehicleTypeId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Driver Vehicle Does Not Match Required Booking Vehicle",
+        });
+      }
     }
 
     const result = await bookingService.cloneOneWayBookingService({
@@ -1302,7 +1410,7 @@ exports.assignDriverToBooking = async (req, res) => {
     // ---------------------------------------------------------
     // 🚗 VEHICLE TYPE MATCHING VALIDATION
     // ---------------------------------------------------------
-    const driverVehicleTypeId = 
+    const driverVehicleTypeId =
       driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
 
     if (!driverVehicleTypeId) {
