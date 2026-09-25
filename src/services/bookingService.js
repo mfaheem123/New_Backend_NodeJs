@@ -22,7 +22,7 @@ const { sendSMSWithTemplate } = require("../services/smsService");
 
 const DEFAULT_EMPLOYEE_ID = 28;
 
-// Helper Function: Upsert Customer by Mobile Number
+// Helper Function: Upsert Customer safely handling Mobile & Email Conflicts
 async function upsertCustomer(poolClient, payload) {
   const c = payload.customer?.[0] || payload.customer || payload;
 
@@ -32,24 +32,46 @@ async function upsertCustomer(poolClient, payload) {
   const telephone = c.telephone || payload.telephone || null;
   const companyId = c.company_id || payload.company_id || 1;
 
-  // Agar mobile number hi nahi diya gaya to logic skip karein
-  if (!mobile) {
+  if (!mobile && !email) {
     return payload.customer_id || null;
   }
 
-  const query = `
-    INSERT INTO public.customers (name, email, mobile, telephone, blacklist, company_id)
-    VALUES ($1, $2, $3, $4, false, $5)
-    ON CONFLICT (mobile) DO UPDATE SET
-      name = COALESCE(EXCLUDED.name, customers.name),
-      email = COALESCE(EXCLUDED.email, customers.email),
-      telephone = COALESCE(EXCLUDED.telephone, customers.telephone),
-      company_id = COALESCE(EXCLUDED.company_id, customers.company_id)
-    RETURNING id;
+  // 1. Pehle Check karein ke Mobile ya Email se koi customer exist karta hai ya nahi
+  const checkQuery = `
+    SELECT id FROM public.customers 
+    WHERE company_id = $1 AND (
+      (mobile IS NOT NULL AND mobile = $2) OR 
+      (email IS NOT NULL AND email = $3)
+    )
+    LIMIT 1;
   `;
+  const existing = await poolClient.query(checkQuery, [companyId, mobile, email]);
 
-  const res = await poolClient.query(query, [name, email, mobile, telephone, companyId]);
-  return res.rows[0].id;
+  if (existing.rows.length > 0) {
+    // 2. Agar Customer mil gaya to usko UPDATE karein
+    const existingId = existing.rows[0].id;
+    const updateQuery = `
+      UPDATE public.customers
+      SET 
+        name = COALESCE($1, name),
+        email = COALESCE($2, email),
+        mobile = COALESCE($3, mobile),
+        telephone = COALESCE($4, telephone)
+      WHERE id = $5
+      RETURNING id;
+    `;
+    const updatedRes = await poolClient.query(updateQuery, [name, email, mobile, telephone, existingId]);
+    return updatedRes.rows[0].id;
+  } else {
+    // 3. Agar Naya Customer hai to INSERT karein
+    const insertQuery = `
+      INSERT INTO public.customers (name, email, mobile, telephone, blacklist, company_id)
+      VALUES ($1, $2, $3, $4, false, $5)
+      RETURNING id;
+    `;
+    const insertedRes = await poolClient.query(insertQuery, [name, email, mobile, telephone, companyId]);
+    return insertedRes.rows[0].id;
+  }
 }
 
 function buildEmailData(clean) {
