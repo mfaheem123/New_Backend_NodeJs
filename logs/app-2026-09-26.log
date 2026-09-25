@@ -1,0 +1,5 @@
+{"duration":6,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-25T19:40:53.817Z"}
+{"level":"info","message":"GET /api/location-types 200 12.731 ms","timestamp":"2026-09-25T19:40:53.823Z"}
+{"duration":52,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-09-25T19:40:53.864Z"}
+{"level":"info","message":"GET /api/location-types 200 53.215 ms","timestamp":"2026-09-25T19:40:53.866Z"}
+{"duration":11,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-09-25T19:40:55.029Z"}
