@@ -107,7 +107,11 @@ function parseJSONFields(row) {
 }
 
 // Helper Function: Driver Vehicle Type Match Check
-const validateDriverVehicle = async (driverId, requiredVehicleTypeId, label = "Driver") => {
+const validateDriverVehicle = async (
+  driverId,
+  requiredVehicleTypeId,
+  label = "Driver",
+) => {
   if (!driverId) return null;
 
   // Extra whitespace trimming (jaise payload mein " 167" aa raha hai)
@@ -155,7 +159,7 @@ exports.createBooking = async (req, res) => {
       const driverError = await validateDriverVehicle(
         payload.driver_id,
         payload.vehicle_type_id,
-        "Driver"
+        "Driver",
       );
       if (driverError) {
         return res.status(400).json({ status: false, message: driverError });
@@ -175,11 +179,13 @@ exports.createBooking = async (req, res) => {
       const returnDriverError = await validateDriverVehicle(
         payload.return_driver_id,
         targetReturnVehicleTypeId,
-        "Return Driver"
+        "Return Driver",
       );
 
       if (returnDriverError) {
-        return res.status(400).json({ status: false, message: returnDriverError });
+        return res
+          .status(400)
+          .json({ status: false, message: returnDriverError });
       }
     }
 
