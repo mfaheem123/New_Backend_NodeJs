@@ -1351,9 +1351,117 @@ exports.getDriverEarning = async (req, res) => {
 // ---------------------------------------------------------
 // ASSIGN DRIVER TO BOOKING (DISPATCH) WITH DRIVER VEHICLE CHECK
 // ---------------------------------------------------------
+// exports.assignDriverToBooking = async (req, res) => {
+//   try {
+//     const { booking_id, driver_id, company_id } = req.body;
+
+//     console.log("🚀 ASSIGN DRIVER BODY:", req.body);
+
+//     if (!booking_id || !driver_id) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "booking_id and driver_id are required",
+//       });
+//     }
+
+//     // Check booking exists
+//     const booking = await findBookingById(booking_id);
+
+//     if (booking.rowCount === 0) {
+//       return res.status(404).json({
+//         status: false,
+//         message: "Booking not found",
+//       });
+//     }
+
+//     const bookingData = booking.rows[0];
+
+//     if (
+//       bookingData.booking_status_id === "11" ||
+//       bookingData.booking_status_id === 11
+//     ) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "Booking Already Completed",
+//       });
+//     }
+
+//     // Get Driver details
+//     const driver = await Driver.getById(driver_id);
+
+//     if (!driver) {
+//       return res.status(404).json({
+//         status: false,
+//         message: "Driver not found",
+//       });
+//     }
+
+//     if (driver.session_status === "logged_out") {
+//       return res.status(400).json({
+//         status: false,
+//         message: "Driver is Logged Out",
+//       });
+//     }
+
+//     if (
+//       driver.booking_status === "Unavailable" ||
+//       driver.driver_status === "Unavailable"
+//     ) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "Driver is already busy",
+//       });
+//     }
+
+//     // ---------------------------------------------------------
+//     // 🚗 VEHICLE TYPE MATCHING VALIDATION
+//     // ---------------------------------------------------------
+//     const driverVehicleTypeId =
+//       driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+//     if (!driverVehicleTypeId) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "Driver has no vehicle or vehicle type assigned",
+//       });
+//     }
+
+//     // Compare Booking Vehicle Type ID with Driver Vehicle Type ID
+//     if (String(bookingData.vehicle_type_id) !== String(driverVehicleTypeId)) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "Driver Vehicle Does Not Match Booking Vehicle Requirement",
+//       });
+//     }
+
+//     console.log("BOOKING DATA BEFORE ASSIGN DRIVER:", bookingData);
+
+//     // Call service
+//     const updatedBooking = await bookingService.assignDriverService(
+//       booking_id,
+//       driver_id,
+//       company_id,
+//     );
+
+//     return res.status(200).json({
+//       status: true,
+//       message: "Driver Assigned Successfully",
+//       booking: updatedBooking,
+//     });
+//   } catch (error) {
+//     console.error("Assign Driver Error:", error);
+
+//     return res.status(500).json({
+//       status: false,
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
+
 exports.assignDriverToBooking = async (req, res) => {
   try {
-    const { booking_id, driver_id, company_id } = req.body;
+    const { booking_id, driver_id, company_id, force_dispatch } = req.body; 
+    // 💡 Note: `force_dispatch` frontend se YES click hone par TRUE aye ga.
 
     console.log("🚀 ASSIGN DRIVER BODY:", req.body);
 
@@ -1403,9 +1511,19 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
+    // ---------------------------------------------------------
+    // 🎯 SIN BIN CHECK
+    // ---------------------------------------------------------
+    // Aapke model ke mutabiq jab driver SinBin hota hai uski booking_status / driver_status "SinBin" ho jati hai
+    const isSinBin = 
+      driver.booking_status === "SinBin" || 
+      driver.driver_status === "SinBin" || 
+      parseInt(driver.sin_bin_timer || "0") > 0;
+
+    // Direct status check (Jab driver already kisi trip par busy ho)
     if (
-      driver.booking_status === "Unavailable" ||
-      driver.driver_status === "Unavailable"
+      (driver.booking_status === "Unavailable" || driver.driver_status === "Unavailable") &&
+      !isSinBin
     ) {
       return res.status(400).json({
         status: false,
@@ -1426,7 +1544,6 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
-    // Compare Booking Vehicle Type ID with Driver Vehicle Type ID
     if (String(bookingData.vehicle_type_id) !== String(driverVehicleTypeId)) {
       return res.status(400).json({
         status: false,
@@ -1434,18 +1551,23 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
-    console.log("BOOKING DATA BEFORE ASSIGN DRIVER:", bookingData);
-
-    // Call service
+    // ---------------------------------------------------------
+    // 🚀 SERVICE CALL (PASSING IS_SIN_BIN & FORCE_DISPATCH)
+    // ---------------------------------------------------------
     const updatedBooking = await bookingService.assignDriverService(
       booking_id,
       driver_id,
       company_id,
+      isSinBin,
+      force_dispatch // Pass true/false from req.body
     );
 
     return res.status(200).json({
       status: true,
-      message: "Driver Assigned Successfully",
+      sin_bin: isSinBin, // 👈 Frontend ko sin_bin status return ho raha hai
+      message: isSinBin 
+        ? "Driver is currently in Sin Bin" 
+        : "Driver Assigned Successfully",
       booking: updatedBooking,
     });
   } catch (error) {

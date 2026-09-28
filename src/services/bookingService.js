@@ -1900,19 +1900,93 @@ async function cloneOneWayBookingService(payload) {
 }
 
 // ASSIGN DRIVER TO PRESENT BOOKINGS
-async function assignDriverService(bookingId, driverId, company_id) {
+// async function assignDriverService(bookingId, driverId, company_id) {
+//   let fare_meter = false;
+//   if (driverId) {
+//     const driverFeatures = await driverAppFeatureModel.getByDriverId(
+//       driverId,
+//       company_id,
+//     );
+//     console.log("DRIVER FEATURES:", driverFeatures);
+//     if (driverFeatures) {
+//       fare_meter = !!driverFeatures.fare_meter;
+//     }
+//   }
+//   console.log("FARE METER:", fare_meter);
+//   // 1️ Update booking with driver
+//   const updated = await updateBooking(bookingId, {
+//     driver_id: driverId,
+//     booking_status_id: 1,
+//     fare_meter: fare_meter,
+//     dispatched_at: new Date(),
+//   });
+
+//   if (!updated) return null;
+//   console.log(
+//     "=================== FARE METER STATUS =================",
+//     fare_meter,
+//   );
+//   // 2️ Get enriched booking
+//   const enriched = await getBookingDriverCustomerById(bookingId);
+
+//   console.log("ENRICHED BOOKING DATA", enriched);
+
+//   // 3️ Send notification to driver
+//   await sendBookingNotification(driverId, enriched);
+//   // -------------------------------
+//   // 📩 DISPATCH SMS (TEMPLATE 3)
+//   // -------------------------------
+//   try {
+//     if (enriched?.mobile && enriched?.driver_id) {
+//       const totalFare = enriched?.total_charges ?? "0.00";
+
+//       const template3Data = {
+//         company_name: enriched?.subsidiary?.name ?? "",
+//         company_telephone: enriched?.subsidiary?.telephone_number ?? "",
+//         company_email: enriched?.subsidiary?.email ?? "",
+//         vehicle_type: enriched?.vehicle_type?.name ?? "",
+//         vehicle_color: enriched?.driver?.vehicle?.color ?? "",
+//         vehicle_make: enriched?.driver?.vehicle?.make ?? "",
+//         vehicle_model: enriched?.driver?.vehicle?.model ?? "",
+//         vehicle_number: enriched?.driver?.vehicle?.vehicle_number ?? "",
+//         driver_name: enriched?.driver?.name ?? "",
+//         fares: totalFare,
+//       };
+
+//       console.log("📩 Sending DISPATCH SMS...");
+
+//       await sendSMSWithTemplate({
+//         template_id: 3,
+//         mobile: enriched.mobile,
+//         port: 5,
+//         data: template3Data,
+//       });
+//     }
+//   } catch (err) {
+//     console.error("❌ Dispatch SMS Error:", err);
+//   }
+//   return enriched;
+// }
+
+// SERVICE
+async function assignDriverService(
+  bookingId, 
+  driverId, 
+  company_id, 
+  isSinBin = false, 
+  forceDispatch = false
+) {
   let fare_meter = false;
   if (driverId) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(
       driverId,
-      company_id,
+      company_id
     );
-    console.log("DRIVER FEATURES:", driverFeatures);
     if (driverFeatures) {
       fare_meter = !!driverFeatures.fare_meter;
     }
   }
-  console.log("FARE METER:", fare_meter);
+
   // 1️ Update booking with driver
   const updated = await updateBooking(bookingId, {
     driver_id: driverId,
@@ -1922,49 +1996,55 @@ async function assignDriverService(bookingId, driverId, company_id) {
   });
 
   if (!updated) return null;
-  console.log(
-    "=================== FARE METER STATUS =================",
-    fare_meter,
-  );
+
   // 2️ Get enriched booking
   const enriched = await getBookingDriverCustomerById(bookingId);
 
-  console.log("ENRICHED BOOKING DATA", enriched);
+  // 3️ Notification Logic:
+  // - Agar driver SinBin me Nahi hai -> Send Notification (NORMAL FLOW)
+  // - Agar driver SinBin me hai LEKIN frontend se YES click hua hai (forceDispatch: true) -> Send Notification
+  // - Agar driver SinBin me hai AUR forceDispatch: false hai -> Skip Notification
+  
+  const shouldSendNotification = !isSinBin || (isSinBin && forceDispatch === true);
 
-  // 3️ Send notification to driver
-  await sendBookingNotification(driverId, enriched);
-  // -------------------------------
-  // 📩 DISPATCH SMS (TEMPLATE 3)
-  // -------------------------------
-  try {
-    if (enriched?.mobile && enriched?.driver_id) {
-      const totalFare = enriched?.total_charges ?? "0.00";
+  if (shouldSendNotification) {
+    console.log("📲 Sending Notification & SMS to Driver...");
 
-      const template3Data = {
-        company_name: enriched?.subsidiary?.name ?? "",
-        company_telephone: enriched?.subsidiary?.telephone_number ?? "",
-        company_email: enriched?.subsidiary?.email ?? "",
-        vehicle_type: enriched?.vehicle_type?.name ?? "",
-        vehicle_color: enriched?.driver?.vehicle?.color ?? "",
-        vehicle_make: enriched?.driver?.vehicle?.make ?? "",
-        vehicle_model: enriched?.driver?.vehicle?.model ?? "",
-        vehicle_number: enriched?.driver?.vehicle?.vehicle_number ?? "",
-        driver_name: enriched?.driver?.name ?? "",
-        fares: totalFare,
-      };
+    // Send notification to driver
+    await sendBookingNotification(driverId, enriched);
 
-      console.log("📩 Sending DISPATCH SMS...");
+    // 📩 DISPATCH SMS (TEMPLATE 3)
+    try {
+      if (enriched?.mobile && enriched?.driver_id) {
+        const totalFare = enriched?.total_charges ?? "0.00";
 
-      await sendSMSWithTemplate({
-        template_id: 3,
-        mobile: enriched.mobile,
-        port: 5,
-        data: template3Data,
-      });
+        const template3Data = {
+          company_name: enriched?.subsidiary?.name ?? "",
+          company_telephone: enriched?.subsidiary?.telephone_number ?? "",
+          company_email: enriched?.subsidiary?.email ?? "",
+          vehicle_type: enriched?.vehicle_type?.name ?? "",
+          vehicle_color: enriched?.driver?.vehicle?.color ?? "",
+          vehicle_make: enriched?.driver?.vehicle?.make ?? "",
+          vehicle_model: enriched?.driver?.vehicle?.model ?? "",
+          vehicle_number: enriched?.driver?.vehicle?.vehicle_number ?? "",
+          driver_name: enriched?.driver?.name ?? "",
+          fares: totalFare,
+        };
+
+        await sendSMSWithTemplate({
+          template_id: 3,
+          mobile: enriched.mobile,
+          port: 5,
+          data: template3Data,
+        });
+      }
+    } catch (err) {
+      console.error("❌ Dispatch SMS Error:", err);
     }
-  } catch (err) {
-    console.error("❌ Dispatch SMS Error:", err);
+  } else {
+    console.log("⚠️ Driver is in SinBin. Skipping Notification until user confirms YES.");
   }
+
   return enriched;
 }
 
