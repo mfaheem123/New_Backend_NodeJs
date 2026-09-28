@@ -1460,7 +1460,7 @@ exports.getDriverEarning = async (req, res) => {
 
 exports.assignDriverToBooking = async (req, res) => {
   try {
-    const { booking_id, driver_id, company_id, force_dispatch } = req.body; 
+    const { booking_id, driver_id, company_id, force_dispatch } = req.body;
     // 💡 Note: `force_dispatch` frontend se YES click hone par TRUE aye ga.
 
     console.log("🚀 ASSIGN DRIVER BODY:", req.body);
@@ -1515,14 +1515,15 @@ exports.assignDriverToBooking = async (req, res) => {
     // 🎯 SIN BIN CHECK
     // ---------------------------------------------------------
     // Aapke model ke mutabiq jab driver SinBin hota hai uski booking_status / driver_status "SinBin" ho jati hai
-    const isSinBin = 
-      driver.booking_status === "SinBin" || 
-      driver.driver_status === "SinBin" || 
+    const isSinBin =
+      driver.booking_status === "SinBin" ||
+      driver.driver_status === "SinBin" ||
       parseInt(driver.sin_bin_timer || "0") > 0;
 
     // Direct status check (Jab driver already kisi trip par busy ho)
     if (
-      (driver.booking_status === "Unavailable" || driver.driver_status === "Unavailable") &&
+      (driver.booking_status === "Unavailable" ||
+        driver.driver_status === "Unavailable") &&
       !isSinBin
     ) {
       return res.status(400).json({
@@ -1559,14 +1560,14 @@ exports.assignDriverToBooking = async (req, res) => {
       driver_id,
       company_id,
       isSinBin,
-      force_dispatch // Pass true/false from req.body
+      force_dispatch, // Pass true/false from req.body
     );
 
     return res.status(200).json({
       status: true,
       sin_bin: isSinBin, // 👈 Frontend ko sin_bin status return ho raha hai
-      message: isSinBin 
-        ? "Driver is currently in Sin Bin" 
+      message: isSinBin
+        ? "Driver is currently in Sin Bin"
         : "Driver Assigned Successfully",
       booking: updatedBooking,
     });

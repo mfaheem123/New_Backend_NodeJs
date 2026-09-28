@@ -1,14 +1,19 @@
-const transporter = require("../config/emailConfig"); // Ya jahan aapki emailConfig file ho
+const { sendEmail } = require("../config/emailConfig"); // Upgraded dynamic sendEmail function
 const { getTemplateById } = require("./templateService");
-const { parseTemplate } = require("../utils/templateParser"); // Ya jahan parser rakha ho
+const { parseTemplate } = require("../utils/templateParser");
 
 /**
- * DB se Template ID ke mutabiq Email send karne ka function
+ * DB se Template ID aur Subsidiary ID ke mutabiq Dynamic Email send karne ka function
  */
-async function sendEmailWithTemplate({ template_id, to, data }) {
+async function sendEmailWithTemplate({ subsidiaryId, template_id, to, data }) {
   try {
     if (!to) {
       console.log("⚠️ Receiver email missing, skipping email dispatch.");
+      return;
+    }
+
+    if (!subsidiaryId) {
+      console.error("❌ Subsidiary ID missing, cannot fetch email configurations.");
       return;
     }
 
@@ -22,23 +27,23 @@ async function sendEmailWithTemplate({ template_id, to, data }) {
     // 2. Subject aur Content parser mein pass karo
     const subject = parseTemplate(
       template.subject || "Booking Confirmation",
-      data,
+      data
     );
     const htmlContent = parseTemplate(template.content || "", data);
 
-    // 3. Email send karo
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+    // 3. Dynamic sendEmail function ke zariye email send karo (DB Configuration ke sath)
+    const info = await sendEmail({
+      subsidiaryId,
       to,
       subject,
-      html: htmlContent, // HTML render karne ke liye
+      html: htmlContent,
     });
 
-    console.log("📩 Email successfully sent:", info.response);
+    console.log("📩 Email successfully sent:", info?.response || info);
     return info;
   } catch (error) {
     console.error("❌ Email Service Error:", error);
-    // Error log kar rahe hain taake booking process roll back na ho
+    // Error log kar rahe hain taake booking process break/roll back na ho
   }
 }
 

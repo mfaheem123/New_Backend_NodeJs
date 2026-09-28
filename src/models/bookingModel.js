@@ -3110,6 +3110,73 @@ const getBookingDriverCustomerById = async (id) => {
   return res.rows[0];
 };
 
+// ---------------------------------------------------------
+// GET CUSTOMER BOOKINGS BY CATEGORY & COUNTS
+// ---------------------------------------------------------
+
+/**
+ * Fetch categorized customer bookings (Current, Past, Quoted) & Total Stats
+ */
+const getCustomerBookingsAndStats = async (customerId) => {
+  // 1️⃣ Get categorized bookings query
+  // Note: Adjust status IDs according to your database scheme:
+  // e.g. status_id: Completed = 11, Cancelled = 12, Quoted = 13, etc.
+  const bookingsQuery = `
+    ${ENRICHED_SELECT}
+    WHERE b.customer_id = $1 AND b.trash = false
+    ORDER BY b.pickup_date DESC
+  `;
+
+  const bookingsResult = await pool.query(bookingsQuery, [customerId]);
+  const allBookings = bookingsResult.rows;
+
+  return allBookings;
+};
+
+/**
+ * Fetch booking counts summary for bottom stats cards
+ */
+const getCustomerBookingStats = async (customerId) => {
+  const sql = `
+    SELECT 
+      COUNT(*)::int AS total_bookings,
+      
+      -- Current Bookings: Today's date (Pickup date == Current Date)
+      COUNT(
+        CASE 
+          WHEN b.pickup_date::date = CURRENT_DATE THEN 1 
+        END
+      )::int AS current_bookings,
+      
+      -- Completed Bookings: Status 11 AND Date is before Today (Past)
+      COUNT(
+        CASE 
+          WHEN b.booking_status_id = 11 AND b.pickup_date::date < CURRENT_DATE THEN 1 
+        END
+      )::int AS completed_bookings,
+      
+      -- Cancelled Bookings: Status 12
+      COUNT(
+        CASE 
+          WHEN b.booking_status_id = 12 THEN 1 
+        END
+      )::int AS cancelled_bookings,
+      
+      -- Quoted Bookings: quoted flag is true
+      COUNT(
+        CASE 
+          WHEN b.quoted = true THEN 1 
+        END
+      )::int AS quoted_bookings
+
+    FROM bookings b
+    WHERE b.customer_id = $1 AND b.trash = false;
+  `;
+
+  const { rows } = await pool.query(sql, [customerId]);
+  return rows[0];
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -3174,4 +3241,6 @@ module.exports = {
   findBookingPairById,
   cancelBookingById,
   getBookingDriverCustomerById,
+  getCustomerBookingsAndStats,
+  getCustomerBookingStats
 };
