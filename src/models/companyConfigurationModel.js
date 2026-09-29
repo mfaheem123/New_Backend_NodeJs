@@ -193,3 +193,14 @@ exports.createOrUpdate = async (data) => {
     data: rows[0],
   };
 };
+
+exports.getFirstSubsidiaryByCompanyId = async (companyId) => {
+    const query = `
+      SELECT id FROM subsidiaries 
+      WHERE company_id = $1 
+      ORDER BY id ASC 
+      LIMIT 1;
+    `;
+    const { rows } = await pool.query(query, [companyId]);
+    return rows[0]?.id || null;
+  };

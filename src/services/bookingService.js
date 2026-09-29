@@ -18,7 +18,7 @@ const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
 const driverAppFeatureModel = require("../models/driverAppFeaturesModel");
 const { sendSMSWithTemplate } = require("../services/smsService");
-// const { sendEmailWithTemplate } = require("../services/emailService");
+const { sendEmailWithTemplate } = require("../services/emailService");
 
 const DEFAULT_EMPLOYEE_ID = 28;
 
@@ -91,24 +91,58 @@ async function upsertCustomer(poolClient, payload) {
 }
 
 function buildEmailData(clean) {
+  // Date aur Time ko merge karke {{datetime}} ke liye prepare karein
+  const pickupDate = clean.pickup_date || "";
+  const pickupTime = clean.pickup_time || "";
+  const formattedDateTime = pickupDate && pickupTime 
+    ? `${pickupDate} ${pickupTime}` 
+    : pickupDate || pickupTime || "";
+
+  // Child seat formatting (Array to string conversion)
+  let childSeatStr = "";
+  if (Array.isArray(clean.child_seat) && clean.child_seat.length > 0) {
+    childSeatStr = clean.child_seat.join(", ");
+  } else if (typeof clean.child_seat === "string") {
+    childSeatStr = clean.child_seat;
+  }
+
   return {
     reference_number: clean.reference_number || "",
     customer: clean.customer?.name || clean.name || "Customer",
+    customer_email: clean.customer?.email || clean.email || "",
     customer_mobile: clean.customer?.mobile || clean.mobile || "",
     customer_telephone: clean.customer?.telephone || clean.telephone || "",
+    
+    // Carrier & Booking Details
+    passengers: clean.passengers ?? "",
+    luggages: clean.luggages ?? "",
+    vehicle_type: clean.vehicle_type?.name || "",
+    special_instructions: clean.special_instructions || "",
+    child_seat: childSeatStr || "None",
+    flight_number: clean.flight_number || "N/A",
+
+    // Date / Time
+    datetime: formattedDateTime,
+    date: pickupDate,
+    time: pickupTime,
+
+    // Journey
     pickup: clean.pickup || "",
     dropoff: clean.dropoff || "",
-    pickup_door_number: clean.pickup_door_number || "",
-    dropoff_door_number: clean.dropoff_door_number || "",
-    fares: clean.fares || clean.total_charges || "0.00",
-    total_charges: clean.total_charges || "0.00",
-    date: clean.pickup_date || "",
-    time: clean.pickup_time || "",
     from: clean.pickup || "",
     to: clean.dropoff || "",
+    pickup_door_number: clean.pickup_door_number || "",
+    dropoff_door_number: clean.dropoff_door_number || "",
+
+    // Pricing
+    fares: clean.fares || clean.total_charges || "0.00",
+    total_charges: clean.total_charges || "0.00",
+    payment_type: clean.payment_type?.name || "Cash",
+
+    // Subsidiary / Company Info
     company_name: clean.subsidiary?.name || "",
     company_telephone: clean.subsidiary?.telephone_number || "",
-    payment_type: clean.payment_type?.name || "Cash",
+    company_email: clean.subsidiary?.email || "", // Agar database se email aa rahi ho
   };
 }
 
@@ -440,65 +474,67 @@ async function createSimpleBooking(payload) {
     console.log("BOOKING DATA FOR SENDING SMS: ", clean);
 
     // Run notifications asynchronously after commit Without Email
-    try {
-      // 1. SEND SMS
-      await sendBookingSMS(clean);
-
-      // 2. SEND NOTIFICATION TO DRIVER
-      if (clean.driver_id) {
-        await sendBookingNotification(clean.driver_id, clean);
-      }
-
-      // 3. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
-      if (clean.booking_source === "app") {
-        await sendAppBookingNotification(clean, payload.company_id);
-      }
-
-      // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
-      if (clean.booking_source === "web") {
-        await sendWebBookingNotification(clean, payload.company_id);
-      }
-    } catch (notifErr) {
-      // Log notification failure but don't fail the API call since DB commit succeeded
-      console.error("NOTIFICATION / SMS ERROR (Booking saved):", notifErr);
-    }
-
-    // Run notifications asynchronously after commit WITH EMAIL SUPPORT
     // try {
     //   // 1. SEND SMS
     //   await sendBookingSMS(clean);
 
-    //   // 📧 2. SEND EMAIL (Check: emailflag is true and email present)
-    //   if (clean.emailflag && (clean.email || clean.customer?.email)) {
-    //     const recipientEmail = clean.email || clean.customer?.email;
-    //     const templateData = buildEmailData(clean);
-
-    //     console.log("📩 Sending Confirmation Email to:", recipientEmail);
-
-    //     await sendEmailWithTemplate({
-    //       template_id: 9, // Booking Confirmation Email Template ID (DB se)
-    //       to: recipientEmail,
-    //       data: templateData,
-    //     });
-    //   }
-
-    //   // 3. SEND NOTIFICATION TO DRIVER
+    //   // 2. SEND NOTIFICATION TO DRIVER
     //   if (clean.driver_id) {
     //     await sendBookingNotification(clean.driver_id, clean);
     //   }
 
-    //   // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
+    //   // 3. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
     //   if (clean.booking_source === "app") {
     //     await sendAppBookingNotification(clean, payload.company_id);
     //   }
 
-    //   // 5. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
+    //   // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
     //   if (clean.booking_source === "web") {
     //     await sendWebBookingNotification(clean, payload.company_id);
     //   }
     // } catch (notifErr) {
-    //   console.error("NOTIFICATION / SMS / EMAIL ERROR (Booking saved):", notifErr);
+    //   // Log notification failure but don't fail the API call since DB commit succeeded
+    //   console.error("NOTIFICATION / SMS ERROR (Booking saved):", notifErr);
     // }
+
+    // Run notifications asynchronously after commit WITH EMAIL SUPPORT
+    try {
+      // 1. SEND SMS
+      await sendBookingSMS(clean);
+
+      // 📧 2. SEND EMAIL (Check: emailflag is true and email present)
+      if (clean.emailflag && (clean.email || clean.customer?.email)) {
+        const recipientEmail = clean.email || clean.customer?.email;
+        const templateData = buildEmailData(clean);
+
+        console.log("📩 Sending Confirmation Email to:", recipientEmail);
+
+       await sendEmailWithTemplate({
+      subsidiaryId: clean.subsidiary_id || payload?.subsidiary_id || null, // 👈 Subsidiary ID
+      company_id: clean.company_id || payload?.company_id || 1,             // 👈 Company ID (Fallback)
+      template_id: 9, // Booking Confirmation Email Template ID (DB se)
+      to: recipientEmail,
+      data: templateData,
+    });
+  }
+
+      // 3. SEND NOTIFICATION TO DRIVER
+      if (clean.driver_id) {
+        await sendBookingNotification(clean.driver_id, clean);
+      }
+
+      // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
+      if (clean.booking_source === "app") {
+        await sendAppBookingNotification(clean, payload.company_id);
+      }
+
+      // 5. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
+      if (clean.booking_source === "web") {
+        await sendWebBookingNotification(clean, payload.company_id);
+      }
+    } catch (notifErr) {
+      console.error("NOTIFICATION / SMS / EMAIL ERROR (Booking saved):", notifErr);
+    }
 
     return { bookings: [clean] };
   } catch (err) {

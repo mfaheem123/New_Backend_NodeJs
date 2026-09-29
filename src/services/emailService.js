@@ -1,22 +1,27 @@
-const { sendEmail } = require("../config/emailConfig"); // Upgraded dynamic sendEmail function
+const { sendEmail } = require("../config/emailConfig");
 const { getTemplateById } = require("./templateService");
 const { parseTemplate } = require("../utils/templateParser");
+const companyConfiguration = require("../models/companyConfigurationModel"); // 🔹 Added
 
 /**
  * DB se Template ID aur Subsidiary ID ke mutabiq Dynamic Email send karne ka function
  */
-async function sendEmailWithTemplate({ subsidiaryId, template_id, to, data }) {
+async function sendEmailWithTemplate({ subsidiaryId, company_id, template_id, to, data }) {
   try {
     if (!to) {
       console.log("⚠️ Receiver email missing, skipping email dispatch.");
       return;
     }
 
-    if (!subsidiaryId) {
-      console.error(
-        "❌ Subsidiary ID missing, cannot fetch email configurations.",
-      );
-      return;
+    // 🔹 Fallback: Agar subsidiaryId missing ho to company_id se first subsidiary nikalein
+    let activeSubsidiaryId = subsidiaryId;
+    if (!activeSubsidiaryId && company_id) {
+      activeSubsidiaryId = await companyConfiguration.getFirstSubsidiaryByCompanyId(company_id);
+    }
+
+    // Default fallback agar phir bhi na mile
+    if (!activeSubsidiaryId) {
+      activeSubsidiaryId = 1; 
     }
 
     // 1. Database se template fetch karo
@@ -33,9 +38,9 @@ async function sendEmailWithTemplate({ subsidiaryId, template_id, to, data }) {
     );
     const htmlContent = parseTemplate(template.content || "", data);
 
-    // 3. Dynamic sendEmail function ke zariye email send karo (DB Configuration ke sath)
+    // 3. Dynamic sendEmail function ke zariye email send karo
     const info = await sendEmail({
-      subsidiaryId,
+      subsidiaryId: activeSubsidiaryId,
       to,
       subject,
       html: htmlContent,
@@ -45,7 +50,6 @@ async function sendEmailWithTemplate({ subsidiaryId, template_id, to, data }) {
     return info;
   } catch (error) {
     console.error("❌ Email Service Error:", error);
-    // Error log kar rahe hain taake booking process break/roll back na ho
   }
 }
 

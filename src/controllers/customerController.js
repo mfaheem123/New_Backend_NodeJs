@@ -1,14 +1,41 @@
 const Customer = require("../models/customerModel");
-const sendEmail = require("../config/emailConfig");
+const { sendEmail } = require("../config/emailConfig");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const bcrypt = require("bcrypt");
+const companyConfiguration = require("../models/companyConfigurationModel");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 
 const {
   generateSecurityCode,
   validateSecurityCode,
 } = require("../utils/generateOTP");
+
+
+// Helper function to handle Subsidiary resolution & Email Sending
+const sendDynamicCustomerEmail = async ({ companyId, to, subject, text, html }) => {
+  try {
+    // Company ID se pehli Subsidiary ID nikalein
+    let subsidiaryId = await companyConfiguration.getFirstSubsidiaryByCompanyId(companyId || 1);
+
+    if (!subsidiaryId) {
+      // Fallback: Agar subsidiary id na mile to default 1 set karein
+      subsidiaryId = 10; 
+    }
+
+    // Dynamic sendEmail Call
+    await sendEmail({
+      subsidiaryId,
+      to,
+      subject,
+      text,
+      html
+    });
+  } catch (error) {
+    console.error("❌ Helper Email Send Error:", error);
+    throw error;
+  }
+};
 
 module.exports = {
   createCustomer: async (req, res) => {
@@ -141,7 +168,14 @@ module.exports = {
       // ✅ SEND EMAIL IN BACKGROUND
       setImmediate(async () => {
         try {
-          await sendEmail(req.body.email, "Email Verification OTP", message);
+          await sendDynamicCustomerEmail({
+      companyId: req.body.company_id || 1,
+      to: req.body.email,
+      subject: "Email Verification OTP",
+      text: message,
+      html: `<p>${message.replace(/\n/g, "<br>")}</p>`
+    });
+    console.log("✅ Create Customer Email Sent Successfully");
           console.timeLog("CreateCustomer", "After Email (Background)");
           console.timeEnd("CreateCustomer");
         } catch (error) {
@@ -419,15 +453,22 @@ This code will expire in 15 minutes.
       });
 
       // ✅ SEND EMAIL IN BACKGROUND
-      setImmediate(async () => {
-        try {
-          await sendEmail(customer.email, "Your New OTP", message);
-          console.timeLog("ResendOTP", "After Email (Background)");
-          console.timeEnd("ResendOTP");
-        } catch (error) {
-          console.error("❌ Background Email Error:", error);
-        }
-      });
+     // ✅ SEND EMAIL IN BACKGROUND
+setImmediate(async () => {
+  try {
+    await sendDynamicCustomerEmail({
+      companyId: customer.company_id || 1,
+      to: customer.email,
+      subject: "Your New OTP",
+      text: message,
+      html: `<p>${message.replace(/\n/g, "<br>")}</p>`
+    });
+    console.timeLog("ResendOTP", "After Email (Background)");
+    console.timeEnd("ResendOTP");
+  } catch (error) {
+    console.error("❌ Background Email Error:", error);
+  }
+});
     } catch (err) {
       console.error("❌ Resend OTP Error:", err);
       res.status(500).json({
@@ -562,16 +603,22 @@ This code will expire in 15 minutes.
         message: "A new OTP has been sent to your email",
       });
 
-      // ✅ SEND EMAIL IN BACKGROUND (NON-BLOCKING)
-      setImmediate(async () => {
-        try {
-          await sendEmail(email, "Reset Password OTP", message);
-          console.timeLog("ForgotPassword", "After Email (Background)");
-          console.timeEnd("ForgotPassword");
-        } catch (error) {
-          console.error("❌ Background Email Error:", error);
-        }
-      });
+// ✅ SEND EMAIL IN BACKGROUND
+setImmediate(async () => {
+  try {
+    await sendDynamicCustomerEmail({
+      companyId: customer.company_id || 1,
+      to: customer.email,
+      subject: "Reset Password OTP",
+      text: message,
+      html: `<p>${message.replace(/\n/g, "<br>")}</p>`
+    });
+    console.timeLog("ForgotPassword", "After Email (Background)");
+    console.timeEnd("ForgotPassword");
+  } catch (error) {
+    console.error("❌ Background Email Error:", error);
+  }
+});
     } catch (err) {
       console.error("❌ Forgot Password Error:", err);
       res.status(500).json({

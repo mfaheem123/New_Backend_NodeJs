@@ -432,6 +432,7 @@ async function sendAppBookingNotification(booking, company_id) {
     `,
       [company_id],
     );
+    console.log("COMPANY ID APP: ", company_id);
 
     const tokens = res.rows.map((r) => r.web_device_id);
 
@@ -564,7 +565,7 @@ async function sendWebBookingNotification(booking, company_id) {
     `,
       [company_id],
     );
-    console.log("COMPANY ID WEB: ", booking.company_id);
+    console.log("COMPANY ID WEB: ", company_id);
     const tokens = res.rows.map((r) => r.web_device_id);
 
     if (tokens.length === 0) {

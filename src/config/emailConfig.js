@@ -41,63 +41,63 @@ const createDynamicTransporter = async (subsidiaryId) => {
 };
 
 //SEND EMAIL USING ENV VARIABLES
-const sendEmail = async (to, subject, text) => {
-  try {
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to,
-      subject,
-      text,
-    });
+// const sendEmail = async (to, subject, text) => {
+//   try {
+//     const info = await transporter.sendMail({
+//       from: process.env.EMAIL_USER,
+//       to,
+//       subject,
+//       text,
+//     });
 
-    console.log("Email sent:", info.response);
-  } catch (error) {
-    console.error("Email error:", error);
-    throw error;
-  }
-};
+//     console.log("Email sent:", info.response);
+//   } catch (error) {
+//     console.error("Email error:", error);
+//     throw error;
+//   }
+// };
 
 /**
  * Dynamic email bhejne ka function[cite: 1]
  */
-// const sendEmail = async ({ subsidiaryId, to, subject, text, html }) => {
-//   try {
-//     const configResponse = await companyConfiguration.getById(subsidiaryId);
-//     const config = configResponse?.company_configuration || configResponse;
+const sendEmail = async ({ subsidiaryId, to, subject, text, html }) => {
+  try {
+    const configResponse = await companyConfiguration.getById(subsidiaryId);
+    const config = configResponse?.company_configuration || configResponse;
 
-//     if (!config) {
-//       throw new Error(`No configuration found for subsidiary ID: ${subsidiaryId}`);
-//     }
+    if (!config) {
+      throw new Error(`No configuration found for subsidiary ID: ${subsidiaryId}`);
+    }
 
-//     // Dynamic transporter initialize karen[cite: 1]
-//     const transporter = nodemailer.createTransport({
-//       host: config.email_host,
-//       port: Number(config.email_port),
-//       secure: Boolean(config.email_secure_connection),
-//       auth: {
-//         user: config.email_username,
-//         pass: config.email_password,
-//       },
-//     });
+    // Dynamic transporter initialize karen[cite: 1]
+    const transporter = nodemailer.createTransport({
+      host: config.email_host,
+      port: Number(config.email_port),
+      secure: Boolean(config.email_secure_connection),
+      auth: {
+        user: config.email_username,
+        pass: config.email_password,
+      },
+    });
 
-//     // Email send options[cite: 1]
-//     const mailOptions = {
-//       from: `"${config.subsidiary_name || 'Support'}" <${config.email_username}>`,
-//       to,
-//       cc: config.email_cc || undefined, // Database wala CC mail yahan set hoga[cite: 1]
-//       subject,
-//       text,
-//       html,
-//     };
+    // Email send options[cite: 1]
+    const mailOptions = {
+      from: `"${config.subsidiary_name || 'Support'}" <${config.email_username}>`,
+      to,
+      cc: config.email_cc || undefined, // Database wala CC mail yahan set hoga[cite: 1]
+      subject,
+      text,
+      html,
+    };
 
-//     const info = await transporter.sendMail(mailOptions);
-//     console.log("Email sent successfully:", info.response);
-//     return info;
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully:", info.response);
+    return info;
 
-//   } catch (error) {
-//     console.error("Email sending error:", error);
-//     throw error;
-//   }
-// };
+  } catch (error) {
+    console.error("Email sending error:", error);
+    throw error;
+  }
+};
 
 module.exports = { sendEmail, transporter, createDynamicTransporter };
