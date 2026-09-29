@@ -1970,17 +1970,17 @@ async function cloneOneWayBookingService(payload) {
 
 // SERVICE
 async function assignDriverService(
-  bookingId, 
-  driverId, 
-  company_id, 
-  isSinBin = false, 
-  forceDispatch = false
+  bookingId,
+  driverId,
+  company_id,
+  isSinBin = false,
+  forceDispatch = false,
 ) {
   let fare_meter = false;
   if (driverId) {
     const driverFeatures = await driverAppFeatureModel.getByDriverId(
       driverId,
-      company_id
+      company_id,
     );
     if (driverFeatures) {
       fare_meter = !!driverFeatures.fare_meter;
@@ -2004,8 +2004,9 @@ async function assignDriverService(
   // - Agar driver SinBin me Nahi hai -> Send Notification (NORMAL FLOW)
   // - Agar driver SinBin me hai LEKIN frontend se YES click hua hai (forceDispatch: true) -> Send Notification
   // - Agar driver SinBin me hai AUR forceDispatch: false hai -> Skip Notification
-  
-  const shouldSendNotification = !isSinBin || (isSinBin && forceDispatch === true);
+
+  const shouldSendNotification =
+    !isSinBin || (isSinBin && forceDispatch === true);
 
   if (shouldSendNotification) {
     console.log("📲 Sending Notification & SMS to Driver...");
@@ -2042,7 +2043,9 @@ async function assignDriverService(
       console.error("❌ Dispatch SMS Error:", err);
     }
   } else {
-    console.log("⚠️ Driver is in SinBin. Skipping Notification until user confirms YES.");
+    console.log(
+      "⚠️ Driver is in SinBin. Skipping Notification until user confirms YES.",
+    );
   }
 
   return enriched;

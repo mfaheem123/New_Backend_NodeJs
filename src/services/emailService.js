@@ -13,7 +13,9 @@ async function sendEmailWithTemplate({ subsidiaryId, template_id, to, data }) {
     }
 
     if (!subsidiaryId) {
-      console.error("❌ Subsidiary ID missing, cannot fetch email configurations.");
+      console.error(
+        "❌ Subsidiary ID missing, cannot fetch email configurations.",
+      );
       return;
     }
 
@@ -27,7 +29,7 @@ async function sendEmailWithTemplate({ subsidiaryId, template_id, to, data }) {
     // 2. Subject aur Content parser mein pass karo
     const subject = parseTemplate(
       template.subject || "Booking Confirmation",
-      data
+      data,
     );
     const htmlContent = parseTemplate(template.content || "", data);
 

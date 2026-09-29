@@ -3242,5 +3242,5 @@ module.exports = {
   cancelBookingById,
   getBookingDriverCustomerById,
   getCustomerBookingsAndStats,
-  getCustomerBookingStats
+  getCustomerBookingStats,
 };

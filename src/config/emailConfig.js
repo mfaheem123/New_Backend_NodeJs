@@ -18,12 +18,14 @@ const transporter = nodemailer.createTransport({
  */
 const createDynamicTransporter = async (subsidiaryId) => {
   const configResponse = await companyConfiguration.getById(subsidiaryId);
-  
+
   // Checking response structure (agar response direct object ho ya status wrapped ho)
   const config = configResponse?.company_configuration || configResponse;
 
   if (!config || !config.email_username || !config.email_password) {
-    throw new Error(`Email configuration not found for Subsidiary ID: ${subsidiaryId}`);
+    throw new Error(
+      `Email configuration not found for Subsidiary ID: ${subsidiaryId}`,
+    );
   }
 
   // Database values ke sath transporter configuration
@@ -55,7 +57,6 @@ const sendEmail = async (to, subject, text) => {
   }
 };
 
-
 /**
  * Dynamic email bhejne ka function[cite: 1]
  */
@@ -72,7 +73,7 @@ const sendEmail = async (to, subject, text) => {
 //     const transporter = nodemailer.createTransport({
 //       host: config.email_host,
 //       port: Number(config.email_port),
-//       secure: Boolean(config.email_secure_connection), 
+//       secure: Boolean(config.email_secure_connection),
 //       auth: {
 //         user: config.email_username,
 //         pass: config.email_password,
