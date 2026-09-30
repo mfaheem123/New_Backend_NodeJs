@@ -1,6 +1,9 @@
 const DriverAttribute = require("../models/driverAttributeModel");
 
-// GET ALL
+
+// ---------------------------------------------------------
+// GET ALL DRIVER ATTRIBUTES CONTROLLER
+// ---------------------------------------------------------
 exports.getAllAttributes = async (req, res) => {
   try {
     const company_id = req.query.company_id;
@@ -15,7 +18,9 @@ exports.getAllAttributes = async (req, res) => {
   }
 };
 
-// GET BY ID
+// ---------------------------------------------------------
+// GET DRIVER ATTRIBUTE BY ID CONTROLLER
+// ---------------------------------------------------------
 exports.getAttributeById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -36,7 +41,9 @@ exports.getAttributeById = async (req, res) => {
   }
 };
 
-// ADD
+// ---------------------------------------------------------
+// ADD DRIVER ATTRIBUTE CONTROLLER
+// ---------------------------------------------------------
 exports.addAttribute = async (req, res) => {
   try {
     const { attribute_name, short_name, company_id } = req.body;
@@ -63,7 +70,9 @@ exports.addAttribute = async (req, res) => {
   }
 };
 
-// UPDATE
+// ---------------------------------------------------------
+// UPDATE DRIVER ATTRIBUTE BY ID CONTROLLER
+// ---------------------------------------------------------
 exports.updateAttribute = async (req, res) => {
   try {
     const { id } = req.params;
@@ -90,7 +99,9 @@ exports.updateAttribute = async (req, res) => {
   }
 };
 
-// DELETE
+// ---------------------------------------------------------
+// DELETE DRIVER ATTRIBUTE BY ID CONTROLLER
+// ---------------------------------------------------------
 exports.deleteAttribute = async (req, res) => {
   try {
     const { id } = req.params;

@@ -330,28 +330,28 @@ RETURNING id
   },
 
   findByEmailWithOTP: async (email) => {
-  const { rows } = await db.query(
-    `SELECT id, name, email, company_id, email_verification_code, otp_created_at
+    const { rows } = await db.query(
+      `SELECT id, name, email, company_id, email_verification_code, otp_created_at
      FROM customers
      WHERE email = $1
      LIMIT 1`,
-    [email],
-  );
+      [email],
+    );
 
-  return rows[0] || null;
-},
+    return rows[0] || null;
+  },
 
-findByEmails: async (email) => {
-  const { rows } = await db.query(
-    `SELECT id, name, email, company_id
+  findByEmails: async (email) => {
+    const { rows } = await db.query(
+      `SELECT id, name, email, company_id
      FROM customers
      WHERE email = $1
      LIMIT 1`,
-    [email],
-  );
+      [email],
+    );
 
-  return rows[0] || null;
-},
+    return rows[0] || null;
+  },
 
   markEmailVerified: async (id) => {
     await db.query(

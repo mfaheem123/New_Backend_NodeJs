@@ -66,7 +66,9 @@ const sendEmail = async ({ subsidiaryId, to, subject, text, html }) => {
     const config = configResponse?.company_configuration || configResponse;
 
     if (!config) {
-      throw new Error(`No configuration found for subsidiary ID: ${subsidiaryId}`);
+      throw new Error(
+        `No configuration found for subsidiary ID: ${subsidiaryId}`,
+      );
     }
 
     // Dynamic transporter initialize karen[cite: 1]
@@ -82,7 +84,7 @@ const sendEmail = async ({ subsidiaryId, to, subject, text, html }) => {
 
     // Email send options[cite: 1]
     const mailOptions = {
-      from: `"${config.subsidiary_name || 'Support'}" <${config.email_username}>`,
+      from: `"${config.subsidiary_name || "Support"}" <${config.email_username}>`,
       to,
       cc: config.email_cc || undefined, // Database wala CC mail yahan set hoga[cite: 1]
       subject,
@@ -93,7 +95,6 @@ const sendEmail = async ({ subsidiaryId, to, subject, text, html }) => {
     const info = await transporter.sendMail(mailOptions);
     console.log("Email sent successfully:", info.response);
     return info;
-
   } catch (error) {
     console.error("Email sending error:", error);
     throw error;

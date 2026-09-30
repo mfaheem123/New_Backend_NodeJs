@@ -94,9 +94,10 @@ function buildEmailData(clean) {
   // Date aur Time ko merge karke {{datetime}} ke liye prepare karein
   const pickupDate = clean.pickup_date || "";
   const pickupTime = clean.pickup_time || "";
-  const formattedDateTime = pickupDate && pickupTime 
-    ? `${pickupDate} ${pickupTime}` 
-    : pickupDate || pickupTime || "";
+  const formattedDateTime =
+    pickupDate && pickupTime
+      ? `${pickupDate} ${pickupTime}`
+      : pickupDate || pickupTime || "";
 
   // Child seat formatting (Array to string conversion)
   let childSeatStr = "";
@@ -112,7 +113,7 @@ function buildEmailData(clean) {
     customer_email: clean.customer?.email || clean.email || "",
     customer_mobile: clean.customer?.mobile || clean.mobile || "",
     customer_telephone: clean.customer?.telephone || clean.telephone || "",
-    
+
     // Carrier & Booking Details
     passengers: clean.passengers ?? "",
     luggages: clean.luggages ?? "",
@@ -509,14 +510,14 @@ async function createSimpleBooking(payload) {
 
         console.log("📩 Sending Confirmation Email to:", recipientEmail);
 
-       await sendEmailWithTemplate({
-      subsidiaryId: clean.subsidiary_id || payload?.subsidiary_id || null, // 👈 Subsidiary ID
-      company_id: clean.company_id || payload?.company_id || 1,             // 👈 Company ID (Fallback)
-      template_id: 9, // Booking Confirmation Email Template ID (DB se)
-      to: recipientEmail,
-      data: templateData,
-    });
-  }
+        await sendEmailWithTemplate({
+          subsidiaryId: clean.subsidiary_id || payload?.subsidiary_id || null, // 👈 Subsidiary ID
+          company_id: clean.company_id || payload?.company_id || 1, // 👈 Company ID (Fallback)
+          template_id: 9, // Booking Confirmation Email Template ID (DB se)
+          to: recipientEmail,
+          data: templateData,
+        });
+      }
 
       // 3. SEND NOTIFICATION TO DRIVER
       if (clean.driver_id) {
@@ -533,7 +534,10 @@ async function createSimpleBooking(payload) {
         await sendWebBookingNotification(clean, payload.company_id);
       }
     } catch (notifErr) {
-      console.error("NOTIFICATION / SMS / EMAIL ERROR (Booking saved):", notifErr);
+      console.error(
+        "NOTIFICATION / SMS / EMAIL ERROR (Booking saved):",
+        notifErr,
+      );
     }
 
     return { bookings: [clean] };
