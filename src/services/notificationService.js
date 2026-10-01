@@ -1071,6 +1071,167 @@ async function sendSinBinRemovedNotification(driverId, messages) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+
+// =========================================================
+// CHAT SYSTEM NOTIFICATIONS (NEWLY ADDED)
+// =========================================================
+
+/**
+ * 1. Unified Dynamic Chat Notification Function
+ * Call directly from sockets/chatSocket.js when recipient socket is offline/background
+ */
+async function sendChatMessageNotification({
+  companyId,
+  receiverId,
+  receiverRole,
+  senderId,
+  senderRole,
+  messageType = "text",
+  content = "",
+  chatType = "DRIVER_CHAT"
+}) {
+  try {
+    const formattedContent = messageType === "text" ? content : `Sent an ${messageType}`;
+
+    if (receiverRole === "DRIVER") {
+      await sendChatMessageToDriver(receiverId, senderId, formattedContent, chatType);
+    } else if (receiverRole === "CUSTOMER") {
+      await sendChatMessageToCustomer(receiverId, senderId, formattedContent, chatType);
+    } else if (receiverRole === "ADMIN" || receiverRole === "EMPLOYEE") {
+      await sendChatMessageToDashboard(companyId, senderId, senderRole, formattedContent, chatType);
+    }
+  } catch (error) {
+    console.error("❌ sendChatMessageNotification Error:", error);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND CHAT MESSAGE NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendChatMessageToDriver(driverId, senderId, messageContent, chatType) {
+  const res = await pool.query(
+    `SELECT fcm_token FROM drivers WHERE id = $1`,
+    [driverId]
+  );
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "New Message from Admin",
+      body: messageContent,
+    },
+    data: {
+      type: "CHAT_MESSAGE",
+      chat_type: chatType,
+      sender_id: String(senderId),
+      sender_role: "ADMIN",
+    },
+  };
+
+  console.log("Chat Notification Data to Driver:", message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ Chat Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND CHAT MESSAGE NOTIFICATION TO CUSTOMER
+// ---------------------------------------------------------
+async function sendChatMessageToCustomer(customerId, senderId, messageContent, chatType) {
+  const res = await pool.query(
+    `SELECT fcm_token FROM customers WHERE id = $1`,
+    [customerId]
+  );
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for customer:", customerId);
+    return;
+  }
+
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "New Message Support",
+      body: messageContent,
+    },
+    data: {
+      type: "CHAT_MESSAGE",
+      chat_type: chatType,
+      sender_id: String(senderId),
+      sender_role: "ADMIN",
+    },
+  };
+
+  console.log("Chat Notification Data to Customer:", message);
+  await safeSendNotification(message, { customerId });
+  console.log("✅ Chat Notification sent to customer:", customerId);
+}
+
+// ---------------------------------------------------------
+// SEND CHAT MESSAGE NOTIFICATION TO CONTROLLER DASHBOARD
+// ---------------------------------------------------------
+async function sendChatMessageToDashboard(companyId, senderId, senderRole, messageContent, chatType) {
+  try {
+    // 1️⃣ Fetch web_device_id of all controllers for this specific company
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id IN (1, 2)
+      AND company_id = $1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+      `,
+      [companyId]
+    );
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found for company:", companyId);
+      return;
+    }
+
+    // 2️⃣ Get sender name dynamically
+    let senderName = `${senderRole} #${senderId}`;
+    if (senderRole === "DRIVER") {
+      const driverRes = await pool.query(`SELECT name FROM drivers WHERE id = $1`, [senderId]);
+      if (driverRes.rows[0]?.name) senderName = driverRes.rows[0].name;
+    } else if (senderRole === "CUSTOMER") {
+      const custRes = await pool.query(`SELECT name FROM customers WHERE id = $1`, [senderId]);
+      if (custRes.rows[0]?.name) senderName = custRes.rows[0].name;
+    }
+
+    // 3️⃣ Payload Construction
+    const message = {
+      tokens,
+      notification: {
+        title: `New Message from ${senderName}`,
+        body: messageContent,
+      },
+      data: {
+        type: "CHAT_MESSAGE_WEB",
+        chat_type: chatType,
+        sender_id: String(senderId),
+        sender_role: senderRole,
+        company_id: String(companyId)
+      },
+    };
+
+    console.log("Dashboard Chat Notification Data:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log(`✅ Chat Notification sent to Dashboard: ${response.successCount} success`);
+  } catch (err) {
+    console.error("❌ sendChatMessageToDashboard Error:", err);
+  }
+}
+
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
@@ -1092,4 +1253,8 @@ module.exports = {
   sendPermissionNotification,
   sendSinBinNotification,
   sendSinBinRemovedNotification,
+  sendChatMessageNotification,
+  sendChatMessageToDriver,
+  sendChatMessageToCustomer,
+  sendChatMessageToDashboard
 };

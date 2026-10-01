@@ -65,6 +65,7 @@ const recordingRoutes = require("./routes/callRecordingRoutes");
 const driverSinBinRoutes = require("./routes/driverSinbinRoutes");
 const fareConfigurationMileageRoutes = require("./routes/fareConfigurationMileageRoutes");
 const driverAttributeRoutes = require("./routes/driverAttributeRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 
 const app = express();
 
@@ -184,6 +185,7 @@ app.use("/api/call-recordings", recordingRoutes);
 app.use("/api/sinbin", driverSinBinRoutes);
 app.use("/api/fare-configuration-mileage", fareConfigurationMileageRoutes);
 app.use("/api/driver-attributes", driverAttributeRoutes);
+app.use("/api/chat", chatRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

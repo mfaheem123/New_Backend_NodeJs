@@ -323,7 +323,8 @@ exports.getBookingByTabs = async (req, res) => {
     let tabWhere = "";
     let tabName = "";
 
-    let orderBy = "b.id ASC";
+    // Default Fallback Ordering
+    let orderBy = `(b.pickup_date::date + TRIM(b.pickup_time)::time) ASC`;
 
     switch (tabId) {
       case 1:
@@ -341,6 +342,7 @@ exports.getBookingByTabs = async (req, res) => {
       case 2:
         tabName = "PRE BOOKINGS";
         tabWhere = `DATE(b.pickup_date) > CURRENT_DATE AND b.booking_status_id NOT IN (11) AND b.trash = false`;
+        orderBy = `(b.pickup_date::date + TRIM(b.pickup_time)::time) ASC`;
         break;
 
       case 3:
@@ -1974,25 +1976,33 @@ exports.recoverDashboardBooking = async (req, res) => {
     }
 
     const booking = bookingResult.rows[0];
+    const driverId = booking.driver_id;
 
-    // 1️⃣ Recover booking notification & DB update
-    await sendRecoverBookingNotification(booking.driver_id, booking);
+    // 1️⃣ Send FCM Notification & Reset Booking in DB
+    if (driverId) {
+      await sendRecoverBookingNotification(driverId, booking);
+    }
     await recoverDashboardBooking(bookingId);
 
-    // 2️⃣ Driver ko SinBinService ke zariye Sin Bin me bhejein
-    if (booking.driver_id) {
+    if (driverId) {
+      // 2️⃣ Reset Driver Booking Status to 'Available' in DB
+      await driverModel.updateDriverBookingStatus(driverId, "Available");
+
+      // 3️⃣ Apply SinBin logic (Updates driver_status to 'SinBin' & emits WebSockets)
       await SinbinService.checkAndApplySinbin(
         booking.company_id,
-        booking.driver_id,
-        "RECOVER",
+        driverId,
+        "RECOVER"
       );
 
-      // 3️⃣ Booking & Busy WebSocket updates (Agar required hon)
-      await notifyDriverBookingStatus(booking.driver_id);
-      await notifyDriverBookingStatusWeb(booking.driver_id);
+      // 4️⃣ Notify PDA/App regarding status change
+      await notifyDriverBookingStatus(driverId);
 
-      const driver = await Driver.getById(booking.driver_id);
-      notifyBusyDriverUpdate(driver);
+      // 5️⃣ Fetch fresh updated driver details & Trigger Dashboard Shift (Busy -> Login List)
+      const freshDriver = await Driver.getById(driverId);
+      if (freshDriver) {
+        notifyBusyDriverUpdate(freshDriver);
+      }
     }
 
     return res.status(200).json({
