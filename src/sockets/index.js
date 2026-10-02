@@ -94,9 +94,8 @@ function initWebSockets(server) {
         // 🚀 COMPANY SUBSCRIPTION ROUTE REGISTERED
         handleCompanySubscriptionSocket(ws, req);
       } else if (url.startsWith("/websocket/chat")) {
-  handleChatSocket(ws, req);
-}
-      else {
+        handleChatSocket(ws, req);
+      } else {
         logger.warn("ws:rejected", { url });
         ws.close();
       }

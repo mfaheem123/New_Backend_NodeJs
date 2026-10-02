@@ -107,39 +107,57 @@ function parseJSONFields(row) {
 }
 
 // Helper Function: Driver Vehicle Type Match Check
+// Helper Function: Driver Vehicle Type & Sin Bin Check
 const validateDriverVehicle = async (
   driverId,
   requiredVehicleTypeId,
   label = "Driver",
+  forceDispatch = false
 ) => {
   if (!driverId) return null;
 
-  // Extra whitespace trimming (jaise payload mein " 167" aa raha hai)
   const cleanDriverId = String(driverId).trim();
   if (!cleanDriverId) return null;
 
   const driver = await Driver.getById(cleanDriverId);
 
   if (!driver) {
-    return `${label} not found`;
+    return { status: false, message: `${label} not found` };
   }
 
+  // 1️⃣ Sin Bin Check (Priority Check)
+  if (driver.is_sin_bin && !forceDispatch) {
+    return {
+      status: false,
+      is_sin_bin: true,
+      message: `${label} is currently in Sin Bin`,
+    };
+  }
+
+  // 2️⃣ Session Status Check
   if (driver.session_status === "logged_out") {
-    return `${label} is Logged Out`;
+    return { status: false, message: `${label} is Logged Out` };
   }
 
+  // 3️⃣ Vehicle Type Matching Check
   const driverVehicleTypeId =
     driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
 
   if (!driverVehicleTypeId) {
-    return `${label} has no vehicle or vehicle type assigned`;
+    return {
+      status: false,
+      message: `${label} has no vehicle or vehicle type assigned`,
+    };
   }
 
   if (String(requiredVehicleTypeId).trim() !== String(driverVehicleTypeId)) {
-    return `${label} Vehicle Does Not Match Required Booking Vehicle`;
+    return {
+      status: false,
+      message: `${label} Vehicle Does Not Match Required Booking Vehicle`,
+    };
   }
 
-  return null; // Sab kuch correct hai
+  return null; // All checks passed
 };
 
 // ---------------------------------------------------------
@@ -153,6 +171,8 @@ exports.createBooking = async (req, res) => {
     );
 
     const payload = req.body;
+    const forceDispatch =
+      payload.force_dispatch === true || payload.force_dispatch === "true";
 
     // 1️⃣ Primary / Outbound Booking Driver Validation
     if (payload.driver_id) {
@@ -160,9 +180,14 @@ exports.createBooking = async (req, res) => {
         payload.driver_id,
         payload.vehicle_type_id,
         "Driver",
+        forceDispatch
       );
       if (driverError) {
-        return res.status(400).json({ status: false, message: driverError });
+        return res.status(400).json({
+          status: false,
+          is_sin_bin: driverError.is_sin_bin || false,
+          message: driverError.message,
+        });
       }
     }
 
@@ -180,12 +205,15 @@ exports.createBooking = async (req, res) => {
         payload.return_driver_id,
         targetReturnVehicleTypeId,
         "Return Driver",
+        forceDispatch
       );
 
       if (returnDriverError) {
-        return res
-          .status(400)
-          .json({ status: false, message: returnDriverError });
+        return res.status(400).json({
+          status: false,
+          is_sin_bin: returnDriverError.is_sin_bin || false,
+          message: returnDriverError.message,
+        });
       }
     }
 
@@ -1554,6 +1582,14 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
+
+    // force_dispatch ko boolean check me convert karein (string 'true' ho ya boolean true)
+const isForceDispatch = 
+  req.body.force_dispatch === true || 
+  req.body.force_dispatch === 'true' || 
+  req.body.force_dispatch === 1 || 
+  req.body.force_dispatch === '1';
+
     // ---------------------------------------------------------
     // 🚀 SERVICE CALL (PASSING IS_SIN_BIN & FORCE_DISPATCH)
     // ---------------------------------------------------------
@@ -1562,17 +1598,17 @@ exports.assignDriverToBooking = async (req, res) => {
       driver_id,
       company_id,
       isSinBin,
-      force_dispatch, // Pass true/false from req.body
+      isForceDispatch, // Pass true/false from req.body
     );
 
     return res.status(200).json({
-      status: true,
-      sin_bin: isSinBin, // 👈 Frontend ko sin_bin status return ho raha hai
-      message: isSinBin
-        ? "Driver is currently in Sin Bin"
-        : "Driver Assigned Successfully",
-      booking: updatedBooking,
-    });
+  status: true,
+  sin_bin: isSinBin,
+  message: isSinBin && !isForceDispatch
+    ? "Driver is currently in Sin Bin"
+    : "Driver Assigned Successfully",
+  booking: updatedBooking,
+});
   } catch (error) {
     console.error("Assign Driver Error:", error);
 
@@ -1992,7 +2028,7 @@ exports.recoverDashboardBooking = async (req, res) => {
       await SinbinService.checkAndApplySinbin(
         booking.company_id,
         driverId,
-        "RECOVER"
+        "RECOVER",
       );
 
       // 4️⃣ Notify PDA/App regarding status change

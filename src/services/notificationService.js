@@ -1071,7 +1071,6 @@ async function sendSinBinRemovedNotification(driverId, messages) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
-
 // =========================================================
 // CHAT SYSTEM NOTIFICATIONS (NEWLY ADDED)
 // =========================================================
@@ -1088,17 +1087,34 @@ async function sendChatMessageNotification({
   senderRole,
   messageType = "text",
   content = "",
-  chatType = "DRIVER_CHAT"
+  chatType = "DRIVER_CHAT",
 }) {
   try {
-    const formattedContent = messageType === "text" ? content : `Sent an ${messageType}`;
+    const formattedContent =
+      messageType === "text" ? content : `Sent an ${messageType}`;
 
     if (receiverRole === "DRIVER") {
-      await sendChatMessageToDriver(receiverId, senderId, formattedContent, chatType);
+      await sendChatMessageToDriver(
+        receiverId,
+        senderId,
+        formattedContent,
+        chatType,
+      );
     } else if (receiverRole === "CUSTOMER") {
-      await sendChatMessageToCustomer(receiverId, senderId, formattedContent, chatType);
+      await sendChatMessageToCustomer(
+        receiverId,
+        senderId,
+        formattedContent,
+        chatType,
+      );
     } else if (receiverRole === "ADMIN" || receiverRole === "EMPLOYEE") {
-      await sendChatMessageToDashboard(companyId, senderId, senderRole, formattedContent, chatType);
+      await sendChatMessageToDashboard(
+        companyId,
+        senderId,
+        senderRole,
+        formattedContent,
+        chatType,
+      );
     }
   } catch (error) {
     console.error("❌ sendChatMessageNotification Error:", error);
@@ -1108,11 +1124,15 @@ async function sendChatMessageNotification({
 // ---------------------------------------------------------
 // SEND CHAT MESSAGE NOTIFICATION TO DRIVER
 // ---------------------------------------------------------
-async function sendChatMessageToDriver(driverId, senderId, messageContent, chatType) {
-  const res = await pool.query(
-    `SELECT fcm_token FROM drivers WHERE id = $1`,
-    [driverId]
-  );
+async function sendChatMessageToDriver(
+  driverId,
+  senderId,
+  messageContent,
+  chatType,
+) {
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
 
   const fcmToken = res.rows[0]?.fcm_token;
   if (!fcmToken) {
@@ -1142,10 +1162,15 @@ async function sendChatMessageToDriver(driverId, senderId, messageContent, chatT
 // ---------------------------------------------------------
 // SEND CHAT MESSAGE NOTIFICATION TO CUSTOMER
 // ---------------------------------------------------------
-async function sendChatMessageToCustomer(customerId, senderId, messageContent, chatType) {
+async function sendChatMessageToCustomer(
+  customerId,
+  senderId,
+  messageContent,
+  chatType,
+) {
   const res = await pool.query(
     `SELECT fcm_token FROM customers WHERE id = $1`,
-    [customerId]
+    [customerId],
   );
 
   const fcmToken = res.rows[0]?.fcm_token;
@@ -1176,7 +1201,13 @@ async function sendChatMessageToCustomer(customerId, senderId, messageContent, c
 // ---------------------------------------------------------
 // SEND CHAT MESSAGE NOTIFICATION TO CONTROLLER DASHBOARD
 // ---------------------------------------------------------
-async function sendChatMessageToDashboard(companyId, senderId, senderRole, messageContent, chatType) {
+async function sendChatMessageToDashboard(
+  companyId,
+  senderId,
+  senderRole,
+  messageContent,
+  chatType,
+) {
   try {
     // 1️⃣ Fetch web_device_id of all controllers for this specific company
     const res = await pool.query(
@@ -1188,7 +1219,7 @@ async function sendChatMessageToDashboard(companyId, senderId, senderRole, messa
       AND web_device_id IS NOT NULL
       AND web_device_id != ''
       `,
-      [companyId]
+      [companyId],
     );
 
     const tokens = res.rows.map((r) => r.web_device_id);
@@ -1201,10 +1232,16 @@ async function sendChatMessageToDashboard(companyId, senderId, senderRole, messa
     // 2️⃣ Get sender name dynamically
     let senderName = `${senderRole} #${senderId}`;
     if (senderRole === "DRIVER") {
-      const driverRes = await pool.query(`SELECT name FROM drivers WHERE id = $1`, [senderId]);
+      const driverRes = await pool.query(
+        `SELECT name FROM drivers WHERE id = $1`,
+        [senderId],
+      );
       if (driverRes.rows[0]?.name) senderName = driverRes.rows[0].name;
     } else if (senderRole === "CUSTOMER") {
-      const custRes = await pool.query(`SELECT name FROM customers WHERE id = $1`, [senderId]);
+      const custRes = await pool.query(
+        `SELECT name FROM customers WHERE id = $1`,
+        [senderId],
+      );
       if (custRes.rows[0]?.name) senderName = custRes.rows[0].name;
     }
 
@@ -1220,13 +1257,15 @@ async function sendChatMessageToDashboard(companyId, senderId, senderRole, messa
         chat_type: chatType,
         sender_id: String(senderId),
         sender_role: senderRole,
-        company_id: String(companyId)
+        company_id: String(companyId),
       },
     };
 
     console.log("Dashboard Chat Notification Data:", message);
     const response = await admin.messaging().sendEachForMulticast(message);
-    console.log(`✅ Chat Notification sent to Dashboard: ${response.successCount} success`);
+    console.log(
+      `✅ Chat Notification sent to Dashboard: ${response.successCount} success`,
+    );
   } catch (err) {
     console.error("❌ sendChatMessageToDashboard Error:", err);
   }
@@ -1256,5 +1295,5 @@ module.exports = {
   sendChatMessageNotification,
   sendChatMessageToDriver,
   sendChatMessageToCustomer,
-  sendChatMessageToDashboard
+  sendChatMessageToDashboard,
 };
