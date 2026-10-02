@@ -5,6 +5,7 @@ const sinbinController = require("../controllers/driverSinbinController");
 // Driver Sinbin Routes
 router.post("/driver-sinbin/add", sinbinController.toggleDriverSinbin);
 router.get("/sinbin-drivers/get", sinbinController.getSinbinDrivers);
+router.get("/driver-check/", sinbinController.isDriverInSinbin);
 
 // Settings Routes
 router.get("/driver-sinbin-settings/get", sinbinController.getSinbinSettings);

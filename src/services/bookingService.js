@@ -519,23 +519,10 @@ async function createSimpleBooking(payload) {
         });
       }
 
-      // Driver Notification Guard Check
-  if (clean.driver_id) {
-    const driverFeatures = await driverAppFeatureModel.getByDriverId(
-      clean.driver_id,
-      payload.company_id
-    ); //[cite: 1]
-    const isSinBin = Boolean(driverFeatures?.is_sin_bin);
-    const isForce = payload.force_dispatch === true || payload.force_dispatch === "true";
-
-    // Driver agar SinBin me na ho YA force_dispatch true bheja gaya ho
-    if (!isSinBin || isForce) {
-      console.log("📲 Sending Notification to Driver...");
-      await sendBookingNotification(clean.driver_id, clean); //[cite: 1]
-    } else {
-      console.log("⚠️ Driver is in SinBin. Skipping Driver Notification.");
-    }
-  }
+      // 3. SEND NOTIFICATION TO DRIVER
+      if (clean.driver_id) {
+        await sendBookingNotification(clean.driver_id, clean);
+      }
 
       // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
       if (clean.booking_source === "app") {

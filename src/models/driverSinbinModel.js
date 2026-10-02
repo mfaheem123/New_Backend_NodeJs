@@ -114,6 +114,17 @@ class SinbinModel {
       },
     }));
   }
+
+  // Check if a specific driver is in the sin bin
+  static async isDriverInSinbin(companyId, driverId) {
+    const query = `
+            SELECT * 
+            FROM driver_sinbins 
+            WHERE company_id = $1 AND driver_id = $2 AND sinbin_time > 0 AND is_active = TRUE;
+        `;
+    const { rows } = await db.query(query, [companyId, driverId]);
+    return rows.length > 0;
+  }
 }
 
 module.exports = SinbinModel;
