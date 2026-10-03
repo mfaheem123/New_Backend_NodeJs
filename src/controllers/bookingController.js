@@ -1554,13 +1554,12 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
-
     // force_dispatch ko boolean check me convert karein (string 'true' ho ya boolean true)
-const isForceDispatch = 
-  req.body.force_dispatch === true || 
-  req.body.force_dispatch === 'true' || 
-  req.body.force_dispatch === 1 || 
-  req.body.force_dispatch === '1';
+    const isForceDispatch =
+      req.body.force_dispatch === true ||
+      req.body.force_dispatch === "true" ||
+      req.body.force_dispatch === 1 ||
+      req.body.force_dispatch === "1";
 
     // ---------------------------------------------------------
     // 🚀 SERVICE CALL (PASSING IS_SIN_BIN & FORCE_DISPATCH)
@@ -1574,13 +1573,14 @@ const isForceDispatch =
     );
 
     return res.status(200).json({
-  status: true,
-  sin_bin: isSinBin,
-  message: isSinBin && !isForceDispatch
-    ? "Driver is currently in Sin Bin"
-    : "Driver Assigned Successfully",
-  booking: updatedBooking,
-});
+      status: true,
+      sin_bin: isSinBin,
+      message:
+        isSinBin && !isForceDispatch
+          ? "Driver is currently in Sin Bin"
+          : "Driver Assigned Successfully",
+      booking: updatedBooking,
+    });
   } catch (error) {
     console.error("Assign Driver Error:", error);
 

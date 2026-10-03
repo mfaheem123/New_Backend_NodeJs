@@ -113,7 +113,10 @@ exports.updateSinbinSettings = async (req, res) => {
 exports.isDriverInSinbin = async (req, res) => {
   try {
     const { company_id, driver_id } = req.query;
-    const isInSinbin = await SinbinModel.isDriverInSinbin(company_id, driver_id);
+    const isInSinbin = await SinbinModel.isDriverInSinbin(
+      company_id,
+      driver_id,
+    );
     return res.status(200).json({ status: true, isInSinbin });
   } catch (error) {
     return res.status(500).json({ status: false, error: error.message });

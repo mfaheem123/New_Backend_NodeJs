@@ -2044,9 +2044,9 @@ async function assignDriverService(
   // - Agar driver SinBin me Nahi hai -> Send Notification (NORMAL FLOW)
   // - Agar driver SinBin me hai LEKIN frontend se YES click hua hai (forceDispatch: true) -> Send Notification
   // - Agar driver SinBin me hai AUR forceDispatch: false hai -> Skip Notification
-const isForce = forceDispatch === true || forceDispatch === 'true';
-console.log("forceDispatch:", isForce);
-const shouldSendNotification = !isSinBin || (isSinBin && isForce);
+  const isForce = forceDispatch === true || forceDispatch === "true";
+  console.log("forceDispatch:", isForce);
+  const shouldSendNotification = !isSinBin || (isSinBin && isForce);
   // const shouldSendNotification =
   //   !isSinBin || (isSinBin && forceDispatch === true);
 

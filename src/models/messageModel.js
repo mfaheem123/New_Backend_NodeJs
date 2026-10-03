@@ -34,9 +34,9 @@ class MessageModel {
     return rows[0];
   }
 
- // Fetch Chat History with Sender Name
-static async getChatHistory({ company_id, driver_id, chat_type }) {
-  const query = `
+  // Fetch Chat History with Sender Name
+  static async getChatHistory({ company_id, driver_id, chat_type }) {
+    const query = `
     SELECT m.*, 
            CASE 
              WHEN m.sender_role = 'DRIVER' THEN d.name 
@@ -57,9 +57,13 @@ static async getChatHistory({ company_id, driver_id, chat_type }) {
     ORDER BY m.created_at ASC;
   `;
 
-  const { rows } = await pool.query(query, [company_id, chat_type, driver_id]);
-  return rows;
-}
+    const { rows } = await pool.query(query, [
+      company_id,
+      chat_type,
+      driver_id,
+    ]);
+    return rows;
+  }
 
   // Search Messages in Chat (Test Cases 11 & 12)
   static async searchMessages({

@@ -1,7 +1,9 @@
 const { v4: uuidv4 } = require("uuid");
 const logger = require("../utils/logger");
 const MessageModel = require("../models/messageModel");
-const { sendChatMessageNotification } = require("../services/notificationService");
+const {
+  sendChatMessageNotification,
+} = require("../services/notificationService");
 const pool = require("../db");
 
 const connectedClients = new Map(); // key: `${companyId}_${role}_${userId}`
@@ -52,10 +54,16 @@ function handleChatSocket(ws, req) {
       if (event === "send_message" || !event) {
         let senderName = "";
         if (ws.role === "DRIVER") {
-          const dRes = await pool.query(`SELECT name FROM drivers WHERE id = $1`, [ws.userId]);
+          const dRes = await pool.query(
+            `SELECT name FROM drivers WHERE id = $1`,
+            [ws.userId],
+          );
           senderName = dRes.rows[0]?.name || `Driver #${ws.userId}`;
         } else {
-          const eRes = await pool.query(`SELECT username FROM employees WHERE id = $1`, [ws.userId]);
+          const eRes = await pool.query(
+            `SELECT username FROM employees WHERE id = $1`,
+            [ws.userId],
+          );
           senderName = eRes.rows[0]?.username || `${ws.role} #${ws.userId}`;
         }
 
@@ -81,8 +89,12 @@ function handleChatSocket(ws, req) {
         ws.send(
           JSON.stringify({
             event: "message_sent_ack",
-            data: { message_id: savedMessage.id, status: "SENT", message: messagePayload },
-          })
+            data: {
+              message_id: savedMessage.id,
+              status: "SENT",
+              message: messagePayload,
+            },
+          }),
         );
 
         let isDelivered = false;
@@ -98,7 +110,7 @@ function handleChatSocket(ws, req) {
                 JSON.stringify({
                   event: "new_message",
                   data: messagePayload,
-                })
+                }),
               );
               isDelivered = true;
             }
@@ -111,7 +123,7 @@ function handleChatSocket(ws, req) {
               JSON.stringify({
                 event: "new_message",
                 data: messagePayload,
-              })
+              }),
             );
             isDelivered = true;
           }
@@ -121,14 +133,14 @@ function handleChatSocket(ws, req) {
         if (isDelivered) {
           await pool.query(
             `UPDATE messages SET is_read = FALSE WHERE id = $1`, // DB status track
-            [savedMessage.id]
+            [savedMessage.id],
           );
 
           ws.send(
             JSON.stringify({
               event: "message_status_update",
               data: { message_id: savedMessage.id, status: "DELIVERED" },
-            })
+            }),
           );
         } else {
           // Push Notification agar offline ho
@@ -152,7 +164,7 @@ function handleChatSocket(ws, req) {
         if (Array.isArray(message_ids) && message_ids.length > 0) {
           await pool.query(
             `UPDATE messages SET is_read = TRUE WHERE id = ANY($1::int[])`,
-            [message_ids]
+            [message_ids],
           );
 
           // Original Sender ko Blue Tick ack bhejein
@@ -164,7 +176,7 @@ function handleChatSocket(ws, req) {
               JSON.stringify({
                 event: "messages_read_ack",
                 data: { message_ids, status: "READ" },
-              })
+              }),
             );
           }
         }
@@ -195,7 +207,13 @@ function handleChatSocket(ws, req) {
 }
 
 // Helper: Target Controllers, Admins ya Driver ko Typing notify karne ke liye
-function broadcastToTarget(companyId, targetRole, targetId, eventName, payload) {
+function broadcastToTarget(
+  companyId,
+  targetRole,
+  targetId,
+  eventName,
+  payload,
+) {
   if (targetRole === "CONTROLLER" || targetRole === "ADMIN") {
     for (let [key, clientWs] of connectedClients.entries()) {
       if (
