@@ -380,9 +380,7 @@ exports.getBookingByTabs = async (req, res) => {
       case 7:
         tabName = "WEB BOOKINGS";
         tabWhere = `b.booking_source = 'web' AND b.trash = false`;
-        orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+   orderBy = `(b.pickup_date::date + TRIM(b.pickup_time)::time) ASC`;
         break;
 
       case 8:

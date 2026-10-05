@@ -42,20 +42,20 @@ class MessageModel {
              WHEN m.sender_role = 'DRIVER' THEN d.name 
              ELSE e.username 
            END as sender_name
-    FROM messages m
-    LEFT JOIN drivers d ON m.sender_role = 'DRIVER' AND m.sender_id = d.id
-    LEFT JOIN employees e ON m.sender_role != 'DRIVER' AND m.sender_id = e.id
-    WHERE m.company_id = $1 
-      AND m.chat_type = $2
-      AND (
-        -- Driver ke dwara bheje gaye messages (Chahe receiver_id null ho)
-        (m.sender_role = 'DRIVER' AND m.sender_id = $3)
-        OR 
-        -- Driver ko bheje gaye messages (Chahe kisi bhi Controller ne bheje hon)
-        (m.receiver_role = 'DRIVER' AND m.receiver_id = $3)
-      )
-    ORDER BY m.created_at ASC;
-  `;
+            FROM messages m
+            LEFT JOIN drivers d ON m.sender_role = 'DRIVER' AND m.sender_id = d.id
+            LEFT JOIN employees e ON m.sender_role != 'DRIVER' AND m.sender_id = e.id
+            WHERE m.company_id = $1 
+            AND m.chat_type = $2
+            AND (
+            -- Driver ke dwara bheje gaye messages (Chahe receiver_id null ho)
+            (m.sender_role = 'DRIVER' AND m.sender_id = $3)
+            OR 
+            -- Driver ko bheje gaye messages (Chahe kisi bhi Controller ne bheje hon)
+            (m.receiver_role = 'DRIVER' AND m.receiver_id = $3)
+          )
+          ORDER BY m.created_at ASC;
+        `;
 
     const { rows } = await pool.query(query, [
       company_id,
