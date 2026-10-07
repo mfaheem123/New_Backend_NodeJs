@@ -22,8 +22,11 @@ router.get("/getbyid/:id", driverController.getById);
 router.post("/edit/:id", upload.any(), driverController.update);
 router.delete("/delete/:id", driverController.delete);
 router.post("/login", upload.none(), driverController.driverLogin);
+router.post("/forced-login", upload.none(), driverController.driverForcedLogin);
+
 router.post("/verifytoken", upload.none(), driverController.verifyDriverToken);
 router.post("/logout/:id", upload.none(), driverController.driverLogout);
+router.post("/forced-logout", upload.none(), driverController.driverForcedLogout);
 router.post(
   "/inactive/:id",
   upload.none(),

@@ -1071,6 +1071,82 @@ async function sendSinBinRemovedNotification(driverId, messages) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+// ---------------------------------------------------------
+// SEND FORCED LOGGED IN NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendForcedLoggedInNotification(driverId, messages) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Forced Login Update",
+      body: "You Have Been Forced To Log In.",
+    },
+    data: {
+      driver_id: String(driverId),
+      type: "FORCED_LOGIN_UPDATE",
+      message: messages,
+    },
+  };
+
+  console.log("Forced Login Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND FORCED LOGGED OUT NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendForcedLoggedOutNotification(driverId, messages) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Forced Logout Update",
+      body: "You Have Been Forced To Log Out.",
+    },
+    data: {
+      driver_id: String(driverId),
+      type: "FORCED_LOGOUT_UPDATE",
+      message: messages,
+    },
+  };
+
+  console.log("Forced Logout Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
 // =========================================================
 // CHAT SYSTEM NOTIFICATIONS (NEWLY ADDED)
 // =========================================================
@@ -1296,4 +1372,6 @@ module.exports = {
   sendChatMessageToDriver,
   sendChatMessageToCustomer,
   sendChatMessageToDashboard,
+  sendForcedLoggedInNotification,
+  sendForcedLoggedOutNotification,
 };

@@ -1362,3 +1362,109 @@ exports.getCompanyNumberByCompanyId = async (req, res) => {
     });
   }
 };
+
+
+// ---------------------------------------------------------
+// DRIVER FORCED LOGIN
+// ---------------------------------------------------------
+exports.driverForcedLogin = async (req, res) => {
+  const { driverId, fcmToken } = req.body;
+  console.log(
+    "🚀 INCOMING DRIVER FORCED LOGIN BODY:",
+    JSON.stringify(req.body, null, 2),
+  );
+  try {
+    const driver = await Driver.getById(driverId);
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+    if (!driver.active) {
+      return res.status(401).json({ message: "Your account is inactive" });
+    }
+    
+    if (driver.session_status === "logged_in") {
+      return res.status(400).json({ message: "Driver is already logged in" });
+    }
+    const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+    await Driver.updateDriverLoginStatus(driver.id, 0.0, 0.0);
+
+    //Update FCM Token if provided
+    if (fcmToken) {
+      await Driver.updateDriverFcmToken(driver.id, fcmToken);
+    }
+
+    // INSERT SHIFT HISTORY LOGIN
+    await DriverShiftHistory.createLoginShift(driver.id, 0.0, 0.0);
+
+   
+    // ONLY IMPORTANT FIX
+    const updatedDriver = await Driver.getLoginDriverById(driver.id);
+    const updatedDriverSocket = await Driver.getById(driver.id);
+
+    notifyDriverLogin(updatedDriverSocket);
+const messages = "You have been forcibly logged in by the admin. Please contact support if you have any questions."
+    // Send Forced Login Notification to Driver
+    await notification.sendForcedLoggedInNotification(driver.id, messages);
+
+    return res.status(200).json({
+      message: "Forced Login successful",
+      driverInfo: updatedDriver,
+      token: token,
+    });
+  } catch (error) {
+    console.error("Forced Login Error:", error);
+    return res.status(500).json({ message: "An error occurred during forced login" });
+  }
+};
+
+// ---------------------------------------------------------
+// DRIVER FORCED LOGOUT
+// ---------------------------------------------------------
+exports.driverForcedLogout = async (req, res) => {
+  const { driverId } = req.body;
+
+  if (!driverId) {
+    return res.status(400).json({ message: "driverId is required" });
+  }
+
+  try {
+    const driver = await Driver.getById(driverId);
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    // UPDATE DRIVER STATUS
+    await Driver.updateDriverLogoutStatus(driverId);
+
+    // Send Forced Logout Notification to Driver
+    const messages = "You have been forcibly logged out by the Controller."
+    await notification.sendForcedLoggedOutNotification(driverId, messages);
+
+    // CLEAR FCM TOKEN
+    await Driver.clearDriverFcmToken(driverId);
+
+    // UPDATE SHIFT HISTORY LOGOUT
+    await DriverShiftHistory.updateLogoutShift(driverId, 0.0, 0.0);
+
+    // REMOVE FROM WS LOGIN SOCKET
+    notifyDriverLogout(Number(driverId));
+
+    // REMOVE FROM SOCKET IO LOGIN SOCKET
+    // notifyDriverLogout(Number(driverId), io);
+
+    return res.status(200).json({
+      status: true,
+      message: "Forced Logout successful",
+      driverId: driverId,
+      session_status: "logged_out",
+    });
+  } catch (error) {
+    console.error("Forced Logout Error:", error);
+    res.status(500).json({
+      status: false,
+      message: "An error occurred during forced logout",
+    });
+  }
+};
