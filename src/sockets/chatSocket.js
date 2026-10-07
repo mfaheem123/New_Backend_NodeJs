@@ -1,12 +1,10 @@
 const { v4: uuidv4 } = require("uuid");
 const logger = require("../utils/logger");
 const MessageModel = require("../models/messageModel");
-const {
-  sendChatMessageNotification,
-} = require("../services/notificationService");
+const { sendChatMessageNotification } = require("../services/notificationService");
 const pool = require("../db");
 
-const connectedClients = new Map(); // key: `${companyId}_${role}_${userId}`
+const connectedClients = new Map(); // key: `${companyId}_${role.toUpperCase()}_${userId}`
 
 function handleChatSocket(ws, req) {
   ws.id = uuidv4();
@@ -14,18 +12,21 @@ function handleChatSocket(ws, req) {
   const urlParams = new URLSearchParams(req.url.split("?")[1]);
   const companyId = urlParams.get("company_id");
   const userId = urlParams.get("user_id");
-  const role = urlParams.get("role"); // 'DRIVER', 'CONTROLLER', 'ADMIN'
+  const rawRole = urlParams.get("role"); // 'DRIVER', 'CONTROLLER', 'ADMIN', 'SUPER ADMIN'
 
-  if (!companyId || !userId || !role) {
+  if (!companyId || !userId || !rawRole) {
     logger.warn("Chat WS Rejected: Missing params");
     return ws.close();
   }
 
-  ws.companyId = companyId;
-  ws.userId = userId;
+  // Normalize role string to uppercase
+  const role = rawRole.trim().toUpperCase();
+
+  ws.companyId = String(companyId);
+  ws.userId = String(userId);
   ws.role = role;
 
-  const clientKey = `${companyId}_${role}_${userId}`;
+  const clientKey = `${ws.companyId}_${ws.role}_${ws.userId}`;
   connectedClients.set(clientKey, ws);
 
   logger.info(`Chat Socket Connected: ${clientKey}`);
@@ -33,20 +34,26 @@ function handleChatSocket(ws, req) {
   // 🔴 1. ONLINE PRESENCE BROADCAST
   broadcastPresence(ws.companyId, ws.userId, ws.role, "ONLINE");
 
+  // 🟢 2. AUTO-SYNC UNREAD / PENDING MESSAGES ON RECONNECT
+  syncPendingMessages(ws);
+
   ws.on("message", async (rawMessage) => {
     try {
       const payload = JSON.parse(rawMessage);
       const {
         event,
         receiver_id,
-        receiver_role,
+        receiver_role: rawReceiverRole,
         chat_type,
         message_type,
         content,
         message_ids,
-        target_role,
+        target_role: rawTargetRole,
         target_id,
       } = payload;
+
+      const receiver_role = rawReceiverRole ? rawReceiverRole.trim().toUpperCase() : null;
+      const target_role = rawTargetRole ? rawTargetRole.trim().toUpperCase() : null;
 
       // =========================================================
       // EVENT 1: SEND_MESSAGE (Single / Double Tick / Broadcast)
@@ -56,13 +63,13 @@ function handleChatSocket(ws, req) {
         if (ws.role === "DRIVER") {
           const dRes = await pool.query(
             `SELECT name FROM drivers WHERE id = $1`,
-            [ws.userId],
+            [ws.userId]
           );
           senderName = dRes.rows[0]?.name || `Driver #${ws.userId}`;
         } else {
           const eRes = await pool.query(
             `SELECT username FROM employees WHERE id = $1`,
-            [ws.userId],
+            [ws.userId]
           );
           senderName = eRes.rows[0]?.username || `${ws.role} #${ws.userId}`;
         }
@@ -72,7 +79,7 @@ function handleChatSocket(ws, req) {
           company_id: ws.companyId,
           sender_id: ws.userId,
           sender_role: ws.role,
-          receiver_id: receiver_id || null,
+          receiver_id: receiver_id ? String(receiver_id) : null,
           receiver_role,
           chat_type: chat_type || "DRIVER_CHAT",
           message_type,
@@ -85,7 +92,7 @@ function handleChatSocket(ws, req) {
           sender_name: senderName,
         };
 
-        // Sender ko Ack bhein (SINGLE TICK ✔️)
+        // Sender ko Ack bhejein (SINGLE TICK ✔️)
         ws.send(
           JSON.stringify({
             event: "message_sent_ack",
@@ -94,14 +101,19 @@ function handleChatSocket(ws, req) {
               status: "SENT",
               message: messagePayload,
             },
-          }),
+          })
         );
 
         let isDelivered = false;
 
-        // Receiver broadcast check (CONTROLLER / ADMIN)
-        if (receiver_role === "CONTROLLER" || receiver_role === "ADMIN") {
+        // Receiver Broadcast Logic: Exact Target Role verification
+        if (
+          receiver_role === "CONTROLLER" ||
+          receiver_role === "ADMIN" ||
+          receiver_role === "SUPER ADMIN"
+        ) {
           for (let [key, clientWs] of connectedClients.entries()) {
+            // Company ID & Target Role Key Verification
             if (
               key.startsWith(`${ws.companyId}_${receiver_role}_`) &&
               clientWs.readyState === 1
@@ -110,7 +122,7 @@ function handleChatSocket(ws, req) {
                 JSON.stringify({
                   event: "new_message",
                   data: messagePayload,
-                }),
+                })
               );
               isDelivered = true;
             }
@@ -118,12 +130,13 @@ function handleChatSocket(ws, req) {
         } else if (receiver_role === "DRIVER") {
           const driverKey = `${ws.companyId}_DRIVER_${receiver_id}`;
           const driverWs = connectedClients.get(driverKey);
+
           if (driverWs && driverWs.readyState === 1) {
             driverWs.send(
               JSON.stringify({
                 event: "new_message",
                 data: messagePayload,
-              }),
+              })
             );
             isDelivered = true;
           }
@@ -131,19 +144,15 @@ function handleChatSocket(ws, req) {
 
         // DOUBLE TICK CHECK (✔️✔️)
         if (isDelivered) {
-          await pool.query(
-            `UPDATE messages SET is_read = FALSE WHERE id = $1`, // DB status track
-            [savedMessage.id],
-          );
-
+          // Send DELIVERED status update back to sender
           ws.send(
             JSON.stringify({
               event: "message_status_update",
               data: { message_id: savedMessage.id, status: "DELIVERED" },
-            }),
+            })
           );
         } else {
-          // Push Notification agar offline ho
+          // Recipient Offline: Push Notification trigger
           await sendChatMessageNotification({
             companyId: ws.companyId,
             receiverId: receiver_id,
@@ -164,11 +173,12 @@ function handleChatSocket(ws, req) {
         if (Array.isArray(message_ids) && message_ids.length > 0) {
           await pool.query(
             `UPDATE messages SET is_read = TRUE WHERE id = ANY($1::int[])`,
-            [message_ids],
+            [message_ids]
           );
 
-          // Original Sender ko Blue Tick ack bhejein
-          const senderKey = `${ws.companyId}_${payload.sender_role}_${payload.sender_id}`;
+          // Original Sender ko Blue Tick ack emit karein
+          const senderRoleNorm = payload.sender_role ? payload.sender_role.trim().toUpperCase() : "";
+          const senderKey = `${ws.companyId}_${senderRoleNorm}_${payload.sender_id}`;
           const senderWs = connectedClients.get(senderKey);
 
           if (senderWs && senderWs.readyState === 1) {
@@ -176,22 +186,28 @@ function handleChatSocket(ws, req) {
               JSON.stringify({
                 event: "messages_read_ack",
                 data: { message_ids, status: "READ" },
-              }),
+              })
             );
           }
         }
       }
 
       // =========================================================
-      // EVENT 3: TYPING STATUS (✍️ User Typing...)
+      // EVENT 3: TYPING STATUS (User Typing...)
       // =========================================================
       else if (event === "typing_start" || event === "typing_stop") {
         const isTyping = event === "typing_start";
-        broadcastToTarget(ws.companyId, target_role, target_id, "user_typing", {
-          user_id: ws.userId,
-          role: ws.role,
-          is_typing: isTyping,
-        });
+        broadcastToTarget(
+          ws.companyId,
+          target_role,
+          target_id,
+          "user_typing",
+          {
+            user_id: ws.userId,
+            role: ws.role,
+            is_typing: isTyping,
+          }
+        );
       }
     } catch (err) {
       logger.error("WS Message Error:", err);
@@ -206,15 +222,19 @@ function handleChatSocket(ws, req) {
   });
 }
 
-// Helper: Target Controllers, Admins ya Driver ko Typing notify karne ke liye
+// Helper: Target Controllers, Admins, Super Admins ya Driver ko Typing Notify karne ke liye
 function broadcastToTarget(
   companyId,
   targetRole,
   targetId,
   eventName,
-  payload,
+  payload
 ) {
-  if (targetRole === "CONTROLLER" || targetRole === "ADMIN") {
+  if (
+    targetRole === "CONTROLLER" ||
+    targetRole === "ADMIN" ||
+    targetRole === "SUPER ADMIN"
+  ) {
     for (let [key, clientWs] of connectedClients.entries()) {
       if (
         key.startsWith(`${companyId}_${targetRole}_`) &&
@@ -243,6 +263,52 @@ function broadcastPresence(companyId, userId, role, status) {
     if (key.startsWith(`${companyId}_`) && clientWs.readyState === 1) {
       clientWs.send(presencePayload);
     }
+  }
+}
+
+// Helper: Connect hotay hi Unread / Offline Messages Push Karein
+async function syncPendingMessages(ws) {
+  try {
+    let query = "";
+    let params = [];
+
+    if (ws.role === "DRIVER") {
+      query = `
+        SELECT m.*, e.username as sender_name
+        FROM messages m
+        LEFT JOIN employees e ON m.sender_id = e.id
+        WHERE m.company_id = $1 
+          AND m.receiver_role = 'DRIVER' 
+          AND m.receiver_id = $2 
+          AND m.is_read = FALSE
+        ORDER BY m.created_at ASC;
+      `;
+      params = [ws.companyId, ws.userId];
+    } else {
+      query = `
+        SELECT m.*, d.name as sender_name
+        FROM messages m
+        LEFT JOIN drivers d ON m.sender_id = d.id
+        WHERE m.company_id = $1 
+          AND m.receiver_role = $2 
+          AND m.is_read = FALSE
+        ORDER BY m.created_at ASC;
+      `;
+      params = [ws.companyId, ws.role];
+    }
+
+    const { rows } = await pool.query(query, params);
+
+    rows.forEach((msg) => {
+      ws.send(
+        JSON.stringify({
+          event: "new_message",
+          data: msg,
+        })
+      );
+    });
+  } catch (err) {
+    logger.error("Error syncing pending messages:", err);
   }
 }
 

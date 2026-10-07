@@ -34,38 +34,38 @@ class MessageModel {
     return rows[0];
   }
 
-  // Fetch Chat History with Sender Name
-  static async getChatHistory({ company_id, driver_id, chat_type }) {
+  // Fetch Exact Chat History (Strict Role Isolation for both Driver and Web sides)
+  static async getChatHistory({ company_id, driver_id, web_role, chat_type }) {
     const query = `
-    SELECT m.*, 
-           CASE 
-             WHEN m.sender_role = 'DRIVER' THEN d.name 
-             ELSE e.username 
-           END as sender_name
-            FROM messages m
-            LEFT JOIN drivers d ON m.sender_role = 'DRIVER' AND m.sender_id = d.id
-            LEFT JOIN employees e ON m.sender_role != 'DRIVER' AND m.sender_id = e.id
-            WHERE m.company_id = $1 
-            AND m.chat_type = $2
-            AND (
-            -- Driver ke dwara bheje gaye messages (Chahe receiver_id null ho)
-            (m.sender_role = 'DRIVER' AND m.sender_id = $3)
-            OR 
-            -- Driver ko bheje gaye messages (Chahe kisi bhi Controller ne bheje hon)
-            (m.receiver_role = 'DRIVER' AND m.receiver_id = $3)
-          )
-          ORDER BY m.created_at ASC;
-        `;
+      SELECT m.*, 
+             CASE 
+               WHEN m.sender_role = 'DRIVER' THEN d.name 
+               ELSE e.username 
+             END as sender_name
+      FROM messages m
+      LEFT JOIN drivers d ON m.sender_role = 'DRIVER' AND m.sender_id = d.id
+      LEFT JOIN employees e ON m.sender_role != 'DRIVER' AND m.sender_id = e.id
+      WHERE m.company_id = $1 
+        AND m.chat_type = $2
+        AND (
+          -- Scenario 1: Driver ne is specific web_role (Controller/Admin/Super Admin) ko message bheja
+          (m.sender_role = 'DRIVER' AND m.sender_id = $3 AND UPPER(m.receiver_role) = UPPER($4))
+          OR 
+          -- Scenario 2: Is specific web_role (Controller/Admin/Super Admin) ne is driver ko message bheja
+          (UPPER(m.sender_role) = UPPER($4) AND m.receiver_role = 'DRIVER' AND m.receiver_id = $3)
+        )
+      ORDER BY m.created_at ASC;
+    `;
 
     const { rows } = await pool.query(query, [
       company_id,
       chat_type,
       driver_id,
+      web_role,
     ]);
     return rows;
   }
 
-  // Search Messages in Chat (Test Cases 11 & 12)
   static async searchMessages({
     company_id,
     user_id,
@@ -97,7 +97,6 @@ class MessageModel {
     return rows;
   }
 
-  // Mark messages as read
   static async markAsRead({
     company_id,
     user_id,
