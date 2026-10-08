@@ -1117,7 +1117,10 @@ exports.breakStatusDriver = async (req, res) => {
       });
     }
 
-    if ((on_break === "accepted" || on_break === "Accepted") && force_break == "disabled") {
+    if (
+      (on_break === "accepted" || on_break === "Accepted") &&
+      force_break == "disabled"
+    ) {
       console.log("DRIVER BREAK STATUS:", on_break);
 
       // Driver Status Update
@@ -1140,7 +1143,10 @@ exports.breakStatusDriver = async (req, res) => {
       });
     }
 
-    if ((on_break === "accepted" || on_break === "Accepted") && force_break == "enabled") {
+    if (
+      (on_break === "accepted" || on_break === "Accepted") &&
+      force_break == "enabled"
+    ) {
       console.log("DRIVER BREAK STATUS:", on_break);
 
       // Driver Status Update
@@ -1153,11 +1159,14 @@ exports.breakStatusDriver = async (req, res) => {
       await notifyDriverBreakStatusWeb(driver_id);
 
       //Send Break Status Notification to Driver
-      await notification.sendForcedBreakStatusNotification(driver_id, "Accepted");
+      await notification.sendForcedBreakStatusNotification(
+        driver_id,
+        "Accepted",
+      );
 
       return res.status(200).json({
         status: true,
-        message: "Driver Break Has Been Accepted",
+        message: "Driver Forced To Take Break By Controller",
         driver_id: driver_id,
         driver_status: "On Break",
       });
@@ -1257,7 +1266,10 @@ exports.onPanicStatusDriver = async (req, res) => {
 // ---------------------------------------------------------
 exports.endBreakStatusDriver = async (req, res) => {
   try {
-    const { driver_id } = req.query;
+   const { driver_id } = req.query?.driver_id
+    ? req.query
+    : req.body;
+    const { force_end_break } = req.body;
     if (!driver_id) {
       return res.status(400).json({
         status: false,
@@ -1271,6 +1283,15 @@ exports.endBreakStatusDriver = async (req, res) => {
         status: false,
         message: "Driver not found",
       });
+    }
+
+    if (force_end_break === "enabled") {
+      console.log("FORCE END BREAK ENABLED FOR DRIVER:", driver_id);
+      //Send Break Status Notification to Driver
+      await notification.sendForcedEndBreakStatusNotification(
+        driver_id,
+        "End Break",
+      );
     }
 
     await Driver.updateDriverStatus(

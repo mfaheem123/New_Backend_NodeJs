@@ -220,7 +220,13 @@ const Driver = {
         if (data[key] === "" || data[key] === undefined) data[key] = null;
       });
 
-      const { notes, shifts, attributes, vehicle: rawVehicle, ...driver } = data;
+      const {
+        notes,
+        shifts,
+        attributes,
+        vehicle: rawVehicle,
+        ...driver
+      } = data;
 
       let companyVehicleId = null;
       let useCompanyVehicle = false;
@@ -362,9 +368,11 @@ const Driver = {
         driver.rental_agreement_expiry_time,
         driverAccessToken,
         driver.company_id ?? 1,
-        attributes 
-    ? (typeof attributes === "string" ? attributes : JSON.stringify(attributes)) 
-    : null,
+        attributes
+          ? typeof attributes === "string"
+            ? attributes
+            : JSON.stringify(attributes)
+          : null,
       ]);
 
       const driverId = driverRes.rows[0].id;
@@ -866,17 +874,18 @@ const Driver = {
 
       const vehicleRow = vehicleRes.rows[0] || null;
       const formattedVehicle = vehicleRow ? formatVehicle(vehicleRow) : null;
-// 🟢 TEXT column se aane waale attributes JSON String ko Array me parse karein
-    let parsedAttributes = [];
-    if (driver.attributes) {
-      try {
-        parsedAttributes = typeof driver.attributes === "string"
-          ? JSON.parse(driver.attributes)
-          : driver.attributes;
-      } catch (err) {
-        parsedAttributes = [];
+      // 🟢 TEXT column se aane waale attributes JSON String ko Array me parse karein
+      let parsedAttributes = [];
+      if (driver.attributes) {
+        try {
+          parsedAttributes =
+            typeof driver.attributes === "string"
+              ? JSON.parse(driver.attributes)
+              : driver.attributes;
+        } catch (err) {
+          parsedAttributes = [];
+        }
       }
-    }
       const fullDriver = {
         ...normalizeDriverDates(driver),
         attributes: parsedAttributes,

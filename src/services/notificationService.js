@@ -367,7 +367,6 @@ async function sendForcedBreakStatusNotification(driverId, break_status) {
   let title = "Forced Break By Controller";
   let body = "Your Have Been Forced To Take A Break By Controller";
 
-
   // Notification Payload
   const message = {
     token: fcmToken,
@@ -388,6 +387,48 @@ async function sendForcedBreakStatusNotification(driverId, break_status) {
   // await admin.messaging().send(message);
   await safeSendNotification(message, { driverId });
   console.log("✅ Break Status Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND FORCED END BREAK STATUS NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendForcedEndBreakStatusNotification(driverId, break_status) {
+  // Driver Token
+  const res = await pool.query(`SELECT * FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // Dynamic Message
+  let title = "Forced End Break By Controller";
+  let body = "Your Have Been Forced To End Your Break By Controller";
+
+  // Notification Payload
+  const message = {
+    token: fcmToken,
+
+    notification: {
+      title,
+      body,
+    },
+
+    data: {
+      driver_id: driverId.toString(),
+      type: "END_BREAK_STATUS",
+      break_status: break_status,
+    },
+  };
+  console.log("Notification Data:", message);
+  // Send Notification
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ End Break Status Notification sent to driver:", driverId);
 }
 
 // ---------------------------------------------------------
@@ -1428,4 +1469,5 @@ module.exports = {
   sendForcedLoggedInNotification,
   sendForcedLoggedOutNotification,
   sendForcedBreakStatusNotification,
+  sendForcedEndBreakStatusNotification,
 };
