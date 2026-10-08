@@ -181,7 +181,6 @@ function handleChatSocket(ws, req) {
             `UPDATE messages SET is_read = TRUE WHERE id = ANY($1::int[])`,
             [message_ids],
           );
-          
 
           // Original Sender ko Blue Tick ack emit karein
           const senderRoleNorm = payload.sender_role

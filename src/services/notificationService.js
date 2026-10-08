@@ -348,6 +348,49 @@ async function sendBreakStatusNotification(driverId, break_status) {
 }
 
 // ---------------------------------------------------------
+// SEND FORCED BREAK STATUS NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendForcedBreakStatusNotification(driverId, break_status) {
+  // Driver Token
+  const res = await pool.query(`SELECT * FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // Dynamic Message
+  let title = "Forced Break By Controller";
+  let body = "Your Have Been Forced To Take A Break By Controller";
+
+
+  // Notification Payload
+  const message = {
+    token: fcmToken,
+
+    notification: {
+      title,
+      body,
+    },
+
+    data: {
+      driver_id: driverId.toString(),
+      type: "BREAK_STATUS",
+      break_status: break_status,
+    },
+  };
+  console.log("Notification Data:", message);
+  // Send Notification
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ Break Status Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
 // SEND RECOVER BOOKING NOTIFICATION TO DRIVER
 // ---------------------------------------------------------
 async function sendRecoverBookingNotification(driverId, booking) {
@@ -1169,7 +1212,9 @@ async function sendChatMessageNotification({
     const formattedContent =
       messageType === "text" ? content : `Sent an ${messageType}`;
 
-    const normalizedRole = receiverRole ? receiverRole.toUpperCase().trim() : "";
+    const normalizedRole = receiverRole
+      ? receiverRole.toUpperCase().trim()
+      : "";
 
     if (normalizedRole === "DRIVER") {
       await sendChatMessageToDriver(
@@ -1382,4 +1427,5 @@ module.exports = {
   sendChatMessageToDashboard,
   sendForcedLoggedInNotification,
   sendForcedLoggedOutNotification,
+  sendForcedBreakStatusNotification,
 };

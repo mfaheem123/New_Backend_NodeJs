@@ -220,7 +220,7 @@ const Driver = {
         if (data[key] === "" || data[key] === undefined) data[key] = null;
       });
 
-      const { notes, shifts, vehicle: rawVehicle, ...driver } = data;
+      const { notes, shifts, attributes, vehicle: rawVehicle, ...driver } = data;
 
       let companyVehicleId = null;
       let useCompanyVehicle = false;
@@ -292,7 +292,7 @@ const Driver = {
         ni, image, company_vehicle_id, vehicle_id,
         licence_expiry_time, phc_driver_expiry_time, insurance_expiry_time, phc_vehicle_expiry_time,
         mot_expiry_time, mot2_expiry_time, v5_registration_expiry_time, road_tax_expiry_time,
-        rental_agreement_expiry_time, driver_access_token, company_id
+        rental_agreement_expiry_time, driver_access_token, company_id, attributes
       )
       VALUES (
         $1,$2,$3,$4,$5,$6,$7,$8,$9,
@@ -304,7 +304,7 @@ const Driver = {
         $32,$33,$34,$35,$36,$37,
         $38,$39,$40,$41,
         $42,$43,$44,$45,$46,$47,
-        $48,$49,$50,$51,$52
+        $48,$49,$50,$51,$52,$53
       )
       RETURNING id
     `;
@@ -362,6 +362,9 @@ const Driver = {
         driver.rental_agreement_expiry_time,
         driverAccessToken,
         driver.company_id ?? 1,
+        attributes 
+    ? (typeof attributes === "string" ? attributes : JSON.stringify(attributes)) 
+    : null,
       ]);
 
       const driverId = driverRes.rows[0].id;
@@ -863,9 +866,20 @@ const Driver = {
 
       const vehicleRow = vehicleRes.rows[0] || null;
       const formattedVehicle = vehicleRow ? formatVehicle(vehicleRow) : null;
-
+// 🟢 TEXT column se aane waale attributes JSON String ko Array me parse karein
+    let parsedAttributes = [];
+    if (driver.attributes) {
+      try {
+        parsedAttributes = typeof driver.attributes === "string"
+          ? JSON.parse(driver.attributes)
+          : driver.attributes;
+      } catch (err) {
+        parsedAttributes = [];
+      }
+    }
       const fullDriver = {
         ...normalizeDriverDates(driver),
+        attributes: parsedAttributes,
         notes: notesRes.rows,
         shifts: shiftsRes.rows,
         vehicle: formattedVehicle,

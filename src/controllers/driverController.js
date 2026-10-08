@@ -115,6 +115,7 @@ exports.create = async (req, res) => {
       "notes",
       "shifts",
       "vehicle",
+      "attributes",
       "MOT",
       "MOT2",
       "INSURANCE",
@@ -1091,7 +1092,7 @@ exports.getFOBDrivers = async (req, res) => {
 // ---------------------------------------------------------
 exports.breakStatusDriver = async (req, res) => {
   try {
-    const { driver_id, on_break } = req.body;
+    const { driver_id, on_break, force_break } = req.body;
     if (!driver_id) {
       return res.status(400).json({
         status: false,
@@ -1116,7 +1117,7 @@ exports.breakStatusDriver = async (req, res) => {
       });
     }
 
-    if (on_break === "accepted" || on_break === "Accepted") {
+    if ((on_break === "accepted" || on_break === "Accepted") && force_break == "disabled") {
       console.log("DRIVER BREAK STATUS:", on_break);
 
       // Driver Status Update
@@ -1130,6 +1131,29 @@ exports.breakStatusDriver = async (req, res) => {
 
       //Send Break Status Notification to Driver
       await notification.sendBreakStatusNotification(driver_id, "Accepted");
+
+      return res.status(200).json({
+        status: true,
+        message: "Driver Break Has Been Accepted",
+        driver_id: driver_id,
+        driver_status: "On Break",
+      });
+    }
+
+    if ((on_break === "accepted" || on_break === "Accepted") && force_break == "enabled") {
+      console.log("DRIVER BREAK STATUS:", on_break);
+
+      // Driver Status Update
+      await Driver.updateDriverStatus(
+        driver_id,
+        driver.booking_status,
+        "On Break",
+      );
+
+      await notifyDriverBreakStatusWeb(driver_id);
+
+      //Send Break Status Notification to Driver
+      await notification.sendForcedBreakStatusNotification(driver_id, "Accepted");
 
       return res.status(200).json({
         status: true,
