@@ -1,7 +1,9 @@
 const { v4: uuidv4 } = require("uuid");
 const logger = require("../utils/logger");
 const MessageModel = require("../models/messageModel");
-const { sendChatMessageNotification } = require("../services/notificationService");
+const {
+  sendChatMessageNotification,
+} = require("../services/notificationService");
 const pool = require("../db");
 
 const connectedClients = new Map(); // key: `${companyId}_${role.toUpperCase()}_${userId}`
@@ -52,8 +54,12 @@ function handleChatSocket(ws, req) {
         target_id,
       } = payload;
 
-      const receiver_role = rawReceiverRole ? rawReceiverRole.trim().toUpperCase() : null;
-      const target_role = rawTargetRole ? rawTargetRole.trim().toUpperCase() : null;
+      const receiver_role = rawReceiverRole
+        ? rawReceiverRole.trim().toUpperCase()
+        : null;
+      const target_role = rawTargetRole
+        ? rawTargetRole.trim().toUpperCase()
+        : null;
 
       // =========================================================
       // EVENT 1: SEND_MESSAGE (Single / Double Tick / Broadcast)
@@ -63,13 +69,13 @@ function handleChatSocket(ws, req) {
         if (ws.role === "DRIVER") {
           const dRes = await pool.query(
             `SELECT name FROM drivers WHERE id = $1`,
-            [ws.userId]
+            [ws.userId],
           );
           senderName = dRes.rows[0]?.name || `Driver #${ws.userId}`;
         } else {
           const eRes = await pool.query(
             `SELECT username FROM employees WHERE id = $1`,
-            [ws.userId]
+            [ws.userId],
           );
           senderName = eRes.rows[0]?.username || `${ws.role} #${ws.userId}`;
         }
@@ -101,7 +107,7 @@ function handleChatSocket(ws, req) {
               status: "SENT",
               message: messagePayload,
             },
-          })
+          }),
         );
 
         let isDelivered = false;
@@ -122,7 +128,7 @@ function handleChatSocket(ws, req) {
                 JSON.stringify({
                   event: "new_message",
                   data: messagePayload,
-                })
+                }),
               );
               isDelivered = true;
             }
@@ -136,7 +142,7 @@ function handleChatSocket(ws, req) {
               JSON.stringify({
                 event: "new_message",
                 data: messagePayload,
-              })
+              }),
             );
             isDelivered = true;
           }
@@ -149,19 +155,19 @@ function handleChatSocket(ws, req) {
             JSON.stringify({
               event: "message_status_update",
               data: { message_id: savedMessage.id, status: "DELIVERED" },
-            })
+            }),
           );
         } else {
-          // Recipient Offline: Push Notification trigger
+          // FIXED: Variable Reference Error Bug Handled Here
           await sendChatMessageNotification({
             companyId: ws.companyId,
             receiverId: receiver_id,
-            receiverRole,
+            receiverRole: receiver_role,
             senderId: ws.userId,
             senderRole: ws.role,
-            messageType,
+            messageType: message_type || "text",
             content,
-            chatType,
+            chatType: chat_type || "DRIVER_CHAT",
           });
         }
       }
@@ -173,11 +179,14 @@ function handleChatSocket(ws, req) {
         if (Array.isArray(message_ids) && message_ids.length > 0) {
           await pool.query(
             `UPDATE messages SET is_read = TRUE WHERE id = ANY($1::int[])`,
-            [message_ids]
+            [message_ids],
           );
+          
 
           // Original Sender ko Blue Tick ack emit karein
-          const senderRoleNorm = payload.sender_role ? payload.sender_role.trim().toUpperCase() : "";
+          const senderRoleNorm = payload.sender_role
+            ? payload.sender_role.trim().toUpperCase()
+            : "";
           const senderKey = `${ws.companyId}_${senderRoleNorm}_${payload.sender_id}`;
           const senderWs = connectedClients.get(senderKey);
 
@@ -186,7 +195,7 @@ function handleChatSocket(ws, req) {
               JSON.stringify({
                 event: "messages_read_ack",
                 data: { message_ids, status: "READ" },
-              })
+              }),
             );
           }
         }
@@ -197,17 +206,11 @@ function handleChatSocket(ws, req) {
       // =========================================================
       else if (event === "typing_start" || event === "typing_stop") {
         const isTyping = event === "typing_start";
-        broadcastToTarget(
-          ws.companyId,
-          target_role,
-          target_id,
-          "user_typing",
-          {
-            user_id: ws.userId,
-            role: ws.role,
-            is_typing: isTyping,
-          }
-        );
+        broadcastToTarget(ws.companyId, target_role, target_id, "user_typing", {
+          user_id: ws.userId,
+          role: ws.role,
+          is_typing: isTyping,
+        });
       }
     } catch (err) {
       logger.error("WS Message Error:", err);
@@ -228,7 +231,7 @@ function broadcastToTarget(
   targetRole,
   targetId,
   eventName,
-  payload
+  payload,
 ) {
   if (
     targetRole === "CONTROLLER" ||
@@ -304,7 +307,7 @@ async function syncPendingMessages(ws) {
         JSON.stringify({
           event: "new_message",
           data: msg,
-        })
+        }),
       );
     });
   } catch (err) {

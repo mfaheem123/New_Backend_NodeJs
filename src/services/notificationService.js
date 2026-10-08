@@ -1169,21 +1169,28 @@ async function sendChatMessageNotification({
     const formattedContent =
       messageType === "text" ? content : `Sent an ${messageType}`;
 
-    if (receiverRole === "DRIVER") {
+    const normalizedRole = receiverRole ? receiverRole.toUpperCase().trim() : "";
+
+    if (normalizedRole === "DRIVER") {
       await sendChatMessageToDriver(
         receiverId,
         senderId,
         formattedContent,
         chatType,
       );
-    } else if (receiverRole === "CUSTOMER") {
+    } else if (normalizedRole === "CUSTOMER") {
       await sendChatMessageToCustomer(
         receiverId,
         senderId,
         formattedContent,
         chatType,
       );
-    } else if (receiverRole === "ADMIN" || receiverRole === "EMPLOYEE") {
+    } else if (
+      normalizedRole === "ADMIN" ||
+      normalizedRole === "CONTROLLER" ||
+      normalizedRole === "SUPER ADMIN" ||
+      normalizedRole === "EMPLOYEE"
+    ) {
       await sendChatMessageToDashboard(
         companyId,
         senderId,
@@ -1191,12 +1198,13 @@ async function sendChatMessageNotification({
         formattedContent,
         chatType,
       );
+    } else {
+      console.log("⚠️ Unknown Receiver Role for Notification:", receiverRole);
     }
   } catch (error) {
     console.error("❌ sendChatMessageNotification Error:", error);
   }
 }
-
 // ---------------------------------------------------------
 // SEND CHAT MESSAGE NOTIFICATION TO DRIVER
 // ---------------------------------------------------------

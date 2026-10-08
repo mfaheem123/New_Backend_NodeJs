@@ -26,7 +26,11 @@ router.post("/forced-login", upload.none(), driverController.driverForcedLogin);
 
 router.post("/verifytoken", upload.none(), driverController.verifyDriverToken);
 router.post("/logout/:id", upload.none(), driverController.driverLogout);
-router.post("/forced-logout", upload.none(), driverController.driverForcedLogout);
+router.post(
+  "/forced-logout",
+  upload.none(),
+  driverController.driverForcedLogout,
+);
 router.post(
   "/inactive/:id",
   upload.none(),

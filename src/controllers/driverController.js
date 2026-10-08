@@ -1363,7 +1363,6 @@ exports.getCompanyNumberByCompanyId = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
 // DRIVER FORCED LOGIN
 // ---------------------------------------------------------
@@ -1381,7 +1380,7 @@ exports.driverForcedLogin = async (req, res) => {
     if (!driver.active) {
       return res.status(401).json({ message: "Your account is inactive" });
     }
-    
+
     if (driver.session_status === "logged_in") {
       return res.status(400).json({ message: "Driver is already logged in" });
     }
@@ -1398,13 +1397,13 @@ exports.driverForcedLogin = async (req, res) => {
     // INSERT SHIFT HISTORY LOGIN
     await DriverShiftHistory.createLoginShift(driver.id, 0.0, 0.0);
 
-   
     // ONLY IMPORTANT FIX
     const updatedDriver = await Driver.getLoginDriverById(driver.id);
     const updatedDriverSocket = await Driver.getById(driver.id);
 
     notifyDriverLogin(updatedDriverSocket);
-const messages = "You have been forcibly logged in by the admin. Please contact support if you have any questions."
+    const messages =
+      "You have been forcibly logged in by the admin. Please contact support if you have any questions.";
     // Send Forced Login Notification to Driver
     await notification.sendForcedLoggedInNotification(driver.id, messages);
 
@@ -1415,7 +1414,9 @@ const messages = "You have been forcibly logged in by the admin. Please contact 
     });
   } catch (error) {
     console.error("Forced Login Error:", error);
-    return res.status(500).json({ message: "An error occurred during forced login" });
+    return res
+      .status(500)
+      .json({ message: "An error occurred during forced login" });
   }
 };
 
@@ -1439,7 +1440,7 @@ exports.driverForcedLogout = async (req, res) => {
     await Driver.updateDriverLogoutStatus(driverId);
 
     // Send Forced Logout Notification to Driver
-    const messages = "You have been forcibly logged out by the Controller."
+    const messages = "You have been forcibly logged out by the Controller.";
     await notification.sendForcedLoggedOutNotification(driverId, messages);
 
     // CLEAR FCM TOKEN
