@@ -8,6 +8,9 @@ const pool = require("../db");
 
 const connectedClients = new Map(); // key: `${companyId}_${role.toUpperCase()}_${userId}`
 
+// ---------------------------------------------------------
+  // HANDLE CHAT SOCKET CONNECTION
+  // ---------------------------------------------------------
 function handleChatSocket(ws, req) {
   ws.id = uuidv4();
 
@@ -224,7 +227,10 @@ function handleChatSocket(ws, req) {
   });
 }
 
-// Helper: Target Controllers, Admins, Super Admins ya Driver ko Typing Notify karne ke liye
+
+// ---------------------------------------------------------
+  // HELPER FUNCION: BROADCAST TO TARGET ROLE / DRIVER TYPING STATUS
+  // ---------------------------------------------------------
 function broadcastToTarget(
   companyId,
   targetRole,
@@ -254,7 +260,10 @@ function broadcastToTarget(
   }
 }
 
-// Helper: Online / Offline Status Broadcast
+
+// ---------------------------------------------------------
+  // HELPER FUNCTION: BROADCAST PRESENCE STATUS (ONLINE / OFFLINE)
+  // ---------------------------------------------------------
 function broadcastPresence(companyId, userId, role, status) {
   const presencePayload = JSON.stringify({
     event: "presence_change",
@@ -268,7 +277,10 @@ function broadcastPresence(companyId, userId, role, status) {
   }
 }
 
-// Helper: Connect hotay hi Unread / Offline Messages Push Karein
+
+// ---------------------------------------------------------
+  // HELPER FUNCTION: SYNC PENDING MESSAGES ON RECONNECT
+  // ---------------------------------------------------------
 async function syncPendingMessages(ws) {
   try {
     let query = "";

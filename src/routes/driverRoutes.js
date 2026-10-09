@@ -25,7 +25,11 @@ router.post("/logout/:id", upload.none(), driverController.driverLogout);
 router.post("/on-break", upload.none(), driverController.onBreakDriver);
 router.post("/end-break", upload.none(), driverController.endBreakStatusDriver);
 router.post("/panic", upload.none(), driverController.onPanicDriver);
-router.post("/forced-logout", upload.none(), driverController.driverForcedLogout);
+router.post(
+  "/forced-logout",
+  upload.none(),
+  driverController.driverForcedLogout,
+);
 router.post(
   "/break-request",
   upload.none(),

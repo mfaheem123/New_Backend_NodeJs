@@ -2777,8 +2777,8 @@ exports.rejectNoPickupBooking = async (req, res) => {
 exports.getClearBookings = async (req, res) => {
   try {
     const {
-      offset = 0,
-      limit = 100,
+      page = 1,
+      limit = 20,
       reference_number,
       pickup_date,
       customer,
@@ -2790,8 +2790,8 @@ exports.getClearBookings = async (req, res) => {
     } = req.query;
 
     const result = await getClearBookings({
-      offset: Number(offset),
-      limit: Number(limit),
+      page,
+      limit,
       reference_number,
       pickup_date,
       customer,
@@ -2803,15 +2803,18 @@ exports.getClearBookings = async (req, res) => {
     });
 
     res.json({
-      status: true,
-      count: result.rows.length,
+      success: true,
+      page: result.page,
+      limit: result.limit,
       total: result.total,
+      total_pages: result.total_pages,
+      count: result.count,
       bookings: result.rows.map(parseJSONFields),
     });
   } catch (err) {
     console.log(err);
     res.status(500).json({
-      status: false,
+      success: false,
       message: err.message,
     });
   }

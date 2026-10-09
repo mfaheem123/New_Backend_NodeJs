@@ -3,8 +3,8 @@ const logger = require("../utils/logger");
 
 class ChatController {
   // ---------------------------------------------------------
-// GET CHAT HISTORY BETWEEN DRIVER AND SPECIFIC WEB ROLE (Controller/Admin/Super Admin)
-// ---------------------------------------------------------
+  // GET CHAT HISTORY BETWEEN DRIVER AND SPECIFIC WEB ROLE (Controller/Admin/Super Admin)
+  // ---------------------------------------------------------
   static async getHistory(req, res) {
     try {
       const { company_id, user_id, role, target_id, target_role, chat_type } =
@@ -52,8 +52,8 @@ class ChatController {
   }
 
   // ---------------------------------------------------------
-// SEARCH MESSAGES BY KEYWORD
-// ---------------------------------------------------------
+  // SEARCH MESSAGES BY KEYWORD
+  // ---------------------------------------------------------
   static async search(req, res) {
     try {
       const { company_id, user_id, role, target_id, target_role, keyword } =
@@ -68,7 +68,7 @@ class ChatController {
 
       // Hamesha Driver ID extract karein (Chahe call Driver side se aaye ya Web Panel se)
       const driver_id = role.toUpperCase() === "DRIVER" ? user_id : target_id;
-      
+
       // Target Web Role (SUPER ADMIN, ADMIN, CONTROLLER) determine karein
       const web_role = role.toUpperCase() === "DRIVER" ? target_role : role;
 

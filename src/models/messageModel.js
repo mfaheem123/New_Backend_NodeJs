@@ -2,8 +2,8 @@ const pool = require("../db");
 
 class MessageModel {
   // ---------------------------------------------------------
-// SAVE MESSAGE TO DB
-// ---------------------------------------------------------
+  // SAVE MESSAGE TO DB
+  // ---------------------------------------------------------
   static async createMessage({
     company_id,
     sender_id,
@@ -36,10 +36,9 @@ class MessageModel {
     return rows[0];
   }
 
-  
   // ---------------------------------------------------------
-// GET CHAT HISTORY BETWEEN DRIVER AND SPECIFIC WEB ROLE (Controller/Admin/Super Admin)
-// ---------------------------------------------------------
+  // GET CHAT HISTORY BETWEEN DRIVER AND SPECIFIC WEB ROLE (Controller/Admin/Super Admin)
+  // ---------------------------------------------------------
   static async getChatHistory({ company_id, driver_id, web_role, chat_type }) {
     const query = `
       SELECT m.*, 
@@ -74,12 +73,7 @@ class MessageModel {
   // ---------------------------------------------------------
   // SEARCH MESSAGES BY KEYWORD (Role & ID Isolated)
   // ---------------------------------------------------------
-  static async searchMessages({
-    company_id,
-    driver_id,
-    web_role,
-    keyword,
-  }) {
+  static async searchMessages({ company_id, driver_id, web_role, keyword }) {
     const query = `
       SELECT m.*, 
              CASE 
@@ -101,20 +95,15 @@ class MessageModel {
       ORDER BY m.created_at DESC;
     `;
 
-    const values = [
-      company_id,
-      `%${keyword}%`,
-      driver_id,
-      web_role,
-    ];
+    const values = [company_id, `%${keyword}%`, driver_id, web_role];
 
     const { rows } = await pool.query(query, values);
     return rows;
   }
 
   // ---------------------------------------------------------
-// MARK MESSAGE AS READ
-// ---------------------------------------------------------
+  // MARK MESSAGE AS READ
+  // ---------------------------------------------------------
   static async markAsRead({
     company_id,
     user_id,

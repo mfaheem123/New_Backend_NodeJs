@@ -2303,8 +2303,8 @@ const getBookingByReferenceNumber = async (reference_number) => {
 // GET ALL BOOKINGS WHICH ARE NOT COMPLETED
 // ---------------------------------------------------------
 const getClearBookings = async ({
-  offset = 0,
-  limit = 100,
+  page = 1,
+  limit = 20,
   reference_number,
   pickup_date,
   customer,
@@ -2363,44 +2363,51 @@ const getClearBookings = async ({
     values.push(`%${booking_status}%`);
     index++;
   }
+
   if (company_id) {
     where += ` AND b.company_id = $${index}`;
     values.push(Number(company_id));
     index++;
   }
 
-  const countSql = `
-      SELECT COUNT(*)
-      FROM bookings b
-      LEFT JOIN drivers d ON d.id = b.driver_id
-      LEFT JOIN booking_statuses bs
-        ON bs.id = b.booking_status_id
-      ${where}
-  `;
+  // PAGINATION CALCULATIONS
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 20;
+  const offset = (pageNum - 1) * limitNum;
 
-  const total = (await pool.query(countSql, values)).rows[0].count;
-
-  values.push(offset);
-  values.push(limit);
-
+  // Safe execution with CTE wrapper & window function
   const sql = `
+    WITH main_query AS (
       ${ENRICHED_SELECT}
-
       ${where}
-
       ORDER BY
-          b.pickup_date DESC,
-          b.pickup_time DESC
-
-      OFFSET $${index}
-      LIMIT $${index + 1}
+        b.pickup_date DESC,
+        b.pickup_time DESC
+    )
+    SELECT *, COUNT(*) OVER() AS total_count
+    FROM main_query
+    LIMIT $${index} OFFSET $${index + 1}
   `;
 
-  const result = await pool.query(sql, values);
+  const queryValues = [...values, limitNum, offset];
+
+  const result = await pool.query(sql, queryValues);
+
+  const totalRecords = result.rows.length > 0 ? parseInt(result.rows[0].total_count, 10) : 0;
+
+  // Clean total_count from each row object
+  const rows = result.rows.map((row) => {
+    const { total_count, ...record } = row;
+    return record;
+  });
 
   return {
-    total: Number(total),
-    rows: result.rows,
+    rows,
+    total: totalRecords,
+    total_pages: Math.ceil(totalRecords / limitNum),
+    page: pageNum,
+    limit: limitNum,
+    count: rows.length,
   };
 };
 
