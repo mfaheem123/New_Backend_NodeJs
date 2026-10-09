@@ -1,7 +1,9 @@
 const pool = require("../db");
 
 class MessageModel {
-  // Save message to DB
+  // ---------------------------------------------------------
+// SAVE MESSAGE TO DB
+// ---------------------------------------------------------
   static async createMessage({
     company_id,
     sender_id,
@@ -34,7 +36,10 @@ class MessageModel {
     return rows[0];
   }
 
-  // Fetch Exact Chat History (Strict Role Isolation for both Driver and Web sides)
+  
+  // ---------------------------------------------------------
+// GET CHAT HISTORY BETWEEN DRIVER AND SPECIFIC WEB ROLE (Controller/Admin/Super Admin)
+// ---------------------------------------------------------
   static async getChatHistory({ company_id, driver_id, web_role, chat_type }) {
     const query = `
       SELECT m.*, 
@@ -66,37 +71,50 @@ class MessageModel {
     return rows;
   }
 
+  // ---------------------------------------------------------
+  // SEARCH MESSAGES BY KEYWORD (Role & ID Isolated)
+  // ---------------------------------------------------------
   static async searchMessages({
     company_id,
-    user_id,
-    role,
-    target_id,
-    target_role,
+    driver_id,
+    web_role,
     keyword,
   }) {
     const query = `
-      SELECT * FROM messages
-      WHERE company_id = $1
-        AND content ILIKE $2
+      SELECT m.*, 
+             CASE 
+               WHEN m.sender_role = 'DRIVER' THEN d.name 
+               ELSE e.username 
+             END as sender_name
+      FROM messages m
+      LEFT JOIN drivers d ON m.sender_role = 'DRIVER' AND m.sender_id = d.id
+      LEFT JOIN employees e ON m.sender_role != 'DRIVER' AND m.sender_id = e.id
+      WHERE m.company_id = $1
+        AND m.content ILIKE $2
         AND (
-          (sender_id = $3 AND sender_role = $4 AND receiver_id = $5 AND receiver_role = $6)
-          OR
-          (sender_id = $5 AND sender_role = $6 AND receiver_id = $3 AND receiver_role = $4)
+          -- Scenario 1: Driver ne is specific web_role ko message bheja (jahan receiver_id null bhi ho sakta hai)
+          (m.sender_role = 'DRIVER' AND m.sender_id = $3 AND UPPER(m.receiver_role) = UPPER($4))
+          OR 
+          -- Scenario 2: Is specific web_role ne is driver ko message bheja
+          (UPPER(m.sender_role) = UPPER($4) AND m.receiver_role = 'DRIVER' AND m.receiver_id = $3)
         )
-      ORDER BY created_at DESC;
+      ORDER BY m.created_at DESC;
     `;
+
     const values = [
       company_id,
       `%${keyword}%`,
-      user_id,
-      role,
-      target_id,
-      target_role,
+      driver_id,
+      web_role,
     ];
+
     const { rows } = await pool.query(query, values);
     return rows;
   }
 
+  // ---------------------------------------------------------
+// MARK MESSAGE AS READ
+// ---------------------------------------------------------
   static async markAsRead({
     company_id,
     user_id,

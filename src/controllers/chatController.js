@@ -2,6 +2,9 @@ const MessageModel = require("../models/messageModel");
 const logger = require("../utils/logger");
 
 class ChatController {
+  // ---------------------------------------------------------
+// GET CHAT HISTORY BETWEEN DRIVER AND SPECIFIC WEB ROLE (Controller/Admin/Super Admin)
+// ---------------------------------------------------------
   static async getHistory(req, res) {
     try {
       const { company_id, user_id, role, target_id, target_role, chat_type } =
@@ -48,24 +51,31 @@ class ChatController {
     }
   }
 
+  // ---------------------------------------------------------
+// SEARCH MESSAGES BY KEYWORD
+// ---------------------------------------------------------
   static async search(req, res) {
     try {
       const { company_id, user_id, role, target_id, target_role, keyword } =
         req.query;
 
-      if (!company_id || !keyword) {
+      if (!company_id || !keyword || !user_id || !role) {
         return res.status(400).json({
           success: false,
-          message: "Company ID and Keyword are required",
+          message: "Company ID, User ID, Role and Keyword are required",
         });
       }
 
+      // Hamesha Driver ID extract karein (Chahe call Driver side se aaye ya Web Panel se)
+      const driver_id = role.toUpperCase() === "DRIVER" ? user_id : target_id;
+      
+      // Target Web Role (SUPER ADMIN, ADMIN, CONTROLLER) determine karein
+      const web_role = role.toUpperCase() === "DRIVER" ? target_role : role;
+
       const results = await MessageModel.searchMessages({
         company_id,
-        user_id,
-        role,
-        target_id,
-        target_role,
+        driver_id,
+        web_role,
         keyword,
       });
 

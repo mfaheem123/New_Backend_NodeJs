@@ -330,10 +330,10 @@ exports.getBookingByTabs = async (req, res) => {
       case 1:
         tabName = "TODAY BOOKINGS";
         tabWhere = `
-    DATE(b.pickup_date) = CURRENT_DATE
-    AND b.booking_status_id IN (1, 4, 5, 13, 8)
-    AND b.trash = false
-  `;
+          DATE(b.pickup_date) = CURRENT_DATE
+          AND b.booking_status_id IN (1, 4, 5, 13, 8)
+          AND b.trash = false
+        `;
         orderBy = `
           TRIM(b.pickup_time)::time ASC,
           b.id ASC
@@ -349,32 +349,32 @@ exports.getBookingByTabs = async (req, res) => {
         tabName = "RECENT BOOKINGS";
         tabWhere = `b.booking_status_id NOT IN (1, 11, 4, 5, 13, 14, 12, 7, 8) AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 4:
         tabName = "COMPLETED BOOKINGS";
         tabWhere = `b.booking_status_id = 11 AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 5:
         tabName = "QUOTED BOOKINGS";
         tabWhere = `b.quoted = true AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 6:
         tabName = "IVR BOOKINGS";
         tabWhere = `b.booking_source = 'ivr' AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 7:
@@ -387,32 +387,32 @@ exports.getBookingByTabs = async (req, res) => {
         tabName = "APP BOOKINGS";
         tabWhere = `b.booking_source = 'app'AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 9:
         tabName = "MULTI BOOKINGS";
         tabWhere = `b.booking_type_id = 2 AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 10:
         tabName = "PENDING BOOKINGS";
         tabWhere = `b.booking_status_id != 11 AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 11:
         tabName = "TRASH BOOKINGS";
         tabWhere = `b.trash = true`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       default:
@@ -423,14 +423,14 @@ exports.getBookingByTabs = async (req, res) => {
       tabName = `DUE IN ${jobDue} MIN`;
 
       tabWhere += `
-    AND (
-      b.pickup_date::date + TRIM(b.pickup_time)::time
-    ) BETWEEN NOW() AND NOW() + INTERVAL '${jobDue} minutes'
-  `;
+        AND (
+          b.pickup_date::date + TRIM(b.pickup_time)::time
+          ) BETWEEN NOW() AND NOW() + INTERVAL '${jobDue} minutes'
+        `;
 
       orderBy = `
-    (b.pickup_date::date + TRIM(b.pickup_time)::time) ASC
-  `;
+        (b.pickup_date::date + TRIM(b.pickup_time)::time) ASC
+      `;
     }
 
     const { rows, total } = await getBookingsByTab({

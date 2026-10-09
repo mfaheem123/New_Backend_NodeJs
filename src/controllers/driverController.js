@@ -115,7 +115,6 @@ exports.create = async (req, res) => {
       "notes",
       "shifts",
       "vehicle",
-      "attributes",
       "MOT",
       "MOT2",
       "INSURANCE",
@@ -1266,9 +1265,7 @@ exports.onPanicStatusDriver = async (req, res) => {
 // ---------------------------------------------------------
 exports.endBreakStatusDriver = async (req, res) => {
   try {
-   const { driver_id } = req.query?.driver_id
-    ? req.query
-    : req.body;
+    const { driver_id } = req.query?.driver_id ? req.query : req.body;
     const { force_end_break } = req.body;
     if (!driver_id) {
       return res.status(400).json({
