@@ -9,8 +9,8 @@ const pool = require("../db");
 const connectedClients = new Map(); // key: `${companyId}_${role.toUpperCase()}_${userId}`
 
 // ---------------------------------------------------------
-  // HANDLE CHAT SOCKET CONNECTION
-  // ---------------------------------------------------------
+// HANDLE CHAT SOCKET CONNECTION
+// ---------------------------------------------------------
 function handleChatSocket(ws, req) {
   ws.id = uuidv4();
 
@@ -227,10 +227,9 @@ function handleChatSocket(ws, req) {
   });
 }
 
-
 // ---------------------------------------------------------
-  // HELPER FUNCION: BROADCAST TO TARGET ROLE / DRIVER TYPING STATUS
-  // ---------------------------------------------------------
+// HELPER FUNCION: BROADCAST TO TARGET ROLE / DRIVER TYPING STATUS
+// ---------------------------------------------------------
 function broadcastToTarget(
   companyId,
   targetRole,
@@ -260,10 +259,9 @@ function broadcastToTarget(
   }
 }
 
-
 // ---------------------------------------------------------
-  // HELPER FUNCTION: BROADCAST PRESENCE STATUS (ONLINE / OFFLINE)
-  // ---------------------------------------------------------
+// HELPER FUNCTION: BROADCAST PRESENCE STATUS (ONLINE / OFFLINE)
+// ---------------------------------------------------------
 function broadcastPresence(companyId, userId, role, status) {
   const presencePayload = JSON.stringify({
     event: "presence_change",
@@ -277,10 +275,9 @@ function broadcastPresence(companyId, userId, role, status) {
   }
 }
 
-
 // ---------------------------------------------------------
-  // HELPER FUNCTION: SYNC PENDING MESSAGES ON RECONNECT
-  // ---------------------------------------------------------
+// HELPER FUNCTION: SYNC PENDING MESSAGES ON RECONNECT
+// ---------------------------------------------------------
 async function syncPendingMessages(ws) {
   try {
     let query = "";
