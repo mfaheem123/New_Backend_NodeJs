@@ -2393,7 +2393,8 @@ const getClearBookings = async ({
 
   const result = await pool.query(sql, queryValues);
 
-  const totalRecords = result.rows.length > 0 ? parseInt(result.rows[0].total_count, 10) : 0;
+  const totalRecords =
+    result.rows.length > 0 ? parseInt(result.rows[0].total_count, 10) : 0;
 
   // Clean total_count from each row object
   const rows = result.rows.map((row) => {

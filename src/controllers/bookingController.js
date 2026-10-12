@@ -1992,7 +1992,7 @@ exports.recoverDashboardBooking = async (req, res) => {
 
     if (driverId) {
       // 2️⃣ Reset Driver Booking Status to 'Available' in DB
-      await driverModel.updateDriverBookingStatus(driverId, "Available");
+      await Driver.updateDriverBookingStatus(driverId, "Available");
 
       // 3️⃣ Apply SinBin logic (Updates driver_status to 'SinBin' & emits WebSockets)
       await SinbinService.checkAndApplySinbin(
