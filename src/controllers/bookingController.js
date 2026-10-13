@@ -73,6 +73,7 @@ const {
   sendDriverNoPickupBookingNotification,
   sendRejectNoPickupBookingNotification,
   sendNoPickupBookingNotification,
+  sendNoShowBookingNotification
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 const SinbinService = require("../services/sinbinService");
@@ -830,6 +831,17 @@ exports.updateBookingStatus = async (req, res) => {
         driverId,
         "MISSED",
       );
+    }
+
+    //NO SHOW
+    if (booking_status_id == 7) {
+     let message = "You have a No Show booking."
+      // Send No Show Notification to Driver
+      await sendNoShowBookingNotification(driverId, message);
+      await Driver.updateDriverStatus(driverId, "Available", "Available");
+      await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
+      
     }
 
     // UPDATE BOOKING STATUS
@@ -1992,7 +2004,7 @@ exports.recoverDashboardBooking = async (req, res) => {
 
     if (driverId) {
       // 2️⃣ Reset Driver Booking Status to 'Available' in DB
-      await Driver.updateDriverBookingStatus(driverId, "Available");
+      await Driver.updateDriverStatus(driverId, "Available", "Available");
 
       // 3️⃣ Apply SinBin logic (Updates driver_status to 'SinBin' & emits WebSockets)
       await SinbinService.checkAndApplySinbin(

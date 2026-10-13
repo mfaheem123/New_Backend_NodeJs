@@ -6,6 +6,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const upload = multer();
+const { globalRateLimiter } = require("./middlewares/rateLimiter");
 
 // Routes
 const addressRoutes = require("./routes/addressRoutes");
@@ -127,6 +128,9 @@ app.use((req, res, next) => {
 app.use(
   morgan(":method :url :status :response-time ms", { stream: logger.stream }),
 );
+
+//Global Rate Limiter
+app.use(globalRateLimiter);
 
 // ✅ API Routes
 app.use("/api/addresses", addressRoutes);

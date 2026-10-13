@@ -115,7 +115,7 @@ exports.create = async (req, res) => {
       "notes",
       "shifts",
       "vehicle",
-      "attributes", 
+      "attributes",
       "MOT",
       "MOT2",
       "INSURANCE",

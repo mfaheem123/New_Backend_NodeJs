@@ -368,12 +368,12 @@ const Driver = {
         driver.rental_agreement_expiry_time,
         driverAccessToken,
         driver.company_id ?? 1,
-        attributes 
-          ? typeof attributes === "string" 
-            ? attributes 
-            : JSON.stringify(attributes) 
-          : null, 
-      ]); 
+        attributes
+          ? typeof attributes === "string"
+            ? attributes
+            : JSON.stringify(attributes)
+          : null,
+      ]);
 
       const driverId = driverRes.rows[0].id;
 
@@ -437,49 +437,49 @@ const Driver = {
               rawVehicle.road_tax_expiry,
               driver.road_tax_expiry,
             ),
-            rental_agreement_number: mergeValue( 
+            rental_agreement_number: mergeValue(
               rawVehicle.rental_agreement_number,
               driver.rental_agreement_number,
             ),
             rental_agreement_expiry: mergeValue(
-              rawVehicle.rental_agreement_expiry, 
+              rawVehicle.rental_agreement_expiry,
               driver.rental_agreement_expiry,
             ),
             v5_registration_number: mergeValue(
               rawVehicle.v5_registration_number,
               driver.v5_registration_number,
             ),
-            v5_registration_expiry: mergeValue( 
+            v5_registration_expiry: mergeValue(
               rawVehicle.v5_registration_expiry,
               driver.v5_registration_expiry,
             ),
             mot_expiry_time: mergeValue(
-              rawVehicle.mot_expiry_time, 
+              rawVehicle.mot_expiry_time,
               driver.mot_expiry_time,
             ),
-            mot2_expiry_time: mergeValue( 
+            mot2_expiry_time: mergeValue(
               rawVehicle.mot2_expiry_time,
               driver.mot2_expiry_time,
-            ), 
+            ),
             insurance_expiry_time: mergeValue(
               rawVehicle.insurance_expiry_time,
               driver.insurance_expiry_time,
             ),
             phc_vehicle_expiry_time: mergeValue(
-              rawVehicle.phc_vehicle_expiry_time, 
-              driver.phc_vehicle_expiry_time, 
-            ), 
+              rawVehicle.phc_vehicle_expiry_time,
+              driver.phc_vehicle_expiry_time,
+            ),
             road_tax_expiry_time: mergeValue(
               rawVehicle.road_tax_expiry_time,
               driver.road_tax_expiry_time,
-            ), 
+            ),
             rental_agreement_expiry_time: mergeValue(
-              rawVehicle.rental_agreement_expiry_time,  
-              driver.rental_agreement_expiry_time, 
-            ), 
-            v5_registration_expiry_time: mergeValue( 
-              rawVehicle.v5_registration_expiry_time, 
-              driver.v5_registration_expiry_time, 
+              rawVehicle.rental_agreement_expiry_time,
+              driver.rental_agreement_expiry_time,
+            ),
+            v5_registration_expiry_time: mergeValue(
+              rawVehicle.v5_registration_expiry_time,
+              driver.v5_registration_expiry_time,
             ),
           }
         : null;
@@ -657,15 +657,15 @@ const Driver = {
     // Filter active by default
     if (active !== undefined) {
       conditions.push(`d.active = $${idx++}`);
-      params.push(active === "false" ? false : true); 
+      params.push(active === "false" ? false : true);
     }
 
     if (username) {
       conditions.push(`d.username ILIKE $${idx++}`);
-      params.push(`%${username}%`); 
+      params.push(`%${username}%`);
     }
     if (name) {
-      conditions.push(`d.name ILIKE $${idx++}`); 
+      conditions.push(`d.name ILIKE $${idx++}`);
       params.push(`%${name}%`);
     }
     if (mobile) {
@@ -677,7 +677,7 @@ const Driver = {
       params.push(`%${mot_expiry}%`);
     }
     if (mot2_expiry) {
-      conditions.push(`d.mot2_expiry ILIKE $${idx++}`); 
+      conditions.push(`d.mot2_expiry ILIKE $${idx++}`);
       params.push(`%${mot2_expiry}%`);
     }
     if (insurance_expiry) {
@@ -705,7 +705,7 @@ const Driver = {
     }
     if (subsidiary) {
       conditions.push(`s.name ILIKE $${idx++}`);
-      params.push(`%${subsidiary}%`); 
+      params.push(`%${subsidiary}%`);
     }
     if (company_id) {
       conditions.push(`d.company_id = $${idx++}`);

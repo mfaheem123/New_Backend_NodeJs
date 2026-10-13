@@ -1231,6 +1231,44 @@ async function sendForcedLoggedOutNotification(driverId, messages) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+// ---------------------------------------------------------
+// SEND NO SHOW NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendNoShowBookingNotification(driverId, messages) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "No Show Update",
+      body: "You Have A No Show Booking.",
+    },
+    data: {
+      driver_id: String(driverId),
+      type: "NO_SHOW_UPDATE",
+      message: messages,
+    },
+  };
+
+  console.log("No Show Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
 // =========================================================
 // CHAT SYSTEM NOTIFICATIONS (NEWLY ADDED)
 // =========================================================
@@ -1470,4 +1508,5 @@ module.exports = {
   sendForcedLoggedOutNotification,
   sendForcedBreakStatusNotification,
   sendForcedEndBreakStatusNotification,
+  sendNoShowBookingNotification
 };
