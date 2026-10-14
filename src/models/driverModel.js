@@ -2043,6 +2043,20 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     const result = await db.query(query, [company_id]);
     return result.rows[0] ? result.rows[0] : null;
   },
+
+  // ---------------------------------------------------------
+  // UPDATE DRIVER LAST BOOKING
+  // ---------------------------------------------------------
+  async updateDriverLastBooking(driverId, bookingId) {
+    const query = `
+    UPDATE drivers
+    SET 
+      last_booking = $1
+    WHERE id = $2
+  `;
+    await db.query(query, [bookingId, driverId]);
+    return true;
+  },
 };
 
 module.exports = Driver;

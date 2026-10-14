@@ -73,7 +73,7 @@ const {
   sendDriverNoPickupBookingNotification,
   sendRejectNoPickupBookingNotification,
   sendNoPickupBookingNotification,
-  sendNoShowBookingNotification
+  sendNoShowBookingNotification,
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 const SinbinService = require("../services/sinbinService");
@@ -697,6 +697,8 @@ exports.updateBookingStatus = async (req, res) => {
       } else {
         await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
       }
+      //Update Last Booking Status in Driver Table
+      await Driver.updateDriverLastBooking(driverId, bookingId);
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
       if (booking_source == "app") {
@@ -761,6 +763,8 @@ exports.updateBookingStatus = async (req, res) => {
           });
         }
       }
+      //Update Last Booking Status in Driver Table
+      await Driver.updateDriverLastBooking(driverId, bookingId);
 
       await updateBookingonRoute(bookingId, false, false, true);
       await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
@@ -835,13 +839,12 @@ exports.updateBookingStatus = async (req, res) => {
 
     //NO SHOW
     if (booking_status_id == 7) {
-     let message = "You have a No Show booking."
+      let message = "You have a No Show booking.";
       // Send No Show Notification to Driver
       await sendNoShowBookingNotification(driverId, message);
       await Driver.updateDriverStatus(driverId, "Available", "Available");
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
-      
     }
 
     // UPDATE BOOKING STATUS

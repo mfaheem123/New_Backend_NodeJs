@@ -1508,5 +1508,5 @@ module.exports = {
   sendForcedLoggedOutNotification,
   sendForcedBreakStatusNotification,
   sendForcedEndBreakStatusNotification,
-  sendNoShowBookingNotification
+  sendNoShowBookingNotification,
 };

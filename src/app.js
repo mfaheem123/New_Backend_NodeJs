@@ -6,7 +6,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const upload = multer();
-const { globalRateLimiter } = require("./middlewares/rateLimiter");
+// const { globalRateLimiter } = require("./middlewares/rateLimiter");
 
 // Routes
 const addressRoutes = require("./routes/addressRoutes");
@@ -130,7 +130,7 @@ app.use(
 );
 
 //Global Rate Limiter
-app.use(globalRateLimiter);
+// app.use(globalRateLimiter);
 
 // ✅ API Routes
 app.use("/api/addresses", addressRoutes);
