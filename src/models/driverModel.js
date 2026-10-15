@@ -915,6 +915,18 @@ const Driver = {
       if (!rows.length) throw new Error("Driver not found");
       const existingDriver = rows[0];
 
+      // 🟢 Attributes Handling:
+    // Agar Request me attributes dynamic value aati hai to use stringify karein, warna existing driver ka hi rehne dein.
+    if ("attributes" in data && data.attributes !== undefined) {
+      if (data.attributes === null || data.attributes === "") {
+        data.attributes = null;
+      } else {
+        data.attributes = typeof data.attributes === "string" 
+          ? data.attributes 
+          : JSON.stringify(data.attributes);
+      }
+    }
+
       // ✅ Merge old data with new
       const mergedDriver = { ...existingDriver, ...data };
 
@@ -991,6 +1003,7 @@ const Driver = {
         "road_tax_expiry_time",
         "rental_agreement_expiry_time",
         "image",
+        "attributes", // 👈 Added to fields list
       ];
 
       // ✅ Build dynamic query for driver update

@@ -74,6 +74,7 @@ const {
   sendRejectNoPickupBookingNotification,
   sendNoPickupBookingNotification,
   sendNoShowBookingNotification,
+  sendCompleteBookingFromWebNotification,
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 const SinbinService = require("../services/sinbinService");
@@ -663,7 +664,7 @@ exports.deleteMultipleBookings = async (req, res) => {
 exports.updateBookingStatus = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
-    const { booking_status_id } = req.body;
+    const { booking_status_id, driver_web_complete } = req.body;
     console.log(
       "🚀 INCOMING UPDATE BOOKING STATUS BODY:",
       JSON.stringify(req.body, null, 2),
@@ -804,6 +805,9 @@ exports.updateBookingStatus = async (req, res) => {
 
         notifyBusyDriverUpdate(driver);
       }
+      if(driver_web_complete == true || driver_web_complete == "true"){
+        await sendCompleteBookingFromWebNotification(driverId);
+      }
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
 
@@ -839,7 +843,7 @@ exports.updateBookingStatus = async (req, res) => {
 
     //NO SHOW
     if (booking_status_id == 7) {
-      let message = "You have a No Show booking.";
+      let message = "This Booking has been marked as No Show.";
       // Send No Show Notification to Driver
       await sendNoShowBookingNotification(driverId, message);
       await Driver.updateDriverStatus(driverId, "Available", "Available");

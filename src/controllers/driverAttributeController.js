@@ -63,6 +63,7 @@ exports.addAttribute = async (req, res) => {
 
     return res.status(200).json({
       status: true,
+      message: "Driver Attribute Added Successfully",
       driver_attribute: newAttribute,
     });
   } catch (error) {
@@ -78,6 +79,7 @@ exports.updateAttribute = async (req, res) => {
     const { id } = req.params;
     const { attribute_name, short_name } = req.body;
 
+    // Direct values pass karein (undefined hone par bhi handled hai)
     const updated = await DriverAttribute.update(
       id,
       attribute_name,
@@ -92,6 +94,7 @@ exports.updateAttribute = async (req, res) => {
 
     return res.status(200).json({
       status: true,
+      message: "Driver Attribute Updated Successfully",
       driver_attribute: updated,
     });
   } catch (error) {

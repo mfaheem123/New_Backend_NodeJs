@@ -1269,6 +1269,46 @@ async function sendNoShowBookingNotification(driverId, messages) {
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+// ---------------------------------------------------------
+// SEND COMPLETE BOOKING NOTIFICATION FROM WEB TO DRIVER
+// ---------------------------------------------------------
+async function sendCompleteBookingFromWebNotification(driverId) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  const messages = "Your booking has been completed from the web dashboard.";
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Complete Booking Update",
+      body: "Your booking has been completed.",
+    },
+    data: {
+      driver_id: String(driverId),
+      type: "COMPLETE_BOOKING_UPDATE",
+      message: messages,
+    },
+  };
+
+  console.log("Complete Booking Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
 // =========================================================
 // CHAT SYSTEM NOTIFICATIONS (NEWLY ADDED)
 // =========================================================
@@ -1509,4 +1549,5 @@ module.exports = {
   sendForcedBreakStatusNotification,
   sendForcedEndBreakStatusNotification,
   sendNoShowBookingNotification,
+  sendCompleteBookingFromWebNotification
 };

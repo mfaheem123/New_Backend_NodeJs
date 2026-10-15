@@ -425,13 +425,14 @@ exports.update = async (req, res) => {
       "notes",
       "shifts",
       "vehicle",
+      "attributes", // 👈 Attributes yahan add kar diya gaya hai
       "MOT",
       "MOT2",
       "INSURANCE",
       "PHC_VEHICLE",
       "ROAD_TAX",
       "RENTAL_AGREEMENT",
-      "V5",
+      "V5_REGISTRATION",
       "LICENCE",
       "PHC_DRIVER",
       "LOG_BOOK", // ✅ Added for log book consistency
@@ -489,11 +490,11 @@ exports.update = async (req, res) => {
         expiry_time: "rental_agreement_expiry_time",
         document: "RENTAL_AGREEMENT_DOCUMENT",
       },
-      V5: {
+      V5_REGISTRATION: {
         number: "v5_registration_number",
         expiry: "v5_registration_expiry",
         expiry_time: "v5_registration_expiry_time",
-        document: "V5_DOCUMENT",
+        document: "V5_REGISTRATION_DOCUMENT",
       },
       LICENCE: {
         number: "licence_number",
