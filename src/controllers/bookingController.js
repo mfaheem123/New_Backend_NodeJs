@@ -805,7 +805,7 @@ exports.updateBookingStatus = async (req, res) => {
 
         notifyBusyDriverUpdate(driver);
       }
-      if(driver_web_complete == true || driver_web_complete == "true"){
+      if (driver_web_complete == true || driver_web_complete == "true") {
         await sendCompleteBookingFromWebNotification(driverId);
       }
       await notifyDriverBookingStatus(driverId);

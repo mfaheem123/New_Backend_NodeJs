@@ -44,8 +44,8 @@ const DriverAttribute = {
   },
 
   // Update Attribute Dynamic / Partial
-update: async (id, attribute_name, short_name) => {
-  const query = `
+  update: async (id, attribute_name, short_name) => {
+    const query = `
     UPDATE driver_attributes
     SET 
       attribute_name = COALESCE($1, attribute_name),
@@ -55,16 +55,16 @@ update: async (id, attribute_name, short_name) => {
     RETURNING id, attribute_name, short_name;
   `;
 
-  // Undefined ko explicit null pass karein taaki COALESCE properly handle kare
-  const values = [
-    attribute_name !== undefined ? attribute_name : null,
-    short_name !== undefined ? short_name : null,
-    id,
-  ];
+    // Undefined ko explicit null pass karein taaki COALESCE properly handle kare
+    const values = [
+      attribute_name !== undefined ? attribute_name : null,
+      short_name !== undefined ? short_name : null,
+      id,
+    ];
 
-  const { rows } = await db.query(query, values);
-  return rows[0];
-},
+    const { rows } = await db.query(query, values);
+    return rows[0];
+  },
 
   // Delete Attribute
   delete: async (id) => {

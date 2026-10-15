@@ -1,6 +1,5 @@
 const DriverAttribute = require("../models/driverAttributeModel");
 
-
 // ---------------------------------------------------------
 // GET ALL DRIVER ATTRIBUTES CONTROLLER
 // ---------------------------------------------------------
@@ -113,12 +112,12 @@ exports.deleteAttribute = async (req, res) => {
     if (!deleted) {
       return res
         .status(404)
-        .json({ status: false, message: "Attribute not found" });
+        .json({ status: false, message: "Driver Attribute not found" });
     }
 
     return res.status(200).json({
       status: true,
-      message: "Driver attribute deleted successfully",
+      message: "Driver Attribute Deleted Successfully",
     });
   } catch (error) {
     return res.status(500).json({ status: false, message: error.message });

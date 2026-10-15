@@ -916,16 +916,17 @@ const Driver = {
       const existingDriver = rows[0];
 
       // 🟢 Attributes Handling:
-    // Agar Request me attributes dynamic value aati hai to use stringify karein, warna existing driver ka hi rehne dein.
-    if ("attributes" in data && data.attributes !== undefined) {
-      if (data.attributes === null || data.attributes === "") {
-        data.attributes = null;
-      } else {
-        data.attributes = typeof data.attributes === "string" 
-          ? data.attributes 
-          : JSON.stringify(data.attributes);
+      // Agar Request me attributes dynamic value aati hai to use stringify karein, warna existing driver ka hi rehne dein.
+      if ("attributes" in data && data.attributes !== undefined) {
+        if (data.attributes === null || data.attributes === "") {
+          data.attributes = null;
+        } else {
+          data.attributes =
+            typeof data.attributes === "string"
+              ? data.attributes
+              : JSON.stringify(data.attributes);
+        }
       }
-    }
 
       // ✅ Merge old data with new
       const mergedDriver = { ...existingDriver, ...data };

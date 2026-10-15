@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("../controllers/driverAttributeController");
+const driverAttributeController = require("../controllers/driverAttributeController");
 
-router.get("/get", controller.getAllAttributes);
-router.get("/getbyid/:id", controller.getAttributeById);
-router.post("/add", controller.addAttribute);
-router.post("/update/:id", controller.updateAttribute);
-router.delete("/delete/:id", controller.deleteAttribute);
+router.get("/get", driverAttributeController.getAllAttributes);
+router.get("/getbyid/:id", driverAttributeController.getAttributeById);
+router.post("/add", driverAttributeController.addAttribute);
+router.post("/update/:id", driverAttributeController.updateAttribute);
+router.delete("/delete/:id", driverAttributeController.deleteAttribute);
 
 module.exports = router;

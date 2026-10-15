@@ -1,6 +1,9 @@
 const db = require("../db");
 
 const Escort = {
+  // ---------------------------------------------------------
+// CREATE ESCORT WITH DOCUMENTS MODEL
+// ---------------------------------------------------------
   async create(data) {
     const query = `
       INSERT INTO escorts (
@@ -44,6 +47,9 @@ const Escort = {
     return escort;
   },
 
+  // ---------------------------------------------------------
+// GET ALL ESCORTS MODEL
+// ---------------------------------------------------------
   async findAll({
     page = 1,
     limit = 100,
@@ -115,6 +121,9 @@ const Escort = {
     };
   },
 
+  // ---------------------------------------------------------
+// GET ESCORT BY ID MODEL
+// ---------------------------------------------------------
   async findById(id) {
     const { rows } = await db.query(`SELECT * FROM escorts WHERE id = $1`, [
       id,
@@ -123,6 +132,9 @@ const Escort = {
     return escort;
   },
 
+  // ---------------------------------------------------------
+// UPDATE ESCORT MODEL
+// ---------------------------------------------------------
   async update(id, data) {
     const keys = Object.keys(data);
     if (keys.length === 0) return null;
@@ -140,6 +152,9 @@ const Escort = {
     return rows[0];
   },
 
+  // ---------------------------------------------------------
+// DELETE ESCORT MODEL
+// ---------------------------------------------------------
   async remove(id) {
     const result = await db.query("DELETE FROM escorts WHERE id = $1", [id]);
 

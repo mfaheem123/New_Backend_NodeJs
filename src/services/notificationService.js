@@ -1549,5 +1549,5 @@ module.exports = {
   sendForcedBreakStatusNotification,
   sendForcedEndBreakStatusNotification,
   sendNoShowBookingNotification,
-  sendCompleteBookingFromWebNotification
+  sendCompleteBookingFromWebNotification,
 };

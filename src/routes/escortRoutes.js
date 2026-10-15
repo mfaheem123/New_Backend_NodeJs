@@ -9,6 +9,7 @@ const {
   getById,
   update,
   remove,
+  getAllByAccountHasEscort
 } = require("../controllers/escortController");
 
 // Ensure uploads folder exists
@@ -25,6 +26,7 @@ const upload = multer({ storage });
 router.post("/add", upload.any(), create);
 router.get("/get", getAll);
 router.get("/getbyid/:id", getById);
+router.get("/getbyaccount/", getAllByAccountHasEscort);
 router.post("/edit/:id", upload.any(), update);
 router.delete("/delete/:id", remove);
 
