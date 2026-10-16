@@ -42,4 +42,13 @@ async function sendSMSWithTemplate(payload) {
   // return gatewayResponse;
 }
 
-module.exports = { sendSMSWithTemplate };
+// 📌 NAYA SERVICE FUNCTION
+async function fetchSMSLogsService(query) {
+  const offset = parseInt(query.offset, 10) || 0;
+  const limit = parseInt(query.limit, 10) || 25;
+
+  const data = await getSMSLogs(limit, offset);
+  return data;
+}
+
+module.exports = { sendSMSWithTemplate, fetchSMSLogsService };

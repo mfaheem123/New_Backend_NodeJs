@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("../controllers/callEventController");
+const callEventController = require("../controllers/callEventController");
 const verifyVipVoipToken = require("../middlewares/verifyVipVoipToken");
 
 router.post(
   "/receivecallevents",
   verifyVipVoipToken,
-  controller.receiveCallEvents,
+  callEventController.receiveCallEvents,
 );
 
-router.get("/getcallevents", controller.getCallEvents);
-router.delete("/deletecallevents", controller.deleteCallEvents);
+router.get("/getcallevents", callEventController.getCallEvents);
+router.delete("/deletecallevents", callEventController.deleteCallEvents);
 
 module.exports = router;

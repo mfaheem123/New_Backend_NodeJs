@@ -1,4 +1,4 @@
-const { sendSMSWithTemplate } = require("../services/smsService");
+const { sendSMSWithTemplate, fetchSMSLogsService } = require("../services/smsService");
 
 async function sendSMS(req, res) {
   try {
@@ -16,4 +16,22 @@ async function sendSMS(req, res) {
   }
 }
 
-module.exports = { sendSMS };
+// 📌 NAYA CONTROLLER FUNCTION
+async function getMessages(req, res) {
+  try {
+    const result = await fetchSMSLogsService(req.query);
+
+    res.json({
+      status: true,
+      count: result.count,
+      messages: result.messages,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      message: error.message,
+    });
+  }
+}
+
+module.exports = { sendSMS, getMessages };

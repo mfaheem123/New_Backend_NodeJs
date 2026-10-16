@@ -7,6 +7,10 @@ const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 // ---------------------------------------------------------
 const create = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING ADD ESCORT BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     // Clean empty strings
     Object.keys(req.body).forEach((k) => {
       if (req.body[k] === "") req.body[k] = null;
@@ -107,6 +111,10 @@ const getById = async (req, res) => {
 // ---------------------------------------------------------
 const update = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING UPDATE ESCORT BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const id = req.params.id;
     Object.keys(req.body).forEach((k) => {
       if (req.body[k] === "") req.body[k] = null;
@@ -169,10 +177,10 @@ const getAllByAccountHasEscort = async (req, res) => {
   try {
     const { account_id, company_id } = req.query;
 
-    if (!account_id) {
+    if (!account_id || !company_id) {
       return res.status(400).json({
         status: false,
-        message: "account_id query parameter is required",
+        message: "account_id and company_id are required",
       });
     }
 
@@ -192,7 +200,7 @@ const getAllByAccountHasEscort = async (req, res) => {
     }
 
     // FIX: Pass as an object { company_id } instead of raw parameter
-    const { escorts } = await Escort.findAll({ company_id });
+    const { escorts } = await Escort.findAllByCompany( company_id );
 
     return res.status(200).json({
       status: true,
@@ -204,4 +212,11 @@ const getAllByAccountHasEscort = async (req, res) => {
   }
 };
 
-module.exports = { create, getAll, getById, update, remove, getAllByAccountHasEscort };
+module.exports = {
+  create,
+  getAll,
+  getById,
+  update,
+  remove,
+  getAllByAccountHasEscort,
+};

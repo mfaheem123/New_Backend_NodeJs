@@ -37,7 +37,7 @@ const updateBooking = async (id, updates) => {
 };
 
 // ---------------------------------------------------------
-// BOOKING RESPONSE JSON
+// OLD BOOKING RESPONSE JSON WITHOUT ATTRIBUTES AND ESCORT
 // ---------------------------------------------------------
 const ENRICHED_SELECT = `
 SELECT

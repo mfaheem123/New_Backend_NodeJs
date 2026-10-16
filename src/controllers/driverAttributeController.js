@@ -45,6 +45,10 @@ exports.getAttributeById = async (req, res) => {
 // ---------------------------------------------------------
 exports.addAttribute = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING ADD DRIVER ATTRIBUTE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const { attribute_name, short_name, company_id } = req.body;
 
     if (!attribute_name || !short_name || !company_id) {
@@ -75,6 +79,10 @@ exports.addAttribute = async (req, res) => {
 // ---------------------------------------------------------
 exports.updateAttribute = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING UPDATE DRIVER ATTRIBUTE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const { id } = req.params;
     const { attribute_name, short_name } = req.body;
 

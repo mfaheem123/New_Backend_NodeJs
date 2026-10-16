@@ -91,6 +91,7 @@ function parseJSONFields(row) {
     "notes",
     "child_seat",
     "skipped_bookings",
+    // "driver_attributes",
   ];
 
   const parsed = { ...row };

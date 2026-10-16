@@ -9,7 +9,7 @@ const {
   getById,
   update,
   remove,
-  getAllByAccountHasEscort
+  getAllByAccountHasEscort,
 } = require("../controllers/escortController");
 
 // Ensure uploads folder exists
