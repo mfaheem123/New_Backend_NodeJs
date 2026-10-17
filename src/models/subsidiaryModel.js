@@ -165,7 +165,11 @@ const remove = async (id) => {
   return rows[0] || null;
 };
 
-const getAllWithBankDetails = async ({ limit = 100, offset = 0, company_id } = {}) => {
+const getAllWithBankDetails = async ({
+  limit = 100,
+  offset = 0,
+  company_id,
+} = {}) => {
   const q = `
     SELECT 
       s.*,
@@ -200,8 +204,6 @@ module.exports = {
   remove,
   getAllWithBankDetails,
 };
-
-
 
 //////////////////////////////////////////////// SUBSIDIARY MODEL COMPLETE WITH INDEXING //////////////////////////////////////////
 
@@ -289,7 +291,7 @@ module.exports = {
 
 //   // Single DB query retrieving both rows and total count via Window Function
 //   const dataQuery = `
-//     SELECT 
+//     SELECT
 //       s.id,
 //       s.logo,
 //       s.background_color,
@@ -397,7 +399,7 @@ module.exports = {
 //   params.push(limit, offset);
 
 //   const q = `
-//     SELECT 
+//     SELECT
 //       s.*,
 //       jsonb_build_object(
 //         'id', b.id,

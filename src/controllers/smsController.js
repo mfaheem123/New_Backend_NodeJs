@@ -1,4 +1,7 @@
-const { sendSMSWithTemplate, fetchSMSLogsService } = require("../services/smsService");
+const {
+  sendSMSWithTemplate,
+  fetchSMSLogsService,
+} = require("../services/smsService");
 
 async function sendSMS(req, res) {
   try {

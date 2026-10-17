@@ -164,10 +164,7 @@ const Escort = {
   // ---------------------------------------------------------
   // GET ALL ESCORTS MODEL BY COMPANY ID
   // ---------------------------------------------------------
-  async findAllByCompany(
-    company_id,
-  ) {
-    
+  async findAllByCompany(company_id) {
     const query = `
     SELECT *
     FROM escorts
@@ -177,7 +174,7 @@ const Escort = {
     const { rows } = await db.query(query, [company_id]);
 
     return {
-      escorts: rows.map(({ company_id, ...rest }) => rest)
+      escorts: rows.map(({ company_id, ...rest }) => rest),
     };
   },
 };

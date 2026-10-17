@@ -200,7 +200,7 @@ const getAllByAccountHasEscort = async (req, res) => {
     }
 
     // FIX: Pass as an object { company_id } instead of raw parameter
-    const { escorts } = await Escort.findAllByCompany( company_id );
+    const { escorts } = await Escort.findAllByCompany(company_id);
 
     return res.status(200).json({
       status: true,
