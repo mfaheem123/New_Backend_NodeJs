@@ -55,6 +55,7 @@ const {
   getDriverBookingStatisticsData,
   cancelBookingById,
   getBookingDriverCustomerById,
+  getAllMultiBookings
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -3334,4 +3335,81 @@ exports.getBookingDriverCustomerById = async (req, res) => {
     success: true,
     booking: data,
   });
+};
+
+// ---------------------------------------------------------
+// GET ALL MULTI BOOKINGS CONTROLLER
+// ---------------------------------------------------------
+exports.getAllMultiBookings = async (req, res) => {
+  try {
+    let {
+      page = 1,
+      limit = 20,
+      reference_number,
+      pickup_date,
+      pickup_time,
+      name,
+      pickup,
+      dropoff,
+      account_name,
+      driver_name,
+      vehicle_type_name,
+      notes,
+      fares,
+      booking_status,
+      journey_type,
+      payment_type,
+      company_id,
+      tabId,
+      tabName,
+    } = req.query;
+
+    page = parseInt(page, 10) || 1;
+    limit = parseInt(limit, 10) || 20;
+    const offset = (page - 1) * limit;
+
+    // Call Model Function
+    const { rows, total } = await getAllMultiBookings({
+      offset,
+      limit,
+      filters: {
+        reference_number,
+        pickup_date,
+        pickup_time,
+        name,
+        pickup,
+        dropoff,
+        account_name,
+        driver_name,
+        vehicle_type_name,
+        notes,
+        fares,
+        booking_status,
+        journey_type,
+        payment_type,
+        company_id,
+      },
+    });
+
+    // Parse JSON strings like viapoints, child_seat, notes if required
+    const data = rows.map((row) => parseJSONFields(row));
+
+    return res.status(200).json({
+      success: true,
+      tab_id: tabId || null,
+      tab_name: tabName || "Multi Bookings",
+      page,
+      limit,
+      total,
+      total_pages: Math.ceil(total / limit),
+      count: data.length,
+      data,
+    });
+  } catch (err) {
+    console.error("Error in getAllMultiBookings:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
+    });
+  }
 };

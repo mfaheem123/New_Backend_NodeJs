@@ -156,6 +156,7 @@ const parseJSONFields = (row) => {
     "notes",
     "child_seat",
     "skipped_bookings",
+    "driver_attributes",
   ];
 
   const parsed = { ...row };
@@ -230,6 +231,7 @@ async function normalizeBookingPayload(src) {
     "child_seat",
     "notes",
     "skipped_bookings",
+    "driver_attributes",
   ];
 
   for (const f of jsonFields) {
@@ -407,6 +409,7 @@ async function createBookingRow(pool, bookingObj) {
     "initial_subsidiary_id",
     "eta",
     "company_id",
+    "driver_attributes",
   ];
 
   // 🔥 FIX: Properly DEFINE row before using it
@@ -661,6 +664,7 @@ async function createReturnWayBooking(payload) {
       dropoff_location_type_id: payload.return_dropoff_location_type_id,
 
       viapoints: payload.return_viapoints || [],
+      driver_attributes: payload.driver_attributes || [],
       notes: payload.return_notes || [],
       special_instructions: payload.return_special_instructions,
 
@@ -922,8 +926,8 @@ async function createMultiReservationBooking(payload) {
       createdBookingIds.push(outboundInserted.id);
 
       /* ==========================
-     RETURN BOOKING
-  ========================== */
+        RETURN BOOKING
+      ========================== */
 
       const shouldCreateReturn =
         Number(payload.journey_type_id) === 3 && mr.return_pickup_time;
@@ -1380,6 +1384,7 @@ async function updateBookingService(bookingId, payload) {
     "restricted_drivers",
     "child_seat",
     "notes",
+    "driver_attributes",
 
     // Passenger
     "passengers",
@@ -1471,6 +1476,7 @@ async function updateBookingService(bookingId, payload) {
     "child_seat",
     "notes",
     "skipped_bookings",
+    "driver_attributes",
   ];
 
   for (const field of jsonFields) {
@@ -1600,6 +1606,17 @@ async function updateBookingService(bookingId, payload) {
         typeof payload.return_notes === "string"
           ? payload.return_notes
           : JSON.stringify(payload.return_notes);
+    }
+    
+    // ---------------------------------------------------
+    // Return Driver Attributes
+    // ---------------------------------------------------
+
+    if (payload.driver_attributes !== undefined) {
+      returnUpdates.driver_attributes =
+        typeof payload.driver_attributes === "string"
+          ? payload.driver_attributes
+          : JSON.stringify(payload.driver_attributes);
     }
 
     // ---------------------------------------------------

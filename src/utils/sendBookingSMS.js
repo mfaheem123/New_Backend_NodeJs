@@ -1,8 +1,18 @@
 const { sendSMSWithTemplate } = require("../services/smsService");
 const subsidiaryModel = require("../models/subsidiaryModel");
+const {getCompanyIdByBookingId} = require("../models/bookingModel");
 const sendBookingSMS = async (clean) => {
   try {
     if (!clean?.sms) return;
+
+    //Get Company ID if not present in clean object
+    // 📌 1. Scope fix: Variable outer function scope me declare karein
+    let companyId = clean?.company_id || null;
+
+    // 📌 2. Agar company_id clean object me na ho tou DB se fetch karein
+    if (!companyId && clean?.id) {
+      companyId = await getCompanyIdByBookingId(clean.id);
+    }
 
     // const viapointsStr = clean?.viapoints?.length
     //   ? clean.viapoints.map((v) => ` via ${v}`).join("")
@@ -43,8 +53,9 @@ const sendBookingSMS = async (clean) => {
         company_name: clean.subsidiary?.name ?? "",
         company_telephone: clean.subsidiary?.telephone_number ?? "",
       };
-
+console.log("Company ID for SMS Logging: ", companyId);
       await sendSMSWithTemplate({
+        company_id: companyId,
         template_id: 6,
         mobile: clean.mobile,
         port: 5,
@@ -72,6 +83,7 @@ const sendBookingSMS = async (clean) => {
         };
 
         await sendSMSWithTemplate({
+          company_id: companyId,
           template_id: 3,
           mobile: clean.mobile,
           port: 5,
@@ -90,6 +102,7 @@ const sendBookingSMS = async (clean) => {
       };
 
       await sendSMSWithTemplate({
+          company_id: companyId,
         template_id: 4,
         mobile: clean.mobile,
         port: 5,

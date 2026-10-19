@@ -2,10 +2,10 @@ const { getTemplateById } = require("./templateService");
 const { parseTemplate } = require("../utils/templateParser");
 const { formatMobile } = require("../utils/formatMobile");
 const { sendViaDinstar } = require("./dinstarService");
-const { createSMSLog } = require("../models/smsLogModel");
+const { createSMSLog, getSMSLogs } = require("../models/smsLogModel");
 
 async function sendSMSWithTemplate(payload) {
-  const { template_id, mobile, data, port } = payload;
+  const { template_id, mobile, data, port, company_id } = payload;
 
   // 1️⃣ Get Template
   const template = await getTemplateById(template_id);
@@ -32,6 +32,7 @@ async function sendSMSWithTemplate(payload) {
 
   // // 5️⃣ Save Log in DB
   // await createSMSLog({
+  //   company_id,
   //   template_id,
   //   mobile: formattedMobile,
   //   message,
@@ -46,8 +47,9 @@ async function sendSMSWithTemplate(payload) {
 async function fetchSMSLogsService(query) {
   const offset = parseInt(query.offset, 10) || 0;
   const limit = parseInt(query.limit, 10) || 25;
+  const company_id = query.company_id ? parseInt(query.company_id, 10) : null;
 
-  const data = await getSMSLogs(limit, offset);
+  const data = await getSMSLogs(limit, offset, company_id);
   return data;
 }
 

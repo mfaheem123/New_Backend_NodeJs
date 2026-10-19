@@ -1,36 +1,49 @@
 const pool = require("../db");
 
+// 1️⃣ createSMSLog me company_id add kiya
 async function createSMSLog(data) {
-  const { template_id, mobile, message, status, gateway_response } = data;
+  const { company_id, template_id, mobile, message, status, gateway_response } = data;
 
   await pool.query(
     `INSERT INTO sms_logs 
-    (template_id, mobile, message, status, gateway_response) 
-    VALUES ($1, $2, $3, $4, $5)`,
-    [template_id, mobile, message, status, gateway_response],
+    (company_id, template_id, mobile, message, status, gateway_response) 
+    VALUES ($1, $2, $3, $4, $5, $6)`,
+    [company_id || null, template_id, mobile, message, status, gateway_response]
   );
 }
 
-// 📌 NAYA FUNCTION: API ke liye DB se SMS fetching
-async function getSMSLogs(limit = 25, offset = 0) {
-  const countResult = await pool.query(`SELECT COUNT(*) FROM sms_logs`);
-  const totalCount = parseInt(countResult.rows[0].count, 10);
-
-  // 📌 'Europe/London' time zone explicitly mention karne se exact UK date aur time milega
-  const query = `
+// 2️⃣ getSMSLogs me optional company_id filter lagaya
+async function getSMSLogs(limit = 25, offset = 0, company_id = null) {
+  let countQuery = `SELECT COUNT(*) FROM sms_logs`;
+  let dataQuery = `
     SELECT 
       id,
+      company_id,
       mobile AS number,
       message AS sms,
       TO_CHAR(created_at AT TIME ZONE 'Europe/London', 'YYYY-MM-DD') AS date,
       TO_CHAR(created_at AT TIME ZONE 'Europe/London', 'HH24:MI:SS') AS time,
       LOWER(status) AS status
     FROM sms_logs
-    ORDER BY id DESC
-    LIMIT $1 OFFSET $2;
   `;
 
-  const { rows } = await pool.query(query, [limit, offset]);
+  const queryParams = [];
+  
+  // Agar company_id aati hai tou filter apply karein
+  if (company_id) {
+    countQuery += ` WHERE company_id = $1`;
+    dataQuery += ` WHERE company_id = $1`;
+    queryParams.push(company_id);
+  }
+
+  const countResult = await pool.query(countQuery, queryParams);
+  const totalCount = parseInt(countResult.rows[0].count, 10);
+
+  // Pagination limit/offset Parameters
+  dataQuery += ` ORDER BY id DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
+  queryParams.push(limit, offset);
+
+  const { rows } = await pool.query(dataQuery, queryParams);
 
   return {
     count: totalCount,
@@ -38,4 +51,7 @@ async function getSMSLogs(limit = 25, offset = 0) {
   };
 }
 
-module.exports = { createSMSLog, getSMSLogs };
+module.exports = { 
+  createSMSLog, 
+  getSMSLogs 
+};
