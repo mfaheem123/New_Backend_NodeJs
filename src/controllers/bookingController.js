@@ -55,7 +55,7 @@ const {
   getDriverBookingStatisticsData,
   cancelBookingById,
   getBookingDriverCustomerById,
-  getAllMultiBookings
+  getAllMultiBookings,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -808,7 +808,7 @@ exports.updateBookingStatus = async (req, res) => {
         notifyBusyDriverUpdate(driver);
       }
       if (driver_web_complete == true || driver_web_complete == "true") {
-        await sendCompleteBookingFromWebNotification(driverId);
+        await sendCompleteBookingFromWebNotification(driverId, bookingId);
       }
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
@@ -847,7 +847,7 @@ exports.updateBookingStatus = async (req, res) => {
     if (booking_status_id == 7) {
       let message = "This Booking has been marked as No Show.";
       // Send No Show Notification to Driver
-      await sendNoShowBookingNotification(driverId, message);
+      await sendNoShowBookingNotification(driverId, bookingId, message);
       await Driver.updateDriverStatus(driverId, "Available", "Available");
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);

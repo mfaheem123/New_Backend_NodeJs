@@ -1607,7 +1607,7 @@ async function updateBookingService(bookingId, payload) {
           ? payload.return_notes
           : JSON.stringify(payload.return_notes);
     }
-    
+
     // ---------------------------------------------------
     // Return Driver Attributes
     // ---------------------------------------------------

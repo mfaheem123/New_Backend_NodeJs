@@ -2,13 +2,21 @@ const pool = require("../db");
 
 // 1️⃣ createSMSLog me company_id add kiya
 async function createSMSLog(data) {
-  const { company_id, template_id, mobile, message, status, gateway_response } = data;
+  const { company_id, template_id, mobile, message, status, gateway_response } =
+    data;
 
   await pool.query(
     `INSERT INTO sms_logs 
     (company_id, template_id, mobile, message, status, gateway_response) 
     VALUES ($1, $2, $3, $4, $5, $6)`,
-    [company_id || null, template_id, mobile, message, status, gateway_response]
+    [
+      company_id || null,
+      template_id,
+      mobile,
+      message,
+      status,
+      gateway_response,
+    ],
   );
 }
 
@@ -28,7 +36,7 @@ async function getSMSLogs(limit = 25, offset = 0, company_id = null) {
   `;
 
   const queryParams = [];
-  
+
   // Agar company_id aati hai tou filter apply karein
   if (company_id) {
     countQuery += ` WHERE company_id = $1`;
@@ -51,7 +59,7 @@ async function getSMSLogs(limit = 25, offset = 0, company_id = null) {
   };
 }
 
-module.exports = { 
-  createSMSLog, 
-  getSMSLogs 
+module.exports = {
+  createSMSLog,
+  getSMSLogs,
 };

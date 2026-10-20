@@ -1,6 +1,6 @@
 const { sendSMSWithTemplate } = require("../services/smsService");
 const subsidiaryModel = require("../models/subsidiaryModel");
-const {getCompanyIdByBookingId} = require("../models/bookingModel");
+const { getCompanyIdByBookingId } = require("../models/bookingModel");
 const sendBookingSMS = async (clean) => {
   try {
     if (!clean?.sms) return;
@@ -53,7 +53,7 @@ const sendBookingSMS = async (clean) => {
         company_name: clean.subsidiary?.name ?? "",
         company_telephone: clean.subsidiary?.telephone_number ?? "",
       };
-console.log("Company ID for SMS Logging: ", companyId);
+      console.log("Company ID for SMS Logging: ", companyId);
       await sendSMSWithTemplate({
         company_id: companyId,
         template_id: 6,
@@ -102,7 +102,7 @@ console.log("Company ID for SMS Logging: ", companyId);
       };
 
       await sendSMSWithTemplate({
-          company_id: companyId,
+        company_id: companyId,
         template_id: 4,
         mobile: clean.mobile,
         port: 5,

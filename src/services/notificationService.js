@@ -1234,7 +1234,7 @@ async function sendForcedLoggedOutNotification(driverId, messages) {
 // ---------------------------------------------------------
 // SEND NO SHOW NOTIFICATION TO DRIVER
 // ---------------------------------------------------------
-async function sendNoShowBookingNotification(driverId, messages) {
+async function sendNoShowBookingNotification(driverId, bookingId, messages) {
   // 1️⃣ Driver ka FCM token lao
   const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
     driverId,
@@ -1251,10 +1251,11 @@ async function sendNoShowBookingNotification(driverId, messages) {
     token: fcmToken,
     notification: {
       title: "No Show Update",
-      body: "You Have A No Show Booking.",
+      body: "Your Booking Has Been Marked As No Show.",
     },
     data: {
       driver_id: String(driverId),
+      booking_id: String(bookingId),
       type: "NO_SHOW_UPDATE",
       message: messages,
     },
@@ -1272,7 +1273,7 @@ async function sendNoShowBookingNotification(driverId, messages) {
 // ---------------------------------------------------------
 // SEND COMPLETE BOOKING NOTIFICATION FROM WEB TO DRIVER
 // ---------------------------------------------------------
-async function sendCompleteBookingFromWebNotification(driverId) {
+async function sendCompleteBookingFromWebNotification(driverId, bookingId) {
   // 1️⃣ Driver ka FCM token lao
   const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
     driverId,
@@ -1295,6 +1296,7 @@ async function sendCompleteBookingFromWebNotification(driverId) {
     },
     data: {
       driver_id: String(driverId),
+      booking_id: String(bookingId),
       type: "COMPLETE_BOOKING_UPDATE",
       message: messages,
     },

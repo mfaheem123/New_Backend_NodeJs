@@ -601,7 +601,7 @@ LEFT JOIN location_types ltd
 
 // LEFT JOIN accounts a
 //   ON b.account_id = a.id
-  
+
 // LEFT JOIN escorts esc
 //   ON b.escort_id = esc.id
 
@@ -617,7 +617,6 @@ LEFT JOIN location_types ltd
 // LEFT JOIN employees emp
 //   ON b.employee_id = emp.id
 
-
 // -- PICKUP LOCATION
 // LEFT JOIN LATERAL (
 //   SELECT l.*
@@ -628,7 +627,6 @@ LEFT JOIN location_types ltd
 //   LIMIT 1
 // ) lp ON true
 
-
 // -- DROPOFF LOCATION
 // LEFT JOIN LATERAL (
 //   SELECT l.*
@@ -638,7 +636,6 @@ LEFT JOIN location_types ltd
 //   ORDER BY LENGTH(l.name) DESC, l.id ASC
 //   LIMIT 1
 // ) ld ON true
-
 
 // LEFT JOIN location_types ltp
 //   ON lp.location_type_id = ltp.id
@@ -3499,7 +3496,11 @@ const getCustomerBookingStats = async (customerId) => {
 // ---------------------------------------------------------
 // GET ALL MULTI BOOKINGS MODEL
 // ---------------------------------------------------------
-const getAllMultiBookings = async ({ offset = 0, limit = 20, filters = {} }) => {
+const getAllMultiBookings = async ({
+  offset = 0,
+  limit = 20,
+  filters = {},
+}) => {
   let whereClauses = ["b.multi_booking_id IS NOT NULL"];
   let queryParams = [];
 
@@ -3523,7 +3524,8 @@ const getAllMultiBookings = async ({ offset = 0, limit = 20, filters = {} }) => 
     whereClauses.push(`b.dropoff ILIKE $${queryParams.length}`);
   }
 
-  const whereString = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+  const whereString =
+    whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
 
   const limitParamIndex = queryParams.length + 1;
   const offsetParamIndex = queryParams.length + 2;
@@ -3637,5 +3639,5 @@ module.exports = {
   getCustomerBookingsAndStats,
   getCustomerBookingStats,
   getAllMultiBookings,
-  getCompanyIdByBookingId
+  getCompanyIdByBookingId,
 };
