@@ -1267,6 +1267,10 @@ exports.onPanicStatusDriver = async (req, res) => {
 // ---------------------------------------------------------
 exports.endBreakStatusDriver = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING DRIVER ADD BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const { driver_id } = req.query?.driver_id ? req.query : req.body;
     const { force_end_break } = req.body;
     if (!driver_id) {

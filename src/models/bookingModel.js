@@ -3494,7 +3494,7 @@ const getCustomerBookingStats = async (customerId) => {
 };
 
 // ---------------------------------------------------------
-// GET ALL MULTI BOOKINGS MODEL
+// GET ALL MULTI BOOKINGS MODEL (Updated Order inside CTE)
 // ---------------------------------------------------------
 const getAllMultiBookings = async ({
   offset = 0,
@@ -3524,23 +3524,28 @@ const getAllMultiBookings = async ({
     whereClauses.push(`b.dropoff ILIKE $${queryParams.length}`);
   }
 
+  if (filters.company_id) {
+    queryParams.push(filters.company_id);
+    whereClauses.push(`b.company_id = $${queryParams.length}`);
+  }
+
   const whereString =
     whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
 
   const limitParamIndex = queryParams.length + 1;
   const offsetParamIndex = queryParams.length + 2;
 
-  // CTE (WITH clause) use karke har multi_booking_id ka pehla record pehle filter karenge
+  // CHANGED: CTE ORDER BY b.id ASC kardi hai taakay har multi_booking_id ki PEHLI booking pick ho (e.g. 1370 & 1375)
   const sql = `
     WITH distinct_multi_bookings AS (
       SELECT DISTINCT ON (b.multi_booking_id) b.id
       FROM bookings b
       ${whereString}
-      ORDER BY b.multi_booking_id ASC, b.pickup_date DESC, b.pickup_time DESC
+      ORDER BY b.multi_booking_id ASC, b.id ASC
     )
     ${ENRICHED_SELECT}
     WHERE b.id IN (SELECT id FROM distinct_multi_bookings)
-    ORDER BY b.pickup_date DESC, b.pickup_time DESC
+    ORDER BY b.id DESC
     LIMIT $${limitParamIndex} OFFSET $${offsetParamIndex}
   `;
 
@@ -3561,7 +3566,6 @@ const getAllMultiBookings = async ({
 // ---------------------------------------------------------
 // GET COMPANY ID BY BOOKING ID
 // ---------------------------------------------------------
-
 const getCompanyIdByBookingId = async (bookingId) => {
   const sql = `
     SELECT company_id
@@ -3571,6 +3575,23 @@ const getCompanyIdByBookingId = async (bookingId) => {
   const { rows } = await pool.query(sql, [bookingId]);
   return rows[0]?.company_id;
 };
+
+
+// ---------------------------------------------------------
+// FETCH ALL BOOKINGS BY SPECIFIC MULTI BOOKING ID MODEL
+// ---------------------------------------------------------
+const fetchBookingsByMultiBookingId = async (multiBookingId) => {
+  // ENRICHED_SELECT aapke paas already defined hoga jo joins handle karta hai
+  const sql = `
+    ${ENRICHED_SELECT}
+    WHERE b.multi_booking_id = $1
+    ORDER BY b.pickup_date ASC, b.pickup_time ASC
+  `;
+
+  const { rows } = await pool.query(sql, [multiBookingId]);
+  return rows;
+};
+
 
 module.exports = {
   pool,
@@ -3640,4 +3661,5 @@ module.exports = {
   getCustomerBookingStats,
   getAllMultiBookings,
   getCompanyIdByBookingId,
+  fetchBookingsByMultiBookingId
 };

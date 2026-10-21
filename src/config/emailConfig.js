@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 const companyConfiguration = require("../models/companyConfigurationModel");
+const EmailLogModel = require("../models/emailLogModel");
 
 //CONFIG USING ENV VARIABLES
 const transporter = nodemailer.createTransport({
@@ -60,7 +61,9 @@ const createDynamicTransporter = async (subsidiaryId) => {
 /**
  * Dynamic email bhejne ka function[cite: 1]
  */
-const sendEmail = async ({ subsidiaryId, to, subject, text, html }) => {
+const sendEmail = async ({ companyId, subsidiaryId, to, subject, text, html }) => {
+  let logStatus = "sent";
+  let logError = null;
   try {
     const configResponse = await companyConfiguration.getById(subsidiaryId);
     const config = configResponse?.company_configuration || configResponse;
@@ -93,10 +96,36 @@ const sendEmail = async ({ subsidiaryId, to, subject, text, html }) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
+
+    // 🔹 Save Log to Database (Success)
+    await EmailLogModel.create({
+      companyId: companyId || config.company_id || 1,
+      subsidiaryId,
+      email: to,
+      subject,
+      content: html || text,
+      status: "sent"
+    });
+
+
     console.log("Email sent successfully:", info.response);
+
     return info;
+
   } catch (error) {
     console.error("Email sending error:", error);
+    
+    // 🔹 Save Log to Database (Failed)
+    await EmailLogModel.create({
+      companyId: companyId || 1,
+      subsidiaryId,
+      email: to,
+      subject,
+      content: html || text,
+      status: "failed",
+      errorMessage: error.message
+    });
+
     throw error;
   }
 };

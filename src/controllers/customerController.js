@@ -32,6 +32,7 @@ const sendDynamicCustomerEmail = async ({
 
     // Dynamic sendEmail Call
     await sendEmail({
+      companyId: companyId || 3, // 👈 Explicitly passed
       subsidiaryId,
       to,
       subject,

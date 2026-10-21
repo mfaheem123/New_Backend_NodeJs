@@ -47,6 +47,7 @@ async function sendEmailWithTemplate({
 
     // 3. Dynamic sendEmail function ke zariye email send karo
     const info = await sendEmail({
+      companyId: company_id,
       subsidiaryId: activeSubsidiaryId,
       to,
       subject,

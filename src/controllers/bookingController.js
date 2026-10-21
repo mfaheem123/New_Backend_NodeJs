@@ -56,6 +56,7 @@ const {
   cancelBookingById,
   getBookingDriverCustomerById,
   getAllMultiBookings,
+  fetchBookingsByMultiBookingId
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -3360,7 +3361,6 @@ exports.getAllMultiBookings = async (req, res) => {
       journey_type,
       payment_type,
       company_id,
-      tabId,
       tabName,
     } = req.query;
 
@@ -3396,7 +3396,6 @@ exports.getAllMultiBookings = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      tab_id: tabId || null,
       tab_name: tabName || "Multi Bookings",
       page,
       limit,
@@ -3407,6 +3406,42 @@ exports.getAllMultiBookings = async (req, res) => {
     });
   } catch (err) {
     console.error("Error in getAllMultiBookings:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
+    });
+  }
+};
+
+
+
+// ---------------------------------------------------------
+// GET ALL BOOKINGS BY SPECIFIC MULTI BOOKING ID
+// ---------------------------------------------------------
+exports.getBookingsBySpecificMultiBookingId = async (req, res) => {
+  try {
+    const { multiBookingId } = req.query; // ya req.query agar query se bhejni hai
+
+    if (!multiBookingId) {
+      return res.status(400).json({
+        success: false,
+        message: "Multi Booking ID is required",
+      });
+    }
+
+    // Call Model Function
+    const bookings = await fetchBookingsByMultiBookingId(multiBookingId);
+
+    // Parse JSON fields agar zaroorat ho (jaise viapoints, notes, etc.)
+    const data = bookings.map((row) => parseJSONFields(row));
+
+    return res.status(200).json({
+      success: true,
+      count: data.length,
+      bookings: data, // Yeh sari bookings ki list return karega is multi_booking_id ki
+    });
+  } catch (err) {
+    console.error("Error in getBookingsBySpecificMultiBookingId:", err);
     return res.status(500).json({
       success: false,
       message: err.message || "Internal Server Error",

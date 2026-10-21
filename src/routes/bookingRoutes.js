@@ -6,6 +6,8 @@ const bookingController = require("../controllers/bookingController");
 //BOOKING GET APIS ROUTES
 router.get("/get/:id", bookingController.getBookingSections);
 router.get("/getbytabs/:id", bookingController.getBookingByTabs);
+router.get("/multi-bookings", bookingController.getAllMultiBookings);
+router.get("/multi-bookings-id", bookingController.getBookingsBySpecificMultiBookingId);
 router.get("/getbyid/:id", bookingController.getBookingById);
 router.get(
   "/get-driver-customer-by-id/:id",
