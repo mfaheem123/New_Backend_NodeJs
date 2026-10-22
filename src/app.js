@@ -67,6 +67,7 @@ const driverSinBinRoutes = require("./routes/driverSinbinRoutes");
 const fareConfigurationMileageRoutes = require("./routes/fareConfigurationMileageRoutes");
 const driverAttributeRoutes = require("./routes/driverAttributeRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const emailRoutes = require("./routes/emailRoutes");
 
 const app = express();
 
@@ -190,6 +191,7 @@ app.use("/api/sinbin", driverSinBinRoutes);
 app.use("/api/fare-configuration-mileage", fareConfigurationMileageRoutes);
 app.use("/api/driver-attributes", driverAttributeRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/emails", emailRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

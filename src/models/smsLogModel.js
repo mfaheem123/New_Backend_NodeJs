@@ -21,8 +21,8 @@ async function createSMSLog(data) {
 }
 
 // 2️⃣ getSMSLogs me optional company_id filter lagaya
-async function getSMSLogs(limit = 25, offset = 0, company_id = null) {
-  let countQuery = `SELECT COUNT(*) FROM sms_logs`;
+async function getSMSLogs(limit = 25, offset = 0, company_id = null, filters = {}) {
+  let countQuery = `SELECT COUNT(*) FROM sms_logs WHERE 1=1`;
   let dataQuery = `
     SELECT 
       id,
@@ -33,22 +33,66 @@ async function getSMSLogs(limit = 25, offset = 0, company_id = null) {
       TO_CHAR(created_at AT TIME ZONE 'Europe/London', 'HH24:MI:SS') AS time,
       LOWER(status) AS status
     FROM sms_logs
+    WHERE 1=1
   `;
 
   const queryParams = [];
+  let paramIndex = 1;
 
-  // Agar company_id aati hai tou filter apply karein
+  // 1. Company ID Filter
   if (company_id) {
-    countQuery += ` WHERE company_id = $1`;
-    dataQuery += ` WHERE company_id = $1`;
+    countQuery += ` AND company_id = $${paramIndex}`;
+    dataQuery += ` AND company_id = $${paramIndex}`;
     queryParams.push(company_id);
+    paramIndex++;
   }
 
+  // 2. Number Search (Mobile)
+  if (filters.number) {
+    countQuery += ` AND mobile ILIKE $${paramIndex}`;
+    dataQuery += ` AND mobile ILIKE $${paramIndex}`;
+    queryParams.push(`%${filters.number}%`);
+    paramIndex++;
+  }
+
+  // 3. SMS Message Search
+  if (filters.sms) {
+    countQuery += ` AND message ILIKE $${paramIndex}`;
+    dataQuery += ` AND message ILIKE $${paramIndex}`;
+    queryParams.push(`%${filters.sms}%`);
+    paramIndex++;
+  }
+
+  // 4. Date Search (Since date format column par applied hai, hum text casting ya range use kar sakte hain ya fir TO_CHAR match)
+  if (filters.date) {
+    countQuery += ` AND TO_CHAR(created_at AT TIME ZONE 'Europe/London', 'YYYY-MM-DD') ILIKE $${paramIndex}`;
+    dataQuery += ` AND TO_CHAR(created_at AT TIME ZONE 'Europe/London', 'YYYY-MM-DD') ILIKE $${paramIndex}`;
+    queryParams.push(`%${filters.date}%`);
+    paramIndex++;
+  }
+
+  // 5. Time Search
+  if (filters.time) {
+    countQuery += ` AND TO_CHAR(created_at AT TIME ZONE 'Europe/London', 'HH24:MI:SS') ILIKE $${paramIndex}`;
+    dataQuery += ` AND TO_CHAR(created_at AT TIME ZONE 'Europe/London', 'HH24:MI:SS') ILIKE $${paramIndex}`;
+    queryParams.push(`%${filters.time}%`);
+    paramIndex++;
+  }
+
+  // 6. Status Search
+  if (filters.status) {
+    countQuery += ` AND status ILIKE $${paramIndex}`;
+    dataQuery += ` AND status ILIKE $${paramIndex}`;
+    queryParams.push(`%${filters.status}%`);
+    paramIndex++;
+  }
+
+  // Total Count Fetch karna
   const countResult = await pool.query(countQuery, queryParams);
   const totalCount = parseInt(countResult.rows[0].count, 10);
 
-  // Pagination limit/offset Parameters
-  dataQuery += ` ORDER BY id DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
+  // Pagination Limit & Offset Parameters Add Karna
+  dataQuery += ` ORDER BY id DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
   queryParams.push(limit, offset);
 
   const { rows } = await pool.query(dataQuery, queryParams);

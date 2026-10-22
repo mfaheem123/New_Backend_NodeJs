@@ -437,8 +437,6 @@ async function sendForcedEndBreakStatusNotification(driverId, break_status) {
 async function sendRecoverBookingNotification(driverId, booking) {
   // 1️⃣ Driver ka FCM token lao
   const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
-
-    
     driverId,
   ]);
 

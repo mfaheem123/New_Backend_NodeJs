@@ -3,6 +3,9 @@ const {
   fetchSMSLogsService,
 } = require("../services/smsService");
 
+// ---------------------------------------------------------
+// SEND SMS CONTROLLER
+// ---------------------------------------------------------
 async function sendSMS(req, res) {
   try {
     const result = await sendSMSWithTemplate(req.body);
@@ -19,7 +22,9 @@ async function sendSMS(req, res) {
   }
 }
 
-// 📌 NAYA CONTROLLER FUNCTION
+// ---------------------------------------------------------
+// GET ALL SMS CONTROLLER
+// ---------------------------------------------------------
 async function getMessages(req, res) {
   try {
     const result = await fetchSMSLogsService(req.query);
@@ -27,6 +32,9 @@ async function getMessages(req, res) {
     res.json({
       status: true,
       count: result.count,
+      totalPages: result.totalPages,
+      currentPage: result.currentPage,
+      limit: result.limit,
       messages: result.messages,
     });
   } catch (error) {

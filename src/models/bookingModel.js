@@ -3496,72 +3496,72 @@ const getCustomerBookingStats = async (customerId) => {
 // ---------------------------------------------------------
 // GET ALL MULTI BOOKINGS MODEL (Updated Order inside CTE)
 // ---------------------------------------------------------
-const getAllMultiBookings = async ({
-  offset = 0,
-  limit = 20,
-  filters = {},
-}) => {
-  let whereClauses = ["b.multi_booking_id IS NOT NULL"];
-  let queryParams = [];
+// const getAllMultiBookings = async ({
+//   offset = 0,
+//   limit = 20,
+//   filters = {},
+// }) => {
+//   let whereClauses = ["b.multi_booking_id IS NOT NULL"];
+//   let queryParams = [];
 
-  if (filters.reference_number) {
-    queryParams.push(`%${filters.reference_number}%`);
-    whereClauses.push(`b.reference_number ILIKE $${queryParams.length}`);
-  }
+//   if (filters.reference_number) {
+//     queryParams.push(`%${filters.reference_number}%`);
+//     whereClauses.push(`b.reference_number ILIKE $${queryParams.length}`);
+//   }
 
-  if (filters.name) {
-    queryParams.push(`%${filters.name}%`);
-    whereClauses.push(`b.name ILIKE $${queryParams.length}`);
-  }
+//   if (filters.name) {
+//     queryParams.push(`%${filters.name}%`);
+//     whereClauses.push(`b.name ILIKE $${queryParams.length}`);
+//   }
 
-  if (filters.pickup) {
-    queryParams.push(`%${filters.pickup}%`);
-    whereClauses.push(`b.pickup ILIKE $${queryParams.length}`);
-  }
+//   if (filters.pickup) {
+//     queryParams.push(`%${filters.pickup}%`);
+//     whereClauses.push(`b.pickup ILIKE $${queryParams.length}`);
+//   }
 
-  if (filters.dropoff) {
-    queryParams.push(`%${filters.dropoff}%`);
-    whereClauses.push(`b.dropoff ILIKE $${queryParams.length}`);
-  }
+//   if (filters.dropoff) {
+//     queryParams.push(`%${filters.dropoff}%`);
+//     whereClauses.push(`b.dropoff ILIKE $${queryParams.length}`);
+//   }
 
-  if (filters.company_id) {
-    queryParams.push(filters.company_id);
-    whereClauses.push(`b.company_id = $${queryParams.length}`);
-  }
+//   if (filters.company_id) {
+//     queryParams.push(filters.company_id);
+//     whereClauses.push(`b.company_id = $${queryParams.length}`);
+//   }
 
-  const whereString =
-    whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+//   const whereString =
+//     whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
 
-  const limitParamIndex = queryParams.length + 1;
-  const offsetParamIndex = queryParams.length + 2;
+//   const limitParamIndex = queryParams.length + 1;
+//   const offsetParamIndex = queryParams.length + 2;
 
-  // CHANGED: CTE ORDER BY b.id ASC kardi hai taakay har multi_booking_id ki PEHLI booking pick ho (e.g. 1370 & 1375)
-  const sql = `
-    WITH distinct_multi_bookings AS (
-      SELECT DISTINCT ON (b.multi_booking_id) b.id
-      FROM bookings b
-      ${whereString}
-      ORDER BY b.multi_booking_id ASC, b.id ASC
-    )
-    ${ENRICHED_SELECT}
-    WHERE b.id IN (SELECT id FROM distinct_multi_bookings)
-    ORDER BY b.id DESC
-    LIMIT $${limitParamIndex} OFFSET $${offsetParamIndex}
-  `;
+//   // CHANGED: CTE ORDER BY b.id ASC kardi hai taakay har multi_booking_id ki PEHLI booking pick ho (e.g. 1370 & 1375)
+//   const sql = `
+//     WITH distinct_multi_bookings AS (
+//       SELECT DISTINCT ON (b.multi_booking_id) b.id
+//       FROM bookings b
+//       ${whereString}
+//       ORDER BY b.multi_booking_id ASC, b.id ASC
+//     )
+//     ${ENRICHED_SELECT}
+//     WHERE b.id IN (SELECT id FROM distinct_multi_bookings)
+//     ORDER BY b.id DESC
+//     LIMIT $${limitParamIndex} OFFSET $${offsetParamIndex}
+//   `;
 
-  const { rows } = await pool.query(sql, [...queryParams, limit, offset]);
+//   const { rows } = await pool.query(sql, [...queryParams, limit, offset]);
 
-  // Total unique multi_booking_ids count
-  const countSql = `
-    SELECT COUNT(DISTINCT b.multi_booking_id) AS total
-    FROM bookings b
-    ${whereString}
-  `;
-  const countResult = await pool.query(countSql, queryParams);
-  const total = parseInt(countResult.rows[0]?.total || 0, 10);
+//   // Total unique multi_booking_ids count
+//   const countSql = `
+//     SELECT COUNT(DISTINCT b.multi_booking_id) AS total
+//     FROM bookings b
+//     ${whereString}
+//   `;
+//   const countResult = await pool.query(countSql, queryParams);
+//   const total = parseInt(countResult.rows[0]?.total || 0, 10);
 
-  return { rows, total };
-};
+//   return { rows, total };
+// };
 
 // ---------------------------------------------------------
 // GET COMPANY ID BY BOOKING ID
@@ -3576,22 +3576,20 @@ const getCompanyIdByBookingId = async (bookingId) => {
   return rows[0]?.company_id;
 };
 
-
 // ---------------------------------------------------------
 // FETCH ALL BOOKINGS BY SPECIFIC MULTI BOOKING ID MODEL
 // ---------------------------------------------------------
-const fetchBookingsByMultiBookingId = async (multiBookingId) => {
-  // ENRICHED_SELECT aapke paas already defined hoga jo joins handle karta hai
-  const sql = `
-    ${ENRICHED_SELECT}
-    WHERE b.multi_booking_id = $1
-    ORDER BY b.pickup_date ASC, b.pickup_time ASC
-  `;
+// const fetchBookingsByMultiBookingId = async (multiBookingId) => {
+//   // ENRICHED_SELECT aapke paas already defined hoga jo joins handle karta hai
+//   const sql = `
+//     ${ENRICHED_SELECT}
+//     WHERE b.multi_booking_id = $1
+//     ORDER BY b.pickup_date ASC, b.pickup_time ASC
+//   `;
 
-  const { rows } = await pool.query(sql, [multiBookingId]);
-  return rows;
-};
-
+//   const { rows } = await pool.query(sql, [multiBookingId]);
+//   return rows;
+// };
 
 module.exports = {
   pool,
@@ -3659,7 +3657,7 @@ module.exports = {
   getBookingDriverCustomerById,
   getCustomerBookingsAndStats,
   getCustomerBookingStats,
-  getAllMultiBookings,
+  // getAllMultiBookings,
   getCompanyIdByBookingId,
-  fetchBookingsByMultiBookingId
+  // fetchBookingsByMultiBookingId,
 };

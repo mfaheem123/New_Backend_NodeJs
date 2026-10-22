@@ -61,7 +61,14 @@ const createDynamicTransporter = async (subsidiaryId) => {
 /**
  * Dynamic email bhejne ka function[cite: 1]
  */
-const sendEmail = async ({ companyId, subsidiaryId, to, subject, text, html }) => {
+const sendEmail = async ({
+  companyId,
+  subsidiaryId,
+  to,
+  subject,
+  text,
+  html,
+}) => {
   let logStatus = "sent";
   let logError = null;
   try {
@@ -104,17 +111,15 @@ const sendEmail = async ({ companyId, subsidiaryId, to, subject, text, html }) =
       email: to,
       subject,
       content: html || text,
-      status: "sent"
+      status: "sent",
     });
-
 
     console.log("Email sent successfully:", info.response);
 
     return info;
-
   } catch (error) {
     console.error("Email sending error:", error);
-    
+
     // 🔹 Save Log to Database (Failed)
     await EmailLogModel.create({
       companyId: companyId || 1,
@@ -123,7 +128,7 @@ const sendEmail = async ({ companyId, subsidiaryId, to, subject, text, html }) =
       subject,
       content: html || text,
       status: "failed",
-      errorMessage: error.message
+      errorMessage: error.message,
     });
 
     throw error;
