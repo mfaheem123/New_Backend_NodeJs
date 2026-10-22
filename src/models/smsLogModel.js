@@ -21,7 +21,12 @@ async function createSMSLog(data) {
 }
 
 // 2️⃣ getSMSLogs me optional company_id filter lagaya
-async function getSMSLogs(limit = 25, offset = 0, company_id = null, filters = {}) {
+async function getSMSLogs(
+  limit = 25,
+  offset = 0,
+  company_id = null,
+  filters = {},
+) {
   let countQuery = `SELECT COUNT(*) FROM sms_logs WHERE 1=1`;
   let dataQuery = `
     SELECT 

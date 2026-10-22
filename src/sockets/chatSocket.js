@@ -36,10 +36,13 @@ function handleChatSocket(ws, req) {
 
   logger.info(`Chat Socket Connected: ${clientKey}`);
 
-  // 🔴 1. ONLINE PRESENCE BROADCAST
+  // 1. ONLINE PRESENCE BROADCAST (Doosro ko batao ke main Online aa gaya hun)
   broadcastPresence(ws.companyId, ws.userId, ws.role, "ONLINE");
 
-  // 🟢 2. AUTO-SYNC UNREAD / PENDING MESSAGES ON RECONNECT
+  // 2. SEND CURRENT ONLINE USERS (Naye bande ko batao ke pehle se kon kon Online hain)
+  sendActivePresenceList(ws);
+
+  // 3. AUTO-SYNC UNREAD / PENDING MESSAGES
   syncPendingMessages(ws);
 
   ws.on("message", async (rawMessage) => {
@@ -273,6 +276,31 @@ function broadcastPresence(companyId, userId, role, status) {
       clientWs.send(presencePayload);
     }
   }
+}
+
+// ---------------------------------------------------------
+// HELPER FUNCTION: SEND INITIAL ONLINE USERS LIST TO NEW USER
+// ---------------------------------------------------------
+function sendActivePresenceList(ws) {
+  const activeUsers = [];
+  const prefix = `${ws.companyId}_`;
+
+  for (let [key, clientWs] of connectedClients.entries()) {
+    if (key.startsWith(prefix) && clientWs.readyState === 1) {
+      activeUsers.push({
+        user_id: clientWs.userId,
+        role: clientWs.role,
+        status: "ONLINE",
+      });
+    }
+  }
+
+  ws.send(
+    JSON.stringify({
+      event: "active_presence_list",
+      data: activeUsers,
+    }),
+  );
 }
 
 // ---------------------------------------------------------

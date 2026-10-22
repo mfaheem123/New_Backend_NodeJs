@@ -47,7 +47,7 @@ async function sendSMSWithTemplate(payload) {
 async function fetchSMSLogsService(query) {
   const limit = parseInt(query.limit, 10) || 25;
   const page = parseInt(query.page, 10) || 1;
-// Page se offset automatically calculate ho jayega
+  // Page se offset automatically calculate ho jayega
   const offset = (page - 1) * limit;
   const company_id = query.company_id ? parseInt(query.company_id, 10) : null;
 
@@ -58,7 +58,7 @@ async function fetchSMSLogsService(query) {
     sms: query.sms || null,
     date: query.date || null,
     time: query.time || null,
-    status: query.status || null
+    status: query.status || null,
   };
 
   const data = await getSMSLogs(limit, offset, company_id, filters);
@@ -69,10 +69,10 @@ async function fetchSMSLogsService(query) {
 
   return {
     status: true,
-    count: data.count,          // Total records count
-    totalPages: totalPages,     // Kul pages kitne hain
-    currentPage: currentPage,   // Aap kis page par hain
-    limit: limit,               // Ek page par kitne records hain
+    count: data.count, // Total records count
+    totalPages: totalPages, // Kul pages kitne hain
+    currentPage: currentPage, // Aap kis page par hain
+    limit: limit, // Ek page par kitne records hain
     messages: data.messages,
   };
 }
