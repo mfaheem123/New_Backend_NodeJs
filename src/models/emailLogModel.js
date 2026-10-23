@@ -101,7 +101,7 @@ const EmailLogModel = {
 
     // Order and Pagination Limit/Offset
     dataQuery += ` ORDER BY created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-    
+
     // Data query ke liye limit aur offset parameters alag array mein push karein
     const dataParams = [...queryParams, limit, offset];
 
