@@ -409,7 +409,7 @@ async function createBookingRow(pool, bookingObj) {
     "initial_subsidiary_id",
     "eta",
     "company_id",
-    "driver_attributes",
+    // "driver_attributes",
   ];
 
   // 🔥 FIX: Properly DEFINE row before using it
