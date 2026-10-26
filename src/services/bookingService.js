@@ -2260,6 +2260,37 @@ async function assignFutureBookingDriverService(
   return enriched;
 }
 
+// ---------------------------------------------------------
+// UPDATE MULTI BOOKINGS SERVICE
+// ---------------------------------------------------------
+async function updateMultiBookingsService(bookingIds, payload) {
+  const updatedBookings = [];
+
+  for (const bookingId of bookingIds) {
+    try {
+      console.log(`------------------------------------------`);
+      console.log(`🔄 Processing Multi Update for Booking ID: ${bookingId}`);
+
+      const updated = await updateBookingService(bookingId, payload);
+
+      if (updated) {
+        // Agar return way ki wajah se primary aur return dono aayein, toh unhein flatten kar lein
+        if (updated.booking && updated.return_booking) {
+          updatedBookings.push(updated.booking, updated.return_booking);
+        } else if (Array.isArray(updated)) {
+          updatedBookings.push(...updated);
+        } else {
+          updatedBookings.push(updated);
+        }
+      }
+    } catch (error) {
+      console.error(`Error updating booking ID ${bookingId}:`, error);
+    }
+  }
+
+  return updatedBookings;
+}
+
 // EXPORTS
 module.exports = {
   create,
@@ -2270,4 +2301,5 @@ module.exports = {
   assignFOBDriverService,
   cloneOneWayBookingService,
   assignFutureBookingDriverService,
+  updateMultiBookingsService
 };

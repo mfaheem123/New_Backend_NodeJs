@@ -5,7 +5,7 @@ const SinbinModel = require("../models/driverSinbinModel");
 console.log("🚀 Sin Bin Cron Scheduler Started!");
 
 // Har 30 second me check karega
-cron.schedule("*/10 * * * * *", async () => {
+cron.schedule("*/100 * * * * *", async () => {
   console.log("⏰ Checking expired Sin-Bins...");
   try {
     // 1. Fetch drivers jinka sinbin time expire ho chuka hai

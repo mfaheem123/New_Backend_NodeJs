@@ -56,7 +56,7 @@ const {
   cancelBookingById,
   getBookingDriverCustomerById,
   getAllMultiBookings,
-  fetchBookingsByMultiBookingId,
+  fetchBookingsByMultiBookingId
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -3418,7 +3418,7 @@ exports.getAllMultiBookings = async (req, res) => {
 // ---------------------------------------------------------
 exports.getBookingsBySpecificMultiBookingId = async (req, res) => {
   try {
-    const { multiBookingId } = req.query; // ya req.query agar query se bhejni hai
+    const { multiBookingId } = req.query; 
 
     if (!multiBookingId) {
       return res.status(400).json({
@@ -3431,18 +3431,65 @@ exports.getBookingsBySpecificMultiBookingId = async (req, res) => {
     const bookings = await fetchBookingsByMultiBookingId(multiBookingId);
 
     // Parse JSON fields agar zaroorat ho (jaise viapoints, notes, etc.)
-    const data = bookings.map((row) => parseJSONFields(row));
+    const bookingsData = bookings.map((row) => parseJSONFields(row));
 
     return res.status(200).json({
       success: true,
-      count: data.length,
-      bookings: data, // Yeh sari bookings ki list return karega is multi_booking_id ki
+      count: bookingsData.length,
+      bookings: [], 
+      // bookings: bookingsData, 
     });
   } catch (err) {
     console.error("Error in getBookingsBySpecificMultiBookingId:", err);
     return res.status(500).json({
       success: false,
       message: err.message || "Internal Server Error",
+    });
+  }
+};
+
+
+
+// ---------------------------------------------------------
+// UPDATE MULTI BOOKINGS BY IDS
+// ---------------------------------------------------------
+exports.updateMultiBookings = async (req, res) => {
+  try {
+    let { ids, ...payload } = req.body;
+
+    console.log("🚀 INCOMING MULTI UPDATE BOOKINGS IDS:", ids);
+    console.log("🚀 INCOMING MULTI UPDATE PAYLOAD:", JSON.stringify(payload, null, 2));
+
+    // 🛠️ Agar ids string ki form mein aaye (Postman/Form-data ki wajah se) toh usko array mein parse karein
+    if (typeof ids === "string") {
+      try {
+        ids = JSON.parse(ids);
+      } catch (e) {
+        // Agar comma-separated string ho jaise "75758,75759,75760"
+        ids = ids.split(",").map((id) => parseInt(id.trim())).filter((id) => !isNaN(id));
+      }
+    }
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid array of booking IDs (ids: [1, 2, 3])",
+      });
+    }
+
+    // Service function call karein jo sabhi IDs par loop chalayega
+    const results = await bookingService.updateMultiBookingsService(ids, payload);
+
+    return res.status(200).json({
+      success: true,
+      message: "Multi Bookings Updated Successfully",
+      bookings: results,
+    });
+  } catch (err) {
+    console.error("updateMultiBookings error:", err);
+    res.status(500).json({
+      success: false,
+      message: err.message || "Internal server error",
     });
   }
 };

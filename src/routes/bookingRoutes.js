@@ -7,15 +7,7 @@ const bookingController = require("../controllers/bookingController");
 router.get("/get/:id", bookingController.getBookingSections);
 router.get("/getbytabs/:id", bookingController.getBookingByTabs);
 router.get("/multi-bookings", bookingController.getAllMultiBookings);
-router.get(
-  "/multi-bookings-id",
-  bookingController.getBookingsBySpecificMultiBookingId,
-);
 router.get("/getbyid/:id", bookingController.getBookingById);
-router.get(
-  "/get-driver-customer-by-id/:id",
-  bookingController.getBookingDriverCustomerById,
-);
 router.get("/reference-number", bookingController.getBookingByReferenceNumber);
 router.get("/getbydriverid/:id", bookingController.getBookingByDriverId);
 router.get("/driver-current-booking", bookingController.getCurrentJob);
@@ -31,6 +23,16 @@ router.get("/income-report", bookingController.getIncomeReport);
 router.get("/clear", bookingController.getClearBookings);
 router.get("/driver-earnings", bookingController.getDriverEarningsBookings);
 router.get("/pick-bookings", bookingController.getPickBookings);
+
+router.get(
+  "/multi-bookings-id",
+  bookingController.getBookingsBySpecificMultiBookingId,
+);
+
+router.get(
+  "/get-driver-customer-by-id/:id",
+  bookingController.getBookingDriverCustomerById,
+);
 
 router.get(
   "/driver-statistics/:driver_id",
@@ -97,13 +99,15 @@ router.post("/recover-booking/:id", bookingController.recoverDashboardBooking);
 router.post("/cli", bookingController.cloneOneWayBooking);
 router.post("/assign-driver", bookingController.assignDriverToBooking);
 router.post("/fob-driver", bookingController.assignFOBBookingToDriver);
+router.post("/clear-selected", bookingController.clearSelectedBookings);
+router.post("/clear-all", bookingController.clearAllBookings);
+router.post("/cancel-booking/:id", bookingController.cancelBookingById);
+router.post("/multi-update", bookingController.updateMultiBookings);
+
 router.post(
   "/assign-future-booking",
   bookingController.assignFutureBookingToDriver,
 );
-router.post("/clear-selected", bookingController.clearSelectedBookings);
-router.post("/clear-all", bookingController.clearAllBookings);
-router.post("/cancel-booking/:id", bookingController.cancelBookingById);
 
 router.post(
   "/dashboard-fares/:id",
