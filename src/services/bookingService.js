@@ -2301,5 +2301,5 @@ module.exports = {
   assignFOBDriverService,
   cloneOneWayBookingService,
   assignFutureBookingDriverService,
-  updateMultiBookingsService
+  updateMultiBookingsService,
 };

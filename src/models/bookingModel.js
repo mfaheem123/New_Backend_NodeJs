@@ -3580,7 +3580,6 @@ const getCompanyIdByBookingId = async (bookingId) => {
 // FETCH ALL BOOKINGS BY SPECIFIC MULTI BOOKING ID MODEL
 // ---------------------------------------------------------
 const fetchBookingsByMultiBookingId = async (multiBookingId) => {
-
   const sql = `
     ${ENRICHED_SELECT}
     WHERE b.multi_booking_id = $1
@@ -3659,5 +3658,5 @@ module.exports = {
   getCustomerBookingStats,
   getAllMultiBookings,
   getCompanyIdByBookingId,
-  fetchBookingsByMultiBookingId
+  fetchBookingsByMultiBookingId,
 };
