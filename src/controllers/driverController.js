@@ -1517,3 +1517,68 @@ exports.driverForcedLogout = async (req, res) => {
     });
   }
 };
+
+
+// ---------------------------------------------------------
+// DRIVER BIOMETRIC (FINGERPRINT / FACE ID) LOGIN WITH LOCATION
+// ---------------------------------------------------------
+exports.driverBiometricLogin = async (req, res) => {
+  const { driver_id, latitude, longitude, fcm_token } = req.body;
+
+  console.log(
+    "🚀 INCOMING DRIVER BIOMETRIC LOGIN BODY:",
+    JSON.stringify(req.body, null, 2),
+  );
+
+  try {
+    // 1. Driver ko ID se find karein (Kyunki biometric success hone ke baad app ke paas driver_id ya stored token hoga)
+    const driver = await Driver.getById(driver_id);
+    
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    if (!driver.active) {
+      return res.status(401).json({ message: "Your account is inactive" });
+    }
+
+    // Check agar already logged in hai (optional: agar aap chahte hain ke biometric se direct session refresh ho jaye toh ye check hata bhi sakte hain)
+    if (driver.session_status === "logged_in") {
+      // Agar session already active hai, toh aap naya token return kar sakte hain ya login allow kar sakte hain
+      console.log("⚠️ Driver session already logged in, refreshing session via biometric...");
+    }
+
+    // 2. Naya JWT Token Generate karein
+    const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    // 3. Database mein login status, location update karein
+    await Driver.updateDriverLoginStatus(driver.id, latitude, longitude);
+
+    // 4. Shift history mein login entry insert karein
+    await DriverShiftHistory.createLoginShift(driver.id, latitude, longitude);
+
+    // 5. FCM Token update karein agar aya ho
+    if (fcm_token) {
+      await Driver.updateDriverFcmToken(driver.id, fcm_token);
+    }
+
+    // 6. Updated driver data fetch karein response aur socket ke liye
+    const updatedDriver = await Driver.getLoginDriverById(driver.id);
+    const updatedDriverSocket = await Driver.getById(driver.id);
+
+    // 7. Socket Notification Trigger karein (Same as normal login)
+    notifyDriverLogin(updatedDriverSocket);
+
+    return res.status(200).json({
+      message: "Biometric login successful",
+      driverInfo: updatedDriver,
+      token: token,
+    });
+
+  } catch (error) {
+    console.error("Biometric Login Error:", error);
+    return res.status(500).json({ message: "An error occurred during biometric login" });
+  }
+};

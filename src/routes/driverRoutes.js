@@ -25,6 +25,7 @@ router.post("/logout/:id", upload.none(), driverController.driverLogout);
 router.post("/on-break", upload.none(), driverController.onBreakDriver);
 router.post("/end-break", upload.none(), driverController.endBreakStatusDriver);
 router.post("/panic", upload.none(), driverController.onPanicDriver);
+router.post('/driver/biometric-login', driverController.driverBiometricLogin);
 router.post(
   "/forced-logout",
   upload.none(),
