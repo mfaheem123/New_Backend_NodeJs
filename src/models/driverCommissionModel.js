@@ -1,8 +1,10 @@
 const db = require("../db");
 
 class DriverCommission {
-  /* ================= CREATE ================= */
-
+  
+// ---------------------------------------------------------
+  // CREATE DRIVER COMMISSION
+  // ---------------------------------------------------------
   static async create(data) {
     try {
       await db.query("BEGIN");
@@ -131,8 +133,10 @@ class DriverCommission {
     }
   }
 
-  /* ================= DISTINCT ================= */
-
+  
+// ---------------------------------------------------------
+  // GET DISTINCT DRIVER COMMISSIONS
+  // ---------------------------------------------------------
   static async getDistinct(offset, limit, company_id) {
     const query = `
     SELECT 
@@ -173,8 +177,10 @@ class DriverCommission {
     };
   }
 
-  /* ================= BY DRIVER ================= */
-
+  
+// ---------------------------------------------------------
+  // GET DRIVER COMMISSION BY DRIVER ID
+  // ---------------------------------------------------------
   static async getByDriverId(driver_id, company_id) {
     const query = `
       SELECT dc.id,
@@ -208,8 +214,10 @@ class DriverCommission {
     return result.rows;
   }
 
-  /* ================= GET BY ID ================= */
-
+  
+// ---------------------------------------------------------
+  // GET DRIVER COMMISSION BY ID
+  // ---------------------------------------------------------
   static async getById(id) {
     const query = `
     SELECT 
@@ -306,6 +314,9 @@ class DriverCommission {
     return commissionRes.rows[0];
   }
 
+// ---------------------------------------------------------
+  // UPDATE DRIVER COMMISSION BY ID
+  // ---------------------------------------------------------
   static async update(id, data) {
     try {
       await db.query("BEGIN");
@@ -394,6 +405,9 @@ class DriverCommission {
     }
   }
 
+// ---------------------------------------------------------
+  // DELETE DRIVER COMMISSION BY ID
+  // ---------------------------------------------------------
   static async delete(id) {
     try {
       await db.query("BEGIN");
@@ -441,7 +455,9 @@ class DriverCommission {
     }
   }
 
-  /* ================= GET BULK PREVIEW SUMMARY ================= */
+// ---------------------------------------------------------
+  // GET BULK DRIVER COMMISSION PREVIEW
+  // ---------------------------------------------------------
   static async getBulkPreview(company_id, from_date, to_date) {
     const query = `
     SELECT 
@@ -491,7 +507,9 @@ class DriverCommission {
     return result.rows;
   }
 
-  /* ================= BULK CREATE COMMISSIONS ================= */
+// ---------------------------------------------------------
+  // CREATE BULK DRIVER COMMISSION
+  // ---------------------------------------------------------
   static async bulkCreate(items) {
     try {
       await db.query("BEGIN");

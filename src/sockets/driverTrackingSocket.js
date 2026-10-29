@@ -67,7 +67,7 @@ function handleDriverTrackingSocket(ws) {
   ws.on("message", async (message) => {
     try {
       const data = JSON.parse(message);
-      const { driverId, lat, lng } = data;
+      const { driverId, lat, lng, zone } = data;
 
       console.log("🚀 DRIVER TRACKING DATA:", data);
 
@@ -153,6 +153,7 @@ function handleDriverTrackingSocket(ws) {
         prevLocation = {
           lat: parseFloat(driver.latitude),
           lng: parseFloat(driver.longitude),
+          zone: driver.zone || null,
         };
       }
 
@@ -181,14 +182,14 @@ function handleDriverTrackingSocket(ws) {
       }
 
       // update memory
-      lastDriverLocation.set(driverId, { lat, lng });
+      lastDriverLocation.set(driverId, { lat, lng, zone });
 
       // ==============================
       // 4️⃣ UPDATE DB
       // ==============================
       await db.query(
-        `UPDATE drivers SET latitude=$1, longitude=$2 WHERE id=$3`,
-        [lat, lng, driverId],
+        `UPDATE drivers SET latitude=$1, longitude=$2, zone=$3 WHERE id=$4`,
+        [lat, lng, zone || null, driverId],
       );
 
       // ==============================
@@ -217,7 +218,7 @@ function handleDriverTrackingSocket(ws) {
             id: driver.id,
             username: driver.username,
             name: driver.name,
-            zone: driver.zone,
+            zone: zone || driver.zone || null,
             latitude: lat,
             longitude: lng,
             booking_status: driver.booking_status,

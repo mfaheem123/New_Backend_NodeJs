@@ -1,7 +1,10 @@
 const DriverRent = require("../models/driverRentModel");
 
-/* ================= CREATE ================= */
 
+
+// ---------------------------------------------------------
+  // CREATE DRIVER RENT
+  // ---------------------------------------------------------
 exports.create = async (req, res) => {
   try {
     console.log(
@@ -26,8 +29,11 @@ exports.create = async (req, res) => {
   }
 };
 
-/* ================= DISTINCT ================= */
 
+
+// ---------------------------------------------------------
+  // GET DISTINCT DRIVER RENTS
+  // ---------------------------------------------------------
 exports.getDistinct = async (req, res) => {
   try {
     const offset = parseInt(req.query.offset) || 0;
@@ -49,8 +55,11 @@ exports.getDistinct = async (req, res) => {
   }
 };
 
-/* ================= GET BY DRIVER ID ================= */
 
+
+// ---------------------------------------------------------
+  // GET DRIVER RENT BY DRIVER ID
+  // ---------------------------------------------------------
 exports.getByDriverId = async (req, res) => {
   try {
     const { driver_id, company_id } = req.query;
@@ -77,8 +86,10 @@ exports.getByDriverId = async (req, res) => {
   }
 };
 
-/* ================= GET BY ID ================= */
 
+// ---------------------------------------------------------
+  // GET DRIVER RENT BY ID
+  // ---------------------------------------------------------
 exports.getById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -111,6 +122,9 @@ exports.getById = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+  // UPDATE DRIVER RENT BY ID
+  // ---------------------------------------------------------
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
@@ -136,6 +150,9 @@ exports.update = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+  // DELETE DRIVER RENT BY ID
+  // ---------------------------------------------------------
 exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
@@ -161,8 +178,10 @@ exports.delete = async (req, res) => {
   }
 };
 
-/* ================= GET BULK PREVIEW ================= */
 
+// ---------------------------------------------------------
+  // GET BULK DRIVER RENTS PREVIEW
+  // ---------------------------------------------------------
 exports.getBulkPreview = async (req, res) => {
   try {
     const { company_id, from_date, to_date } = req.query;
@@ -235,8 +254,10 @@ exports.getBulkPreview = async (req, res) => {
   }
 };
 
-/* ================= CREATE BULK RENTS ================= */
 
+// ---------------------------------------------------------
+  // CREATE BULK DRIVER RENTS
+  // ---------------------------------------------------------
 exports.createBulk = async (req, res) => {
   try {
     console.log(
