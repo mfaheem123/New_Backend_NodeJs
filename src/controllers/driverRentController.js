@@ -161,7 +161,6 @@ exports.delete = async (req, res) => {
   }
 };
 
-
 /* ================= GET BULK PREVIEW ================= */
 
 exports.getBulkPreview = async (req, res) => {
@@ -175,18 +174,22 @@ exports.getBulkPreview = async (req, res) => {
       });
     }
 
-    const reportData = await DriverRent.getBulkPreview(company_id, from_date, to_date);
+    const reportData = await DriverRent.getBulkPreview(
+      company_id,
+      from_date,
+      to_date,
+    );
 
     const formattedData = reportData.map((row) => {
       const cashJobsTotal = Number(row.cash_jobs_total);
       const accountJobsTotal = Number(row.account_jobs_total);
       const jobsTotal = cashJobsTotal + accountJobsTotal;
-      
+
       const rentRate = Number(row.driver_rent); // Rent percentage / fixed amount logic
 
       let rentTotal = 0;
       if (row.bookings && Array.isArray(row.bookings)) {
-        row.bookings.forEach(item => {
+        row.bookings.forEach((item) => {
           const itemTotal = Number(item.total_charges || 0);
           rentTotal += itemTotal * (rentRate / 100);
         });
@@ -194,7 +197,9 @@ exports.getBulkPreview = async (req, res) => {
       rentTotal = Number(rentTotal.toFixed(2));
 
       const oldBalance = Number(row.old_balance);
-      const currentBalance = Number((oldBalance + cashJobsTotal - rentTotal).toFixed(2));
+      const currentBalance = Number(
+        (oldBalance + cashJobsTotal - rentTotal).toFixed(2),
+      );
 
       return {
         driver_id: row.driver_id,
@@ -202,7 +207,7 @@ exports.getBulkPreview = async (req, res) => {
           id: row.driver_id,
           username: row.username,
           name: row.driver_name,
-          driver_rent: rentRate
+          driver_rent: rentRate,
         },
         bookings_count: row.bookings_count,
         cash_jobs_total: cashJobsTotal.toFixed(2),
@@ -234,8 +239,11 @@ exports.getBulkPreview = async (req, res) => {
 
 exports.createBulk = async (req, res) => {
   try {
-    console.log("🚀 INCOMING BULK RENT BODY:", JSON.stringify(req.body, null, 2));
-    
+    console.log(
+      "🚀 INCOMING BULK RENT BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+
     let { items, company_id, transaction_date, from_date, to_date } = req.body;
 
     if (typeof items === "string") {
@@ -256,7 +264,7 @@ exports.createBulk = async (req, res) => {
       });
     }
 
-    const processedItems = items.map(item => {
+    const processedItems = items.map((item) => {
       let lineItems = item.driver_rent_lineitems || [];
       if (typeof lineItems === "string") {
         try {
@@ -279,7 +287,7 @@ exports.createBulk = async (req, res) => {
         from_date: from_date || item.from_date,
         to_date: to_date || item.to_date,
         company_id: company_id || item.company_id,
-        driver_rent_lineitems: lineItems
+        driver_rent_lineitems: lineItems,
       };
     });
 

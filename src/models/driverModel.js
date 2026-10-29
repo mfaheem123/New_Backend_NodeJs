@@ -1218,7 +1218,7 @@ const Driver = {
   // ---------------------------------------------------------
   // UPDATE DRIVER LOGIN STATUS WITH LOCATION
   // ---------------------------------------------------------
-  async updateDriverLoginStatus(driverId, latitude, longitude) {
+  async updateDriverLoginStatus(driverId, latitude, longitude, zone) {
     const query = `
         UPDATE drivers
         SET
@@ -1227,10 +1227,11 @@ const Driver = {
           booking_status = 'Available',
           last_login_at = NOW(),
           latitude = $1,
-          longitude = $2
-        WHERE id = $3
+          longitude = $2,
+          zone = $3
+        WHERE id = $4
       `;
-    return db.query(query, [latitude, longitude, driverId]);
+    return db.query(query, [latitude, longitude, zone || null, driverId]);
   },
 
   // ---------------------------------------------------------

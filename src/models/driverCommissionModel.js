@@ -442,8 +442,8 @@ class DriverCommission {
   }
 
   /* ================= GET BULK PREVIEW SUMMARY ================= */
-static async getBulkPreview(company_id, from_date, to_date) {
-  const query = `
+  static async getBulkPreview(company_id, from_date, to_date) {
+    const query = `
     SELECT 
       d.id AS driver_id,
       d.username,
@@ -487,21 +487,24 @@ static async getBulkPreview(company_id, from_date, to_date) {
     ORDER BY d.id DESC;
   `;
 
-  const result = await db.query(query, [company_id, from_date, to_date]);
-  return result.rows;
-}
+    const result = await db.query(query, [company_id, from_date, to_date]);
+    return result.rows;
+  }
 
-/* ================= BULK CREATE COMMISSIONS ================= */
-static async bulkCreate(items) {
-  try {
-    await db.query("BEGIN");
-    const createdCommissions = [];
+  /* ================= BULK CREATE COMMISSIONS ================= */
+  static async bulkCreate(items) {
+    try {
+      await db.query("BEGIN");
+      const createdCommissions = [];
 
-    for (const data of items) {
-      // Reuse existing single create logic or loop through items
-      const transaction_number = "mw" + Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 100);
+      for (const data of items) {
+        // Reuse existing single create logic or loop through items
+        const transaction_number =
+          "mw" +
+          Math.floor(Date.now() / 1000) +
+          Math.floor(Math.random() * 100);
 
-      const insertQuery = `
+        const insertQuery = `
         INSERT INTO driver_commissions (
           transaction_number, transaction_date, driver_id, jobs_total,
           commission_total, cash_jobs_total, account_jobs_total, owed,
@@ -511,60 +514,59 @@ static async bulkCreate(items) {
         RETURNING *;
       `;
 
-      const values = [
-        transaction_number,
-        data.transaction_date,
-        data.driver_id,
-        data.jobs_total,
-        data.commission_total,
-        data.cash_jobs_total,
-        data.account_jobs_total,
-        data.owed,
-        data.old_balance,
-        data.current_balance,
-        data.from_date,
-        data.to_date,
-        data.company_id,
-        data.last_modified || data.transaction_date,
-      ];
+        const values = [
+          transaction_number,
+          data.transaction_date,
+          data.driver_id,
+          data.jobs_total,
+          data.commission_total,
+          data.cash_jobs_total,
+          data.account_jobs_total,
+          data.owed,
+          data.old_balance,
+          data.current_balance,
+          data.from_date,
+          data.to_date,
+          data.company_id,
+          data.last_modified || data.transaction_date,
+        ];
 
-      const res = await db.query(insertQuery, values);
-      const commission = res.rows[0];
+        const res = await db.query(insertQuery, values);
+        const commission = res.rows[0];
 
-      // Insert Line Items & Update Bookings status
-      const bookingIds = [];
-      for (const item of data.driver_commission_lineitems) {
-        await db.query(
-          `INSERT INTO driver_commission_lineitems (driver_commission_id, booking_id) VALUES ($1, $2)`,
-          [commission.id, item.booking_id]
-        );
-        bookingIds.push(item.booking_id);
+        // Insert Line Items & Update Bookings status
+        const bookingIds = [];
+        for (const item of data.driver_commission_lineitems) {
+          await db.query(
+            `INSERT INTO driver_commission_lineitems (driver_commission_id, booking_id) VALUES ($1, $2)`,
+            [commission.id, item.booking_id],
+          );
+          bookingIds.push(item.booking_id);
+        }
+
+        if (bookingIds.length) {
+          await db.query(
+            `UPDATE bookings SET commission = false, commission_status = 'close' WHERE id = ANY($1::int[])`,
+            [bookingIds],
+          );
+        }
+
+        // Update Driver Balance
+        await db.query(`UPDATE drivers SET balance = $1 WHERE id = $2`, [
+          data.current_balance,
+          data.driver_id,
+        ]);
+
+        createdCommissions.push(commission);
       }
 
-      if (bookingIds.length) {
-        await db.query(
-          `UPDATE bookings SET commission = false, commission_status = 'close' WHERE id = ANY($1::int[])`,
-          [bookingIds]
-        );
-      }
-
-      // Update Driver Balance
-      await db.query(
-        `UPDATE drivers SET balance = $1 WHERE id = $2`,
-        [data.current_balance, data.driver_id]
-      );
-
-      createdCommissions.push(commission);
+      await db.query("COMMIT");
+      return createdCommissions;
+    } catch (err) {
+      await db.query("ROLLBACK");
+      throw err;
     }
-
-    await db.query("COMMIT");
-    return createdCommissions;
-  } catch (err) {
-    await db.query("ROLLBACK");
-    throw err;
   }
-}
-
 }
 
 module.exports = DriverCommission;

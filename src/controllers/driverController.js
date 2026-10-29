@@ -663,7 +663,7 @@ exports.getByCompany = async (req, res) => {
 // DRIVER LOGIN WITH LOCATION
 // ---------------------------------------------------------
 exports.driverLogin = async (req, res) => {
-  const { username, password, fcm_token, latitude, longitude } = req.body;
+  const { username, password, fcm_token, latitude, longitude, zone } = req.body;
   console.log(
     "🚀 INCOMING DRIVER LOGIN BODY:",
     JSON.stringify(req.body, null, 2),
@@ -686,7 +686,7 @@ exports.driverLogin = async (req, res) => {
     const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-    await Driver.updateDriverLoginStatus(driver.id, latitude, longitude);
+    await Driver.updateDriverLoginStatus(driver.id, latitude, longitude, zone);
 
     // INSERT SHIFT HISTORY LOGIN
     await DriverShiftHistory.createLoginShift(driver.id, latitude, longitude);
@@ -1518,7 +1518,6 @@ exports.driverForcedLogout = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
 // DRIVER BIOMETRIC (FINGERPRINT / FACE ID) LOGIN WITH LOCATION
 // ---------------------------------------------------------
@@ -1533,7 +1532,7 @@ exports.driverBiometricLogin = async (req, res) => {
   try {
     // 1. Driver ko ID se find karein (Kyunki biometric success hone ke baad app ke paas driver_id ya stored token hoga)
     const driver = await Driver.getById(driver_id);
-    
+
     if (!driver) {
       return res.status(404).json({ message: "Driver not found" });
     }
@@ -1545,7 +1544,9 @@ exports.driverBiometricLogin = async (req, res) => {
     // Check agar already logged in hai (optional: agar aap chahte hain ke biometric se direct session refresh ho jaye toh ye check hata bhi sakte hain)
     if (driver.session_status === "logged_in") {
       // Agar session already active hai, toh aap naya token return kar sakte hain ya login allow kar sakte hain
-      console.log("⚠️ Driver session already logged in, refreshing session via biometric...");
+      console.log(
+        "⚠️ Driver session already logged in, refreshing session via biometric...",
+      );
     }
 
     // 2. Naya JWT Token Generate karein
@@ -1576,9 +1577,10 @@ exports.driverBiometricLogin = async (req, res) => {
       driverInfo: updatedDriver,
       token: token,
     });
-
   } catch (error) {
     console.error("Biometric Login Error:", error);
-    return res.status(500).json({ message: "An error occurred during biometric login" });
+    return res
+      .status(500)
+      .json({ message: "An error occurred during biometric login" });
   }
 };

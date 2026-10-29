@@ -171,7 +171,6 @@ exports.delete = async (req, res) => {
   }
 };
 
-
 /* ================= GET BULK PREVIEW ================= */
 
 exports.getBulkPreview = async (req, res) => {
@@ -185,19 +184,23 @@ exports.getBulkPreview = async (req, res) => {
       });
     }
 
-    const reportData = await DriverCommission.getBulkPreview(company_id, from_date, to_date);
+    const reportData = await DriverCommission.getBulkPreview(
+      company_id,
+      from_date,
+      to_date,
+    );
 
     const formattedData = reportData.map((row) => {
       const cashJobsTotal = Number(row.cash_jobs_total);
       const accountJobsTotal = Number(row.account_jobs_total);
       const jobsTotal = cashJobsTotal + accountJobsTotal;
-      
+
       const commissionRate = Number(row.driver_commission); // Driver table se commission percentage (e.g., 20)
 
       // Calculate total commission by applying percentage on each booking's total charges
       let commissionTotal = 0;
       if (row.bookings && Array.isArray(row.bookings)) {
-        row.bookings.exports = row.bookings.forEach(item => {
+        row.bookings.exports = row.bookings.forEach((item) => {
           const itemTotal = Number(item.total_charges || 0);
           commissionTotal += itemTotal * (commissionRate / 100);
         });
@@ -206,7 +209,9 @@ exports.getBulkPreview = async (req, res) => {
 
       const oldBalance = Number(row.old_balance);
       // Balance calculation formula (Old Balance + Cash Jobs - Commission ya jo aapka business logic ho)
-      const currentBalance = Number((oldBalance + cashJobsTotal - commissionTotal).toFixed(2));
+      const currentBalance = Number(
+        (oldBalance + cashJobsTotal - commissionTotal).toFixed(2),
+      );
 
       return {
         driver_id: row.driver_id,
@@ -214,7 +219,7 @@ exports.getBulkPreview = async (req, res) => {
           id: row.driver_id,
           username: row.username,
           name: row.driver_name,
-          driver_commission: commissionRate
+          driver_commission: commissionRate,
         },
         bookings_count: row.bookings_count,
         cash_jobs_total: cashJobsTotal.toFixed(2),
@@ -246,8 +251,11 @@ exports.getBulkPreview = async (req, res) => {
 
 exports.createBulk = async (req, res) => {
   try {
-    console.log("🚀 INCOMING BULK COMMISSION BODY:", JSON.stringify(req.body, null, 2));
-    
+    console.log(
+      "🚀 INCOMING BULK COMMISSION BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+
     let { items, company_id, transaction_date, from_date, to_date } = req.body;
 
     // ✅ Agar items string ki form mein aaye toh usay JSON array mein parse kar lein
@@ -270,7 +278,7 @@ exports.createBulk = async (req, res) => {
     }
 
     // Map and normalize payload items
-    const processedItems = items.map(item => {
+    const processedItems = items.map((item) => {
       let lineItems = item.driver_commission_lineitems || [];
       // ✅ Agar lineitems bhi string ho toh parse kar lein
       if (typeof lineItems === "string") {
@@ -294,7 +302,7 @@ exports.createBulk = async (req, res) => {
         from_date: from_date || item.from_date,
         to_date: to_date || item.to_date,
         company_id: company_id || item.company_id,
-        driver_commission_lineitems: lineItems
+        driver_commission_lineitems: lineItems,
       };
     });
 
