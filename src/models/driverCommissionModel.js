@@ -4,7 +4,7 @@ class DriverCommission {
   
 // ---------------------------------------------------------
   // CREATE DRIVER COMMISSION
-  // ---------------------------------------------------------
+  // -----------------------matrixModel----------------------------------
   static async create(data) {
     try {
       await db.query("BEGIN");
@@ -458,7 +458,7 @@ class DriverCommission {
 // ---------------------------------------------------------
   // GET BULK DRIVER COMMISSION PREVIEW
   // ---------------------------------------------------------
-  static async getBulkPreview(company_id, from_date, to_date) {
+  static async getBulkPreview(company_id, from_date, to_date, subsidiary_id) {
     const query = `
     SELECT 
       d.id AS driver_id,
@@ -493,6 +493,7 @@ class DriverCommission {
     JOIN bookings b ON b.driver_id = d.id
     LEFT JOIN payment_types pt ON b.payment_type_id = pt.id
     WHERE (d.company_id = $1 OR b.company_id = $1)
+      AND (d.subsidiary_id = $4 OR b.subsidiary_id = $4)
       AND d.driver_type ILIKE 'commission'
       AND b.booking_status_id = 11
       AND b.commission_status = 'open'
@@ -503,7 +504,7 @@ class DriverCommission {
     ORDER BY d.id DESC;
   `;
 
-    const result = await db.query(query, [company_id, from_date, to_date]);
+    const result = await db.query(query, [company_id, from_date, to_date, subsidiary_id]);
     return result.rows;
   }
 

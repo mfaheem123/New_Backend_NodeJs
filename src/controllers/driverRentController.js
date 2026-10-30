@@ -184,12 +184,12 @@ exports.delete = async (req, res) => {
   // ---------------------------------------------------------
 exports.getBulkPreview = async (req, res) => {
   try {
-    const { company_id, from_date, to_date } = req.query;
+    const { company_id, from_date, to_date, subsidiary_id } = req.query;
 
-    if (!company_id || !from_date || !to_date) {
+    if (!company_id || !from_date || !to_date || !subsidiary_id) {
       return res.status(400).json({
         status: false,
-        message: "company_id, from_date, and to_date are required",
+        message: "company_id, from_date, to_date, and subsidiary_id are required",
       });
     }
 
@@ -197,6 +197,7 @@ exports.getBulkPreview = async (req, res) => {
       company_id,
       from_date,
       to_date,
+      subsidiary_id
     );
 
     const formattedData = reportData.map((row) => {

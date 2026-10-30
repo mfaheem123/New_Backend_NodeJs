@@ -1216,7 +1216,7 @@ const Driver = {
   },
 
   // ---------------------------------------------------------
-  // UPDATE DRIVER LOGIN STATUS WITH LOCATION
+  // UPDATE DRIVER LOGIN STATUS WITH LOCATION & ZONE
   // ---------------------------------------------------------
   async updateDriverLoginStatus(driverId, latitude, longitude, zone) {
     const query = `

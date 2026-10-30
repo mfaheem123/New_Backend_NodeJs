@@ -3120,10 +3120,12 @@ exports.getPickBookings = async (req, res) => {
       company_id,
     });
 
+    const bookings = result.rows.map((b) => parseJSONFields(b));
+
     res.json({
       status: true,
       count: result.rows.length,
-      bookings: result.rows,
+      bookings: bookings,
     });
   } catch (error) {
     console.error("Error fetching pick bookings:", error);
@@ -3436,8 +3438,8 @@ exports.getBookingsBySpecificMultiBookingId = async (req, res) => {
     return res.status(200).json({
       success: true,
       count: bookingsData.length,
-      bookings: [],
-      // bookings: bookingsData,
+      // bookings: [],
+      bookings: bookingsData,
     });
   } catch (err) {
     console.error("Error in getBookingsBySpecificMultiBookingId:", err);

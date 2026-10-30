@@ -464,7 +464,7 @@ class DriverRent {
 // ---------------------------------------------------------
   // GET BULK DRIVER RENTS PREVIEW
   // ---------------------------------------------------------
-  static async getBulkPreview(company_id, from_date, to_date) {
+  static async getBulkPreview(company_id, from_date, to_date, subsidiary_id) {
     const query = `
     SELECT 
       d.id AS driver_id,
@@ -504,12 +504,13 @@ class DriverRent {
       AND b.commission_status = 'open'
       AND b.commission = true
       AND b.pickup_date::date BETWEEN $2::date AND $3::date
+      AND (d.subsidiary_id = $4 OR b.subsidiary_id = $4)
     GROUP BY d.id
     HAVING COUNT(b.id) > 0
     ORDER BY d.id DESC;
   `;
 
-    const result = await db.query(query, [company_id, from_date, to_date]);
+    const result = await db.query(query, [company_id, from_date, to_date, subsidiary_id]);
     return result.rows;
   }
 

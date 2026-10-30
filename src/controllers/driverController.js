@@ -660,7 +660,7 @@ exports.getByCompany = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// DRIVER LOGIN WITH LOCATION
+// DRIVER LOGIN WITH LOCATION & ZONE
 // ---------------------------------------------------------
 exports.driverLogin = async (req, res) => {
   const { username, password, fcm_token, latitude, longitude, zone } = req.body;
