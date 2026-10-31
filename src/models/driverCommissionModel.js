@@ -1,8 +1,7 @@
 const db = require("../db");
 
 class DriverCommission {
-  
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // CREATE DRIVER COMMISSION
   // -----------------------matrixModel----------------------------------
   static async create(data) {
@@ -133,8 +132,7 @@ class DriverCommission {
     }
   }
 
-  
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // GET DISTINCT DRIVER COMMISSIONS
   // ---------------------------------------------------------
   static async getDistinct(offset, limit, company_id) {
@@ -177,8 +175,7 @@ class DriverCommission {
     };
   }
 
-  
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // GET DRIVER COMMISSION BY DRIVER ID
   // ---------------------------------------------------------
   static async getByDriverId(driver_id, company_id) {
@@ -214,8 +211,7 @@ class DriverCommission {
     return result.rows;
   }
 
-  
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // GET DRIVER COMMISSION BY ID
   // ---------------------------------------------------------
   static async getById(id) {
@@ -314,7 +310,7 @@ class DriverCommission {
     return commissionRes.rows[0];
   }
 
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // UPDATE DRIVER COMMISSION BY ID
   // ---------------------------------------------------------
   static async update(id, data) {
@@ -405,7 +401,7 @@ class DriverCommission {
     }
   }
 
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // DELETE DRIVER COMMISSION BY ID
   // ---------------------------------------------------------
   static async delete(id) {
@@ -455,7 +451,7 @@ class DriverCommission {
     }
   }
 
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // GET BULK DRIVER COMMISSION PREVIEW
   // ---------------------------------------------------------
   static async getBulkPreview(company_id, from_date, to_date, subsidiary_id) {
@@ -504,11 +500,16 @@ class DriverCommission {
     ORDER BY d.id DESC;
   `;
 
-    const result = await db.query(query, [company_id, from_date, to_date, subsidiary_id]);
+    const result = await db.query(query, [
+      company_id,
+      from_date,
+      to_date,
+      subsidiary_id,
+    ]);
     return result.rows;
   }
 
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // CREATE BULK DRIVER COMMISSION
   // ---------------------------------------------------------
   static async bulkCreate(items) {

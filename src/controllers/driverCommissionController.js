@@ -1,10 +1,8 @@
 const DriverCommission = require("../models/driverCommissionModel");
 
-
-
 // ---------------------------------------------------------
-  // CREATE DRIVER COMMISSION
-  // ---------------------------------------------------------
+// CREATE DRIVER COMMISSION
+// ---------------------------------------------------------
 exports.create = async (req, res) => {
   try {
     console.log(
@@ -29,11 +27,9 @@ exports.create = async (req, res) => {
   }
 };
 
-
-
 // ---------------------------------------------------------
-  // GET DISTINCT DRIVER COMMISSIONS
-  // ---------------------------------------------------------
+// GET DISTINCT DRIVER COMMISSIONS
+// ---------------------------------------------------------
 exports.getDistinct = async (req, res) => {
   try {
     const offset = parseInt(req.query.offset) || 0;
@@ -59,11 +55,9 @@ exports.getDistinct = async (req, res) => {
   }
 };
 
-
-
 // ---------------------------------------------------------
-  // GET DRIVER COMMISSION BY DRIVER ID
-  // ---------------------------------------------------------
+// GET DRIVER COMMISSION BY DRIVER ID
+// ---------------------------------------------------------
 exports.getByDriverId = async (req, res) => {
   try {
     const { driver_id, company_id } = req.query;
@@ -96,8 +90,8 @@ exports.getByDriverId = async (req, res) => {
 /* ================= GET BY ID ================= */
 
 // ---------------------------------------------------------
-  // GET DRIVER COMMISSION BY ID
-  // ---------------------------------------------------------
+// GET DRIVER COMMISSION BY ID
+// ---------------------------------------------------------
 exports.getById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -131,8 +125,8 @@ exports.getById = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-  // UPDATE DRIVER COMMISSION BY ID
-  // ---------------------------------------------------------
+// UPDATE DRIVER COMMISSION BY ID
+// ---------------------------------------------------------
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
@@ -162,8 +156,8 @@ exports.update = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-  // DELETE DRIVER COMMISSION BY ID
-  // ---------------------------------------------------------
+// DELETE DRIVER COMMISSION BY ID
+// ---------------------------------------------------------
 exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
@@ -189,10 +183,9 @@ exports.delete = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
-  // GET BULK DRIVER COMMISSION PREVIEW
-  // ---------------------------------------------------------
+// GET BULK DRIVER COMMISSION PREVIEW
+// ---------------------------------------------------------
 exports.getBulkPreview = async (req, res) => {
   try {
     const { company_id, from_date, to_date, subsidiary_id } = req.query;
@@ -200,7 +193,8 @@ exports.getBulkPreview = async (req, res) => {
     if (!company_id || !from_date || !to_date || !subsidiary_id) {
       return res.status(400).json({
         status: false,
-        message: "company_id, from_date, to_date, and subsidiary_id are required",
+        message:
+          "company_id, from_date, to_date, and subsidiary_id are required",
       });
     }
 
@@ -268,10 +262,9 @@ exports.getBulkPreview = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
-  // CREATE BULK DRIVER COMMISSION
-  // ---------------------------------------------------------
+// CREATE BULK DRIVER COMMISSION
+// ---------------------------------------------------------
 exports.createBulk = async (req, res) => {
   try {
     console.log(

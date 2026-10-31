@@ -1519,10 +1519,10 @@ exports.driverForcedLogout = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// DRIVER BIOMETRIC (FINGERPRINT / FACE ID) LOGIN WITH LOCATION
+// DRIVER BIOMETRIC (FINGERPRINT / FACE ID) LOGIN WITH LOCATION & ZONE
 // ---------------------------------------------------------
 exports.driverBiometricLogin = async (req, res) => {
-  const { driver_id, latitude, longitude, fcm_token } = req.body;
+  const { driver_id, latitude, longitude, fcm_token, zone } = req.body;
 
   console.log(
     "🚀 INCOMING DRIVER BIOMETRIC LOGIN BODY:",
@@ -1555,7 +1555,7 @@ exports.driverBiometricLogin = async (req, res) => {
     });
 
     // 3. Database mein login status, location update karein
-    await Driver.updateDriverLoginStatus(driver.id, latitude, longitude);
+    await Driver.updateDriverLoginStatus(driver.id, latitude, longitude, zone);
 
     // 4. Shift history mein login entry insert karein
     await DriverShiftHistory.createLoginShift(driver.id, latitude, longitude);

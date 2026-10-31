@@ -10,8 +10,7 @@ function randomLetters(length = 2) {
 }
 
 class DriverRent {
- 
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // CREATE DRIVER RENT
   // ---------------------------------------------------------
   static async create(data) {
@@ -140,8 +139,7 @@ class DriverRent {
     }
   }
 
-  
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // GET DISTINCT DRIVER RENTS
   // ---------------------------------------------------------
   static async getDistinct(offset, limit, company_id) {
@@ -184,8 +182,7 @@ class DriverRent {
     };
   }
 
-
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // GET DRIVER RENT BY DRIVER ID
   // ---------------------------------------------------------
   static async getByDriverId(driver_id, company_id) {
@@ -221,8 +218,7 @@ class DriverRent {
     return result.rows;
   }
 
-  
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // GET DRIVER RENT BY ID
   // ---------------------------------------------------------
   static async getById(id) {
@@ -321,7 +317,7 @@ class DriverRent {
     return rentRes.rows[0];
   }
 
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // UPDATE DRIVER RENT BY ID
   // ---------------------------------------------------------
   static async update(id, data) {
@@ -410,7 +406,7 @@ class DriverRent {
     }
   }
 
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // DELETE DRIVER RENT BY ID
   // ---------------------------------------------------------
   static async delete(id) {
@@ -460,8 +456,7 @@ class DriverRent {
     }
   }
 
-  
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // GET BULK DRIVER RENTS PREVIEW
   // ---------------------------------------------------------
   static async getBulkPreview(company_id, from_date, to_date, subsidiary_id) {
@@ -510,12 +505,16 @@ class DriverRent {
     ORDER BY d.id DESC;
   `;
 
-    const result = await db.query(query, [company_id, from_date, to_date, subsidiary_id]);
+    const result = await db.query(query, [
+      company_id,
+      from_date,
+      to_date,
+      subsidiary_id,
+    ]);
     return result.rows;
   }
 
-  
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // CREATE BULK DRIVER RENTS
   // ---------------------------------------------------------
   static async bulkCreate(items) {

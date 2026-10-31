@@ -1,10 +1,8 @@
 const DriverRent = require("../models/driverRentModel");
 
-
-
 // ---------------------------------------------------------
-  // CREATE DRIVER RENT
-  // ---------------------------------------------------------
+// CREATE DRIVER RENT
+// ---------------------------------------------------------
 exports.create = async (req, res) => {
   try {
     console.log(
@@ -29,11 +27,9 @@ exports.create = async (req, res) => {
   }
 };
 
-
-
 // ---------------------------------------------------------
-  // GET DISTINCT DRIVER RENTS
-  // ---------------------------------------------------------
+// GET DISTINCT DRIVER RENTS
+// ---------------------------------------------------------
 exports.getDistinct = async (req, res) => {
   try {
     const offset = parseInt(req.query.offset) || 0;
@@ -55,11 +51,9 @@ exports.getDistinct = async (req, res) => {
   }
 };
 
-
-
 // ---------------------------------------------------------
-  // GET DRIVER RENT BY DRIVER ID
-  // ---------------------------------------------------------
+// GET DRIVER RENT BY DRIVER ID
+// ---------------------------------------------------------
 exports.getByDriverId = async (req, res) => {
   try {
     const { driver_id, company_id } = req.query;
@@ -86,10 +80,9 @@ exports.getByDriverId = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
-  // GET DRIVER RENT BY ID
-  // ---------------------------------------------------------
+// GET DRIVER RENT BY ID
+// ---------------------------------------------------------
 exports.getById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -123,8 +116,8 @@ exports.getById = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-  // UPDATE DRIVER RENT BY ID
-  // ---------------------------------------------------------
+// UPDATE DRIVER RENT BY ID
+// ---------------------------------------------------------
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
@@ -151,8 +144,8 @@ exports.update = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-  // DELETE DRIVER RENT BY ID
-  // ---------------------------------------------------------
+// DELETE DRIVER RENT BY ID
+// ---------------------------------------------------------
 exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
@@ -178,10 +171,9 @@ exports.delete = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
-  // GET BULK DRIVER RENTS PREVIEW
-  // ---------------------------------------------------------
+// GET BULK DRIVER RENTS PREVIEW
+// ---------------------------------------------------------
 exports.getBulkPreview = async (req, res) => {
   try {
     const { company_id, from_date, to_date, subsidiary_id } = req.query;
@@ -189,7 +181,8 @@ exports.getBulkPreview = async (req, res) => {
     if (!company_id || !from_date || !to_date || !subsidiary_id) {
       return res.status(400).json({
         status: false,
-        message: "company_id, from_date, to_date, and subsidiary_id are required",
+        message:
+          "company_id, from_date, to_date, and subsidiary_id are required",
       });
     }
 
@@ -197,7 +190,7 @@ exports.getBulkPreview = async (req, res) => {
       company_id,
       from_date,
       to_date,
-      subsidiary_id
+      subsidiary_id,
     );
 
     const formattedData = reportData.map((row) => {
@@ -255,10 +248,9 @@ exports.getBulkPreview = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
-  // CREATE BULK DRIVER RENTS
-  // ---------------------------------------------------------
+// CREATE BULK DRIVER RENTS
+// ---------------------------------------------------------
 exports.createBulk = async (req, res) => {
   try {
     console.log(

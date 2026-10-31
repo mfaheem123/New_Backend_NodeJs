@@ -1,9 +1,9 @@
 // models/matrixModel.js
-const pool = require('../db');
+const pool = require("../db");
 
 class MatrixModel {
-    static async getZoneAvailabilityMatrix() {
-        const query = `
+  static async getZoneAvailabilityMatrix() {
+    const query = `
             SELECT 
                 z.id AS zone_id,
                 z.name AS zone_name,
@@ -69,9 +69,9 @@ class MatrixModel {
             ) j ON z.id = j.zone_id;
         `;
 
-        const { rows } = await pool.query(query);
-        return rows;
-    }
+    const { rows } = await pool.query(query);
+    return rows;
+  }
 }
 
 module.exports = MatrixModel;
