@@ -68,6 +68,7 @@ const fareConfigurationMileageRoutes = require("./routes/fareConfigurationMileag
 const driverAttributeRoutes = require("./routes/driverAttributeRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const emailRoutes = require("./routes/emailRoutes");
+const matrixRoutes = require("./routes/matrixRoutes");
 
 const app = express();
 
@@ -192,6 +193,7 @@ app.use("/api/fare-configuration-mileage", fareConfigurationMileageRoutes);
 app.use("/api/driver-attributes", driverAttributeRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/emails", emailRoutes);
+app.use("/api/driver-zones", matrixRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

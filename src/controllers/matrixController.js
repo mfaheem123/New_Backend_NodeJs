@@ -2,13 +2,16 @@
 const MatrixModel = require("../models/matrixModel");
 
 class MatrixController {
+  // ---------------------------------------------------------
+  // FETCH ZONE AVAILABILITY MATRIX
+  // ---------------------------------------------------------
   static async fetchMatrixData(req, res) {
     try {
       const matrixData = await MatrixModel.getZoneAvailabilityMatrix();
 
       return res.status(200).json({
         success: true,
-        message: "Zone availability matrix fetched successfully",
+        message: "Zone Availability Fetched Successfully",
         data: matrixData,
       });
     } catch (error) {

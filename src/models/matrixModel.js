@@ -1,16 +1,21 @@
 // models/matrixModel.js
-const pool = require("../db");
+const pool = require('../db');
+    
+
 
 class MatrixModel {
-  static async getZoneAvailabilityMatrix() {
-    const query = `
+    // ---------------------------------------------------------
+  // FETCH ZONE AVAILABILITY MATRIX
+  // ---------------------------------------------------------
+    static async getZoneAvailabilityMatrix() {
+        const query = `
             SELECT 
                 z.id AS zone_id,
                 z.name AS zone_name,
                 z.secondary_name,
                 
-                -- 1. Available Drivers Count 
-                -- (Yahan drivers.zone match ho raha hai zones.name ya zones ke sath)
+                -- 1. Available Drivers Count in this Zone
+                -- Yahan hum name match ya future-proof logic use kar rahe hain
                 COALESCE(d.driver_count, 0) AS available_drivers,
 
                 -- 2. J0 Jobs (Immediate / Active bookings)
@@ -24,18 +29,18 @@ class MatrixModel {
 
             FROM zones z
             
-            -- Drivers Subquery: Counting drivers where driver.zone matches zone name (e.g., 'TN37 6EB')
+            -- Drivers Subquery: Count active drivers in this zone name
             LEFT JOIN (
                 SELECT 
                     zone, 
                     COUNT(*) AS driver_count
                 FROM drivers
                 WHERE active = true 
-                  AND driver_status = 'available'
+                  AND driver_status = 'Available'
                 GROUP BY zone
             ) d ON z.name = d.zone
 
-            -- Jobs Subquery: Counting unassigned bookings linked via pickup_plot (zone id)
+            -- Jobs Subquery: Count unassigned bookings linked via pickup_plot (zone id)
             LEFT JOIN (
                 SELECT 
                     pickup_plot AS zone_id,
@@ -69,9 +74,9 @@ class MatrixModel {
             ) j ON z.id = j.zone_id;
         `;
 
-    const { rows } = await pool.query(query);
-    return rows;
-  }
+        const { rows } = await pool.query(query);
+        return rows;
+    }
 }
 
 module.exports = MatrixModel;

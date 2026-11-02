@@ -3363,6 +3363,7 @@ exports.getAllMultiBookings = async (req, res) => {
       journey_type,
       payment_type,
       company_id,
+      mobile,
       tabName,
     } = req.query;
 
@@ -3390,6 +3391,7 @@ exports.getAllMultiBookings = async (req, res) => {
         journey_type,
         payment_type,
         company_id,
+        mobile,
       },
     });
 

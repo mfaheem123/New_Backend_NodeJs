@@ -3529,6 +3529,11 @@ const getAllMultiBookings = async ({
     whereClauses.push(`b.company_id = $${queryParams.length}`);
   }
 
+  if (filters.mobile) {
+    queryParams.push(`%${filters.mobile}%`);
+    whereClauses.push(`b.mobile ILIKE $${queryParams.length}`);
+  }
+
   const whereString =
     whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
 
