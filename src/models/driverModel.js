@@ -1746,7 +1746,7 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
 
     WHERE 
       d.session_status = 'logged_in'
-      AND d.driver_status IN ('Available', 'SinBin')
+      AND d.driver_status IN ('Available', 'SinBin', 'On Break')
       AND d.booking_status = 'Available'
       AND d.company_id = $1
   `;

@@ -198,18 +198,66 @@ function toNullableFloat(value) {
   return parseFloat(value);
 }
 
-// UNIQUE REFERENCE NUMBER GENERATOR
-async function genRef() {
+// DYNAMIC REFERENCE NUMBER GENERATOR FROM document_numbers
+async function genRef(poolClient, companyId, subsidiaryId) {
+  try {
+    const compId = companyId || 1;
+    const subId = subsidiaryId;
+
+    if (!subId) {
+      console.warn("⚠️ subsidiary_id missing for document number generation, falling back to random.");
+      return await fallbackRandomRef();
+    }
+
+    // 1. Fetch and lock the document number row for this company & subsidiary
+    const selectQuery = `
+      SELECT prefix, end_number, increment_value 
+      FROM public.document_numbers 
+      WHERE company_id = $1 
+        AND subsidiary_id = $2 
+        AND document_table = 'booking'
+      FOR UPDATE;
+    `;
+    
+    const docRes = await poolClient.query(selectQuery, [compId, subId]);
+
+    if (docRes.rows.length === 0) {
+      console.warn(`⚠️ No document number config found for subsidiary_id: ${subId}, company_id: ${compId}. Falling back.`);
+      return await fallbackRandomRef();
+    }
+
+    const { prefix, end_number, increment_value } = docRes.rows[0];
+    const currentNumber = end_number;
+    const nextNumber = currentNumber + increment_value;
+
+    // 2. Update end_number to the next value in document_numbers table
+    const updateQuery = `
+      UPDATE public.document_numbers 
+      SET end_number = $1, updated_at = NOW()
+      WHERE company_id = $2 
+        AND subsidiary_id = $3 
+        AND document_table = 'booking';
+    `;
+    
+    await poolClient.query(updateQuery, [nextNumber, compId, subId]);
+
+    // 3. Return combined reference number (e.g., "NTG11111")
+    return `${prefix}${currentNumber}`;
+  } catch (err) {
+    console.error("❌ Error generating document reference number:", err);
+    throw err;
+  }
+}
+
+// Fallback random generator if configuration doesn't exist
+async function fallbackRandomRef() {
   let ref;
   let exists = true;
-
   while (exists) {
     const digits = Math.floor(10000 + Math.random() * 90000).toString();
     ref = "NTG" + digits;
-
     const checkQuery = `SELECT reference_number FROM bookings WHERE reference_number = $1 LIMIT 1`;
     const result = await pool.query(checkQuery, [ref]);
-
     if (result.rows.length === 0) exists = false;
   }
   return ref;
@@ -222,7 +270,7 @@ function strOrNull(v) {
 }
 
 // NORMALIZER
-async function normalizeBookingPayload(src) {
+async function normalizeBookingPayload(poolClient, src) {
   const b = { ...src };
 
   const jsonFields = [
@@ -261,6 +309,7 @@ async function normalizeBookingPayload(src) {
     "escort_id",
     "multi_booking_id",
     "associated_booking",
+    "company_id",
   ];
 
   intFields.forEach((field) => {
@@ -298,8 +347,10 @@ async function normalizeBookingPayload(src) {
   b.on_route = false;
   b.employee_id = b.employee_id || DEFAULT_EMPLOYEE_ID;
 
-  b.reference_number = b.reference_number || (await genRef());
-
+  // 🔥 Generate Reference Number from document_numbers table using transaction client
+  if (!b.reference_number) {
+    b.reference_number = await genRef(poolClient, b.company_id, b.subsidiary_id);
+  }
   if (b.total_charges === undefined || b.total_charges === null) {
     b.total_charges = b.fares ?? 0;
   }
@@ -456,7 +507,7 @@ async function createSimpleBooking(payload) {
         payload.fare_meter = true;
       }
     }
-    const normalized = await normalizeBookingPayload(payload);
+    const normalized = await normalizeBookingPayload(pool, payload);
     if (customerId) normalized.customer_id = customerId;
 
     // Set dispatched_at here if driver exists to keep DB operations inside transaction
@@ -562,7 +613,7 @@ async function createTwoWayBooking(payload) {
       customerId = await upsertCustomer(pool, payload);
     }
 
-    const normalized = await normalizeBookingPayload(payload);
+    const normalized = await normalizeBookingPayload(pool, payload);
     if (customerId) normalized.customer_id = customerId;
 
     const primary = await createBookingRow(pool, normalized);
@@ -587,7 +638,7 @@ async function createTwoWayBooking(payload) {
     returnBooking.dropoff_longitude = normalized.pickup_longitude;
 
     returnBooking.associated_booking = primary.id;
-    returnBooking.reference_number = await genRef();
+    returnBooking.reference_number = await genRef(pool, payload.company_id, payload.subsidiary_id);
     returnBooking.driver_id = returnBooking.driver_id || null;
     returnBooking.on_route = false;
 
@@ -623,12 +674,13 @@ async function createReturnWayBooking(payload) {
 
     /* ---------------- OUTBOUND ---------------- */
     const outbound = await normalizeBookingPayload({
+      pool,
       ...payload,
       journey_type_id: 3,
     });
 
     outbound.customer_id = customerId;
-    outbound.reference_number = await genRef();
+    outbound.reference_number = await genRef(pool, payload.company_id, payload.subsidiary_id);
 
     // Driver notification timestamp update directly inside transaction
     if (outbound.driver_id) {
@@ -683,9 +735,9 @@ async function createReturnWayBooking(payload) {
       journey_type_id: 3,
     };
 
-    const normalizedReturn = await normalizeBookingPayload(returnPayload);
+    const normalizedReturn = await normalizeBookingPayload(pool,returnPayload);
     normalizedReturn.customer_id = customerId;
-    normalizedReturn.reference_number = await genRef();
+    normalizedReturn.reference_number = await genRef(pool, payload.company_id, payload.subsidiary_id);
 
     if (normalizedReturn.driver_id) {
       normalizedReturn.dispatched_at = new Date();
@@ -780,10 +832,10 @@ async function createMultiVehicleBooking(payload) {
       delete bookingRow.multi_reservation;
 
       // Normalize payload
-      const normalized = await normalizeBookingPayload(bookingRow);
+      const normalized = await normalizeBookingPayload(pool, bookingRow);
 
       normalized.customer_id = customerId;
-      normalized.reference_number = await genRef();
+      normalized.reference_number = await genRef(pool, payload.company_id, payload.subsidiary_id);
 
       // INSERT
       const inserted = await createBookingRow(pool, normalized);
@@ -890,10 +942,10 @@ async function createMultiReservationBooking(payload) {
 
       // createdBookingIds.push(outboundInserted.id);
 
-      const normalizedOutbound = await normalizeBookingPayload(outboundClone);
+      const normalizedOutbound = await normalizeBookingPayload(pool, outboundClone);
 
       normalizedOutbound.customer_id = customerId;
-      normalizedOutbound.reference_number = await genRef();
+      normalizedOutbound.reference_number = await genRef(pool, payload.company_id, payload.subsidiary_id);
 
       // IMPORTANT:
       // First booking ka multi_booking_id pehle set nahi hoga.
@@ -966,11 +1018,11 @@ async function createMultiReservationBooking(payload) {
         returnClone.fares = returnFare.fare;
         returnClone.total_charges = returnFare.total_fare;
 
-        const normalizedReturn = await normalizeBookingPayload(returnClone);
+        const normalizedReturn = await normalizeBookingPayload(pool, returnClone);
 
         normalizedReturn.customer_id = customerId;
         normalizedReturn.multi_booking_id = multiBookingId;
-        normalizedReturn.reference_number = await genRef();
+        normalizedReturn.reference_number = await genRef(pool, payload.company_id, payload.subsidiary_id);
 
         const returnInserted = await createBookingRow(pool, normalizedReturn);
 
@@ -1837,7 +1889,7 @@ async function updateBookingService(bookingId, payload) {
 
     completed: false,
 
-    reference_number: await genRef(),
+    reference_number: await genRef(pool, payload.company_id, existing.subsidiary_id),
 
     created_at: new Date(),
     updated_at: new Date(),
@@ -1847,7 +1899,7 @@ async function updateBookingService(bookingId, payload) {
 
   delete newBookingPayload.id;
 
-  const normalized = await normalizeBookingPayload(newBookingPayload);
+  const normalized = await normalizeBookingPayload(pool,newBookingPayload);
 
   const inserted = await insertBookingRow(pool, normalized);
 
@@ -1893,7 +1945,7 @@ async function cloneOneWayBookingService(payload) {
   const newBooking = {
     ...existing,
     id: undefined,
-    reference_number: await genRef(),
+    reference_number: await genRef(pool, company_id, existing.subsidiary_id),
     journey_type_id: 1, // FORCE ONE WAY
     vehicle_type_id,
     pickup_date,
@@ -1917,7 +1969,7 @@ async function cloneOneWayBookingService(payload) {
   delete newBooking.id;
 
   // 3️ Normalize payload
-  const normalized = await normalizeBookingPayload(newBooking);
+  const normalized = await normalizeBookingPayload(pool, newBooking);
 
   // 4️ Insert booking
   const inserted = await createBookingRow(pool, normalized);

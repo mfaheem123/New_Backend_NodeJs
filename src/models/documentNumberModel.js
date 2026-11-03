@@ -18,21 +18,24 @@ exports.create = async (data) => {
     end_number = start_number;
   }
 
-  prefix = prefix.toLowerCase();
+  if (prefix) {
+    prefix = prefix.toLowerCase();
+  }
 
-  // ✅ Duplicate Check
+  // ✅ Updated Duplicate Check (checking company_id, subsidiary_id, and document_table)
   const exists = await pool.query(
     `
     SELECT id
     FROM document_numbers
-    WHERE subsidiary_id = $1
-      AND document_table = $2
+    WHERE company_id = $1
+      AND subsidiary_id = $2
+      AND document_table = $3
     `,
-    [subsidiary_id, document_table],
+    [company_id, subsidiary_id, document_table],
   );
 
   if (exists.rows.length) {
-    throw new Error("Document number already exists.");
+    throw new Error("Document number already exists for this subsidiary and table.");
   }
 
   const res = await pool.query(
