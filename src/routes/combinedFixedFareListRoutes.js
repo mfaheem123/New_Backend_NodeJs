@@ -6,7 +6,7 @@ const combinedController = require("../controllers/combinedFixedFareListControll
 // GET /api/combined/vehicle-type-accounts
 router.get(
   "/vehicle-location-types",
-  combinedController.getVehicleTypeAndLocationTypes
+  combinedController.getVehicleTypeAndLocationTypes,
 );
 
 module.exports = router;

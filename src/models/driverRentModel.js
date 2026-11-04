@@ -10,8 +10,9 @@ function randomLetters(length = 2) {
 }
 
 class DriverRent {
-  /* ================= CREATE ================= */
-
+  // ---------------------------------------------------------
+  // CREATE DRIVER RENT
+  // ---------------------------------------------------------
   static async create(data) {
     try {
       await db.query("BEGIN");
@@ -138,8 +139,9 @@ class DriverRent {
     }
   }
 
-  /* ================= DISTINCT ================= */
-
+  // ---------------------------------------------------------
+  // GET DISTINCT DRIVER RENTS
+  // ---------------------------------------------------------
   static async getDistinct(offset, limit, company_id) {
     const query = `
     SELECT 
@@ -180,8 +182,9 @@ class DriverRent {
     };
   }
 
-  /* ================= BY DRIVER ================= */
-
+  // ---------------------------------------------------------
+  // GET DRIVER RENT BY DRIVER ID
+  // ---------------------------------------------------------
   static async getByDriverId(driver_id, company_id) {
     const query = `
       SELECT dc.id,
@@ -215,8 +218,9 @@ class DriverRent {
     return result.rows;
   }
 
-  /* ================= GET BY ID ================= */
-
+  // ---------------------------------------------------------
+  // GET DRIVER RENT BY ID
+  // ---------------------------------------------------------
   static async getById(id) {
     const query = `
     SELECT 
@@ -313,6 +317,9 @@ class DriverRent {
     return rentRes.rows[0];
   }
 
+  // ---------------------------------------------------------
+  // UPDATE DRIVER RENT BY ID
+  // ---------------------------------------------------------
   static async update(id, data) {
     try {
       await db.query("BEGIN");
@@ -399,6 +406,9 @@ class DriverRent {
     }
   }
 
+  // ---------------------------------------------------------
+  // DELETE DRIVER RENT BY ID
+  // ---------------------------------------------------------
   static async delete(id) {
     try {
       await db.query("BEGIN");
@@ -440,6 +450,142 @@ class DriverRent {
       );
 
       await db.query("COMMIT");
+    } catch (err) {
+      await db.query("ROLLBACK");
+      throw err;
+    }
+  }
+
+  // ---------------------------------------------------------
+  // GET BULK DRIVER RENTS PREVIEW
+  // ---------------------------------------------------------
+  static async getBulkPreview(company_id, from_date, to_date, subsidiary_id) {
+    const query = `
+    SELECT 
+      d.id AS driver_id,
+      d.username,
+      d.name AS driver_name,
+      d.balance AS old_balance,
+      COALESCE(d.driver_commission, 20) AS driver_rent,
+      
+      -- Cash Total: fare + wc + edc (where payment type is cash)
+      COALESCE(SUM(CASE WHEN pt.name ILIKE '%cash%' THEN 
+        COALESCE(b.fares, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0)
+      ELSE 0 END), 0) AS cash_jobs_total,
+      
+      -- Account Total: fare + wc + edc (where payment type is account)
+      COALESCE(SUM(CASE WHEN pt.name ILIKE '%account%' THEN 
+        COALESCE(b.fares, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0)
+      ELSE 0 END), 0) AS account_jobs_total,
+      
+      COUNT(b.id) AS bookings_count,
+      
+      json_agg(json_build_object(
+        'booking_id', b.id,
+        'fares', b.fares,
+        'parking_charges', b.parking_charges,
+        'waiting_charges', b.waiting_charges,
+        'extra_drop_charges', b.extra_drop_charges,
+        'congestion_charges', b.congestion_charges,
+        'total_charges', (COALESCE(b.fares, 0) + COALESCE(b.parking_charges, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0) + COALESCE(b.congestion_charges, 0)),
+        'payment_type', pt.name
+      )) AS bookings
+    FROM drivers d
+    JOIN bookings b ON b.driver_id = d.id
+    LEFT JOIN payment_types pt ON b.payment_type_id = pt.id
+    WHERE (d.company_id = $1 OR b.company_id = $1)
+      AND (d.driver_type ILIKE 'rent%' OR d.driver_type ILIKE '%rent')
+      AND b.booking_status_id = 11
+      AND b.commission_status = 'open'
+      AND b.commission = true
+      AND b.pickup_date::date BETWEEN $2::date AND $3::date
+      AND (d.subsidiary_id = $4 OR b.subsidiary_id = $4)
+    GROUP BY d.id
+    HAVING COUNT(b.id) > 0
+    ORDER BY d.id DESC;
+  `;
+
+    const result = await db.query(query, [
+      company_id,
+      from_date,
+      to_date,
+      subsidiary_id,
+    ]);
+    return result.rows;
+  }
+
+  // ---------------------------------------------------------
+  // CREATE BULK DRIVER RENTS
+  // ---------------------------------------------------------
+  static async bulkCreate(items) {
+    try {
+      await db.query("BEGIN");
+      const createdRents = [];
+
+      for (const data of items) {
+        const transaction_number =
+          randomLetters(2) +
+          Math.floor(Date.now() / 1000) +
+          Math.floor(Math.random() * 100);
+
+        const insertQuery = `
+        INSERT INTO driver_rents (
+          transaction_number, transaction_date, driver_id, jobs_total,
+          rent_total, cash_jobs_total, account_jobs_total, owed,
+          old_balance, current_balance, from_date, to_date, company_id, last_modified
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        RETURNING *;
+      `;
+
+        const values = [
+          transaction_number,
+          data.transaction_date,
+          data.driver_id,
+          data.jobs_total,
+          data.rent_total,
+          data.cash_jobs_total,
+          data.account_jobs_total,
+          data.owed,
+          data.old_balance,
+          data.current_balance,
+          data.from_date,
+          data.to_date,
+          data.company_id,
+          data.last_modified || data.transaction_date,
+        ];
+
+        const res = await db.query(insertQuery, values);
+        const rent = res.rows[0];
+
+        // Insert Line Items & Update Bookings status
+        const bookingIds = [];
+        for (const item of data.driver_rent_lineitems) {
+          await db.query(
+            `INSERT INTO driver_rent_lineitems (driver_rent_id, booking_id) VALUES ($1, $2)`,
+            [rent.id, item.booking_id],
+          );
+          bookingIds.push(item.booking_id);
+        }
+
+        if (bookingIds.length) {
+          await db.query(
+            `UPDATE bookings SET commission = false, commission_status = 'close' WHERE id = ANY($1::int[])`,
+            [bookingIds],
+          );
+        }
+
+        // Update Driver Balance
+        await db.query(`UPDATE drivers SET balance = $1 WHERE id = $2`, [
+          data.current_balance,
+          data.driver_id,
+        ]);
+
+        createdRents.push(rent);
+      }
+
+      await db.query("COMMIT");
+      return createdRents;
     } catch (err) {
       await db.query("ROLLBACK");
       throw err;

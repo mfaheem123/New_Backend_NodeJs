@@ -1,7 +1,9 @@
 const db = require("../db");
 const bcrypt = require("bcrypt");
 
-//  Helper: Format date as DD-MM-YYYY
+// ---------------------------------------------------------
+// HELPER: FORMAT DATES AS DD-MM-YYYY
+// ---------------------------------------------------------
 function formatDateOnly(date) {
   if (!date) return null;
   const d = new Date(date);
@@ -17,7 +19,9 @@ function formatDateOnly(date) {
   return `${day}-${month}-${year}`;
 }
 
-// 🧰 Normalize driver and nested vehicle dates
+// ---------------------------------------------------------
+// NORMALIZE DRIVER AND NESTED VEHICLE DATES
+// ---------------------------------------------------------
 function normalizeDriverDates(driver) {
   if (!driver) return driver;
 
@@ -58,6 +62,9 @@ function normalizeDriverDates(driver) {
   return driver;
 }
 
+// ---------------------------------------------------------
+// FORMAT VEHICLE DATA
+// ---------------------------------------------------------
 function formatVehicle(v) {
   if (!v) return null;
 
@@ -136,13 +143,19 @@ function formatVehicle(v) {
     vehicle_type: v.vehicle_type,
   };
 }
-// Generate driveraccessToken NTG+2 digits
+
+// ---------------------------------------------------------
+// GENERATE DRIVER ACCESS TOKEN (NTG+2 digits)
+// ---------------------------------------------------------
 function generateSecurityCode() {
   let result = "NTG";
   const digits = Math.floor(10 + Math.random() * 90).toString();
   return result + digits;
 }
 
+// ---------------------------------------------------------
+// CHECK UNIQUE DRIVER ACCESS TOKEN (NTG+2 digits)
+// ---------------------------------------------------------
 async function generateUniqueDriverAccessToken(db) {
   while (true) {
     const token = generateSecurityCode();
@@ -161,17 +174,39 @@ async function generateUniqueDriverAccessToken(db) {
 }
 
 const Driver = {
-  // Check if username already exists
-  async checkUsernameExists(username) {
+  // ---------------------------------------------------------
+  // CHECK IF USERNAME EXISTS
+  // ---------------------------------------------------------
+  async checkUsernameExists(username, company_id) {
     const query = `
       SELECT id FROM drivers 
       WHERE LOWER(username) = LOWER($1)
+      AND company_id = $2
       LIMIT 1
     `;
-    const result = await db.query(query, [username]);
+    const result = await db.query(query, [username, company_id]);
     return result.rows.length > 0;
   },
 
+  // ---------------------------------------------------------
+  // CHECK IF MOBILE NUMBER EXISTS
+  // ---------------------------------------------------------
+  async checkMobileNumberExists(mobileNumber, company_id) {
+    if (!mobileNumber) return false;
+
+    const query = `
+    SELECT id FROM drivers 
+    WHERE TRIM(mobile) = TRIM($1)
+    AND company_id = $2
+    LIMIT 1
+  `;
+    const result = await db.query(query, [String(mobileNumber), company_id]);
+    return result.rows.length > 0;
+  },
+
+  // ---------------------------------------------------------
+  // CREATE DRIVER WITH DOCUMENTS
+  // ---------------------------------------------------------
   async create(data) {
     try {
       await db.query("BEGIN");
@@ -185,7 +220,13 @@ const Driver = {
         if (data[key] === "" || data[key] === undefined) data[key] = null;
       });
 
-      const { notes, shifts, vehicle: rawVehicle, ...driver } = data;
+      const {
+        notes,
+        shifts,
+        attributes,
+        vehicle: rawVehicle,
+        ...driver
+      } = data;
 
       let companyVehicleId = null;
       let useCompanyVehicle = false;
@@ -199,10 +240,10 @@ const Driver = {
         // 1️⃣ Fetch company vehicle details
         const { rows: companyVehicleRows } = await db.query(
           `SELECT 
-          mot_number, mot_expiry, mot2_number, mot2_expiry,
-          insurance_number, insurance_expiry,
-          phc_vehicle_number, phc_vehicle_expiry
-         FROM company_vehicles WHERE id = $1 LIMIT 1`,
+            mot_number, mot_expiry, mot2_number, mot2_expiry,
+            insurance_number, insurance_expiry,
+            phc_vehicle_number, phc_vehicle_expiry
+            FROM company_vehicles WHERE id = $1 LIMIT 1`,
           [companyVehicleId],
         );
 
@@ -257,7 +298,7 @@ const Driver = {
         ni, image, company_vehicle_id, vehicle_id,
         licence_expiry_time, phc_driver_expiry_time, insurance_expiry_time, phc_vehicle_expiry_time,
         mot_expiry_time, mot2_expiry_time, v5_registration_expiry_time, road_tax_expiry_time,
-        rental_agreement_expiry_time, driver_access_token, company_id
+        rental_agreement_expiry_time, driver_access_token, company_id, attributes 
       )
       VALUES (
         $1,$2,$3,$4,$5,$6,$7,$8,$9,
@@ -269,7 +310,7 @@ const Driver = {
         $32,$33,$34,$35,$36,$37,
         $38,$39,$40,$41,
         $42,$43,$44,$45,$46,$47,
-        $48,$49,$50,$51,$52
+        $48,$49,$50,$51,$52,$53 
       )
       RETURNING id
     `;
@@ -327,6 +368,11 @@ const Driver = {
         driver.rental_agreement_expiry_time,
         driverAccessToken,
         driver.company_id ?? 1,
+        attributes
+          ? typeof attributes === "string"
+            ? attributes
+            : JSON.stringify(attributes)
+          : null,
       ]);
 
       const driverId = driverRes.rows[0].id;
@@ -538,7 +584,7 @@ const Driver = {
         for (const note of notes) {
           await db.query(
             `INSERT INTO driver_notes (driver_id, note, created_at, created_by)
-           VALUES ($1, $2, $3, $4)`,
+             VALUES ($1, $2, $3, $4)`,
             [
               driverId,
               note.note,
@@ -550,11 +596,12 @@ const Driver = {
       }
       await db.query(
         `
-        INSERT INTO driver_app_features (driver_id)
-        VALUES ($1)
-        ON CONFLICT (driver_id) DO NOTHING
+        INSERT INTO driver_app_features (driver_id, company_id)
+        VALUES ($1, $2)
+        ON CONFLICT (driver_id)
+        DO NOTHING
         `,
-        [driverId],
+        [driverId, driver.company_id ?? 1],
       );
 
       // Insert driver shifts
@@ -562,7 +609,7 @@ const Driver = {
         for (const shift of shifts) {
           await db.query(
             `INSERT INTO driver_shifts (driver_id, name, start_time, end_time)
-           VALUES ($1, $2, $3, $4)`,
+             VALUES ($1, $2, $3, $4)`,
             [driverId, shift.name, shift.start_time, shift.end_time],
           );
         }
@@ -581,6 +628,9 @@ const Driver = {
     }
   },
 
+  // ---------------------------------------------------------
+  // GET ALL DRIVERS
+  // ---------------------------------------------------------
   async getAll({
     page = 1,
     limit = 50,
@@ -669,7 +719,7 @@ const Driver = {
     // Count query
     const countQuery = `
     SELECT COUNT(*) AS total
-    FROM drivers d
+    FROM drivers d 
     LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
     LEFT JOIN vehicles v ON v.id = d.vehicle_id
     LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
@@ -684,7 +734,7 @@ const Driver = {
     params.push(limit, offset);
     const dataQuery = `
     SELECT 
-      d.*,
+      d.*, 
       s.name AS subsidiary_name,
       CASE 
         WHEN d.use_company_vehicle = true THEN
@@ -716,17 +766,17 @@ const Driver = {
               'luggages', vt_v.luggages,
               'driver_waiting_charges', vt_v.driver_waiting_charges
             )
-          )
-      END AS vehicle
-    FROM drivers d
-    LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
-    LEFT JOIN vehicles v ON v.id = d.vehicle_id
-    LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
-    LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
-    LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
-    ${whereClause}
-    ORDER BY d.id DESC
-    LIMIT $${params.length - 1} OFFSET $${params.length};
+          ) 
+      END AS vehicle 
+        FROM drivers d 
+        LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id 
+        LEFT JOIN vehicles v ON v.id = d.vehicle_id 
+        LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id 
+        LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id 
+        LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id 
+        ${whereClause} 
+        ORDER BY d.id DESC 
+        LIMIT $${params.length - 1} OFFSET $${params.length}; 
   `;
 
     const res = await db.query(dataQuery, params);
@@ -741,6 +791,9 @@ const Driver = {
     };
   },
 
+  // ---------------------------------------------------------
+  // GET DRIVER BY ID
+  // ---------------------------------------------------------
   async getById(id) {
     try {
       await db.query("BEGIN");
@@ -748,9 +801,9 @@ const Driver = {
       // 🧱 Fetch driver main record
       const driverRes = await db.query(
         `SELECT d.*, s.name AS subsidiary_name
-       FROM drivers d
-       LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
-       WHERE d.id = $1`,
+          FROM drivers d
+          LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
+          WHERE d.id = $1`,
         [id],
       );
 
@@ -764,18 +817,18 @@ const Driver = {
       // 📝 Notes
       const notesRes = await db.query(
         `SELECT id, note, created_at, created_by
-       FROM driver_notes
-       WHERE driver_id = $1
-       ORDER BY created_at DESC`,
+          FROM driver_notes
+          WHERE driver_id = $1
+          ORDER BY created_at DESC`,
         [id],
       );
 
       // ⏰ Shifts
       const shiftsRes = await db.query(
         `SELECT id, name, start_time, end_time
-       FROM driver_shifts
-       WHERE driver_id = $1
-       ORDER BY id ASC`,
+          FROM driver_shifts
+          WHERE driver_id = $1
+          ORDER BY id ASC`,
         [id],
       );
 
@@ -792,10 +845,10 @@ const Driver = {
               'account_waiting_charges', vt.account_waiting_charges,
               'waiting_time', vt.waiting_time
             ) AS vehicle_type
-         FROM company_vehicles cv
-         LEFT JOIN vehicle_types vt ON vt.id = cv.vehicle_type_id
-         WHERE cv.id = $1
-         LIMIT 1`,
+            FROM company_vehicles cv
+            LEFT JOIN vehicle_types vt ON vt.id = cv.vehicle_type_id
+            WHERE cv.id = $1
+            LIMIT 1`,
           [driver.company_vehicle_id],
         );
       } else {
@@ -809,10 +862,10 @@ const Driver = {
               'account_waiting_charges', vt.account_waiting_charges,
               'waiting_time', vt.waiting_time
             ) AS vehicle_type
-         FROM vehicles v
-         LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id
-         WHERE v.id = $1
-         LIMIT 1`,
+            FROM vehicles v
+            LEFT JOIN vehicle_types vt ON vt.id = v.vehicle_type_id
+            WHERE v.id = $1
+            LIMIT 1`,
           [driver.vehicle_id],
         );
       }
@@ -821,9 +874,21 @@ const Driver = {
 
       const vehicleRow = vehicleRes.rows[0] || null;
       const formattedVehicle = vehicleRow ? formatVehicle(vehicleRow) : null;
-
+      // 🟢 TEXT column se aane waale attributes JSON String ko Array me parse karein
+      let parsedAttributes = [];
+      if (driver.attributes) {
+        try {
+          parsedAttributes =
+            typeof driver.attributes === "string"
+              ? JSON.parse(driver.attributes)
+              : driver.attributes;
+        } catch (err) {
+          parsedAttributes = [];
+        }
+      }
       const fullDriver = {
         ...normalizeDriverDates(driver),
+        attributes: parsedAttributes,
         notes: notesRes.rows,
         shifts: shiftsRes.rows,
         vehicle: formattedVehicle,
@@ -836,6 +901,9 @@ const Driver = {
     }
   },
 
+  // ---------------------------------------------------------
+  // UPDATE DRIVER BY ID
+  // ---------------------------------------------------------
   async update(driverId, data) {
     try {
       await db.query("BEGIN");
@@ -846,6 +914,19 @@ const Driver = {
       ]);
       if (!rows.length) throw new Error("Driver not found");
       const existingDriver = rows[0];
+
+      // 🟢 Attributes Handling:
+      // Agar Request me attributes dynamic value aati hai to use stringify karein, warna existing driver ka hi rehne dein.
+      if ("attributes" in data && data.attributes !== undefined) {
+        if (data.attributes === null || data.attributes === "") {
+          data.attributes = null;
+        } else {
+          data.attributes =
+            typeof data.attributes === "string"
+              ? data.attributes
+              : JSON.stringify(data.attributes);
+        }
+      }
 
       // ✅ Merge old data with new
       const mergedDriver = { ...existingDriver, ...data };
@@ -923,6 +1004,7 @@ const Driver = {
         "road_tax_expiry_time",
         "rental_agreement_expiry_time",
         "image",
+        "attributes", // 👈 Added to fields list
       ];
 
       // ✅ Build dynamic query for driver update
@@ -982,8 +1064,8 @@ const Driver = {
 
           const { rows: newVeh } = await db.query(
             `INSERT INTO vehicles (${keys.join(", ")}, driver_id)
-           VALUES (${placeholders}, $${values.length + 1})
-           RETURNING id`,
+             VALUES (${placeholders}, $${values.length + 1})
+             RETURNING id`,
             [...values, driverId],
           );
           vehicleId = newVeh[0].id;
@@ -1044,6 +1126,47 @@ const Driver = {
     }
   },
 
+  // ---------------------------------------------------------
+  // CHECK IF USERNAME EXISTS (EXCLUDING CURRENT DRIVER)
+  // ---------------------------------------------------------
+  async checkUsernameExistsForUpdate(username, companyId, driverId) {
+    if (!username) return false;
+
+    const query = `
+    SELECT id FROM drivers 
+    WHERE LOWER(username) = LOWER($1)
+      AND company_id = $2
+      AND id != $3
+    LIMIT 1
+  `;
+    const result = await db.query(query, [username, companyId, driverId]);
+    return result.rows.length > 0;
+  },
+
+  // ---------------------------------------------------------
+  // CHECK IF MOBILE NUMBER EXISTS (EXCLUDING CURRENT DRIVER)
+  // ---------------------------------------------------------
+  async checkMobileNumberExistsForUpdate(mobileNumber, companyId, driverId) {
+    if (!mobileNumber) return false;
+
+    const query = `
+    SELECT id FROM drivers 
+    WHERE TRIM(mobile) = TRIM($1)
+      AND company_id = $2
+      AND id != $3
+    LIMIT 1
+  `;
+    const result = await db.query(query, [
+      String(mobileNumber),
+      companyId,
+      driverId,
+    ]);
+    return result.rows.length > 0;
+  },
+
+  // ---------------------------------------------------------
+  // DELETE DRIVER BY ID
+  // ---------------------------------------------------------
   async delete(id) {
     try {
       await db.query("BEGIN");
@@ -1077,7 +1200,10 @@ const Driver = {
       throw err;
     }
   },
-  // Find driver by username (case-insensitive)
+
+  // ---------------------------------------------------------
+  // FIND DRIVER BY USERNAME (CASE-INSENSITIVE)
+  // ---------------------------------------------------------
   async findDriverByUsername(username) {
     const query = `
         SELECT * FROM drivers 
@@ -1089,22 +1215,10 @@ const Driver = {
     return result.rows[0];
   },
 
-  // Update driver login session
-  // async updateDriverLoginStatus(driverId) {
-  //   const query = `
-  //       UPDATE drivers
-  //       SET
-  //         session_status = 'logged_in',
-  //         driver_status = 'Available',
-  //         booking_status = 'Available',
-  //         last_login_at = NOW()
-  //       WHERE id = $1
-  //     `;
-  //   return db.query(query, [driverId]);
-  // },
-
-  //Update Driver Login Status With Location
-  async updateDriverLoginStatus(driverId, latitude, longitude) {
+  // ---------------------------------------------------------
+  // UPDATE DRIVER LOGIN STATUS WITH LOCATION & ZONE
+  // ---------------------------------------------------------
+  async updateDriverLoginStatus(driverId, latitude, longitude, zone) {
     const query = `
         UPDATE drivers
         SET
@@ -1113,12 +1227,16 @@ const Driver = {
           booking_status = 'Available',
           last_login_at = NOW(),
           latitude = $1,
-          longitude = $2
-        WHERE id = $3
+          longitude = $2,
+          zone = $3
+        WHERE id = $4
       `;
-    return db.query(query, [latitude, longitude, driverId]);
+    return db.query(query, [latitude, longitude, zone || null, driverId]);
   },
 
+  // ---------------------------------------------------------
+  // UPDATE DRIVER LOGOUT STATUS
+  // ---------------------------------------------------------
   async updateDriverLogoutStatus(id) {
     const query = `
     UPDATE drivers
@@ -1133,6 +1251,9 @@ const Driver = {
     return true;
   },
 
+  // ---------------------------------------------------------
+  // GET DRIVER BY COMPANY ID
+  // ---------------------------------------------------------
   async getByCompany(company_id) {
     const query = `
     SELECT 
@@ -1160,6 +1281,7 @@ const Driver = {
     LEFT JOIN vehicles v ON d.vehicle_id = v.id
     LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
     WHERE d.company_id = $1
+    AND d.active = true
     ORDER BY d.id DESC
   `;
 
@@ -1167,6 +1289,9 @@ const Driver = {
     return result.rows;
   },
 
+  // ---------------------------------------------------------
+  // UPDATE DRIVER FCM TOKEN AT LOGIN
+  // ---------------------------------------------------------
   async updateDriverFcmToken(driverId, fcmToken) {
     const query = `
     UPDATE drivers
@@ -1179,12 +1304,18 @@ const Driver = {
     return true;
   },
 
+  // ---------------------------------------------------------
+  // CLEAR DRIVER FCM TOKEN ON LOGOUT
+  // ---------------------------------------------------------
   async clearDriverFcmToken(driverId) {
     await db.query(`UPDATE drivers SET fcm_token = NULL WHERE id = $1`, [
       driverId,
     ]);
   },
 
+  // ---------------------------------------------------------
+  // GET LOGGED IN DRIVER BY ID
+  // ---------------------------------------------------------
   async getLoginDriverById(id) {
     const { rows } = await db.query(
       `SELECT * FROM drivers WHERE id = $1 LIMIT 1`,
@@ -1194,6 +1325,9 @@ const Driver = {
     return rows[0] || null;
   },
 
+  // ---------------------------------------------------------
+  // GET ALL DRIVERS BY COMMISSION TYPE
+  // ---------------------------------------------------------
   async getAllDriverByCommissionType(active, driver_type, company_id) {
     const conditions = [];
     const params = [];
@@ -1293,6 +1427,9 @@ const Driver = {
     };
   },
 
+  // ---------------------------------------------------------
+  // GET DRIVERS BY SESSION STATUS (LOGGED IN / LOGGED OUT)
+  // ---------------------------------------------------------
   async getBySessionStatus({
     page = 1,
     limit = 50,
@@ -1471,6 +1608,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     };
   },
 
+  // ---------------------------------------------------------
+  // GET AVAILABLE LOGGED IN DRIVERS
+  // ---------------------------------------------------------
   async getAvailableLoggedInDrivers() {
     const query = `
     SELECT 
@@ -1497,6 +1637,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return result.rows;
   },
 
+  // ---------------------------------------------------------
+  // GET BUSY LOGGED IN DRIVERS
+  // ---------------------------------------------------------
   async getBusyLoggedInDrivers() {
     const result = await db.query(
       `
@@ -1522,6 +1665,9 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return result.rows;
   },
 
+  // ---------------------------------------------------------
+  // UPDATE DRIVER STATUS (BOOKING STATUS & DRIVER STATUS)
+  // ---------------------------------------------------------
   async updateDriverStatus(driverId, booking_status, driver_status) {
     const query = `
     UPDATE drivers
@@ -1534,7 +1680,10 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return true;
   },
 
-  async getLoginDrivers() {
+  // ---------------------------------------------------------
+  // GET LOGGED IN DRIVERS BY COMPANY ID
+  // ---------------------------------------------------------
+  async getLoginDrivers(company_id) {
     const query = `
     SELECT 
       d.id,
@@ -1547,23 +1696,48 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status,
       d.driver_status,
       d.last_login_at,
+      d.has_pda,
       
-      -- vehicle type name (dynamic)
+      -- Vehicle Type (Dynamic)
       CASE 
         WHEN d.use_company_vehicle = true THEN vt_cv.name
         ELSE vt_v.name
-      END AS vehicle_type
+      END AS vehicle_type,
+
+      -- Vehicle Number (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
+        ELSE v.vehicle_number
+      END AS vehicle_no,
+
+      -- Vehicle Make (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.make
+        ELSE v.make
+      END AS make,
+
+      -- Vehicle Model (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.model
+        ELSE v.model
+      END AS model,
+
+      -- Vehicle Color (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.color
+        ELSE v.color
+      END AS color
 
     FROM drivers d
 
-    -- company vehicle
+    -- Company vehicle joins
     LEFT JOIN company_vehicles cv 
       ON cv.id = d.company_vehicle_id
 
     LEFT JOIN vehicle_types vt_cv 
       ON vt_cv.id = cv.vehicle_type_id
 
-    -- personal vehicle
+    -- Personal vehicle joins
     LEFT JOIN vehicles v 
       ON v.id = d.vehicle_id
 
@@ -1572,15 +1746,19 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
 
     WHERE 
       d.session_status = 'logged_in'
-      AND d.driver_status = 'Available'
+      AND d.driver_status IN ('Available', 'SinBin', 'On Break')
       AND d.booking_status = 'Available'
+      AND d.company_id = $1
   `;
 
-    const result = await db.query(query);
+    const result = await db.query(query, [company_id]);
     return result.rows;
   },
 
-  async getBusyDrivers() {
+  // ---------------------------------------------------------
+  // GET BUSY LOGGED IN DRIVERS BY COMPANY ID
+  // ---------------------------------------------------------
+  async getBusyDrivers(company_id) {
     const query = `
     SELECT 
       d.id,
@@ -1593,23 +1771,48 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status,
       d.driver_status,
       d.last_login_at,
+      d.has_pda,
       
-      -- vehicle type name (dynamic)
+      -- Vehicle Type (Dynamic)
       CASE 
         WHEN d.use_company_vehicle = true THEN vt_cv.name
         ELSE vt_v.name
-      END AS vehicle_type
+      END AS vehicle_type,
+
+      -- Vehicle Number (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
+        ELSE v.vehicle_number
+      END AS vehicle_no,
+
+      -- Vehicle Make (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.make
+        ELSE v.make
+      END AS make,
+
+      -- Vehicle Model (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.model
+        ELSE v.model
+      END AS model,
+
+      -- Vehicle Color (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.color
+        ELSE v.color
+      END AS color
 
     FROM drivers d
 
-    -- company vehicle
+    -- Company vehicle joins
     LEFT JOIN company_vehicles cv 
       ON cv.id = d.company_vehicle_id
 
     LEFT JOIN vehicle_types vt_cv 
       ON vt_cv.id = cv.vehicle_type_id
 
-    -- personal vehicle
+    -- Personal vehicle joins
     LEFT JOIN vehicles v 
       ON v.id = d.vehicle_id
 
@@ -1620,13 +1823,18 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status = 'logged_in'
       AND d.driver_status = 'Unavailable'
       AND d.booking_status IS DISTINCT FROM 'Available'
+      AND d.company_id = $1
+
   `;
 
-    const result = await db.query(query);
+    const result = await db.query(query, [company_id]);
     return result.rows;
   },
 
-  async getLoginDriverTracking() {
+  // ---------------------------------------------------------
+  // GET LOGGED IN DRIVERS FOR TRACKING BY COMPANY ID
+  // ---------------------------------------------------------
+  async getLoginDriverTracking(company_id) {
     const query = `
     SELECT 
       d.id,
@@ -1639,23 +1847,48 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       d.session_status,
       d.driver_status,
       d.last_login_at,
+      d.has_pda,
       
-      -- vehicle type name (dynamic)
+      -- Vehicle Type (Dynamic)
       CASE 
         WHEN d.use_company_vehicle = true THEN vt_cv.name
         ELSE vt_v.name
-      END AS vehicle_type
+      END AS vehicle_type,
+
+      -- Vehicle Number (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
+        ELSE v.vehicle_number
+      END AS vehicle_no,
+
+      -- Vehicle Make (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.make
+        ELSE v.make
+      END AS make,
+
+      -- Vehicle Model (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.model
+        ELSE v.model
+      END AS model,
+
+      -- Vehicle Color (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.color
+        ELSE v.color
+      END AS color
 
     FROM drivers d
 
-    -- company vehicle
+    -- Company vehicle joins
     LEFT JOIN company_vehicles cv 
       ON cv.id = d.company_vehicle_id
 
     LEFT JOIN vehicle_types vt_cv 
       ON vt_cv.id = cv.vehicle_type_id
 
-    -- personal vehicle
+    -- Personal vehicle joins
     LEFT JOIN vehicles v 
       ON v.id = d.vehicle_id
 
@@ -1664,15 +1897,20 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
 
     WHERE 
       d.session_status = 'logged_in'
+      AND d.company_id = $1
+
   `;
 
-    const result = await db.query(query);
+    const result = await db.query(query, [company_id]);
     return result.rows;
   },
 
-  async getFOBDrivers() {
+  // ---------------------------------------------------------
+  // GET FOB DRIVERS BY COMPANY ID
+  // ---------------------------------------------------------
+  async getFOBDrivers(company_id) {
     const dataQuery = `
-SELECT 
+  SELECT 
   d.*,
   s.name AS subsidiary_name,
   CASE 
@@ -1707,18 +1945,132 @@ SELECT
         )
       )
   END AS vehicle
-FROM drivers d
-LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
-LEFT JOIN vehicles v ON v.id = d.vehicle_id
-LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
-LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
-LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
-WHERE d.driver_status = 'Unavailable' AND session_status = 'logged_in'
-ORDER BY d.id DESC
+    FROM drivers d
+    LEFT JOIN subsidiaries s ON s.id = d.subsidiary_id
+    LEFT JOIN vehicles v ON v.id = d.vehicle_id
+    LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
+    LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
+    LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
+    WHERE d.driver_status = 'Unavailable' 
+    AND session_status = 'logged_in' 
+    AND d.company_id = $1
+    ORDER BY d.id DESC
 `;
 
-    const result = await db.query(dataQuery);
+    const result = await db.query(dataQuery, [company_id]);
     return result.rows;
+  },
+
+  // ---------------------------------------------------------
+  // GET DRIVER EXPIRY DOCUMENTS
+  // ---------------------------------------------------------
+  async getDriverExpiryDocuments(company_id) {
+    const params = [];
+    let where = `
+    WHERE (
+    (d.phc_vehicle_expiry IS NOT NULL
+        AND d.phc_vehicle_expiry <> ''
+        AND TO_DATE(d.phc_vehicle_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
+
+ OR (d.phc_driver_expiry IS NOT NULL
+        AND d.phc_driver_expiry <> ''
+        AND TO_DATE(d.phc_driver_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
+
+ OR (d.mot_expiry IS NOT NULL
+        AND d.mot_expiry <> ''
+        AND TO_DATE(d.mot_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
+
+ OR (d.mot2_expiry IS NOT NULL
+        AND d.mot2_expiry <> ''
+        AND TO_DATE(d.mot2_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
+
+ OR (d.insurance_expiry IS NOT NULL
+        AND d.insurance_expiry <> ''
+        AND TO_DATE(d.insurance_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
+
+ OR (d.licence_expiry IS NOT NULL
+        AND d.licence_expiry <> ''
+        AND TO_DATE(d.licence_expiry, 'YYYY-MM-DD') <= CURRENT_DATE)
+)
+  `;
+
+    if (company_id) {
+      params.push(company_id);
+      where += ` AND d.company_id = $${params.length}`;
+    }
+
+    const query = `
+    SELECT
+      d.id,
+      d.username,
+
+      d.phc_vehicle_expiry,
+      d.phc_driver_expiry,
+
+      d.mot_expiry,
+      d.mot2_expiry,
+      d.insurance_expiry,
+      d.licence_expiry
+
+    FROM drivers d
+    ${where}
+    ORDER BY d.username ASC
+  `;
+
+    const { rows } = await db.query(query, params);
+
+    return rows.map((driver) => ({
+      id: driver.id,
+      username: driver.username,
+
+      vehicle_expiry: driver.phc_vehicle_expiry,
+      driver_expiry: driver.phc_driver_expiry,
+      mot_expiry: driver.mot_expiry,
+      mot2_expiry: driver.mot2_expiry,
+      insurance_expiry: driver.insurance_expiry,
+      licence_expiry: driver.licence_expiry,
+    }));
+  },
+
+  // ---------------------------------------------------------
+  // UPDATE DRIVER TO INACTIVE
+  // ---------------------------------------------------------
+  async updateDriverInactive(driverId) {
+    const query = `
+        UPDATE drivers
+        SET
+          active = false
+        WHERE id = $1
+      `;
+    return db.query(query, [driverId]);
+  },
+
+  // ---------------------------------------------------------
+  // GET COMPANY NUMBER BY COMPANY ID FROM COMPANY_CLIENTS TABLE
+  // ---------------------------------------------------------
+  async getCompanyNumberByCompanyId(company_id) {
+    const query = `
+      SELECT *
+      FROM company_clients
+      WHERE id = $1
+      LIMIT 1
+    `;
+    const result = await db.query(query, [company_id]);
+    return result.rows[0] ? result.rows[0] : null;
+  },
+
+  // ---------------------------------------------------------
+  // UPDATE DRIVER LAST BOOKING
+  // ---------------------------------------------------------
+  async updateDriverLastBooking(driverId, bookingId) {
+    const query = `
+    UPDATE drivers
+    SET 
+      last_booking = $1
+    WHERE id = $2
+  `;
+    await db.query(query, [bookingId, driverId]);
+    return true;
   },
 };
 

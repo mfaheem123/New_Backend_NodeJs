@@ -1,8 +1,16 @@
 const Escort = require("../models/escortModel");
+const Account = require("../models/accountModel");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 
+// ---------------------------------------------------------
+// CREATE ESCORT WITH DOCUMENTS CONTROLLER
+// ---------------------------------------------------------
 const create = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING ADD ESCORT BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     // Clean empty strings
     Object.keys(req.body).forEach((k) => {
       if (req.body[k] === "") req.body[k] = null;
@@ -40,6 +48,9 @@ const create = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ALL ESCORTS CONTROLLER
+// ---------------------------------------------------------
 const getAll = async (req, res) => {
   try {
     const {
@@ -78,6 +89,9 @@ const getAll = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ESCORT BY ID CONTROLLER
+// ---------------------------------------------------------
 const getById = async (req, res) => {
   try {
     const escort = await Escort.findById(req.params.id);
@@ -92,8 +106,15 @@ const getById = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE ESCORT CONTROLLER
+// ---------------------------------------------------------
 const update = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING UPDATE ESCORT BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const id = req.params.id;
     Object.keys(req.body).forEach((k) => {
       if (req.body[k] === "") req.body[k] = null;
@@ -121,6 +142,9 @@ const update = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// DELETE ESCORT CONTROLLER
+// ---------------------------------------------------------
 const remove = async (req, res) => {
   try {
     const result = await Escort.remove(req.params.id);
@@ -146,4 +170,53 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { create, getAll, getById, update, remove };
+// ---------------------------------------------------------
+// GET ALL ESCORTS BY CHECKING ACCOUNT HAS ESCORT TRUE
+// ---------------------------------------------------------
+const getAllByAccountHasEscort = async (req, res) => {
+  try {
+    const { account_id, company_id } = req.query;
+
+    if (!account_id || !company_id) {
+      return res.status(400).json({
+        status: false,
+        message: "account_id and company_id are required",
+      });
+    }
+
+    const account = await Account.getAccountById(account_id);
+    if (!account) {
+      return res.status(404).json({
+        status: false,
+        message: "Account not found",
+      });
+    }
+
+    if (account.has_escort !== true) {
+      return res.status(200).json({
+        status: true,
+        escorts: [], // Fixed: Key name consistent (escorts)
+      });
+    }
+
+    // FIX: Pass as an object { company_id } instead of raw parameter
+    const { escorts } = await Escort.findAllByCompany(company_id);
+
+    return res.status(200).json({
+      status: true,
+      escorts,
+    });
+  } catch (err) {
+    console.error("Error fetching escorts by account:", err);
+    res.status(500).json({ status: false, message: "Server Error" });
+  }
+};
+
+module.exports = {
+  create,
+  getAll,
+  getById,
+  update,
+  remove,
+  getAllByAccountHasEscort,
+};

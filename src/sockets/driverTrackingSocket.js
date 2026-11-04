@@ -67,7 +67,7 @@ function handleDriverTrackingSocket(ws) {
   ws.on("message", async (message) => {
     try {
       const data = JSON.parse(message);
-      const { driverId, lat, lng } = data;
+      const { driverId, lat, lng, zone } = data;
 
       console.log("🚀 DRIVER TRACKING DATA:", data);
 
@@ -80,18 +80,61 @@ function handleDriverTrackingSocket(ws) {
         `SELECT 
       d.id,
       d.name,
-      d.zone,
       d.username,
-      d.driver_status,
-      d.booking_status,
-      d.session_status,
+      d.zone,
       d.latitude,
       d.longitude,
+      d.booking_status,
+      d.session_status,
+      d.driver_status,
       d.last_login_at,
-      vt.name AS vehicle_type
-      FROM drivers d
-      LEFT JOIN vehicles v ON d.vehicle_id = v.id
-      LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
+      d.has_pda,
+      
+      -- Vehicle Type (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN vt_cv.name
+        ELSE vt_v.name
+      END AS vehicle_type,
+
+      -- Vehicle Number (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
+        ELSE v.vehicle_number
+      END AS vehicle_no,
+
+      -- Vehicle Make (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.make
+        ELSE v.make
+      END AS make,
+
+      -- Vehicle Model (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.model
+        ELSE v.model
+      END AS model,
+
+      -- Vehicle Color (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.color
+        ELSE v.color
+      END AS color
+
+    FROM drivers d
+
+    -- Company vehicle joins
+    LEFT JOIN company_vehicles cv 
+      ON cv.id = d.company_vehicle_id
+
+    LEFT JOIN vehicle_types vt_cv 
+      ON vt_cv.id = cv.vehicle_type_id
+
+    -- Personal vehicle joins
+    LEFT JOIN vehicles v 
+      ON v.id = d.vehicle_id
+
+    LEFT JOIN vehicle_types vt_v 
+      ON vt_v.id = v.vehicle_type_id
       WHERE d.id = $1`,
         [driverId],
       );
@@ -110,6 +153,7 @@ function handleDriverTrackingSocket(ws) {
         prevLocation = {
           lat: parseFloat(driver.latitude),
           lng: parseFloat(driver.longitude),
+          zone: driver.zone || null,
         };
       }
 
@@ -132,20 +176,20 @@ function handleDriverTrackingSocket(ws) {
           `📏 Driver ${driverId} moved: ${distance.toFixed(2)} meters`,
         );
 
-        if (distance >= 50) {
+        if (distance >= 3) {
           shouldBroadcast = true;
         }
       }
 
       // update memory
-      lastDriverLocation.set(driverId, { lat, lng });
+      lastDriverLocation.set(driverId, { lat, lng, zone });
 
       // ==============================
       // 4️⃣ UPDATE DB
       // ==============================
       await db.query(
-        `UPDATE drivers SET latitude=$1, longitude=$2 WHERE id=$3`,
-        [lat, lng, driverId],
+        `UPDATE drivers SET latitude=$1, longitude=$2, zone=$3 WHERE id=$4`,
+        [lat, lng, zone || null, driverId],
       );
 
       // ==============================
@@ -174,7 +218,7 @@ function handleDriverTrackingSocket(ws) {
             id: driver.id,
             username: driver.username,
             name: driver.name,
-            zone: driver.zone,
+            zone: zone || driver.zone || null,
             latitude: lat,
             longitude: lng,
             booking_status: driver.booking_status,
@@ -182,6 +226,10 @@ function handleDriverTrackingSocket(ws) {
             driver_status: driver.driver_status,
             last_login_at: driver.last_login_at,
             vehicle_type: driver.vehicle_type,
+            vehicle_no: driver.vehicle_no,
+            make: driver.make,
+            model: driver.model,
+            color: driver.color,
           },
         });
 
@@ -223,16 +271,59 @@ async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
       d.name,
       d.username,
       d.zone,
-      d.driver_status,
-      d.booking_status,
-      d.session_status,
       d.latitude,
       d.longitude,
+      d.booking_status,
+      d.session_status,
+      d.driver_status,
       d.last_login_at,
-      vt.name AS vehicle_type
-      FROM drivers d
-      LEFT JOIN vehicles v ON d.vehicle_id = v.id
-      LEFT JOIN vehicle_types vt ON v.vehicle_type_id = vt.id
+      d.has_pda,
+      
+      -- Vehicle Type (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN vt_cv.name
+        ELSE vt_v.name
+      END AS vehicle_type,
+
+      -- Vehicle Number (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
+        ELSE v.vehicle_number
+      END AS vehicle_no,
+
+      -- Vehicle Make (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.make
+        ELSE v.make
+      END AS make,
+
+      -- Vehicle Model (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.model
+        ELSE v.model
+      END AS model,
+
+      -- Vehicle Color (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.color
+        ELSE v.color
+      END AS color
+
+    FROM drivers d
+
+    -- Company vehicle joins
+    LEFT JOIN company_vehicles cv 
+      ON cv.id = d.company_vehicle_id
+
+    LEFT JOIN vehicle_types vt_cv 
+      ON vt_cv.id = cv.vehicle_type_id
+
+    -- Personal vehicle joins
+    LEFT JOIN vehicles v 
+      ON v.id = d.vehicle_id
+
+    LEFT JOIN vehicle_types vt_v 
+      ON vt_v.id = v.vehicle_type_id
       WHERE d.id = $1`,
       [driverId],
     );
@@ -255,6 +346,10 @@ async function notifyDriverBookingStatus(driverId, lat = null, lng = null) {
         driver_status: driver.driver_status,
         last_login_at: driver.last_login_at,
         vehicle_type: driver.vehicle_type,
+        vehicle_no: driver.vehicle_no,
+        make: driver.make,
+        model: driver.model,
+        color: driver.color,
       },
     });
 

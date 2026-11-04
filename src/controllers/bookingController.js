@@ -35,26 +35,65 @@ const {
   completeBoookingByController,
   updateDashboardBookingFares,
   recoverDashboardBooking,
+  getCompletedBookingLogsByDriverId,
+  getDriverEarningsStatistics,
+  getBookingStatisticsData,
+  getBookingStatisticsGraphData,
+  getIncomeReportData,
+  getDriverTodayEarning,
+  getBookingsForCustomerInvoice,
+  getBookingByReferenceNumber,
+  getClearBookings,
+  clearSelectedBookings,
+  clearAllBookings,
+  getDriverEarningsBookings,
+  noPickupDashboardBooking,
+  getFutureBookingHIstoryByDriverId,
+  deleteBookingByIdModel,
+  findBookingforDelete,
+  getSearchBookingsData,
+  getDriverBookingStatisticsData,
+  cancelBookingById,
+  getBookingDriverCustomerById,
+  getAllMultiBookings,
+  fetchBookingsByMultiBookingId,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
-const { notifyBusyDriverUpdate } = require("../sockets/driverWebSocket");
+const {
+  notifyBusyDriverUpdate,
+  notifyDriverBookingStatusWeb,
+} = require("../sockets/driverWebSocket");
 const {
   notifyDriverBookingStatus,
 } = require("../sockets/driverTrackingSocket");
 const {
   sendBookingNotification,
   sendRideAcceptedNotification,
+  sendRecoverBookingNotification,
+  sendDriverRecoverBookingNotification,
+  sendRejectRecoverBookingNotification,
+  sendDriverNoPickupBookingNotification,
+  sendRejectNoPickupBookingNotification,
+  sendNoPickupBookingNotification,
+  sendNoShowBookingNotification,
+  sendCompleteBookingFromWebNotification,
 } = require("../services/notificationService");
+const DriverShiftHistory = require("../models/driverShiftHistoryModel");
+const SinbinService = require("../services/sinbinService");
 
 function parseJSONFields(row) {
   if (!row) return row;
-
+  // Agar array hai to har booking ko individually parse karo
+  if (Array.isArray(row)) {
+    return row.map((item) => parseJSONFields(item));
+  }
   const jsonFields = [
     "viapoints",
     "restricted_drivers",
     "notes",
     "child_seat",
     "skipped_bookings",
+    "driver_attributes",
   ];
 
   const parsed = { ...row };
@@ -72,6 +111,42 @@ function parseJSONFields(row) {
   return parsed;
 }
 
+// Helper Function: Driver Vehicle Type Match Check
+const validateDriverVehicle = async (
+  driverId,
+  requiredVehicleTypeId,
+  label = "Driver",
+) => {
+  if (!driverId) return null;
+
+  // Extra whitespace trimming (jaise payload mein " 167" aa raha hai)
+  const cleanDriverId = String(driverId).trim();
+  if (!cleanDriverId) return null;
+
+  const driver = await Driver.getById(cleanDriverId);
+
+  if (!driver) {
+    return `${label} not found`;
+  }
+
+  if (driver.session_status === "logged_out") {
+    return `${label} is Logged Out`;
+  }
+
+  const driverVehicleTypeId =
+    driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+  if (!driverVehicleTypeId) {
+    return `${label} has no vehicle or vehicle type assigned`;
+  }
+
+  if (String(requiredVehicleTypeId).trim() !== String(driverVehicleTypeId)) {
+    return `${label} Vehicle Does Not Match Required Booking Vehicle`;
+  }
+
+  return null; // Sab kuch correct hai
+};
+
 // ---------------------------------------------------------
 // CREATE BOOKINGS CONTROLLER
 // ---------------------------------------------------------
@@ -83,6 +158,43 @@ exports.createBooking = async (req, res) => {
     );
 
     const payload = req.body;
+
+    // 1️⃣ Primary / Outbound Booking Driver Validation
+    if (payload.driver_id) {
+      const driverError = await validateDriverVehicle(
+        payload.driver_id,
+        payload.vehicle_type_id,
+        "Driver",
+      );
+      if (driverError) {
+        return res.status(400).json({ status: false, message: driverError });
+      }
+    }
+
+    // 2️⃣ Return Journey Validation (Journey Type 3 OR Return Driver Present)
+    const isReturnJourney =
+      String(payload.journey_type_id).trim() === "3" ||
+      Boolean(payload.return_driver_id);
+
+    if (isReturnJourney && payload.return_driver_id) {
+      // Return booking ke vehicle_type_id agar alag pass na hua ho tou fallback main vehicle_type_id hoga
+      const targetReturnVehicleTypeId =
+        payload.return_vehicle_type_id || payload.vehicle_type_id;
+
+      const returnDriverError = await validateDriverVehicle(
+        payload.return_driver_id,
+        targetReturnVehicleTypeId,
+        "Return Driver",
+      );
+
+      if (returnDriverError) {
+        return res
+          .status(400)
+          .json({ status: false, message: returnDriverError });
+      }
+    }
+
+    // Process Booking
     const result = await bookingService.create(payload);
 
     // Parse JSON fields inside results before sending
@@ -206,6 +318,7 @@ exports.getBookingByTabs = async (req, res) => {
       booking_status,
       journey_type,
       payment_type,
+      company_id,
     } = req.query;
 
     page = parseInt(page);
@@ -215,16 +328,17 @@ exports.getBookingByTabs = async (req, res) => {
     let tabWhere = "";
     let tabName = "";
 
-    let orderBy = "b.id ASC";
+    // Default Fallback Ordering
+    let orderBy = `(b.pickup_date::date + TRIM(b.pickup_time)::time) ASC`;
 
     switch (tabId) {
       case 1:
         tabName = "TODAY BOOKINGS";
         tabWhere = `
-    DATE(b.pickup_date) = CURRENT_DATE
-    AND b.booking_status_id IN (1, 13)
-    AND b.trash = false
-  `;
+          DATE(b.pickup_date) = CURRENT_DATE
+          AND b.booking_status_id IN (1, 4, 5, 13, 8)
+          AND b.trash = false
+        `;
         orderBy = `
           TRIM(b.pickup_time)::time ASC,
           b.id ASC
@@ -233,78 +347,77 @@ exports.getBookingByTabs = async (req, res) => {
       case 2:
         tabName = "PRE BOOKINGS";
         tabWhere = `DATE(b.pickup_date) > CURRENT_DATE AND b.booking_status_id NOT IN (11) AND b.trash = false`;
+        orderBy = `(b.pickup_date::date + TRIM(b.pickup_time)::time) ASC`;
         break;
 
       case 3:
         tabName = "RECENT BOOKINGS";
-        tabWhere = `b.booking_status_id NOT IN (1, 11, 13) AND b.trash = false`;
+        tabWhere = `b.booking_status_id NOT IN (1, 11, 4, 5, 13, 14, 12, 7, 8) AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 4:
         tabName = "COMPLETED BOOKINGS";
         tabWhere = `b.booking_status_id = 11 AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 5:
         tabName = "QUOTED BOOKINGS";
         tabWhere = `b.quoted = true AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 6:
         tabName = "IVR BOOKINGS";
         tabWhere = `b.booking_source = 'ivr' AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 7:
         tabName = "WEB BOOKINGS";
         tabWhere = `b.booking_source = 'web' AND b.trash = false`;
-        orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+        orderBy = `(b.pickup_date::date + TRIM(b.pickup_time)::time) ASC`;
         break;
 
       case 8:
         tabName = "APP BOOKINGS";
         tabWhere = `b.booking_source = 'app'AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 9:
         tabName = "MULTI BOOKINGS";
         tabWhere = `b.booking_type_id = 2 AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 10:
         tabName = "PENDING BOOKINGS";
-        tabWhere = `b.booking_status_id != 11`;
+        tabWhere = `b.booking_status_id != 11 AND b.trash = false`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       case 11:
         tabName = "TRASH BOOKINGS";
         tabWhere = `b.trash = true`;
         orderBy = `
-  (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
-`;
+          (b.pickup_date::date + TRIM(b.pickup_time)::time) DESC
+        `;
         break;
 
       default:
@@ -315,14 +428,14 @@ exports.getBookingByTabs = async (req, res) => {
       tabName = `DUE IN ${jobDue} MIN`;
 
       tabWhere += `
-    AND (
-      b.pickup_date::date + TRIM(b.pickup_time)::time
-    ) BETWEEN NOW() AND NOW() + INTERVAL '${jobDue} minutes'
-  `;
+        AND (
+          b.pickup_date::date + TRIM(b.pickup_time)::time
+          ) BETWEEN NOW() AND NOW() + INTERVAL '${jobDue} minutes'
+        `;
 
       orderBy = `
-    (b.pickup_date::date + TRIM(b.pickup_time)::time) ASC
-  `;
+        (b.pickup_date::date + TRIM(b.pickup_time)::time) ASC
+      `;
     }
 
     const { rows, total } = await getBookingsByTab({
@@ -345,6 +458,7 @@ exports.getBookingByTabs = async (req, res) => {
         booking_status,
         journey_type,
         payment_type,
+        company_id,
       },
     });
 
@@ -368,7 +482,7 @@ exports.getBookingByTabs = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// GET BOOKING BY ID (PAGINATION + SEARCHING)
+// GET BOOKING BY ID
 // ---------------------------------------------------------
 exports.getBookingById = async (req, res) => {
   const booking_id = parseInt(req.params.id);
@@ -386,7 +500,12 @@ exports.getBookingById = async (req, res) => {
     });
   }
 
-  const data = parseJSONFields(booking);
+  // ---------------------------------------------------------
+  // ALWAYS PARSE AS ARRAY (Single object ya Array handle karne ke liye)
+  // ---------------------------------------------------------
+  const normalizedBooking = Array.isArray(booking) ? booking : [booking];
+
+  const data = parseJSONFields(normalizedBooking);
 
   res.status(200).json({
     success: true,
@@ -395,7 +514,7 @@ exports.getBookingById = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// UPDATE BOOKINGS BY ID (PAGINATION + SEARCHING)
+// UPDATE BOOKINGS BY ID
 // ---------------------------------------------------------
 exports.updateBooking = async (req, res) => {
   try {
@@ -404,6 +523,7 @@ exports.updateBooking = async (req, res) => {
       "🚀 INCOMING UPDATE BOOKING BODY:",
       JSON.stringify(req.body, null, 2),
     );
+
     if (!bookingId) {
       return res.status(400).json({
         success: false,
@@ -423,9 +543,30 @@ exports.updateBooking = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    // ---------------------------------------------------------
+    // ARRAY FORMAT NORMALIZATION FOR RESPONSE
+    // ---------------------------------------------------------
+    let bookingArray = [];
+
+    if (Array.isArray(updated)) {
+      bookingArray = updated;
+    } else if (updated.booking) {
+      if (Array.isArray(updated.booking)) {
+        bookingArray = updated.booking;
+      } else if (typeof updated.booking === "object") {
+        // Agar response Object me Key-Values hain ("0": {}, "1": {})
+        bookingArray = Object.values(updated.booking);
+      }
+    } else {
+      bookingArray = [updated];
+    }
+
+    // JSON String fields parse karein
+    const formattedBookings = bookingArray.map(parseJSONFields);
+
+    return res.status(200).json({
       success: true,
-      booking: updated,
+      booking: formattedBookings,
     });
   } catch (err) {
     console.error("updateBooking error:", err);
@@ -437,7 +578,7 @@ exports.updateBooking = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// DELETE SINGLE BOOKING BY ID (TRASH MOVE) (PAGINATION + SEARCHING)
+// DELETE SINGLE BOOKING BY ID (TRASH MOVE)
 // ---------------------------------------------------------
 exports.deleteBooking = async (req, res) => {
   try {
@@ -467,7 +608,9 @@ exports.deleteBooking = async (req, res) => {
   }
 };
 
-// Bulk Delete
+// ---------------------------------------------------------
+// BULK DELETE BOOKINGS (TRASH MOVE)
+// ---------------------------------------------------------
 exports.deleteMultipleBookings = async (req, res) => {
   try {
     let { id } = req.body;
@@ -518,68 +661,13 @@ exports.deleteMultipleBookings = async (req, res) => {
   }
 };
 
-// exports.updateBookingStatus = async (req, res) => {
-//   try {
-//     const bookingId = parseInt(req.params.id);
-//     const { booking_status_id } = req.body;
-
-//     if (!booking_status_id) {
-//       return res.status(400).json({
-//         status: false,
-//         message: "booking_status_id is required",
-//       });
-//     }
-
-//     const booking = await findBookingById(bookingId);
-
-//     if (booking.rowCount === 0) {
-//       return res.status(404).json({
-//         status: false,
-//         message: "Booking not found",
-//       });
-//     }
-
-//     if (booking_status_id == 3) {
-//       await updateBookingonRoute(bookingId, true, false, false);
-//     }
-
-//     if (booking_status_id == 11) {
-//       await updateBookingonRoute(bookingId, false, true, true);
-//       await Driver.updateDriverStatus(booking.driver_id, "Available", "Available")
-//     }
-
-//     if (booking_status_id == 6) {
-//       await updateBookingonRoute(bookingId, false, false, true);
-
-//     }
-
-//     await updateBookingStatus(bookingId, booking_status_id);
-//             await Driver.updateDriverStatus(booking.driver_id, "Unavailable", "Unavailable")
-
-//     // 🔹 GET UPDATED BOOKING
-//     const updatedBooking = await findBookingById(bookingId);
-
-//     // 🔹 SEND SMS
-//     await sendBookingSMS(updatedBooking.rows[0]);
-
-//     return res.status(200).json({
-//       status: true,
-//       message: "Booking status updated successfully",
-//     });
-//   } catch (error) {
-//     console.error("Update Booking Status Error:", error);
-
-//     return res.status(500).json({
-//       status: false,
-//       message: "Internal Server Error",
-//     });
-//   }
-// };
-
+// ---------------------------------------------------------
+// UPDATE BOOKING STATUS
+// ---------------------------------------------------------
 exports.updateBookingStatus = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
-    const { booking_status_id } = req.body;
+    const { booking_status_id, driver_web_complete } = req.body;
     console.log(
       "🚀 INCOMING UPDATE BOOKING STATUS BODY:",
       JSON.stringify(req.body, null, 2),
@@ -608,8 +696,15 @@ exports.updateBookingStatus = async (req, res) => {
 
     //RIDE ACCEPTED
     if (booking_status_id == 15) {
-      await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
-      // await notifyDriverBookingStatus(driverId);
+      if (booking.rows[0].future == true) {
+        await Driver.updateDriverStatus(driverId, "Accepted", "Available");
+      } else {
+        await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
+      }
+      //Update Last Booking Status in Driver Table
+      await Driver.updateDriverLastBooking(driverId, bookingId);
+      await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
       if (booking_source == "app") {
         await sendRideAcceptedNotification(customerId, booking.rows[0]);
       }
@@ -620,32 +715,143 @@ exports.updateBookingStatus = async (req, res) => {
       await updateBookingonRoute(bookingId, true, false, false);
       await Driver.updateDriverStatus(driverId, "On Route", "Unavailable");
       await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
     }
 
     // ARRIVED
     if (booking_status_id == 6) {
+      const pickupDate = booking.rows[0].pickup_date;
+      const pickupTime = booking.rows[0].pickup_time;
+
+      const now = new Date();
+
+      // Current Date
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const today = `${year}-${month}-${day}`;
+
+      // Parse booking date
+      const [bookingYear, bookingMonth, bookingDay] = pickupDate
+        .split("-")
+        .map(Number);
+
+      // Parse booking time
+      const [hours, minutes, seconds = 0] = pickupTime.split(":").map(Number);
+
+      // Actual pickup date & time
+      const pickupDateTime = new Date(
+        bookingYear,
+        bookingMonth - 1,
+        bookingDay,
+        hours,
+        minutes,
+        seconds,
+      );
+
+      // Difference in hours
+      const diffHours =
+        (pickupDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+      console.log("Current Time:", now);
+      console.log("Pickup Time:", pickupDateTime);
+      console.log("Hours Remaining:", diffHours);
+
+      // More than 2 hours remaining
+      if (booking.rows[0].future == true) {
+        if (diffHours > 2) {
+          return res.status(400).json({
+            status: false,
+            message:
+              "You cannot mark Arrived more than 2 hours before the pickup time.",
+          });
+        }
+      }
+      //Update Last Booking Status in Driver Table
+      await Driver.updateDriverLastBooking(driverId, bookingId);
+
       await updateBookingonRoute(bookingId, false, false, true);
       await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
       await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
+
+      if (booking.rows[0].future == true) {
+        const driver = await Driver.getById(driverId);
+        console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+        notifyBusyDriverUpdate(driver);
+      }
     }
 
     // SOON TO CLEAR
     if (booking_status_id == 10) {
       await Driver.updateDriverStatus(driverId, "STC", "Unavailable");
       await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
     }
 
     // COMPLETED
     if (booking_status_id == 11) {
       await updateBookingonRoute(bookingId, false, true, true);
 
-      await Driver.updateDriverStatus(driverId, "Available", "Available");
+      // await Driver.updateDriverStatus(driverId, "Available", "Available");
 
+      // CHECK DRIVER HAS FOB OR NOT
+      const hasFob = await checkDriverFobBooking(driverId);
+      console.log("FOB CHECK: ", hasFob);
+
+      if (hasFob) {
+        await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
+      } else {
+        await Driver.updateDriverStatus(driverId, "Available", "Available");
+
+        const driver = await Driver.getById(driverId);
+
+        notifyBusyDriverUpdate(driver);
+      }
+      if (driver_web_complete == true || driver_web_complete == "true") {
+        await sendCompleteBookingFromWebNotification(driverId, bookingId);
+      }
       await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
 
-      const driver = await Driver.getById(driverId);
+      // const driver = await Driver.getById(driverId);
 
-      notifyBusyDriverUpdate(driver);
+      // notifyBusyDriverUpdate(driver);
+      await DriverShiftHistory.addBookingToShift(driverId, bookingId);
+    }
+
+    //REJECTED
+    if (booking_status_id == 5) {
+      await Driver.updateDriverStatus(driverId, "Available", "Available");
+      await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
+      await SinbinService.checkAndApplySinbin(
+        booking.rows[0].company_id,
+        driverId,
+        "REJECT",
+      );
+    }
+
+    //MISSED
+    if (booking_status_id == 4) {
+      await Driver.updateDriverStatus(driverId, "Available", "Available");
+      await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
+      await SinbinService.checkAndApplySinbin(
+        booking.rows[0].company_id,
+        driverId,
+        "MISSED",
+      );
+    }
+
+    //NO SHOW
+    if (booking_status_id == 7) {
+      let message = "This Booking has been marked as No Show.";
+      // Send No Show Notification to Driver
+      await sendNoShowBookingNotification(driverId, bookingId, message);
+      await Driver.updateDriverStatus(driverId, "Available", "Available");
+      await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
     }
 
     // UPDATE BOOKING STATUS
@@ -669,7 +875,15 @@ exports.updateBookingStatus = async (req, res) => {
 
     const unavailableStatuses = [15];
 
-    if (unavailableStatuses.includes(booking_status_ids)) {
+    // if (unavailableStatuses.includes(booking_status_ids)) {
+    //   await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
+
+    //   const driver = await Driver.getById(driverId);
+    //   console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
+    //   notifyBusyDriverUpdate(driver);
+    // }
+
+    if (booking_status_ids == 15 && booking.rows[0].future !== true) {
       await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
 
       const driver = await Driver.getById(driverId);
@@ -691,6 +905,9 @@ exports.updateBookingStatus = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE BOOKING FARES
+// ---------------------------------------------------------
 exports.updateBookingFares = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -741,10 +958,19 @@ exports.updateBookingFares = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY DRIVER ID
+// ---------------------------------------------------------
 exports.getBookingByDriverId = async (req, res) => {
   const driver_id = parseInt(req.params.id);
   const lastdays = req.query.lastdays ? parseInt(req.query.lastdays) : null;
-
+  // Validate that driverId is actually a valid integer
+  if (isNaN(driver_id) || driver_id <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid driver ID provided.",
+    });
+  }
   const bookings = await getBookingByDriverId(driver_id, lastdays);
 
   if (!bookings || bookings.length === 0) {
@@ -763,6 +989,9 @@ exports.getBookingByDriverId = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY DRIVER COMMISSION
+// ---------------------------------------------------------
 exports.getBookingByDriverCommission = async (req, res) => {
   const { driver_id, payment_type_id, from_date, to_date } = req.query;
 
@@ -810,14 +1039,25 @@ exports.getBookingByDriverCommission = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// CLONE ONE WAY BOOKING
+// ---------------------------------------------------------
 exports.cloneOneWayBooking = async (req, res) => {
   try {
-    const { booking_id, vehicle_type_id, pickup_date, pickup_time, driver_id } =
-      req.body;
+    const {
+      booking_id,
+      vehicle_type_id,
+      pickup_date,
+      pickup_time,
+      driver_id,
+      company_id,
+    } = req.body;
+
     console.log(
       "🚀 INCOMING ADD CLI BOOKING BODY:",
       JSON.stringify(req.body, null, 2),
     );
+
     if (!booking_id || !vehicle_type_id || !pickup_date || !pickup_time) {
       return res.status(400).json({
         success: false,
@@ -826,12 +1066,52 @@ exports.cloneOneWayBooking = async (req, res) => {
       });
     }
 
+    // ---------------------------------------------------------
+    // 🚗 VEHICLE TYPE MATCHING VALIDATION (IF DRIVER IS PROVIDED)
+    // ---------------------------------------------------------
+    if (driver_id) {
+      const driver = await Driver.getById(driver_id);
+
+      if (!driver) {
+        return res.status(404).json({
+          success: false,
+          message: "Driver not found",
+        });
+      }
+
+      if (driver.session_status === "logged_out") {
+        return res.status(400).json({
+          success: false,
+          message: "Driver is Logged Out",
+        });
+      }
+
+      const driverVehicleTypeId =
+        driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+      if (!driverVehicleTypeId) {
+        return res.status(400).json({
+          success: false,
+          message: "Driver has no vehicle or vehicle type assigned",
+        });
+      }
+
+      // Payload ka new vehicle_type_id compare karein
+      if (String(vehicle_type_id) !== String(driverVehicleTypeId)) {
+        return res.status(400).json({
+          success: false,
+          message: "Driver Vehicle Does Not Match Required Booking Vehicle",
+        });
+      }
+    }
+
     const result = await bookingService.cloneOneWayBookingService({
       booking_id,
       vehicle_type_id,
       pickup_date,
       pickup_time,
       driver_id,
+      company_id,
     });
 
     return res.status(200).json({
@@ -847,6 +1127,9 @@ exports.cloneOneWayBooking = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// CHECK BOOKING STATUS
+// ---------------------------------------------------------
 exports.checkBookingStatus = async (req, res) => {
   try {
     const { booking_id } = req.params;
@@ -885,6 +1168,9 @@ exports.checkBookingStatus = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY DRIVER ID AND STATUS
+// ---------------------------------------------------------
 exports.getBookingByDriverIdAndStatus = async (req, res) => {
   const { driver_id, booking_status_id } = req.body;
 
@@ -922,6 +1208,9 @@ exports.getBookingByDriverIdAndStatus = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// CHECK DRIVER ACTIVE BOOKING TODAY
+// ---------------------------------------------------------
 exports.checkDriverActiveBookingToday = async (req, res) => {
   try {
     const { driver_id } = req.query;
@@ -950,6 +1239,9 @@ exports.checkDriverActiveBookingToday = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET CURRENT BOOKING
+// ---------------------------------------------------------
 exports.getCurrentJob = async (req, res) => {
   try {
     const { driver_id } = req.query;
@@ -977,6 +1269,9 @@ exports.getCurrentJob = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE BOOKING FARES CHARGES
+// ---------------------------------------------------------
 exports.updateBookingFareCharges = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -1041,6 +1336,9 @@ exports.updateBookingFareCharges = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET DRIVER EARNING
+// ---------------------------------------------------------
 exports.getDriverEarning = async (req, res) => {
   try {
     const driver_id = req.params.id;
@@ -1072,9 +1370,120 @@ exports.getDriverEarning = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// ASSIGN DRIVER TO BOOKING (DISPATCH) WITH DRIVER VEHICLE CHECK
+// ---------------------------------------------------------
+// exports.assignDriverToBooking = async (req, res) => {
+//   try {
+//     const { booking_id, driver_id, company_id } = req.body;
+
+//     console.log("🚀 ASSIGN DRIVER BODY:", req.body);
+
+//     if (!booking_id || !driver_id) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "booking_id and driver_id are required",
+//       });
+//     }
+
+//     // Check booking exists
+//     const booking = await findBookingById(booking_id);
+
+//     if (booking.rowCount === 0) {
+//       return res.status(404).json({
+//         status: false,
+//         message: "Booking not found",
+//       });
+//     }
+
+//     const bookingData = booking.rows[0];
+
+//     if (
+//       bookingData.booking_status_id === "11" ||
+//       bookingData.booking_status_id === 11
+//     ) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "Booking Already Completed",
+//       });
+//     }
+
+//     // Get Driver details
+//     const driver = await Driver.getById(driver_id);
+
+//     if (!driver) {
+//       return res.status(404).json({
+//         status: false,
+//         message: "Driver not found",
+//       });
+//     }
+
+//     if (driver.session_status === "logged_out") {
+//       return res.status(400).json({
+//         status: false,
+//         message: "Driver is Logged Out",
+//       });
+//     }
+
+//     if (
+//       driver.booking_status === "Unavailable" ||
+//       driver.driver_status === "Unavailable"
+//     ) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "Driver is already busy",
+//       });
+//     }
+
+//     // ---------------------------------------------------------
+//     // 🚗 VEHICLE TYPE MATCHING VALIDATION
+//     // ---------------------------------------------------------
+//     const driverVehicleTypeId =
+//       driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+//     if (!driverVehicleTypeId) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "Driver has no vehicle or vehicle type assigned",
+//       });
+//     }
+
+//     // Compare Booking Vehicle Type ID with Driver Vehicle Type ID
+//     if (String(bookingData.vehicle_type_id) !== String(driverVehicleTypeId)) {
+//       return res.status(400).json({
+//         status: false,
+//         message: "Driver Vehicle Does Not Match Booking Vehicle Requirement",
+//       });
+//     }
+
+//     console.log("BOOKING DATA BEFORE ASSIGN DRIVER:", bookingData);
+
+//     // Call service
+//     const updatedBooking = await bookingService.assignDriverService(
+//       booking_id,
+//       driver_id,
+//       company_id,
+//     );
+
+//     return res.status(200).json({
+//       status: true,
+//       message: "Driver Assigned Successfully",
+//       booking: updatedBooking,
+//     });
+//   } catch (error) {
+//     console.error("Assign Driver Error:", error);
+
+//     return res.status(500).json({
+//       status: false,
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
+
 exports.assignDriverToBooking = async (req, res) => {
   try {
-    const { booking_id, driver_id } = req.body;
+    const { booking_id, driver_id, company_id, force_dispatch } = req.body;
+    // 💡 Note: `force_dispatch` frontend se YES click hone par TRUE aye ga.
 
     console.log("🚀 ASSIGN DRIVER BODY:", req.body);
 
@@ -1095,16 +1504,11 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
-    // if (booking.rows[0].driver_id) {
-    //   return res.status(400).json({
-    //     status: false,
-    //     message: "Driver already assigned",
-    //   });
-    // }
+    const bookingData = booking.rows[0];
 
     if (
-      booking.rows[0].booking_status_id === "11" ||
-      booking.rows[0].booking_status_id === 11
+      bookingData.booking_status_id === "11" ||
+      bookingData.booking_status_id === 11
     ) {
       return res.status(400).json({
         status: false,
@@ -1112,7 +1516,15 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
+    // Get Driver details
     const driver = await Driver.getById(driver_id);
+
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
 
     if (driver.session_status === "logged_out") {
       return res.status(400).json({
@@ -1121,9 +1533,20 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
+    // ---------------------------------------------------------
+    // 🎯 SIN BIN CHECK
+    // ---------------------------------------------------------
+    // Aapke model ke mutabiq jab driver SinBin hota hai uski booking_status / driver_status "SinBin" ho jati hai
+    const isSinBin =
+      driver.booking_status === "SinBin" ||
+      driver.driver_status === "SinBin" ||
+      parseInt(driver.sin_bin_timer || "0") > 0;
+
+    // Direct status check (Jab driver already kisi trip par busy ho)
     if (
-      driver.booking_status === "Unavailable" ||
-      driver.driver_status === "Unavailable"
+      (driver.booking_status === "Unavailable" ||
+        driver.driver_status === "Unavailable") &&
+      !isSinBin
     ) {
       return res.status(400).json({
         status: false,
@@ -1131,15 +1554,51 @@ exports.assignDriverToBooking = async (req, res) => {
       });
     }
 
-    // Call service
+    // ---------------------------------------------------------
+    // 🚗 VEHICLE TYPE MATCHING VALIDATION
+    // ---------------------------------------------------------
+    const driverVehicleTypeId =
+      driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+    if (!driverVehicleTypeId) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver has no vehicle or vehicle type assigned",
+      });
+    }
+
+    if (String(bookingData.vehicle_type_id) !== String(driverVehicleTypeId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver Vehicle Does Not Match Booking Vehicle Requirement",
+      });
+    }
+
+    // force_dispatch ko boolean check me convert karein (string 'true' ho ya boolean true)
+    const isForceDispatch =
+      req.body.force_dispatch === true ||
+      req.body.force_dispatch === "true" ||
+      req.body.force_dispatch === 1 ||
+      req.body.force_dispatch === "1";
+
+    // ---------------------------------------------------------
+    // 🚀 SERVICE CALL (PASSING IS_SIN_BIN & FORCE_DISPATCH)
+    // ---------------------------------------------------------
     const updatedBooking = await bookingService.assignDriverService(
       booking_id,
       driver_id,
+      company_id,
+      isSinBin,
+      isForceDispatch, // Pass true/false from req.body
     );
 
     return res.status(200).json({
       status: true,
-      message: "Driver Assigned Successfully",
+      sin_bin: isSinBin,
+      message:
+        isSinBin && !isForceDispatch
+          ? "Driver is currently in Sin Bin"
+          : "Driver Assigned Successfully",
       booking: updatedBooking,
     });
   } catch (error) {
@@ -1152,6 +1611,9 @@ exports.assignDriverToBooking = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY CUSTOMER ID
+// ---------------------------------------------------------
 exports.getBookingByCustomerId = async (req, res) => {
   const customer_id = parseInt(req.params.id);
   // const lastdays = req.query.lastdays ? parseInt(req.query.lastdays) : null;
@@ -1174,6 +1636,9 @@ exports.getBookingByCustomerId = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// GET SCHEDULE BOOKING BY CUSTOMER ID
+// ---------------------------------------------------------
 exports.getScheduleBookingByCustomerId = async (req, res) => {
   const customer_id = parseInt(req.params.id);
 
@@ -1195,10 +1660,13 @@ exports.getScheduleBookingByCustomerId = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY CUSTOMER MOBILE
+// ---------------------------------------------------------
 exports.getBookingByCustomerMobile = async (req, res) => {
-  const { mobile, name } = req.query;
+  const { mobile, name, company_id } = req.query;
 
-  const bookings = await getBookingByCustomerMobile(mobile, name);
+  const bookings = await getBookingByCustomerMobile(mobile, name, company_id);
 
   if (!bookings || bookings.length === 0) {
     return res.status(404).json({
@@ -1216,9 +1684,12 @@ exports.getBookingByCustomerMobile = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// ASSIGN FOLLOW ON BOOKING TO DRIVER
+// ---------------------------------------------------------
 exports.assignFOBBookingToDriver = async (req, res) => {
   try {
-    const { booking_id, driver_id } = req.body;
+    const { booking_id, driver_id, company_id } = req.body;
 
     console.log("🚀 ASSIGN FOB BOOKING TO DRIVER BODY:", req.body);
 
@@ -1239,16 +1710,11 @@ exports.assignFOBBookingToDriver = async (req, res) => {
       });
     }
 
-    // if (booking.rows[0].driver_id) {
-    //   return res.status(400).json({
-    //     status: false,
-    //     message: "Driver already assigned",
-    //   });
-    // }
+    const bookingData = booking.rows[0];
 
     if (
-      booking.rows[0].booking_status_id === "11" ||
-      booking.rows[0].booking_status_id === 11
+      bookingData.booking_status_id === "11" ||
+      bookingData.booking_status_id === 11
     ) {
       return res.status(400).json({
         status: false,
@@ -1257,6 +1723,13 @@ exports.assignFOBBookingToDriver = async (req, res) => {
     }
 
     const driver = await Driver.getById(driver_id);
+
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
 
     if (driver.session_status === "logged_out") {
       return res.status(400).json({
@@ -1276,10 +1749,31 @@ exports.assignFOBBookingToDriver = async (req, res) => {
       });
     }
 
+    // ---------------------------------------------------------
+    // 🚗 VEHICLE TYPE MATCHING VALIDATION
+    // ---------------------------------------------------------
+    const driverVehicleTypeId =
+      driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+    if (!driverVehicleTypeId) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver has no vehicle or vehicle type assigned",
+      });
+    }
+
+    if (String(bookingData.vehicle_type_id) !== String(driverVehicleTypeId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver Vehicle Does Not Match Booking Vehicle Requirement",
+      });
+    }
+
     // Assign FOB Booking to Driver
     const updatedBooking = await bookingService.assignFOBDriverService(
       booking_id,
       driver_id,
+      company_id,
     );
 
     return res.status(200).json({
@@ -1297,6 +1791,9 @@ exports.assignFOBBookingToDriver = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET BOOKING BY DRIVER ID AND FOB BOOKING
+// ---------------------------------------------------------
 exports.getBookingByDriverIdAndFob = async (req, res) => {
   const driverId = parseInt(req.params.id);
 
@@ -1329,6 +1826,9 @@ exports.getBookingByDriverIdAndFob = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// GET FOB BOOKING HISTORY BY DRIVER ID
+// ---------------------------------------------------------
 exports.getFOBBookingHIstoryByDriverId = async (req, res) => {
   const driver_id = req.params.id;
 
@@ -1357,6 +1857,9 @@ exports.getFOBBookingHIstoryByDriverId = async (req, res) => {
   });
 };
 
+// ---------------------------------------------------------
+// COMPLETE BOOKING BY CONTROLLER
+// ---------------------------------------------------------
 exports.completeBoookingByController = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -1396,6 +1899,9 @@ exports.completeBoookingByController = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE DASHBOARD BOOKING FARES
+// ---------------------------------------------------------
 exports.updateDashboardBookingFares = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
@@ -1435,11 +1941,221 @@ exports.updateDashboardBookingFares = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// RECOVER DASHBOARD BOOKING WITHOUT SIN BIN
+// ---------------------------------------------------------
+// exports.recoverDashboardBooking = async (req, res) => {
+//   try {
+//     const bookingId = parseInt(req.params.id);
+
+//     const bookingResult = await findBookingById(bookingId);
+
+//     if (bookingResult.rowCount === 0) {
+//       return res.status(404).json({
+//         status: false,
+//         message: "Booking not found",
+//       });
+//     }
+//     // ✅ Actual booking object
+//     const booking = bookingResult.rows[0];
+
+//     console.log("BOOKING:", booking);
+//     console.log(booking.id);
+//     await sendRecoverBookingNotification(booking.driver_id, booking);
+//     await recoverDashboardBooking(bookingId);
+//     await Driver.updateDriverStatus(
+//       booking.driver_id,
+//       "Available",
+//       "Available",
+//     );
+//     await notifyDriverBookingStatus(booking.driver_id);
+//     await notifyDriverBookingStatusWeb(booking.driver_id);
+
+//     const driver = await Driver.getById(booking.driver_id);
+
+//     notifyBusyDriverUpdate(driver);
+//     return res.status(200).json({
+//       status: true,
+//       message: "Recover Booking Successfully",
+//     });
+//   } catch (error) {
+//     console.error("Recover Booking Error:", error);
+//     return res.status(500).json({
+//       status: false,
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
+
+// ---------------------------------------------------------
+// RECOVER DASHBOARD BOOKING WITH SIN BIN UPDATE
+// ---------------------------------------------------------
 exports.recoverDashboardBooking = async (req, res) => {
   try {
     const bookingId = parseInt(req.params.id);
 
-    const booking = await findBookingById(bookingId);
+    const bookingResult = await findBookingById(bookingId);
+
+    if (bookingResult.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    const booking = bookingResult.rows[0];
+    const driverId = booking.driver_id;
+
+    // 1️⃣ Send FCM Notification & Reset Booking in DB
+    if (driverId) {
+      await sendRecoverBookingNotification(driverId, booking);
+    }
+    await recoverDashboardBooking(bookingId);
+
+    if (driverId) {
+      // 2️⃣ Reset Driver Booking Status to 'Available' in DB
+      await Driver.updateDriverStatus(driverId, "Available", "Available");
+
+      // 3️⃣ Apply SinBin logic (Updates driver_status to 'SinBin' & emits WebSockets)
+      await SinbinService.checkAndApplySinbin(
+        booking.company_id,
+        driverId,
+        "RECOVER",
+      );
+
+      // 4️⃣ Notify PDA/App regarding status change
+      await notifyDriverBookingStatus(driverId);
+
+      // 5️⃣ Fetch fresh updated driver details & Trigger Dashboard Shift (Busy -> Login List)
+      const freshDriver = await Driver.getById(driverId);
+      if (freshDriver) {
+        notifyBusyDriverUpdate(freshDriver);
+      }
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Booking recovered successfully",
+    });
+  } catch (error) {
+    console.error("Recover Booking Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET COMPLETED BOOKING LOGS BY DRIVER ID
+// ---------------------------------------------------------
+exports.getCompletedBookingLogsByDriverId = async (req, res) => {
+  try {
+    const {
+      driver_id,
+      from_date,
+      to_date,
+      from_time,
+      to_time,
+
+      // SEARCH FILTERS
+      ref,
+      vehicle,
+      pickup,
+      dropoff,
+      fares,
+      datetime,
+
+      // PAGINATION FILTERS
+      page = 1,
+      limit = 20,
+    } = req.query;
+
+    const result = await getCompletedBookingLogsByDriverId(driver_id, {
+      from_date,
+      to_date,
+      from_time,
+      to_time,
+
+      ref,
+      vehicle,
+      pickup,
+      dropoff,
+      fares,
+      datetime,
+
+      page,
+      limit,
+    });
+
+    const parsedData = result.data.map((b) => parseJSONFields(b));
+
+    return res.status(200).json({
+      success: true,
+      page: result.page,
+      limit: result.limit,
+      total: result.total,
+      total_pages: result.total_pages,
+      count: result.count,
+      bookings: parsedData,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET DRIVER EARNNG AND INFO
+// ---------------------------------------------------------
+exports.getDriverEarningsStatistics = async (req, res) => {
+  try {
+    const { view, date, from_date, to_date, driver_id } = req.query;
+
+    const result = await getDriverEarningsStatistics({
+      view,
+      date,
+      from_date,
+      to_date,
+      driver_id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// ASSIGN FUTURE BOOKING TO DRIVER
+// ---------------------------------------------------------
+exports.assignFutureBookingToDriver = async (req, res) => {
+  try {
+    const { booking_id, driver_id, company_id } = req.body;
+
+    console.log("🚀 ASSIGN FUTURE BOOKING TO DRIVER BODY:", req.body);
+
+    if (!booking_id || !driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "booking_id and driver_id are required",
+      });
+    }
+
+    // Check booking exists
+    const booking = await findBookingById(booking_id);
 
     if (booking.rowCount === 0) {
       return res.status(404).json({
@@ -1448,17 +2164,1343 @@ exports.recoverDashboardBooking = async (req, res) => {
       });
     }
 
-    await recoverDashboardBooking(bookingId);
+    const bookingData = booking.rows[0];
+
+    if (
+      bookingData.booking_status_id === "11" ||
+      bookingData.booking_status_id === 11
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "Booking Already Completed",
+      });
+    }
+
+    const driver = await Driver.getById(driver_id);
+
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
+
+    if (driver.session_status === "logged_out") {
+      return res.status(400).json({
+        status: false,
+        message: "Driver is Logged Out",
+      });
+    }
+
+    // ---------------------------------------------------------
+    // 🚗 VEHICLE TYPE MATCHING VALIDATION
+    // ---------------------------------------------------------
+    const driverVehicleTypeId =
+      driver.vehicle?.vehicle_type?.id || driver.vehicle?.vehicle_type_id;
+
+    if (!driverVehicleTypeId) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver has no vehicle or vehicle type assigned",
+      });
+    }
+
+    if (String(bookingData.vehicle_type_id) !== String(driverVehicleTypeId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver Vehicle Does Not Match Booking Vehicle Requirement",
+      });
+    }
+
+    // Assign Future Booking to Driver
+    const updatedBooking =
+      await bookingService.assignFutureBookingDriverService(
+        booking_id,
+        driver_id,
+        company_id,
+      );
 
     return res.status(200).json({
       status: true,
-      message: "Recover Booking Successfully",
+      message: "Future Booking Assign To Driver Successfully",
+      booking: updatedBooking,
+    });
+  } catch (error) {
+    console.error("Assign Driver Error:", error);
+
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET ALL BOOKING STATISTICS
+// ---------------------------------------------------------
+exports.getBookingStatistics = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 100,
+
+      from_date,
+      to_date,
+
+      from_time,
+      to_time,
+
+      booking_status_id,
+      payment_type_id,
+
+      customer,
+      mobile,
+      telephone,
+
+      account_id,
+      department,
+
+      order_number,
+      booked_by,
+
+      employee_id,
+      subsidiary_id,
+
+      reference_number,
+      pickup,
+      dropoff,
+      driver_id,
+
+      invoice_number,
+      datetime, // NEW
+      account_name, // NEW (ACC)
+      payment_type_name, // NEW (P/T)
+      driver_name, // NEW (DRV)
+      subsidiary_name, // NEW (SUBS)
+      status_name, // NEW (STATUS)
+      journey_type,
+      vehicle_type,
+      fare,
+      acc_fare,
+
+      // NEW CHARGES & TOTAL FILTERS
+      pc, // Parking Charges
+      wc, // Waiting Charges
+      edc, // Extra Driver/Distance Charges
+      mg, // Meet & Greet
+      cc, // Congestion Charges
+      total_val, // Total Amount
+
+      sort_by = "datetime",
+      sort_order = "ASC",
+    } = req.query;
+
+    const result = await getBookingStatisticsData({
+      page: Number(page),
+      limit: Number(limit),
+
+      filters: {
+        from_date,
+        to_date,
+        from_time,
+        to_time,
+
+        booking_status_id,
+        payment_type_id,
+
+        customer,
+        mobile,
+        telephone,
+
+        account_id,
+        department,
+
+        order_number,
+        booked_by,
+
+        employee_id,
+        subsidiary_id,
+
+        reference_number,
+        pickup,
+        dropoff,
+        driver_id,
+
+        invoice_number,
+        datetime,
+        account_name,
+        payment_type_name,
+        driver_name,
+        subsidiary_name,
+        status_name,
+        journey_type,
+        vehicle_type,
+        fare,
+        acc_fare,
+
+        // NEW FILTERS
+        pc,
+        wc,
+        edc,
+        mg,
+        cc,
+        total_val,
+
+        sort_by,
+        sort_order,
+      },
+    });
+
+    const data = result.rows.map(parseJSONFields);
+
+    res.json({
+      success: true,
+      page: Number(page),
+      limit: Number(limit),
+      total: result.total,
+      total_pages: Math.ceil(result.total / limit),
+      count: data.length,
+
+      totals: result.totals,
+
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET BOOKING STATISTICS GRAPH DATA
+// ---------------------------------------------------------
+exports.getBookingStatisticsGraph = async (req, res) => {
+  try {
+    const {
+      from_date,
+      to_date,
+      booking_status_id,
+      payment_type_id,
+      subsidiary_id,
+    } = req.query;
+
+    const result = await getBookingStatisticsGraphData({
+      from_date,
+      to_date,
+      booking_status_id,
+      payment_type_id,
+      subsidiary_id,
+    });
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET INCOME REPORT DATA
+// ---------------------------------------------------------
+exports.getIncomeReport = async (req, res) => {
+  try {
+    const {
+      from_date,
+      to_date,
+      driver_id,
+      account_id,
+      subsidiary_id,
+      payment_type_id,
+
+      // Column Specific Searches
+      search_ref,
+      search_datetime,
+      search_pickup,
+      search_dropoff,
+      search_vehicle,
+      search_driver,
+      search_account,
+      search_fares,
+      search_parking,
+      search_waiting,
+      search_extra_drop,
+      search_total,
+
+      // Pagination
+      page = 1,
+      limit = 20,
+    } = req.query;
+
+    const result = await getIncomeReportData({
+      from_date,
+      to_date,
+      driver_id,
+      account_id,
+      subsidiary_id,
+      payment_type_id,
+
+      search_ref,
+      search_datetime,
+      search_pickup,
+      search_dropoff,
+      search_vehicle,
+      search_driver,
+      search_account,
+      search_fares,
+      search_parking,
+      search_waiting,
+      search_extra_drop,
+      search_total,
+
+      page,
+      limit,
+    });
+
+    res.json({
+      success: true,
+      page: result.page,
+      limit: result.limit,
+      total_pages: result.total_pages,
+      count: result.count,
+      total_bookings: result.total_bookings,
+      total_earnings: result.total_earnings,
+      bookings: result.rows,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET DRIVER TODAY EARNING
+// ---------------------------------------------------------
+exports.getDriverTodayEarning = async (req, res) => {
+  try {
+    const driver_id = req.params.id;
+
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver ID is required",
+      });
+    }
+
+    const result = await getDriverTodayEarning(driver_id);
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver Today Earning Fetched Successfully",
+      driverEarning: {
+        driver_id,
+        today_earning: result.today_earning,
+        total_bookings: result.total_bookings,
+      },
+    });
+  } catch (error) {
+    console.error("Driver Earning Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET BOOKINGS FOR CUSTOMER INVOICE
+// ---------------------------------------------------------
+exports.getBookingsForCustomerInvoice = async (req, res) => {
+  try {
+    let { customer_id, from_date, to_date, payment_type_ids } = req.query;
+
+    if (!customer_id) {
+      return res.status(400).json({
+        status: false,
+        message: "customer_id is required",
+      });
+    }
+
+    if (!from_date || !to_date) {
+      return res.status(400).json({
+        status: false,
+        message: "from_date and to_date are required",
+      });
+    }
+
+    if (typeof payment_type_ids === "string") {
+      payment_type_ids = JSON.parse(payment_type_ids);
+    }
+
+    payment_type_ids = payment_type_ids.map(Number);
+
+    if (
+      !payment_type_ids ||
+      !Array.isArray(payment_type_ids) ||
+      payment_type_ids.length === 0
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "payment_type_ids must be a non-empty array",
+      });
+    }
+
+    const bookings = await getBookingsForCustomerInvoice(
+      customer_id,
+      from_date,
+      to_date,
+      payment_type_ids,
+    );
+
+    return res.status(200).json({
+      status: true,
+      total_records: bookings.length,
+      bookings,
+    });
+  } catch (error) {
+    console.error("Get Customer Invoice Bookings Error:", error);
+
+    return res.status(500).json({
+      status: false,
+      message: "Failed to fetch bookings",
+      error: error.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// CHECK BOOKING STATUS CUSTOMER APP
+// ---------------------------------------------------------
+exports.checkBookingStatusCustomer = async (req, res) => {
+  try {
+    const { booking_id } = req.params;
+
+    if (!booking_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Booking ID is required",
+      });
+    }
+
+    const booking = await getBookingStatusById(booking_id);
+
+    if (!booking) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    const isTrue =
+      booking.booking_status_id === 11 || booking.booking_status_id === "11";
+
+    return res.json({
+      status: true,
+      booking_id: booking_id,
+      booking_status_id: booking.booking_status_id,
+      booking_status: isTrue,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET BOOKING BY REFERENCE NUMBER
+// ---------------------------------------------------------
+exports.getBookingByReferenceNumber = async (req, res) => {
+  const { reference_number } = req.query;
+  console.log(
+    "🚀 INCOMING GET BOOKING BODY:",
+    JSON.stringify(req.query, null, 2),
+  );
+
+  const booking = await getBookingByReferenceNumber(reference_number);
+
+  if (!booking) {
+    return res.status(404).json({
+      success: false,
+      message: "Booking not found",
+    });
+  }
+
+  const data = parseJSONFields(booking);
+
+  res.status(200).json({
+    success: true,
+    booking: data,
+  });
+};
+
+// ---------------------------------------------------------
+// SEND RECOVER BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER
+// ---------------------------------------------------------
+exports.recoverDriverBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const bookingResult = await findBookingById(bookingId);
+
+    if (bookingResult.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+    // ✅ Actual booking object
+    const booking = bookingResult.rows[0];
+
+    console.log("BOOKING:", booking);
+    console.log(booking.id);
+    await sendDriverRecoverBookingNotification(booking);
+
+    return res.status(200).json({
+      status: true,
+      message: "Send Recover Booking Request to Web Successfully",
     });
   } catch (error) {
     console.error("Recover Booking Error:", error);
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// REJECT RECOVER DASHBOARD BOOKING
+// ---------------------------------------------------------
+exports.rejectRecoverBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const bookingResult = await findBookingById(bookingId);
+
+    if (bookingResult.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+    // ✅ Actual booking object
+    const booking = bookingResult.rows[0];
+
+    console.log("BOOKING:", booking);
+    console.log(booking.id);
+
+    //Notification Send
+    await sendRejectRecoverBookingNotification(booking.driver_id, booking);
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver Recover Booking Reject Successfully",
+    });
+  } catch (error) {
+    console.error("Driver Recover Booking Reject Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// SEND RECOVER BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER
+// ---------------------------------------------------------
+exports.noPickupDriverBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const bookingResult = await findBookingById(bookingId);
+
+    if (bookingResult.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+    // ✅ Actual booking object
+    const booking = bookingResult.rows[0];
+
+    console.log("BOOKING:", booking);
+    console.log(booking.id);
+    await sendDriverNoPickupBookingNotification(booking);
+
+    return res.status(200).json({
+      status: true,
+      message: "Send No Pickup Booking Request to Web Successfully",
+    });
+  } catch (error) {
+    console.error("Recover Booking Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// RECOVER DASHBOARD BOOKING
+// ---------------------------------------------------------
+exports.rejectNoPickupBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const bookingResult = await findBookingById(bookingId);
+
+    if (bookingResult.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+    // ✅ Actual booking object
+    const booking = bookingResult.rows[0];
+
+    console.log("BOOKING:", booking);
+    console.log(booking.id);
+
+    //Notification Send
+    await sendRejectNoPickupBookingNotification(booking.driver_id, booking);
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver No Pickup Booking Reject Successfully",
+    });
+  } catch (error) {
+    console.error("Driver Recover Booking Reject Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET ALL BOOKINGS WHICH ARE NOT COMPLETED
+// ---------------------------------------------------------
+exports.getClearBookings = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      reference_number,
+      pickup_date,
+      customer,
+      pickup,
+      dropoff,
+      driver,
+      booking_status,
+      company_id,
+    } = req.query;
+
+    const result = await getClearBookings({
+      page,
+      limit,
+      reference_number,
+      pickup_date,
+      customer,
+      pickup,
+      dropoff,
+      driver,
+      booking_status,
+      company_id,
+    });
+
+    res.json({
+      success: true,
+      page: result.page,
+      limit: result.limit,
+      total: result.total,
+      total_pages: result.total_pages,
+      count: result.count,
+      bookings: result.rows.map(parseJSONFields),
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// CLEAR SELECTED BOOKINGS
+// ---------------------------------------------------------
+exports.clearSelectedBookings = async (req, res) => {
+  console.log(
+    "🚀 INCOMING CLEAR SELECTED BOOKINGS BODY:",
+    JSON.stringify(req.body, null, 2),
+  );
+  let { driver_id, ids } = req.body;
+  driver_id = Number(driver_id);
+  if (typeof ids === "string") {
+    ids = JSON.parse(ids);
+  }
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({
+      status: false,
+      message: "ids must be an array",
+    });
+  }
+
+  ids = ids.map(Number);
+  if (!driver_id) {
+    return res.status(400).json({
+      status: false,
+      message: "driver_id required",
+    });
+  }
+
+  if (!ids || !ids.length) {
+    return res.status(400).json({
+      status: false,
+      message: "ids required",
+    });
+  }
+
+  await clearSelectedBookings(driver_id, ids);
+
+  res.json({
+    status: true,
+    message: "Booking Cleared Successfully",
+  });
+};
+
+// ---------------------------------------------------------
+// CLEAR ALL SELECTED BOOKINGS
+// ---------------------------------------------------------
+exports.clearAllBookings = async (req, res) => {
+  await clearAllBookings();
+
+  res.json({
+    status: true,
+    message: "All Bookings Cleared Successfully",
+  });
+};
+
+// ---------------------------------------------------------
+// GET DRIVERS EARNING BOOKINGS
+// ---------------------------------------------------------
+exports.getDriverEarningsBookings = async (req, res) => {
+  try {
+    const { driver_id, from_date, to_date, booking_status_id, company_id } =
+      req.query;
+
+    if (!driver_id || !from_date || !to_date) {
+      return res.status(400).json({
+        success: false,
+        message: "driver_id, from_date and to_date are required",
+      });
+    }
+
+    const bookings = await getDriverEarningsBookings({
+      driver_id: Number(driver_id),
+      from_date,
+      to_date,
+      booking_status_id: Number(booking_status_id || 11),
+      company_id,
+    });
+
+    const parsedBookings = bookings.map(parseJSONFields);
+
+    // Total Bookings
+    const total_bookings = parsedBookings.length;
+
+    // Total Driver Earnings (Sum of total_charges)
+    const total_earnings = parsedBookings.reduce((sum, booking) => {
+      return sum + parseFloat(booking.total_charges || 0);
+    }, 0);
+
+    return res.status(200).json({
+      success: true,
+      driver_id: Number(driver_id),
+      total_bookings,
+      total_earnings: Number(total_earnings.toFixed(2)),
+      bookings: parsedBookings,
+    });
+  } catch (err) {
+    console.log(err);
+
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// NO PICKUP DASHBOARD BOOKING
+// ---------------------------------------------------------
+exports.noPickupDashboardBooking = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id);
+
+    const bookingResult = await findBookingById(bookingId);
+
+    if (bookingResult.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+    // ✅ Actual booking object
+    const booking = bookingResult.rows[0];
+
+    console.log("BOOKING:", booking);
+    console.log(booking.id);
+    await sendNoPickupBookingNotification(booking.driver_id, booking);
+    await noPickupDashboardBooking(bookingId);
+    await Driver.updateDriverStatus(
+      booking.driver_id,
+      "Available",
+      "Available",
+    );
+    await notifyDriverBookingStatus(booking.driver_id);
+    await notifyDriverBookingStatusWeb(booking.driver_id);
+
+    const driver = await Driver.getById(booking.driver_id);
+
+    notifyBusyDriverUpdate(driver);
+    return res.status(200).json({
+      status: true,
+      message: "No Pickup Booking Successfully",
+    });
+  } catch (error) {
+    console.error("Recover Booking Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET FUTURE BOOKING HISTORY BY DRIVER ID
+// ---------------------------------------------------------
+exports.getFutureBookingHIstoryByDriverId = async (req, res) => {
+  const driver_id = req.params.id;
+
+  if (!driver_id) {
+    return res.status(400).json({
+      status: false,
+      message: "Driver ID Required",
+    });
+  }
+
+  const bookings = await getFutureBookingHIstoryByDriverId(driver_id);
+
+  if (!bookings || bookings.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "No Future bookings found for this driver",
+    });
+  }
+
+  const data = bookings.map((b) => parseJSONFields(b));
+
+  res.status(200).json({
+    success: true,
+    count: bookings.length,
+    bookings: data,
+  });
+};
+
+// ---------------------------------------------------------
+// DELETE BOOKING BY ID (PERMANENTLY)
+// ---------------------------------------------------------
+exports.deleteBookingById = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id, 10);
+
+    if (isNaN(bookingId)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid booking ID",
+      });
+    }
+
+    const booking = await findBookingforDelete(bookingId);
+
+    if (!booking || booking.rowCount === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking not found",
+      });
+    }
+
+    const deletedBooking = await deleteBookingByIdModel(bookingId);
+
+    if (!deletedBooking) {
+      return res.status(404).json({
+        status: false,
+        message: "Booking could not be deleted",
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Booking deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete Booking Error:", error);
+
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET PICK BOOKING DATA
+// ---------------------------------------------------------
+exports.getPickBookings = async (req, res) => {
+  try {
+    const {
+      // Top Main Filters
+      name,
+      mobile,
+      telephone,
+      from_date,
+      to_date,
+
+      // Column Specific Filters
+      search_ref,
+      search_datetime,
+      search_vehicle,
+      search_pickup,
+      search_dropoff,
+      search_fares,
+      search_customer,
+      search_account,
+      search_driver,
+      search_payment_type,
+      search_status,
+      company_id,
+    } = req.query;
+
+    const result = await getSearchBookingsData({
+      name,
+      mobile,
+      telephone,
+      from_date,
+      to_date,
+
+      search_ref,
+      search_datetime,
+      search_vehicle,
+      search_pickup,
+      search_dropoff,
+      search_fares,
+      search_customer,
+      search_account,
+      search_driver,
+      search_payment_type,
+      search_status,
+      company_id,
+    });
+
+    const bookings = result.rows.map((b) => parseJSONFields(b));
+
+    res.json({
+      status: true,
+      count: result.rows.length,
+      bookings: bookings,
+    });
+  } catch (error) {
+    console.error("Error fetching pick bookings:", error);
+
+    res.status(500).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET DRIVER BOOKINGS STATISTICS DATA
+// ---------------------------------------------------------
+exports.getDriverBookingStatistics = async (req, res) => {
+  try {
+    const { driver_id } = req.params;
+
+    if (!driver_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Driver ID is required",
+      });
+    }
+
+    const {
+      page = 1,
+      limit = 100,
+
+      from_date,
+      to_date,
+
+      from_time,
+      to_time,
+
+      booking_status_id,
+      payment_type_id, // "all" ya single/multiple IDs e.g. "1" ya "1,2"
+
+      customer,
+      mobile,
+      telephone,
+
+      account_id,
+      department,
+
+      order_number,
+      booked_by,
+
+      employee_id,
+      subsidiary_id,
+
+      reference_number,
+      pickup,
+      dropoff,
+
+      invoice_number,
+      datetime,
+      account_name,
+      payment_type_name,
+      driver_name,
+      subsidiary_name,
+      status_name,
+      journey_type,
+      vehicle_type,
+      fare,
+      acc_fare,
+
+      pc,
+      wc,
+      edc,
+      mg,
+      cc,
+      total_val,
+
+      sort_by = "datetime",
+      sort_order = "DESC",
+    } = req.query;
+
+    const result = await getDriverBookingStatisticsData({
+      driver_id: Number(driver_id),
+      page: Number(page),
+      limit: Number(limit),
+      filters: {
+        from_date,
+        to_date,
+        from_time,
+        to_time,
+        booking_status_id,
+        payment_type_id,
+        customer,
+        mobile,
+        telephone,
+        account_id,
+        department,
+        order_number,
+        booked_by,
+        employee_id,
+        subsidiary_id,
+        reference_number,
+        pickup,
+        dropoff,
+        invoice_number,
+        datetime,
+        account_name,
+        payment_type_name,
+        driver_name,
+        subsidiary_name,
+        status_name,
+        journey_type,
+        vehicle_type,
+        fare,
+        acc_fare,
+        pc,
+        wc,
+        edc,
+        mg,
+        cc,
+        total_val,
+        sort_by,
+        sort_order,
+      },
+    });
+
+    res.json({
+      success: true,
+      page: Number(page),
+      limit: Number(limit),
+      total: result.total,
+      total_pages: Math.ceil(result.total / limit),
+      count: result.rows.length,
+
+      // Mobile Dashboard Cards Data
+      summary_cards: result.summaryCards,
+
+      // Query Totals
+      totals: result.totals,
+
+      // Enriched Data Response
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error("Error in getDriverBookingStatistics:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// UPDATE BOOKING STATUS TO CANCELLED (ID 12)
+// ---------------------------------------------------------
+exports.cancelBookingById = async (req, res) => {
+  try {
+    const bookingId = parseInt(req.params.id, 10);
+    const { cancelled_reason } = req.body;
+
+    if (!bookingId) {
+      return res.status(400).json({
+        success: false,
+        message: "Booking ID is required",
+      });
+    }
+
+    if (!cancelled_reason) {
+      return res.status(400).json({
+        success: false,
+        message: "Cancelled reason is required",
+      });
+    }
+
+    const result = await cancelBookingById(bookingId, cancelled_reason);
+
+    res.json({
+      success: true,
+      message: "Booking Cancelled Successfully",
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error in cancelBookingById:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET BOOKING BY ID (FOR DRIVER APP AND CUSTOMER APP)
+// ---------------------------------------------------------
+exports.getBookingDriverCustomerById = async (req, res) => {
+  const booking_id = parseInt(req.params.id);
+  console.log(
+    "🚀 INCOMING GET BOOKING BODY:",
+    JSON.stringify(req.params, null, 2),
+  );
+
+  const booking = await getBookingDriverCustomerById(booking_id);
+
+  if (!booking) {
+    return res.status(404).json({
+      success: false,
+      message: "Booking not found",
+    });
+  }
+
+  const data = parseJSONFields(booking);
+
+  res.status(200).json({
+    success: true,
+    booking: data,
+  });
+};
+
+// ---------------------------------------------------------
+// GET ALL MULTI BOOKINGS CONTROLLER
+// ---------------------------------------------------------
+exports.getAllMultiBookings = async (req, res) => {
+  try {
+    let {
+      page = 1,
+      limit = 20,
+      reference_number,
+      pickup_date,
+      pickup_time,
+      name,
+      pickup,
+      dropoff,
+      account_name,
+      driver_name,
+      vehicle_type_name,
+      notes,
+      fares,
+      booking_status,
+      journey_type,
+      payment_type,
+      company_id,
+      mobile,
+      tabName,
+    } = req.query;
+
+    page = parseInt(page, 10) || 1;
+    limit = parseInt(limit, 10) || 20;
+    const offset = (page - 1) * limit;
+
+    // Call Model Function
+    const { rows, total } = await getAllMultiBookings({
+      offset,
+      limit,
+      filters: {
+        reference_number,
+        pickup_date,
+        pickup_time,
+        name,
+        pickup,
+        dropoff,
+        account_name,
+        driver_name,
+        vehicle_type_name,
+        notes,
+        fares,
+        booking_status,
+        journey_type,
+        payment_type,
+        company_id,
+        mobile,
+      },
+    });
+
+    // Parse JSON strings like viapoints, child_seat, notes if required
+    const data = rows.map((row) => parseJSONFields(row));
+
+    return res.status(200).json({
+      success: true,
+      tab_name: tabName || "Multi Bookings",
+      page,
+      limit,
+      total,
+      total_pages: Math.ceil(total / limit),
+      count: data.length,
+      data,
+    });
+  } catch (err) {
+    console.error("Error in getAllMultiBookings:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET ALL BOOKINGS BY SPECIFIC MULTI BOOKING ID
+// ---------------------------------------------------------
+exports.getBookingsBySpecificMultiBookingId = async (req, res) => {
+  try {
+    const { multiBookingId } = req.query;
+
+    if (!multiBookingId) {
+      return res.status(400).json({
+        success: false,
+        message: "Multi Booking ID is required",
+      });
+    }
+
+    // Call Model Function
+    const bookings = await fetchBookingsByMultiBookingId(multiBookingId);
+
+    // Parse JSON fields agar zaroorat ho (jaise viapoints, notes, etc.)
+    const bookingsData = bookings.map((row) => parseJSONFields(row));
+
+    return res.status(200).json({
+      success: true,
+      count: bookingsData.length,
+      // bookings: [],
+      bookings: bookingsData,
+    });
+  } catch (err) {
+    console.error("Error in getBookingsBySpecificMultiBookingId:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// UPDATE MULTI BOOKINGS BY IDS
+// ---------------------------------------------------------
+exports.updateMultiBookings = async (req, res) => {
+  try {
+    let { ids, ...payload } = req.body;
+
+    console.log("🚀 INCOMING MULTI UPDATE BOOKINGS IDS:", ids);
+    console.log(
+      "🚀 INCOMING MULTI UPDATE PAYLOAD:",
+      JSON.stringify(payload, null, 2),
+    );
+
+    // 🛠️ Agar ids string ki form mein aaye (Postman/Form-data ki wajah se) toh usko array mein parse karein
+    if (typeof ids === "string") {
+      try {
+        ids = JSON.parse(ids);
+      } catch (e) {
+        // Agar comma-separated string ho jaise "75758,75759,75760"
+        ids = ids
+          .split(",")
+          .map((id) => parseInt(id.trim()))
+          .filter((id) => !isNaN(id));
+      }
+    }
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid array of booking IDs (ids: [1, 2, 3])",
+      });
+    }
+
+    // Service function call karein jo sabhi IDs par loop chalayega
+    const results = await bookingService.updateMultiBookingsService(
+      ids,
+      payload,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Multi Bookings Updated Successfully",
+      bookings: results,
+    });
+  } catch (err) {
+    console.error("updateMultiBookings error:", err);
+    res.status(500).json({
+      success: false,
+      message: err.message || "Internal server error",
     });
   }
 };

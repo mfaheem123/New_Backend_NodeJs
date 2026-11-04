@@ -1,5 +1,8 @@
 const InvoiceModel = require("../models/accountInvoiceModel");
 
+// ---------------------------------------------------------
+// CREATE ACCOUNT INVOICE
+// ---------------------------------------------------------
 exports.create = async (req, res) => {
   try {
     console.log(
@@ -22,31 +25,42 @@ exports.create = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ALL ACCOUNT INVOICES
+// ---------------------------------------------------------
 exports.getAll = async (req, res) => {
   try {
     const {
       page = 1,
-      limit = 10,
-      search,
+      limit = 100,
       from_date,
       to_date,
       status,
       invoice_number,
       account_name,
       department_name,
+      order_number,
+      amount,
+      subsidiary_name,
+      invoice_date,
+      invoice_due_date,
       company_id,
     } = req.query;
 
     const result = await InvoiceModel.getAll({
       page: Number(page),
       limit: Number(limit),
-      search,
       from_date,
       to_date,
       status,
       invoice_number,
       account_name,
       department_name,
+      order_number,
+      amount,
+      subsidiary_name,
+      invoice_date,
+      invoice_due_date,
       company_id,
     });
 
@@ -60,6 +74,9 @@ exports.getAll = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ACCOUNT INVOICES BY ID
+// ---------------------------------------------------------
 exports.getById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -85,6 +102,9 @@ exports.getById = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE ACCOUNT INVOICE BY ID
+// ---------------------------------------------------------
 exports.update = async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -108,6 +128,9 @@ exports.update = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// DELETE ACCOUNT INVOICE BY ID
+// ---------------------------------------------------------
 exports.delete = async (req, res) => {
   try {
     const id = Number(req.params.id);

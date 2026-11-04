@@ -4,12 +4,14 @@ const BASE_URL = "http://192.168.110.5:5000/api";
 
 exports.getVehicleCompanyAndSubsidiaryData = async (req, res) => {
   try {
+        const{company_id} = req.query;
+        console.log("Query: ", req.query)
     // Run all three API requests in parallel 🚀
     const [vehicleTypeRes, companyVehiclesRes, subsidiariesRes] =
       await Promise.all([
-        axios.get(`${BASE_URL}/vehicle-type/get`),
-        axios.get(`${BASE_URL}/company-vehicles/get`),
-        axios.get(`${BASE_URL}/subsidiaries/get`),
+        axios.get(`${BASE_URL}/vehicle-type/get?company_id=${company_id}`),
+        axios.get(`${BASE_URL}/company-vehicles/get?company_id=${company_id}`),
+        axios.get(`${BASE_URL}/subsidiaries/get?company_id=${company_id}`),
       ]);
 
     // Extract and filter required fields only

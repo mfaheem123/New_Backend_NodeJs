@@ -156,7 +156,7 @@ RETURNING id
 
   getAll: async ({
     offset = 0,
-    limit = 10,
+    limit = 100,
     blacklist = false,
     filters = {},
   }) => {
@@ -309,15 +309,15 @@ RETURNING id
     }
   },
 
-  searchByMobile: async (mobile) => {
+  searchByMobile: async (mobile, company_id) => {
     const query = `
         SELECT 
             id, sms_flag, name, mobile, email, telephone
         FROM customers
-        WHERE mobile LIKE $1
+        WHERE mobile LIKE $1 AND company_id = $2
     `;
 
-    const result = await db.query(query, [`%${mobile}%`]);
+    const result = await db.query(query, [`%${mobile}%`, company_id]);
     return result.rows;
   },
 
@@ -329,9 +329,9 @@ RETURNING id
     return rows[0] || null;
   },
 
-  findByEmails: async (email) => {
+  findByEmailWithOTP: async (email) => {
     const { rows } = await db.query(
-      `SELECT id, name, email
+      `SELECT id, name, email, company_id, email_verification_code, otp_created_at
      FROM customers
      WHERE email = $1
      LIMIT 1`,
@@ -341,9 +341,9 @@ RETURNING id
     return rows[0] || null;
   },
 
-  findByEmailWithOTP: async (email) => {
+  findByEmails: async (email) => {
     const { rows } = await db.query(
-      `SELECT id, name, email, email_verification_code, otp_created_at
+      `SELECT id, name, email, company_id
      FROM customers
      WHERE email = $1
      LIMIT 1`,
@@ -454,6 +454,7 @@ RETURNING id
     const result = await db.query(query, [`%${mobile}%`, company_id]);
     return result.rows;
   },
+
   updateCustomerFcmToken: async (customerId, fcmToken) => {
     const query = `
       UPDATE customers

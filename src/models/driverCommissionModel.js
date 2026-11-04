@@ -1,8 +1,9 @@
 const db = require("../db");
 
 class DriverCommission {
-  /* ================= CREATE ================= */
-
+  // ---------------------------------------------------------
+  // CREATE DRIVER COMMISSION
+  // -----------------------matrixModel----------------------------------
   static async create(data) {
     try {
       await db.query("BEGIN");
@@ -113,6 +114,7 @@ class DriverCommission {
       //       [bookingIds]
       //     );
       //   }
+
       /* Update Driver Balance */
       await db.query(
         `UPDATE drivers
@@ -130,8 +132,9 @@ class DriverCommission {
     }
   }
 
-  /* ================= DISTINCT ================= */
-
+  // ---------------------------------------------------------
+  // GET DISTINCT DRIVER COMMISSIONS
+  // ---------------------------------------------------------
   static async getDistinct(offset, limit, company_id) {
     const query = `
     SELECT 
@@ -172,8 +175,9 @@ class DriverCommission {
     };
   }
 
-  /* ================= BY DRIVER ================= */
-
+  // ---------------------------------------------------------
+  // GET DRIVER COMMISSION BY DRIVER ID
+  // ---------------------------------------------------------
   static async getByDriverId(driver_id, company_id) {
     const query = `
       SELECT dc.id,
@@ -207,8 +211,9 @@ class DriverCommission {
     return result.rows;
   }
 
-  /* ================= GET BY ID ================= */
-
+  // ---------------------------------------------------------
+  // GET DRIVER COMMISSION BY ID
+  // ---------------------------------------------------------
   static async getById(id) {
     const query = `
     SELECT 
@@ -305,6 +310,9 @@ class DriverCommission {
     return commissionRes.rows[0];
   }
 
+  // ---------------------------------------------------------
+  // UPDATE DRIVER COMMISSION BY ID
+  // ---------------------------------------------------------
   static async update(id, data) {
     try {
       await db.query("BEGIN");
@@ -393,6 +401,9 @@ class DriverCommission {
     }
   }
 
+  // ---------------------------------------------------------
+  // DELETE DRIVER COMMISSION BY ID
+  // ---------------------------------------------------------
   static async delete(id) {
     try {
       await db.query("BEGIN");
@@ -434,6 +445,149 @@ class DriverCommission {
       );
 
       await db.query("COMMIT");
+    } catch (err) {
+      await db.query("ROLLBACK");
+      throw err;
+    }
+  }
+
+  // ---------------------------------------------------------
+  // GET BULK DRIVER COMMISSION PREVIEW
+  // ---------------------------------------------------------
+  static async getBulkPreview(company_id, from_date, to_date, subsidiary_id) {
+    const query = `
+    SELECT 
+      d.id AS driver_id,
+      d.username,
+      d.name AS driver_name,
+      d.balance AS old_balance,
+      COALESCE(d.driver_commission, 20) AS driver_commission,
+      
+      -- Cash Jobs Total: Sum of (Fares + Waiting + Extra Drop) for Cash jobs
+      COALESCE(SUM(CASE WHEN pt.name ILIKE '%cash%' THEN 
+        COALESCE(b.fares, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0)
+      ELSE 0 END), 0) AS cash_jobs_total,
+      
+      -- Account Jobs Total: Sum of Fares for Account jobs
+      COALESCE(SUM(CASE WHEN pt.name ILIKE '%account%' THEN 
+        COALESCE(b.fares, 0)
+      ELSE 0 END), 0) AS account_jobs_total,
+
+      -- Parking & Congestion Total: Sum of parking + congestion charges for Account jobs
+      COALESCE(SUM(CASE WHEN pt.name ILIKE '%account%' THEN 
+        COALESCE(b.parking_charges, 0) + COALESCE(b.congestion_charges, 0)
+      ELSE 0 END), 0) AS parking_congestion_total,
+      
+      COUNT(b.id) AS bookings_count,
+      
+      json_agg(json_build_object(
+        'booking_id', b.id,
+        'fares', b.fares,
+        'parking_charges', b.parking_charges,
+        'waiting_charges', b.waiting_charges,
+        'extra_drop_charges', b.extra_drop_charges,
+        'congestion_charges', b.congestion_charges,
+        'payment_type', pt.name,
+        -- Without Commission amount for individual booking: Fares + Waiting + Extra Drop
+        'without_commission', (COALESCE(b.fares, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0))
+      )) AS bookings
+    FROM drivers d
+    JOIN bookings b ON b.driver_id = d.id
+    LEFT JOIN payment_types pt ON b.payment_type_id = pt.id
+    WHERE (d.company_id = $1 OR b.company_id = $1)
+      AND (d.subsidiary_id = $4 OR b.subsidiary_id = $4)
+      AND d.driver_type ILIKE 'commission'
+      AND b.booking_status_id = 11
+      AND b.commission_status = 'open'
+      AND b.commission = true
+      AND b.pickup_date::date BETWEEN $2::date AND $3::date
+    GROUP BY d.id
+    HAVING COUNT(b.id) > 0
+    ORDER BY d.id DESC;
+  `;
+
+    const result = await db.query(query, [
+      company_id,
+      from_date,
+      to_date,
+      subsidiary_id,
+    ]);
+    return result.rows;
+  }
+
+  // ---------------------------------------------------------
+  // CREATE BULK DRIVER COMMISSION
+  // ---------------------------------------------------------
+  static async bulkCreate(items) {
+    try {
+      await db.query("BEGIN");
+      const createdCommissions = [];
+
+      for (const data of items) {
+        // Reuse existing single create logic or loop through items
+        const transaction_number =
+          "mw" +
+          Math.floor(Date.now() / 1000) +
+          Math.floor(Math.random() * 100);
+
+        const insertQuery = `
+        INSERT INTO driver_commissions (
+          transaction_number, transaction_date, driver_id, jobs_total,
+          commission_total, cash_jobs_total, account_jobs_total, owed,
+          old_balance, current_balance, from_date, to_date, company_id, last_modified
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        RETURNING *;
+      `;
+
+        const values = [
+          transaction_number,
+          data.transaction_date,
+          data.driver_id,
+          data.jobs_total,
+          data.commission_total,
+          data.cash_jobs_total,
+          data.account_jobs_total,
+          data.owed,
+          data.old_balance,
+          data.current_balance,
+          data.from_date,
+          data.to_date,
+          data.company_id,
+          data.last_modified || data.transaction_date,
+        ];
+
+        const res = await db.query(insertQuery, values);
+        const commission = res.rows[0];
+
+        // Insert Line Items & Update Bookings status
+        const bookingIds = [];
+        for (const item of data.driver_commission_lineitems) {
+          await db.query(
+            `INSERT INTO driver_commission_lineitems (driver_commission_id, booking_id) VALUES ($1, $2)`,
+            [commission.id, item.booking_id],
+          );
+          bookingIds.push(item.booking_id);
+        }
+
+        if (bookingIds.length) {
+          await db.query(
+            `UPDATE bookings SET commission = false, commission_status = 'close' WHERE id = ANY($1::int[])`,
+            [bookingIds],
+          );
+        }
+
+        // Update Driver Balance
+        await db.query(`UPDATE drivers SET balance = $1 WHERE id = $2`, [
+          data.current_balance,
+          data.driver_id,
+        ]);
+
+        createdCommissions.push(commission);
+      }
+
+      await db.query("COMMIT");
+      return createdCommissions;
     } catch (err) {
       await db.query("ROLLBACK");
       throw err;

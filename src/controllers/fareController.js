@@ -2,6 +2,132 @@ const db = require("../db");
 
 /* ---------------- HELPERS ---------------- */
 
+// POSTCODE HELPER
+const normalizePostcode = (postcode = "") =>
+  postcode.replace(/\s+/g, "").toUpperCase();
+
+const postcodeMatches = (bookingPostcode, dbPostcode) => {
+  bookingPostcode = normalizePostcode(bookingPostcode);
+  dbPostcode = normalizePostcode(dbPostcode);
+
+  return (
+    bookingPostcode === dbPostcode || // Full postcode
+    bookingPostcode.startsWith(dbPostcode) // Area postcode
+  );
+};
+
+// FARE INCREMENT HELPER FUNCTION
+const getApplicableFareIncrement = async (
+  company_id,
+  bookingDate,
+  type, // "fix_fare" | "mileage"
+) => {
+  const { rows } = await db.query(
+    `
+      SELECT *
+      FROM fare_increments
+      WHERE company_id=$1
+      ORDER BY id DESC
+    `,
+    [company_id],
+  );
+
+  const booking = new Date(bookingDate);
+
+  return rows.find((r) => {
+    if (!r[type]) return false;
+
+    const from = new Date(r.start_date);
+    const to = new Date(r.end_date);
+
+    return booking >= from && booking <= to;
+  });
+};
+
+// SURCHARGES HELPER FUNCTION
+const getApplicableSurcharges = async (
+  company_id,
+  pickupPostcode,
+  dropoffPostcode,
+  pickupDate,
+  pickupTime,
+) => {
+  const { rows } = await db.query(
+    `
+      SELECT *
+      FROM surcharges
+      WHERE company_id=$1
+      AND active=true
+    `,
+    [company_id],
+  );
+
+  pickupTime = normalizeTime(pickupTime);
+  const bookingDay = getDayName(pickupDate);
+
+  return rows.filter((s) => {
+    const condition = (s.condition || "").toUpperCase();
+
+    const surchargePostcode = (s.postcode || "")
+      .replace(/\s+/g, "")
+      .toUpperCase();
+
+    // ---------- POSTCODE ----------
+    let postcodeMatch = false;
+
+    if (condition === "PICKUP") {
+      postcodeMatch = postcodeMatches(pickupPostcode, surchargePostcode);
+    } else if (condition === "DROPOFF") {
+      postcodeMatch = postcodeMatches(dropoffPostcode, surchargePostcode);
+    } else if (condition === "BOTH") {
+      postcodeMatch =
+        postcodeMatches(pickupPostcode, surchargePostcode) ||
+        postcodeMatches(dropoffPostcode, surchargePostcode);
+    } else {
+      return false;
+    }
+
+    if (!postcodeMatch) {
+      return false;
+    }
+
+    // ---------- DATE ----------
+    if (s.duration === "DATE WISE") {
+      return isDateInRange(pickupDate, s.from_date, s.to_date);
+    }
+
+    // ---------- DAY ----------
+    if (s.duration === "DAY WISE") {
+      return (
+        bookingDay.substring(0, 3).toUpperCase() === s.day &&
+        isTimeInRange(
+          pickupTime,
+          normalizeTime(s.from_time),
+          normalizeTime(s.to_time),
+        )
+      );
+    }
+
+    // ---------- TIME ----------
+    if (s.duration === "TIME WISE") {
+      return isTimeInRange(
+        pickupTime,
+        normalizeTime(s.from_time),
+        normalizeTime(s.to_time),
+      );
+    }
+
+    return false;
+  });
+};
+
+// EXTRACT POSTCODE FROM ADDRESS
+const extractPostcode = (address = "") => {
+  const match = address.match(/[A-Z]{1,2}[0-9][A-Z0-9]?\s?[0-9][A-Z]{2}/i);
+
+  return match ? match[0].replace(/\s/g, "").toUpperCase() : "";
+};
+
 const days = [
   "Sunday",
   "Monday",
@@ -68,25 +194,25 @@ const CACHE_TTL = 60 * 1000; // 1 minute
 let fareByVehicleCache = {};
 
 /* ---------------- FARE BY VEHICLE FUNCTION ---------------- */
-const applyFareByVehicle = async (fare, vehicle_type_id) => {
+const applyFareByVehicle = async (fare, vehicle_type_id, company_id) => {
   const now = Date.now();
-
+  const cacheKey = `${company_id}_${vehicle_type_id}`;
   if (
-    !fareByVehicleCache[vehicle_type_id] ||
-    now - fareByVehicleCache[vehicle_type_id].timestamp > CACHE_TTL
+    !fareByVehicleCache[cacheKey] ||
+    now - fareByVehicleCache[cacheKey].timestamp > CACHE_TTL
   ) {
     const { rows } = await db.query(
-      `SELECT * FROM fare_by_vehicles WHERE vehicle_type_id=$1`,
-      [vehicle_type_id],
+      `SELECT * FROM fare_by_vehicles WHERE vehicle_type_id=$1 AND company_id=$2`,
+      [vehicle_type_id, company_id],
     );
 
-    fareByVehicleCache[vehicle_type_id] = {
+    fareByVehicleCache[cacheKey] = {
       data: rows,
       timestamp: now,
     };
   }
 
-  const rows = fareByVehicleCache[vehicle_type_id].data;
+  const rows = fareByVehicleCache[cacheKey].data;
 
   if (!rows.length) return fare;
 
@@ -110,7 +236,7 @@ const applyFareByVehicle = async (fare, vehicle_type_id) => {
 /* ---------------- CORE FARE ---------------- */
 const calculateSingleFare = async (payload) => {
   let {
-    miles = 0,
+    miles,
     pickup_date,
     pickup_time,
     vehicle_type_id,
@@ -119,11 +245,31 @@ const calculateSingleFare = async (payload) => {
     dropoff_plot_id,
     pickup,
     dropoff,
+    company_id,
   } = payload;
 
+  const pickupPostcode = extractPostcode(pickup);
+  const dropoffPostcode = extractPostcode(dropoff);
+
+  console.log("Pickup Postcode:", pickupPostcode);
+  console.log("Dropoff Postcode:", dropoffPostcode);
+
   // safe miles
+  if (
+    miles === undefined ||
+    miles === null ||
+    miles === "" ||
+    isNaN(Number(miles))
+  ) {
+    return {
+      fare: 0,
+      total_fare: 0,
+    };
+  }
+
   miles = Number(miles);
-  if (isNaN(miles) || miles < 0) miles = 0;
+
+  if (miles < 0) miles = 0;
 
   pickup_time = normalizeTime(pickup_time);
   const resolvedDay = getDayName(pickup_date);
@@ -138,8 +284,8 @@ const calculateSingleFare = async (payload) => {
   /* -------- FIXED -------- */
   if (pickup && dropoff) {
     const { rows } = await db.query(
-      `SELECT * FROM fixed_fares WHERE vehicle_type_id=$1`,
-      [vehicle_type_id],
+      `SELECT * FROM fixed_fares WHERE vehicle_type_id=$1 AND company_id = $2`,
+      [vehicle_type_id, company_id],
     );
 
     const p = normalize(pickup);
@@ -164,8 +310,9 @@ const calculateSingleFare = async (payload) => {
        WHERE vehicle_type_id=$1
        AND pickup_plot_id=$2
        AND dropoff_plot_id=$3
+       AND company_id = $4
        ORDER BY id DESC LIMIT 1`,
-      [vehicle_type_id, pickup_plot_id, dropoff_plot_id],
+      [vehicle_type_id, pickup_plot_id, dropoff_plot_id, company_id],
     );
 
     if (rows.length) {
@@ -178,9 +325,9 @@ const calculateSingleFare = async (payload) => {
   if (!baseFare) {
     const { rows } = await db.query(
       `SELECT * FROM fare_configurations
-       WHERE vehicle_type_id=$1
+       WHERE vehicle_type_id=$1 AND company_id = $2
        ORDER BY id ASC`,
-      [vehicle_type_id],
+      [vehicle_type_id, company_id],
     );
 
     const rule =
@@ -198,12 +345,21 @@ const calculateSingleFare = async (payload) => {
     if (rule) {
       const minMiles = Number(rule.minimum_miles);
       const minFare = Number(rule.minimum_fares);
+      const perMileFare = Number(rule.per_mile_fares || 0);
 
       let extraMiles = miles - minMiles;
       if (extraMiles < 0) extraMiles = 0;
 
-      baseFare = minFare + extraMiles * 2;
+      baseFare = minFare + extraMiles * perMileFare;
       fareType = rule.from_date ? "SPECIAL" : "NORMAL";
+      console.log({
+        vehicle_type_id,
+        minimumFare: minFare,
+        minimumMiles: minMiles,
+        perMileFare,
+        extraMiles,
+        baseFare,
+      });
     }
   }
 
@@ -212,40 +368,174 @@ const calculateSingleFare = async (payload) => {
     let extraMiles = miles - 0.9;
     if (extraMiles < 0) extraMiles = 0;
 
-    baseFare = 4.9 + extraMiles * 2;
+    baseFare = 0.0 + extraMiles * 2;
     fareType = "DEFAULT";
   }
+
+  /* -------- FARE BY VEHICLE CHARGES -------- */
+  let vehicleAdjustedFare = await applyFareByVehicle(
+    baseFare,
+    vehicle_type_id,
+    company_id,
+  );
+
+  /* -------- APPLY FARE INCREMENT CHARGES -------- */
+  let fareIncrementAmount = 0;
+  const increment = await getApplicableFareIncrement(
+    company_id,
+    pickup_date,
+    "fix_fare",
+  );
+
+  if (increment) {
+    const value = Number(increment.amount);
+
+    if ((increment.operator || "").toLowerCase() === "percentage") {
+      fareIncrementAmount = (vehicleAdjustedFare * value) / 100;
+    } else {
+      fareIncrementAmount = value;
+    }
+    vehicleAdjustedFare += fareIncrementAmount;
+    console.log(
+      "============================== FARE INCREMENT APPLIED ==============================",
+    );
+    console.log("Operator:", increment.operator);
+    console.log("Increment Value:", value);
+    console.log("Increment Applied:", fareIncrementAmount.toFixed(2));
+  }
+
+  /* --------APPLY SURCHARGE CALCULATIONS -------- */
+  const applicableSurcharges = await getApplicableSurcharges(
+    company_id,
+    pickupPostcode,
+    dropoffPostcode,
+    pickup_date,
+    pickup_time,
+  );
+
+  let surchargeFare = 0.0;
+  let surchargeParking = 0.0;
+  let surchargeExtraDrop = 0.0;
+  let surchargeCongestion = 0.0;
+
+  for (const surcharge of applicableSurcharges) {
+    const operator = (surcharge.operator || "").toLowerCase();
+
+    const apply = (base, value) => {
+      value = Number(value || 0);
+
+      if (operator === "percentage") {
+        return (base * value) / 100;
+      }
+
+      return value;
+    };
+
+    surchargeFare += apply(vehicleAdjustedFare, surcharge.fare);
+
+    surchargeParking += apply(
+      Number(payload.parking_charges || 0),
+      surcharge.parking_charges,
+    );
+
+    surchargeExtraDrop += apply(
+      Number(payload.extra_drop_charges || 0),
+      surcharge.extra_drop_charges,
+    );
+
+    surchargeCongestion += apply(
+      Number(payload.congestion_charges || 0),
+      surcharge.congestion_charges,
+    );
+  }
+
+  payload.parking_charges =
+    Number(payload.parking_charges || 0) + surchargeParking;
+
+  payload.extra_drop_charges =
+    Number(payload.extra_drop_charges || 0) + surchargeExtraDrop;
+
+  payload.congestion_charges =
+    Number(payload.congestion_charges || 0) + surchargeCongestion;
 
   /* -------- AIRPORT CHARGES -------- */
   let airportPickup = 0;
   let airportDropoff = 0;
 
   const { rows: airports } = await db.query(
-    `SELECT * FROM locations WHERE location_type_id=2`,
+    `SELECT * FROM locations WHERE location_type_id=2 AND company_id =$1`,
+    [company_id],
   );
 
   if (pickup) {
-    const a = airports.find((x) =>
-      normalize(pickup).includes(normalize(x.address)),
-    );
-    if (a) airportPickup = Number(a.pickup_charges || 0) * multiplier;
+    const pickupText = normalize(pickup);
+
+    const airport = airports.find((a) => {
+      return (
+        pickupText.includes(normalize(a.name || "")) ||
+        pickupText.includes(normalize(a.postcode || "")) ||
+        pickupText.includes(normalize(a.shortcut || "")) ||
+        pickupText.includes(normalize(a.address || ""))
+      );
+    });
+
+    if (airport) {
+      airportPickup = Number(airport.pickup_charges || 0) * multiplier;
+    }
   }
 
   if (dropoff) {
-    const a = airports.find((x) =>
-      normalize(dropoff).includes(normalize(x.address)),
-    );
-    if (a) airportDropoff = Number(a.dropoff_charges || 0) * multiplier;
+    const dropoffText = normalize(dropoff);
+
+    const airport = airports.find((a) => {
+      return (
+        dropoffText.includes(normalize(a.name || "")) ||
+        dropoffText.includes(normalize(a.postcode || "")) ||
+        dropoffText.includes(normalize(a.shortcut || "")) ||
+        dropoffText.includes(normalize(a.address || ""))
+      );
+    });
+
+    if (airport) {
+      airportDropoff = Number(airport.dropoff_charges || 0) * multiplier;
+    }
   }
 
-  /* -------- FARE BY VEHICLE CHARGES -------- */
-  let vehicleAdjustedFare = await applyFareByVehicle(baseFare, vehicle_type_id);
+  console.log("============= SURCHARGE SUMMARY =============");
+
+  console.log("Pickup Postcode :", pickupPostcode);
+  console.log("Dropoff Postcode :", dropoffPostcode);
+
+  console.log("Matched :", applicableSurcharges.length);
+
+  console.table(
+    applicableSurcharges.map((s) => ({
+      id: s.id,
+      postcode: s.postcode,
+      condition: s.condition,
+      operator: s.operator,
+      fare: s.fare,
+      parking: s.parking_charges,
+      congestion: s.congestion_charges,
+      extra_drop: s.extra_drop_charges,
+    })),
+  );
+
+  console.log({
+    surchargeFare,
+    surchargeParking,
+    surchargeCongestion,
+    surchargeExtraDrop,
+  });
 
   /* -------- EXTRA CHARGES -------- */
   const extraChargesTotal = sumExtraCharges(payload);
 
+  // const fareWithoutExtras =
+  //   vehicleAdjustedFare + airportPickup + airportDropoff;
+
   const fareWithoutExtras =
-    vehicleAdjustedFare + airportPickup + airportDropoff;
+    vehicleAdjustedFare + surchargeFare + airportPickup + airportDropoff;
 
   const totalFare = fareWithoutExtras + extraChargesTotal;
 
@@ -256,6 +546,7 @@ const calculateSingleFare = async (payload) => {
   console.log("airportPickup: ", airportPickup);
   console.log("airportDropoff: ", airportDropoff);
   console.log("extraChargesTotal: ", extraChargesTotal);
+  console.log("fareWithoutExtras: ", fareWithoutExtras);
   console.log("totalFare: ", totalFare);
 
   return {
@@ -266,84 +557,10 @@ const calculateSingleFare = async (payload) => {
 
 /* ---------------- CONTROLLER ---------------- */
 
-// exports.calculateFare = async (req, res) => {
-//   try {
-//     let { multi_reservation } = req.body;
-
-//     console.log(
-//       "🚀 INCOMING FARE CALCULATION BODY:",
-//       JSON.stringify(req.body, null, 2)
-//     );
-
-//     if (typeof multi_reservation === "string") {
-//       multi_reservation = JSON.parse(multi_reservation);
-//     }
-
-//     /* -------- MULTI -------- */
-//     if (Array.isArray(multi_reservation)) {
-//       const reservations = [];
-//       let grand_total = 0;
-
-//       for (const r of multi_reservation) {
-//         if (r.exclude) {
-//           reservations.push({
-//             pickup_date: r.pickup_date,
-//             pickup_time: r.pickup_time,
-//             exclude: true,
-//             total_fare: 0,
-//           });
-//           continue;
-//         }
-
-//         const fare = await calculateSingleFare({
-//           ...req.body,
-//           pickup_date: r.pickup_date,
-//           pickup_time: r.pickup_time,
-//           day: r.day,
-//         });
-
-//         reservations.push({
-//           pickup_date: r.pickup_date,
-//           pickup_time: r.pickup_time,
-//           exclude: false,
-//           ...fare,
-//         });
-
-//         grand_total += fare.total_fare;
-//       }
-
-//       return res.status(200).json({
-//         status: true,
-//         message: "Multi reservation fares calculated",
-//         data: {
-//           total_reservations: reservations.length,
-//           total_fare: Number(grand_total.toFixed(2)),
-//           multi_reservation: reservations,
-//         },
-//       });
-//     }
-
-//     /* -------- SINGLE -------- */
-//     const fare = await calculateSingleFare(req.body);
-
-//     return res.status(200).json({
-//       status: true,
-//       message: "Fare calculated successfully",
-//       data: fare,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({
-//       status: false,
-//       message: "Internal server error",
-//     });
-//   }
-// };
-
-// RETUR FARE ADDED
+// CALCULATE FARES WITH SINGLE VEHICLE
 exports.calculateFare = async (req, res) => {
   try {
-    let { multi_reservation, journey_type_id } = req.body;
+    let { multi_reservation, journey_type_id, company_id } = req.body;
 
     console.log(
       "🚀 INCOMING FARE CALCULATION BODY:",
@@ -370,14 +587,16 @@ exports.calculateFare = async (req, res) => {
         ...req.body,
 
         // ✅ return specific
-        miles: Number(req.body.return_miles || 0),
+        miles: Number(req.body.return_miles),
         pickup: req.body.return_pickup,
         dropoff: req.body.return_dropoff,
         pickup_plot_id: req.body.return_pickup_plot_id,
         dropoff_plot_id: req.body.return_dropoff_plot_id,
-        pickup_date: req.body.return_pickup_date,
-        pickup_time: req.body.return_pickup_time,
-        vehicle_type_id: req.body.return_vehicle_type_id,
+        pickup_date: req.body.return_pickup_date || req.body.pickup_date,
+        pickup_time: req.body.return_pickup_time || req.body.pickup_time,
+        // vehicle_type_id: req.body.return_vehicle_type_id,
+        vehicle_type_id:
+          req.body.return_vehicle_type_id || req.body.vehicle_type_id,
         journey_type_id: 1,
 
         // outbound extra charges
@@ -394,7 +613,7 @@ exports.calculateFare = async (req, res) => {
         status: true,
         message: "Return Way Fares Calculated Successfully",
         data: {
-          fare: outboundFare.total_fare,
+          fare: outboundFare.fare,
           return_fare: returnFare.total_fare,
           total_fare: Number(
             (outboundFare.total_fare + returnFare.total_fare).toFixed(2),
@@ -461,6 +680,72 @@ exports.calculateFare = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+//CALCULATE FARES FOR ALL VEHICLES
+exports.calculateFareAllVehicles = async (req, res) => {
+  try {
+    console.log(
+      "🚀 CALCULATE ALL VEHICLES:",
+      JSON.stringify(req.body, null, 2),
+    );
+
+    const { company_id } = req.body;
+
+    if (!company_id) {
+      return res.status(400).json({
+        status: false,
+        message: "company_id is required",
+      });
+    }
+
+    // Get all vehicles
+    const { rows: vehicles } = await db.query(
+      `
+      SELECT id, name
+      FROM vehicle_types WHERE company_id = $1
+      ORDER BY id
+    `,
+      [company_id],
+    );
+
+    if (!vehicles.length) {
+      return res.status(404).json({
+        status: false,
+        message: "No vehicles found",
+      });
+    }
+
+    const results = [];
+
+    for (const vehicle of vehicles) {
+      const fare = await calculateSingleFare({
+        ...req.body,
+        vehicle_type_id: vehicle.id,
+      });
+
+      results.push({
+        vehicle_type_id: vehicle.id,
+        vehicle_name: vehicle.name,
+        fare: fare.fare,
+        total_fare: fare.total_fare,
+      });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Fare calculated for all vehicles",
+      count: results.length,
+      data: results,
+    });
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
       status: false,
       message: "Internal server error",
     });

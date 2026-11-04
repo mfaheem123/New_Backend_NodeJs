@@ -6,8 +6,9 @@ const EmployeeExtension = require("../models/employeeExtensionsModel");
 const Role = require("../models/roleModel");
 const pool = require("../db");
 const path = require("path");
-const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
+const BASE_URL = process.env.BASE_URL || "http://192.168.110.7:5000/uploads/";
 const JWT_SECRET = process.env.JWT_SECRET || "NexusTaxiDispatchSystem";
+const ShiftHistory = require("../models/employeeShiftHistoryModel");
 
 // Helper for password hashing
 const hashPassword = async (plainPassword) => {
@@ -112,11 +113,15 @@ const create = async (req, res) => {
     }
 
     // Check duplicate username
-    const existing = await Employee.getByUsername(username.toLowerCase());
+    const existing = await Employee.getByUsername(
+      username.toLowerCase(),
+      company_id,
+    );
     if (existing) {
-      return res
-        .status(400)
-        .json({ status: false, message: "Username already exists" });
+      return res.status(400).json({
+        status: false,
+        message: "Username already exists for this company",
+      });
     }
 
     // Hash password
@@ -191,8 +196,11 @@ const update = async (req, res) => {
 
     // Check username uniqueness
     if (data.username) {
+      const currentEmployee = await Employee.getById(id);
+
       const existing = await Employee.getByUsername(
         data.username.toLowerCase(),
+        currentEmployee.company_id,
       );
       if (existing && existing.id !== id) {
         return res
@@ -280,7 +288,8 @@ const remove = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, web_device_id, company_id } = req.body;
+
     console.log(
       "🚀 INCOMING EMPLOYEE LOGIN BODY:",
       JSON.stringify(req.body, null, 2),
@@ -294,7 +303,12 @@ const login = async (req, res) => {
     }
 
     // Find user
-    const employee = await Employee.getByUsername(username.toLowerCase());
+    const employee = await Employee.getByUsername(
+      username.toLowerCase(),
+      company_id,
+    );
+    console.log("Employee Data: ", employee);
+
     if (!employee) {
       return res
         .status(401)
@@ -306,12 +320,54 @@ const login = async (req, res) => {
         .status(400)
         .json({ status: false, message: "You Are Inactive" });
     }
+    if (Number(employee.company_id) !== Number(company_id)) {
+      return res.status(400).json({
+        status: false,
+        message: "Invalid User",
+      });
+    }
     // Compare passwords
     const match = await bcrypt.compare(password, employee.password);
+
     if (!match) {
       return res
         .status(401)
         .json({ status: false, message: "Invalid username or password" });
+    }
+
+    // =========================================================
+    // 🔒 CHECK COMPANY SUBSCRIPTION LOCK STATUS
+    // =========================================================
+    const subStatus = await Employee.checkCompanySubscriptionStatus(
+      employee.company_id,
+    );
+
+    if (subStatus && subStatus.calculated_status === "LOCKED") {
+      return res.status(400).json({
+        status: false,
+        code: "SUBSCRIPTION_EXPIRED",
+        message:
+          "Your account is expired. Please pay to continue your subscription.",
+      });
+    }
+    // =========================================================
+
+    // CHECK ACTIVE SHIFT
+    const activeShift = await ShiftHistory.getActiveShift(employee.id);
+
+    // AGAR PEHLE SE LOGIN HAI TO NAYA RECORD NA BANAO
+    if (!activeShift) {
+      await ShiftHistory.createLoginHistory(employee.id);
+    }
+
+    // ✅ SAVE FCM TOKEN / WEB DEVICE ID
+    if (web_device_id) {
+      await pool.query(
+        `UPDATE employees 
+         SET web_device_id = $1 
+         WHERE id = $2`,
+        [web_device_id, employee.id],
+      );
     }
 
     // Fetch role + subsidiary
@@ -325,7 +381,7 @@ const login = async (req, res) => {
       [employee.subsidiary_id],
     );
 
-    // 🔥 Fetch extensions for this employee
+    // Fetch extensions
     const extQuery = `
       SELECT ee.*, 
         json_build_object(
@@ -336,13 +392,15 @@ const login = async (req, res) => {
       LEFT JOIN employees e ON e.id = ee.employee_id
       WHERE ee.employee_id = $1
     `;
+
     const extResult = await pool.query(extQuery, [employee.id]);
 
     const fullEmployee = {
       ...employee,
+      web_device_id, // optional response me bhejna ho to
       role: roleResult.rows[0] ? { name: roleResult.rows[0].name } : null,
       subsidiary: subResult.rows[0] ? { name: subResult.rows[0].name } : null,
-      employee_extensions: extResult.rows, // ← Added extensions here
+      employee_extensions: extResult.rows,
     };
 
     // Generate token
@@ -364,7 +422,11 @@ const login = async (req, res) => {
     });
   } catch (err) {
     console.error("Error logging in:", err);
-    res.status(500).json({ status: false, message: "Server error" });
+
+    res.status(500).json({
+      status: false,
+      message: "Server error",
+    });
   }
 };
 
@@ -382,13 +444,22 @@ const logout = async (req, res) => {
         .status(404)
         .json({ status: false, message: "Employee Not Found" });
     }
+    await pool.query(
+      `UPDATE employees 
+         SET web_device_id = null
+         WHERE id = $1`,
+      [employee.id],
+    );
+
+    // UPDATE LOGOUT TIME
+    await ShiftHistory.updateLogoutHistory(employee.id);
 
     res.status(200).json({
       status: true,
       message: "Logout Successful",
     });
   } catch (err) {
-    console.error("Error logging in:", err);
+    console.error("Error logging out:", err);
     res.status(500).json({ status: false, message: "Server error" });
   }
 };

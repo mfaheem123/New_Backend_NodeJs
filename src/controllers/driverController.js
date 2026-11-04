@@ -2,12 +2,17 @@ const Driver = require("../models/driverModel");
 const {
   notifyDriverLogin,
   notifyDriverLogout,
+  notifyDriverBreakStatusWeb,
 } = require("../sockets/driverWebSocket");
 // const { getIO } = require("../sockets/io");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const pool = require("../db");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
+const notification = require("../services/notificationService");
+const DriverShiftHistory = require("../models/driverShiftHistoryModel");
+const { panicDriverClients } = require("../sockets/panicSocket");
+const { breakDriverClients } = require("../sockets/breakSocket");
 
 // const io = getIO();
 
@@ -51,7 +56,9 @@ function normalizeDateFields(obj) {
   return obj;
 }
 
-// LOG BOOK DOCUMENT HANDLE IN THIS CREATE CODE
+// ---------------------------------------------------------
+// CREATE DRIVER WITH DOCUMENTS
+// ---------------------------------------------------------
 exports.create = async (req, res) => {
   try {
     console.log(
@@ -108,6 +115,7 @@ exports.create = async (req, res) => {
       "notes",
       "shifts",
       "vehicle",
+      "attributes",
       "MOT",
       "MOT2",
       "INSURANCE",
@@ -232,12 +240,32 @@ exports.create = async (req, res) => {
       req.body.vehicle = null;
     }
     // STEP 1: Check if username exists
-    const usernameExists = await Driver.checkUsernameExists(req.body.username);
+    const usernameExists = await Driver.checkUsernameExists(
+      req.body.username,
+      req.body.company_id,
+    );
 
     if (usernameExists) {
       return res.status(400).json({
         message: "Username Already Exists",
       });
+    }
+
+    // Check if mobile number exists
+    const mobileNumber = req.body.mobile
+      ? String(req.body.mobile).trim()
+      : null;
+
+    if (mobileNumber) {
+      const mobileExists = await Driver.checkMobileNumberExists(
+        mobileNumber,
+        req.body.company_id,
+      );
+      if (mobileExists) {
+        return res.status(400).json({
+          message: "Mobile Number Already Exists",
+        });
+      }
     }
 
     const driverData = cleanEmptyToNull(req.body);
@@ -256,7 +284,9 @@ exports.create = async (req, res) => {
   }
 };
 
-// Get All Drivers
+// ---------------------------------------------------------
+// GET ALL DRIVERS
+// ---------------------------------------------------------
 exports.getAll = async (req, res) => {
   try {
     const {
@@ -313,7 +343,9 @@ exports.getAll = async (req, res) => {
   }
 };
 
-// Get Drivers by Driver ID
+// ---------------------------------------------------------
+// GET DRIVER BY ID
+// ---------------------------------------------------------
 exports.getById = async (req, res) => {
   try {
     const driver = await Driver.getById(req.params.id);
@@ -329,7 +361,9 @@ exports.getById = async (req, res) => {
   }
 };
 
-// Update Driver By ID
+// ---------------------------------------------------------
+// UPDATE DRIVER BY ID
+// ---------------------------------------------------------
 exports.update = async (req, res) => {
   try {
     const driverId = req.params.id;
@@ -391,13 +425,14 @@ exports.update = async (req, res) => {
       "notes",
       "shifts",
       "vehicle",
+      "attributes", // 👈 Attributes yahan add kar diya gaya hai
       "MOT",
       "MOT2",
       "INSURANCE",
       "PHC_VEHICLE",
       "ROAD_TAX",
       "RENTAL_AGREEMENT",
-      "V5",
+      "V5_REGISTRATION",
       "LICENCE",
       "PHC_DRIVER",
       "LOG_BOOK", // ✅ Added for log book consistency
@@ -455,11 +490,11 @@ exports.update = async (req, res) => {
         expiry_time: "rental_agreement_expiry_time",
         document: "RENTAL_AGREEMENT_DOCUMENT",
       },
-      V5: {
+      V5_REGISTRATION: {
         number: "v5_registration_number",
         expiry: "v5_registration_expiry",
         expiry_time: "v5_registration_expiry_time",
-        document: "V5_DOCUMENT",
+        document: "V5_REGISTRATION_DOCUMENT",
       },
       LICENCE: {
         number: "licence_number",
@@ -520,6 +555,46 @@ exports.update = async (req, res) => {
       }
     }
 
+    const companyId = req.body.company_id;
+
+    // ---------------------------------------------------------
+    // UNIQUE CHECKS BEFORE UPDATE
+    // ---------------------------------------------------------
+
+    // 1. Check Username
+    if (req.body.username) {
+      const usernameExists = await Driver.checkUsernameExistsForUpdate(
+        req.body.username,
+        companyId,
+        driverId,
+      );
+      if (usernameExists) {
+        return res.status(400).json({
+          status: false,
+          message: "Username Already Exists for another driver in this company",
+        });
+      }
+    }
+
+    // 2. Check Mobile
+    const mobileNumber = req.body.mobile
+      ? String(req.body.mobile).trim()
+      : null;
+    if (mobileNumber) {
+      const mobileExists = await Driver.checkMobileNumberExistsForUpdate(
+        mobileNumber,
+        companyId,
+        driverId,
+      );
+      if (mobileExists) {
+        return res.status(400).json({
+          status: false,
+          message:
+            "Mobile Number Already Exists for another driver in this company",
+        });
+      }
+    }
+
     // ✅ Update driver in DB
     const driverData = cleanEmptyToNull(req.body);
     await Driver.update(driverId, driverData);
@@ -537,7 +612,9 @@ exports.update = async (req, res) => {
   }
 };
 
-//Delete Driver By ID
+// ---------------------------------------------------------
+// DELETE DRIVER BY ID
+// ---------------------------------------------------------
 exports.delete = async (req, res) => {
   try {
     await Driver.delete(req.params.id);
@@ -552,7 +629,9 @@ exports.delete = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
 // GET DRIVERS BY COMPANY ID
+// ---------------------------------------------------------
 exports.getByCompany = async (req, res) => {
   try {
     const { company_id } = req.params;
@@ -580,49 +659,11 @@ exports.getByCompany = async (req, res) => {
   }
 };
 
-// DRIVER LOGIN WITHOUT LOCATION
-// exports.driverLogin = async (req, res) => {
-//   const { username, password, fcm_token } = req.body;
-//   try {
-//     const driver = await Driver.findDriverByUsername(username);
-//     if (!driver) {
-//       return res.status(404).json({ message: "Driver not found" });
-//     }
-//     if (!driver.active) {
-//       return res.status(401).json({ message: "Your account is inactive" });
-//     }
-//     const passwordMatch = await bcrypt.compare(password, driver.password);
-//     if (!passwordMatch) {
-//       return res.status(401).json({ message: "Invalid password" });
-//     }
-//     if (driver.session_status === "logged_in") {
-//       return res.status(400).json({ message: "Driver is already logged in" });
-//     }
-//     const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
-//       expiresIn: "1d",
-//     });
-//     await Driver.updateDriverLoginStatus(driver.id);
-//     if (fcm_token) {
-//       await Driver.updateDriverFcmToken(driver.id, fcm_token);
-//     } // ONLY IMPORTANT FIX
-//     const updatedDriver = await Driver.getLoginDriverById(driver.id);
-//     const updatedDriverSocket = await Driver.getById(driver.id);
-
-//     notifyDriverLogin(updatedDriverSocket);
-//     return res.status(200).json({
-//       message: "Login successful",
-//       driverInfo: updatedDriver,
-//       token: token,
-//     });
-//   } catch (error) {
-//     console.error("Login Error:", error);
-//     return res.status(500).json({ message: "An error occurred during login" });
-//   }
-// };
-
-//DRIVER LOGIN WITH LOCATION
+// ---------------------------------------------------------
+// DRIVER LOGIN WITH LOCATION & ZONE
+// ---------------------------------------------------------
 exports.driverLogin = async (req, res) => {
-  const { username, password, fcm_token, latitude, longitude } = req.body;
+  const { username, password, fcm_token, latitude, longitude, zone } = req.body;
   console.log(
     "🚀 INCOMING DRIVER LOGIN BODY:",
     JSON.stringify(req.body, null, 2),
@@ -645,7 +686,11 @@ exports.driverLogin = async (req, res) => {
     const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-    await Driver.updateDriverLoginStatus(driver.id, latitude, longitude);
+    await Driver.updateDriverLoginStatus(driver.id, latitude, longitude, zone);
+
+    // INSERT SHIFT HISTORY LOGIN
+    await DriverShiftHistory.createLoginShift(driver.id, latitude, longitude);
+
     if (fcm_token) {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
     }
@@ -665,6 +710,9 @@ exports.driverLogin = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// VERIFY DRIVER NTG TOKEN
+// ---------------------------------------------------------
 exports.verifyDriverToken = async (req, res) => {
   try {
     const { id, driver_access_token } = req.body;
@@ -708,7 +756,9 @@ exports.verifyDriverToken = async (req, res) => {
   }
 };
 
-// GET ALL DRIVER BY DRIVER TYPE
+// ---------------------------------------------------------
+// GET ALL DRIVERS BY DRIVER TYPE
+// ---------------------------------------------------------
 exports.getDriversByCommissionType = async (req, res) => {
   try {
     const { active, driver_type, company_id } = req.query;
@@ -734,6 +784,9 @@ exports.getDriversByCommissionType = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ALL DRIVERS BY SESSION STATUS
+// ---------------------------------------------------------
 exports.getBySessionStatus = async (req, res) => {
   try {
     const {
@@ -792,8 +845,12 @@ exports.getBySessionStatus = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// DRIVER LOGOUT
+// ---------------------------------------------------------
 exports.driverLogout = async (req, res) => {
   const { id } = req.params;
+  const { latitude, longitude } = req.body;
 
   if (!id) {
     return res.status(400).json({ message: "driverId is required" });
@@ -805,9 +862,14 @@ exports.driverLogout = async (req, res) => {
       return res.status(404).json({ message: "Driver not found" });
     }
 
-    // DB update
+    // UPDATE DRIVER STATUS
     await Driver.updateDriverLogoutStatus(id);
+
+    // CLEAR FCM TOKEN
     await Driver.clearDriverFcmToken(id);
+
+    // UPDATE SHIFT HISTORY LOGOUT
+    await DriverShiftHistory.updateLogoutShift(id, latitude, longitude);
 
     // REMOVE FROM WS LOGIN SOCKET
     notifyDriverLogout(Number(id));
@@ -830,6 +892,9 @@ exports.driverLogout = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// DRIVER ON BREAK REQUEST
+// ---------------------------------------------------------
 exports.onBreakDriver = async (req, res) => {
   try {
     const { driver_id, on_break } = req.body;
@@ -849,10 +914,22 @@ exports.onBreakDriver = async (req, res) => {
       "🚀 INCOMING DRIVER ON BREAK BODY:",
       JSON.stringify(req.body, null, 2),
     );
-
-    // const data = await Driver.getAllDriverByCommissionType(active, driver_type);
+    const driver = await Driver.getById(driver_id);
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
     if (on_break == true || on_break == "true") {
       console.log("DRIVER IS ON BREAK:", on_break);
+
+      //Send Driver Break Notification to Web
+      await notification.sendOnBreakDriverNotification(
+        driver_id,
+        driver.company_id,
+      );
+
       return res.status(200).json({
         status: true,
         message: "Driver Is On Break",
@@ -882,6 +959,9 @@ exports.onBreakDriver = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// DRIVER ON PANIC REQUEST
+// ---------------------------------------------------------
 exports.onPanicDriver = async (req, res) => {
   try {
     const { driver_id, panic } = req.body;
@@ -898,13 +978,22 @@ exports.onPanicDriver = async (req, res) => {
       });
     }
     console.log(
-      "🚀 INCOMING DRIVER ON BREAK BODY:",
+      "🚀 INCOMING DRIVER IN PANIC BODY:",
       JSON.stringify(req.body, null, 2),
     );
-
-    // const data = await Driver.getAllDriverByCommissionType(active, driver_type);
+    const driver = await Driver.getById(driver_id);
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
     if (panic == true || panic == "true") {
       console.log("DRIVER PANIC BUTTON ACTIVE:", panic);
+      await notification.sendPanicDriverNotification(
+        driver_id,
+        driver.company_id,
+      );
       return res.status(200).json({
         status: true,
         message: "Driver Enable Panic",
@@ -934,10 +1023,14 @@ exports.onPanicDriver = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET LOGIN AND BUSY DRIVERS
+// ---------------------------------------------------------
 exports.getLoginDrivers = async (req, res) => {
   try {
-    const login_drivers = await Driver.getLoginDrivers();
-    const busy_drivers = await Driver.getBusyDrivers();
+    const { company_id } = req.query;
+    const login_drivers = await Driver.getLoginDrivers(company_id);
+    const busy_drivers = await Driver.getBusyDrivers(company_id);
 
     res.status(200).json({
       status: true,
@@ -953,9 +1046,13 @@ exports.getLoginDrivers = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET LOGIN DRIVER FOR TRACKING
+// ---------------------------------------------------------
 exports.getLoginDriverTracking = async (req, res) => {
   try {
-    const login_drivers = await Driver.getLoginDriverTracking();
+    const { company_id } = req.query;
+    const login_drivers = await Driver.getLoginDriverTracking(company_id);
 
     res.status(200).json({
       status: true,
@@ -970,9 +1067,13 @@ exports.getLoginDriverTracking = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET DRIVERS WHERE BOOKING STATUS IS FOB
+// ---------------------------------------------------------
 exports.getFOBDrivers = async (req, res) => {
   try {
-    const busy_drivers = await Driver.getFOBDrivers();
+    const { company_id } = req.query;
+    const busy_drivers = await Driver.getFOBDrivers(company_id);
 
     res.status(200).json({
       status: true,
@@ -984,5 +1085,502 @@ exports.getFOBDrivers = async (req, res) => {
       status: false,
       message: "Server error",
     });
+  }
+};
+
+// ---------------------------------------------------------
+// SEND BREAK STATUS TO DRIVERS
+// ---------------------------------------------------------
+exports.breakStatusDriver = async (req, res) => {
+  try {
+    const { driver_id, on_break, force_break } = req.body;
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver ID is Required",
+      });
+    }
+    if (on_break === undefined || on_break === null) {
+      return res.status(400).json({
+        status: false,
+        message: "on_break is Required",
+      });
+    }
+    console.log(
+      "🚀 INCOMING DRIVER ON BREAK BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    const driver = await Driver.getById(driver_id);
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
+
+    if (
+      (on_break === "accepted" || on_break === "Accepted") &&
+      force_break == "disabled"
+    ) {
+      console.log("DRIVER BREAK STATUS:", on_break);
+
+      // Driver Status Update
+      await Driver.updateDriverStatus(
+        driver_id,
+        driver.booking_status,
+        "On Break",
+      );
+
+      await notifyDriverBreakStatusWeb(driver_id);
+
+      //Send Break Status Notification to Driver
+      await notification.sendBreakStatusNotification(driver_id, "Accepted");
+
+      return res.status(200).json({
+        status: true,
+        message: "Driver Break Has Been Accepted",
+        driver_id: driver_id,
+        driver_status: "On Break",
+      });
+    }
+
+    if (
+      (on_break === "accepted" || on_break === "Accepted") &&
+      force_break == "enabled"
+    ) {
+      console.log("DRIVER BREAK STATUS:", on_break);
+
+      // Driver Status Update
+      await Driver.updateDriverStatus(
+        driver_id,
+        driver.booking_status,
+        "On Break",
+      );
+
+      await notifyDriverBreakStatusWeb(driver_id);
+
+      //Send Break Status Notification to Driver
+      await notification.sendForcedBreakStatusNotification(
+        driver_id,
+        "Accepted",
+      );
+
+      return res.status(200).json({
+        status: true,
+        message: "Driver Forced To Take Break By Controller",
+        driver_id: driver_id,
+        driver_status: "On Break",
+      });
+    }
+    if (on_break === "rejected" || on_break === "Rejected") {
+      await Driver.updateDriverStatus(
+        driver_id,
+        driver.booking_status,
+        "Available",
+      );
+      console.log("DRIVER BREAK IS END:", on_break);
+
+      // Send Break False To Driver App Socket
+      const driverSocket = breakDriverClients.get(driver_id);
+      if (driverSocket && driverSocket.readyState === WebSocket.OPEN) {
+        driverSocket.send(
+          JSON.stringify({
+            event: "BREAK_STATUS",
+            data: {
+              break: false,
+            },
+          }),
+        );
+
+        console.log("Break False Sent To Driver");
+      }
+
+      //Send Break Status Notification to Driver
+      await notification.sendBreakStatusNotification(driver_id, "Rejected");
+
+      return res.status(200).json({
+        status: true,
+        message: "Driver Break Has Been Rejected",
+        driver_id: driver_id,
+        driver_status: "Available",
+      });
+    }
+    return res.status(400).json({
+      status: false,
+      message: "Invalid options",
+    });
+  } catch (error) {
+    console.error("❌ Error fetching commission drivers:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// SEND PANIC STATUS TO DRIVERS
+// ---------------------------------------------------------
+exports.onPanicStatusDriver = async (req, res) => {
+  try {
+    const { driver_id } = req.params;
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver ID is Required",
+      });
+    }
+    // Driver Socket Find
+    const driverSocket = panicDriverClients.get(driver_id);
+
+    // Send False To Driver App
+    if (driverSocket && driverSocket.readyState === WebSocket.OPEN) {
+      driverSocket.send(
+        JSON.stringify({
+          event: "PANIC_STATUS",
+          data: {
+            panic: false,
+          },
+        }),
+      );
+
+      console.log("False Sent To Driver");
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver Disable Panic",
+      driver_id: driver_id,
+      panic: false,
+    });
+  } catch (error) {
+    console.error("❌ Error panic button:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// SEND END BREAK STATUS TO DASHBOARD
+// ---------------------------------------------------------
+exports.endBreakStatusDriver = async (req, res) => {
+  try {
+    console.log(
+      "🚀 INCOMING DRIVER ADD BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    const { driver_id } = req.query?.driver_id ? req.query : req.body;
+    const { force_end_break } = req.body;
+    if (!driver_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Driver ID is Required",
+      });
+    }
+
+    const driver = await Driver.getById(driver_id);
+    if (!driver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
+
+    if (force_end_break === "enabled") {
+      console.log("FORCE END BREAK ENABLED FOR DRIVER:", driver_id);
+      //Send Break Status Notification to Driver
+      await notification.sendForcedEndBreakStatusNotification(
+        driver_id,
+        "End Break",
+      );
+    }
+
+    await Driver.updateDriverStatus(
+      driver_id,
+      driver.booking_status,
+      "Available",
+    );
+
+    await notifyDriverBreakStatusWeb(driver_id);
+
+    //Send Break Status Notification to Driver
+    // await notification.sendBreakStatusNotification(driver_id, "Rejected");
+    return res.status(200).json({
+      status: true,
+      message: "Driver Break Ended",
+      driver_id: driver_id,
+      driver_status: "Available",
+    });
+  } catch (error) {
+    console.error("❌ Error fetching commission drivers:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET DRIVER EXPIRY DOCUMENTS
+// ---------------------------------------------------------
+exports.getDriverExpiryDocuments = async (req, res) => {
+  try {
+    const { company_id } = req.query;
+
+    const drivers = await Driver.getDriverExpiryDocuments(company_id);
+
+    return res.status(200).json({
+      status: true,
+      total: drivers.length,
+      drivers,
+    });
+  } catch (err) {
+    console.error("Driver Expiry Documents Error:", err);
+
+    return res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// DRIVER INACTIVE
+// ---------------------------------------------------------
+exports.updateDriverInactive = async (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  console.log("DRIVER REASON: ", reason);
+
+  if (!id) {
+    return res.status(400).json({ message: "driverId is required" });
+  }
+
+  try {
+    const driver = await Driver.getById(id);
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    // UPDATE DRIVER STATUS
+    await Driver.updateDriverInactive(id);
+
+    // CLEAR FCM TOKEN
+    await Driver.clearDriverFcmToken(id);
+
+    return res.status(200).json({
+      status: true,
+      message:
+        "Your account has been deleted. Access to the Driver App is no longer available.",
+      driverId: id,
+    });
+  } catch (error) {
+    console.error("Logout Error:", error);
+    res.status(500).json({
+      status: false,
+      message: "An error occurred during driver inactive",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET COMPANY NUMBER BY COMPANY ID FROM COMPANY_CLIENTS TABLE
+// ---------------------------------------------------------
+exports.getCompanyNumberByCompanyId = async (req, res) => {
+  try {
+    const { company_id } = req.params;
+    if (!company_id) {
+      return res.status(400).json({
+        status: false,
+        message: "company_id is required",
+      });
+    }
+    const companyNumber = await Driver.getCompanyNumberByCompanyId(company_id);
+    return res.status(200).json({
+      status: true,
+      data: companyNumber,
+    });
+  } catch (error) {
+    console.error("Error fetching company number:", error);
+    return res.status(500).json({
+      status: false,
+      message: "An error occurred while fetching company number",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// DRIVER FORCED LOGIN
+// ---------------------------------------------------------
+exports.driverForcedLogin = async (req, res) => {
+  const { driverId, fcmToken } = req.body;
+  console.log(
+    "🚀 INCOMING DRIVER FORCED LOGIN BODY:",
+    JSON.stringify(req.body, null, 2),
+  );
+  try {
+    const driver = await Driver.getById(driverId);
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+    if (!driver.active) {
+      return res.status(401).json({ message: "Your account is inactive" });
+    }
+
+    if (driver.session_status === "logged_in") {
+      return res.status(400).json({ message: "Driver is already logged in" });
+    }
+    const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+    await Driver.updateDriverLoginStatus(driver.id, 0.0, 0.0);
+
+    //Update FCM Token if provided
+    if (fcmToken) {
+      await Driver.updateDriverFcmToken(driver.id, fcmToken);
+    }
+
+    // INSERT SHIFT HISTORY LOGIN
+    await DriverShiftHistory.createLoginShift(driver.id, 0.0, 0.0);
+
+    // ONLY IMPORTANT FIX
+    const updatedDriver = await Driver.getLoginDriverById(driver.id);
+    const updatedDriverSocket = await Driver.getById(driver.id);
+
+    notifyDriverLogin(updatedDriverSocket);
+    const messages =
+      "You have been forcibly logged in by the admin. Please contact support if you have any questions.";
+    // Send Forced Login Notification to Driver
+    await notification.sendForcedLoggedInNotification(driver.id, messages);
+
+    return res.status(200).json({
+      message: "Forced Login successful",
+      driverInfo: updatedDriver,
+      token: token,
+    });
+  } catch (error) {
+    console.error("Forced Login Error:", error);
+    return res
+      .status(500)
+      .json({ message: "An error occurred during forced login" });
+  }
+};
+
+// ---------------------------------------------------------
+// DRIVER FORCED LOGOUT
+// ---------------------------------------------------------
+exports.driverForcedLogout = async (req, res) => {
+  const { driverId } = req.body;
+
+  if (!driverId) {
+    return res.status(400).json({ message: "driverId is required" });
+  }
+
+  try {
+    const driver = await Driver.getById(driverId);
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    // UPDATE DRIVER STATUS
+    await Driver.updateDriverLogoutStatus(driverId);
+
+    // Send Forced Logout Notification to Driver
+    const messages = "You have been forcibly logged out by the Controller.";
+    await notification.sendForcedLoggedOutNotification(driverId, messages);
+
+    // CLEAR FCM TOKEN
+    await Driver.clearDriverFcmToken(driverId);
+
+    // UPDATE SHIFT HISTORY LOGOUT
+    await DriverShiftHistory.updateLogoutShift(driverId, 0.0, 0.0);
+
+    // REMOVE FROM WS LOGIN SOCKET
+    notifyDriverLogout(Number(driverId));
+
+    // REMOVE FROM SOCKET IO LOGIN SOCKET
+    // notifyDriverLogout(Number(driverId), io);
+
+    return res.status(200).json({
+      status: true,
+      message: "Forced Logout successful",
+      driverId: driverId,
+      session_status: "logged_out",
+    });
+  } catch (error) {
+    console.error("Forced Logout Error:", error);
+    res.status(500).json({
+      status: false,
+      message: "An error occurred during forced logout",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// DRIVER BIOMETRIC (FINGERPRINT / FACE ID) LOGIN WITH LOCATION & ZONE
+// ---------------------------------------------------------
+exports.driverBiometricLogin = async (req, res) => {
+  const { driver_id, latitude, longitude, fcm_token, zone } = req.body;
+
+  console.log(
+    "🚀 INCOMING DRIVER BIOMETRIC LOGIN BODY:",
+    JSON.stringify(req.body, null, 2),
+  );
+
+  try {
+    // 1. Driver ko ID se find karein (Kyunki biometric success hone ke baad app ke paas driver_id ya stored token hoga)
+    const driver = await Driver.getById(driver_id);
+
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    if (!driver.active) {
+      return res.status(401).json({ message: "Your account is inactive" });
+    }
+
+    // Check agar already logged in hai (optional: agar aap chahte hain ke biometric se direct session refresh ho jaye toh ye check hata bhi sakte hain)
+    if (driver.session_status === "logged_in") {
+      // Agar session already active hai, toh aap naya token return kar sakte hain ya login allow kar sakte hain
+      console.log(
+        "⚠️ Driver session already logged in, refreshing session via biometric...",
+      );
+    }
+
+    // 2. Naya JWT Token Generate karein
+    const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    // 3. Database mein login status, location update karein
+    await Driver.updateDriverLoginStatus(driver.id, latitude, longitude, zone);
+
+    // 4. Shift history mein login entry insert karein
+    await DriverShiftHistory.createLoginShift(driver.id, latitude, longitude);
+
+    // 5. FCM Token update karein agar aya ho
+    if (fcm_token) {
+      await Driver.updateDriverFcmToken(driver.id, fcm_token);
+    }
+
+    // 6. Updated driver data fetch karein response aur socket ke liye
+    const updatedDriver = await Driver.getLoginDriverById(driver.id);
+    const updatedDriverSocket = await Driver.getById(driver.id);
+
+    // 7. Socket Notification Trigger karein (Same as normal login)
+    notifyDriverLogin(updatedDriverSocket);
+
+    return res.status(200).json({
+      message: "Biometric login successful",
+      driverInfo: updatedDriver,
+      token: token,
+    });
+  } catch (error) {
+    console.error("Biometric Login Error:", error);
+    return res
+      .status(500)
+      .json({ message: "An error occurred during biometric login" });
   }
 };

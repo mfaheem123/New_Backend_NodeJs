@@ -66,6 +66,10 @@ const getById = async (req, res) => {
 
 const create = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING ADD VEHICLE TYPE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     Object.keys(req.body).forEach((key) => {
       if (req.body[key] === "") req.body[key] = null;
     });
@@ -98,11 +102,14 @@ const create = async (req, res) => {
     });
 
     // 🚫 Check duplicate name
-    const existingVehicle = await VehicleType.findByName(req.body.name);
+    const existingVehicle = await VehicleType.findByName(
+      req.body.name,
+      req.body.company_id,
+    );
     if (existingVehicle) {
       return res.status(400).json({
         status: false,
-        message: `Vehicle type "${req.body.name}" already exists.`,
+        message: `${req.body.name} already exists for this company.`,
       });
     }
 
@@ -126,6 +133,10 @@ const create = async (req, res) => {
 
 const update = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING UPDATE VEHICLE TYPE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const id = req.params.id;
 
     Object.keys(req.body).forEach((key) => {
@@ -183,4 +194,10 @@ const remove = async (req, res) => {
   }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+module.exports = {
+  getAll,
+  getById,
+  create,
+  update,
+  remove,
+};

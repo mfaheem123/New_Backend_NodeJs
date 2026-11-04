@@ -106,6 +106,10 @@ exports.getById = async (req, res) => {
 /* UPDATE */
 exports.update = async (req, res) => {
   try {
+    console.log(
+      "🚀 INCOMING ADD CUSTOMER LOST PROPERTY BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const data = await model.updateLostProperty(req.params.id, req.body);
 
     res.json({

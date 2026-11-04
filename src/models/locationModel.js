@@ -21,7 +21,7 @@ const COLUMNS = [
 // Get all locations with location_type + zone details
 const getAll = async ({
   page = 1,
-  limit = 10,
+  limit = 100,
   name,
   postcode,
   shortcut,
@@ -29,6 +29,7 @@ const getAll = async ({
   location_type,
   zone,
   company_id,
+  blacklist,
 }) => {
   const offset = (page - 1) * limit;
 
@@ -64,6 +65,10 @@ const getAll = async ({
   if (company_id) {
     conditions.push(`l.company_id = $${idx++}`);
     params.push(company_id);
+  }
+  if (blacklist) {
+    conditions.push(`l.blacklist = $${idx++}`);
+    params.push(blacklist);
   }
 
   const whereClause = conditions.length

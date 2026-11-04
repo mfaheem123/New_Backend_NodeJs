@@ -1,7 +1,7 @@
 const db = require("../db");
 
 const EnumerationsModel = {
-  getAll: async () => {
+  getAll: async (company_id) => {
     // BOOKING STATUS
     const booking_statuses = await db.query(
       `SELECT * FROM booking_statuses ORDER BY id ASC`,
@@ -29,12 +29,14 @@ const EnumerationsModel = {
 
     // VEHICLE TYPES
     const vehicle_types = await db.query(
-      `SELECT * FROM vehicle_types ORDER BY id ASC`,
+      `SELECT * FROM vehicle_types WHERE company_id = $1 ORDER BY id ASC`,
+      [company_id],
     );
 
     // SUBSIDIARIES
     const subsidiaries = await db.query(
-      `SELECT id, background_color, foreground_color, name FROM subsidiaries ORDER BY id ASC`,
+      `SELECT id, background_color, foreground_color, name FROM subsidiaries WHERE company_id = $1 ORDER BY id ASC`,
+      [company_id],
     );
 
     // LIST OF LOGGED IN DRIVERS
@@ -42,45 +44,77 @@ const EnumerationsModel = {
     // const drivers = await db.query(sql, ["logged_in", true]);
 
     const query = `
-        SELECT 
-          d.id,
-          d.name AS username,
-          d.username AS name,
-          d.zone,
-          d.last_login_at,
-          
-          -- vehicle type name (dynamic)
-          CASE 
-            WHEN d.use_company_vehicle = true THEN vt_cv.name
-            ELSE vt_v.name
-          END AS vehicle_type
-    
-        FROM drivers d
-    
-        -- company vehicle
-        LEFT JOIN company_vehicles cv 
-          ON cv.id = d.company_vehicle_id
-    
-        LEFT JOIN vehicle_types vt_cv 
-          ON vt_cv.id = cv.vehicle_type_id
-    
-        -- personal vehicle
-        LEFT JOIN vehicles v 
-          ON v.id = d.vehicle_id
-    
-        LEFT JOIN vehicle_types vt_v 
-          ON vt_v.id = v.vehicle_type_id
-    
-        WHERE 
-          d.session_status = 'logged_in'
-          AND d.driver_status = 'Available'
-          AND d.booking_status = 'Available'
-      `;
+    SELECT 
+      d.id,
+      d.name,
+      d.username,
+      d.zone,
+      d.latitude,
+      d.longitude,
+      d.booking_status,
+      d.session_status,
+      d.driver_status,
+      d.last_login_at,
+      d.has_pda,
+      
+      -- Vehicle Type (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN vt_cv.name
+        ELSE vt_v.name
+      END AS vehicle_type,
 
-    const drivers = await db.query(query);
+      -- Vehicle Number (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
+        ELSE v.vehicle_number
+      END AS vehicle_no,
+
+      -- Vehicle Make (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.make
+        ELSE v.make
+      END AS make,
+
+      -- Vehicle Model (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.model
+        ELSE v.model
+      END AS model,
+
+      -- Vehicle Color (Dynamic)
+      CASE 
+        WHEN d.use_company_vehicle = true THEN cv.color
+        ELSE v.color
+      END AS color
+
+    FROM drivers d
+
+    -- Company vehicle joins
+    LEFT JOIN company_vehicles cv 
+      ON cv.id = d.company_vehicle_id
+
+    LEFT JOIN vehicle_types vt_cv 
+      ON vt_cv.id = cv.vehicle_type_id
+
+    -- Personal vehicle joins
+    LEFT JOIN vehicles v 
+      ON v.id = d.vehicle_id
+
+    LEFT JOIN vehicle_types vt_v 
+      ON vt_v.id = v.vehicle_type_id
+
+    WHERE 
+      d.session_status = 'logged_in'
+      AND d.driver_status IN ('Available', 'SinBin')
+      AND d.booking_status = 'Available'
+      AND d.company_id = $1
+  `;
+
+    const drivers = await db.query(query, [company_id]);
 
     // BOOKING TABS WITH COUNTS
-    const booking_tabs = await db.query(`
+    const booking_tabs = await db.query(
+      `
       SELECT
         bt.id,
         bt.booking_tabs,
@@ -88,40 +122,58 @@ const EnumerationsModel = {
           WHEN 1 THEN (
             SELECT COUNT(*) FROM bookings 
             WHERE DATE(pickup_date) = CURRENT_DATE 
-            AND booking_status_id = 1 AND trash = false
+            AND booking_status_id IN (1, 4, 5, 13) 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 2 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE DATE(pickup_date) > CURRENT_DATE AND trash = false
+            WHERE DATE(pickup_date) > CURRENT_DATE 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 3 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_status_id != 11 AND booking_status_id != 1 AND trash = false
+            WHERE booking_status_id NOT IN (1, 11, 4, 5, 13)
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 4 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_status_id = 11 AND trash = false
+            WHERE booking_status_id = 11 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 5 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE quoted = true AND trash = false
+            WHERE quoted = true 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 6 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_source = 'ivr' AND trash = false
+            WHERE booking_source = 'ivr' 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 7 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_source = 'web' AND trash = false
+            WHERE booking_source = 'web' 
+            AND trash = false
+            AND company_id = $1
           )
           WHEN 8 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE booking_source = 'app' AND trash = false
+            WHERE booking_source = 'app' 
+            AND trash = false
+            AND company_id = $1
           )
         END::int AS booking_count
       FROM booking_tabs bt
       ORDER BY bt.id ASC
-    `);
+    `,
+      [company_id],
+    );
 
     // FARE CONFIGURATIONS
     const fare_configurations = await db.query(
@@ -131,7 +183,9 @@ const EnumerationsModel = {
       vt.minimum_fares AS vehicle_minimum_fare
         FROM fare_configurations f
           LEFT JOIN vehicle_types vt ON vt.id = f.vehicle_type_id
+          WHERE f.company_id = $1
         ORDER BY id ASC`,
+      [company_id],
     );
 
     // FIXED FARES
@@ -148,7 +202,9 @@ const EnumerationsModel = {
            ON f.from_location_id = lf.id
         JOIN location_types lt 
           ON f.to_location_id = lt.id
+          WHERE f.company_id = $1
       ORDER BY f.id ASC`,
+      [company_id],
     );
 
     // PLOT FARES
@@ -162,7 +218,9 @@ const EnumerationsModel = {
       JOIN vehicle_types vt ON vt.id = pf.vehicle_type_id
       JOIN zones p1 ON p1.id = pf.pickup_plot_id
       JOIN zones p2 ON p2.id = pf.dropoff_plot_id
+      WHERE pf.company_id = $1
       ORDER BY pf.id ASC`,
+      [company_id],
     );
 
     // FARES BY VEHICLE
@@ -170,7 +228,9 @@ const EnumerationsModel = {
       ` SELECT fbv.*, row_to_json(vt) as vehicle_type
     FROM fare_by_vehicles fbv
     LEFT JOIN vehicle_types vt ON fbv.vehicle_type_id = vt.id
+    WHERE fbv.company_id = $1
     ORDER BY fbv.id ASC`,
+      [company_id],
     );
 
     //AIRPORT CHARGES
@@ -180,8 +240,9 @@ const EnumerationsModel = {
             FROM locations l
             LEFT JOIN location_types lt
               ON lt.id = l.location_type_id
-            WHERE l.location_type_id = 2
+            WHERE l.location_type_id = 2 AND l.company_id = $1
             ORDER BY l.id ASC`,
+      [company_id],
     );
 
     return {
@@ -209,6 +270,120 @@ const EnumerationsModel = {
     );
     return {
       payment_types: payment_types.rows,
+    };
+  },
+
+  updatePaymentType: async (id, body) => {
+    // Allowed fields
+    const allowedFields = [
+      "name",
+      "service",
+      "background_color",
+      "foreground_color",
+    ];
+
+    const updates = [];
+    const values = [];
+    let index = 1;
+
+    for (const field of allowedFields) {
+      if (Object.prototype.hasOwnProperty.call(body, field)) {
+        updates.push(`${field} = $${index}`);
+        values.push(body[field]);
+        index++;
+      }
+    }
+
+    if (updates.length === 0) {
+      throw new Error("No valid fields provided for update.");
+    }
+
+    values.push(id);
+
+    const result = await db.query(
+      `
+    UPDATE payment_types
+    SET
+      ${updates.join(", ")}
+    WHERE id = $${index}
+    RETURNING *;
+    `,
+      values,
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error("Payment type not found.");
+    }
+
+    return result.rows[0];
+  },
+
+  getBookingCount: async (company_id) => {
+    const booking_tabs = await db.query(
+      `
+      SELECT
+        bt.id,
+        bt.booking_tabs,
+        CASE bt.id
+          WHEN 1 THEN (
+            SELECT COUNT(*) FROM bookings 
+            WHERE DATE(pickup_date) = CURRENT_DATE 
+            AND booking_status_id IN (1, 4, 5, 13, 8) 
+            AND trash = false
+            AND company_id = $1
+          )
+          WHEN 2 THEN (
+            SELECT COUNT(*) FROM bookings 
+            WHERE DATE(pickup_date) > CURRENT_DATE 
+            AND booking_status_id NOT IN (11)
+            AND trash = false
+            AND company_id = $1
+          )
+          WHEN 3 THEN (
+            SELECT COUNT(*) FROM bookings 
+            WHERE booking_status_id NOT IN (1, 11, 4, 5, 13, 14, 12, 7, 8)
+            AND trash = false
+            AND company_id = $1
+          )
+          WHEN 4 THEN (
+            SELECT COUNT(*) FROM bookings 
+            WHERE booking_status_id = 11 
+            AND trash = false
+            AND company_id = $1
+          )
+          WHEN 5 THEN (
+            SELECT COUNT(*) FROM bookings 
+            WHERE quoted = true 
+            AND trash = false
+            AND company_id = $1
+          )
+          WHEN 6 THEN (
+            SELECT COUNT(*) FROM bookings 
+            WHERE booking_source = 'ivr' 
+            AND trash = false
+            AND company_id = $1
+          )
+          WHEN 7 THEN (
+            SELECT COUNT(*) FROM bookings 
+            WHERE booking_source = 'web' 
+            AND trash = false
+            AND company_id = $1
+          )
+          WHEN 8 THEN (
+            SELECT COUNT(*) FROM bookings 
+            WHERE booking_source = 'app' 
+            AND trash = false
+            AND company_id = $1
+          )
+        END::int AS booking_count
+      FROM booking_tabs bt
+      ORDER BY bt.id ASC
+    `,
+      [company_id],
+    );
+
+    return {
+      booking_tabs: booking_tabs.rows,
     };
   },
 };

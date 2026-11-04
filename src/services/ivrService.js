@@ -9,7 +9,8 @@ const {
   calculateDistanceAndTimeOSRM,
 } = require("../utils/calculateDistance&Time");
 const { calculateSingleFare } = require("../controllers/fareController");
-
+const ivrNotifcation = require("../services/notificationService");
+const bookingModel = require("../models/bookingModel");
 const genRef = async () => {
   let ref;
   let exists = true;
@@ -38,14 +39,45 @@ const attempts = new Map();
 
 exports.hangup = hangup;
 
+async function getCompanyByIVR(number) {
+  const result = await pool.query(
+    `
+    SELECT id, company_name
+    FROM company_clients
+    WHERE mobile = $1
+    AND status='active'
+    LIMIT 1
+    `,
+    [number],
+  );
+
+  return result.rows[0] || null; // Returns object { id, company_name } or null
+}
+
 /* =====================================================
    MAIN IVR (Driver + Customer Flow)
 ===================================================== */
 
 exports.handleMainIvr = async (body) => {
-  const { systemToken, uniqueCallId, callerNumber, text } = body;
+  const { systemToken, uniqueCallId, callerNumber, text, incomingNumber } =
+    body;
 
   if (systemToken !== SYSTEM_TOKEN) return hangup("Unauthorized");
+
+  // Get Company Details
+  const company = await getCompanyByIVR(incomingNumber);
+
+  if (!company) {
+    console.log("IVR COMPANY NOT FOUND:", incomingNumber);
+
+    return transfer(
+      OFFICE_NUMBER,
+      "Company not found. Please hold while we transfer your call.",
+    );
+  }
+
+  const companyId = company.id;
+  const companyName = company.company_name;
 
   const formattedNumber = formatMobile(callerNumber);
   const ACTIVE_STATUS = [3, 6, 10, 15];
@@ -54,8 +86,8 @@ exports.handleMainIvr = async (body) => {
      CHECK DRIVER
   ===================================================== */
   const driverRes = await pool.query(
-    `SELECT id FROM drivers WHERE mobile = $1`,
-    [formattedNumber],
+    `SELECT id FROM drivers WHERE mobile = $1 AND company_id=$2`,
+    [formattedNumber, companyId],
   );
 
   const isDriver = driverRes.rows.length > 0;
@@ -64,8 +96,8 @@ exports.handleMainIvr = async (body) => {
      CHECK CUSTOMER
   ===================================================== */
   const customerRes = await pool.query(
-    `SELECT id FROM customers WHERE mobile = $1`,
-    [formattedNumber],
+    `SELECT id FROM customers WHERE mobile = $1 AND company_id=$2`,
+    [formattedNumber, companyId],
   );
 
   const isCustomer = customerRes.rows.length > 0;
@@ -78,7 +110,7 @@ exports.handleMainIvr = async (body) => {
 
     return transfer(
       OFFICE_NUMBER,
-      "Welcome to SeaCarz. Thank you for using our service. Please hold while we transfer your call to an operator.",
+      `Welcome to ${companyName}. Thank you for using our service. Please hold while we transfer your call to an operator.`,
     );
   }
 
@@ -93,9 +125,10 @@ exports.handleMainIvr = async (body) => {
        FROM bookings b
        JOIN customers c ON b.customer_id = c.id
        WHERE b.driver_id = $1
+       AND b.company_id=$2
        ORDER BY b.id DESC
        LIMIT 1`,
-      [driverId],
+      [driverId, companyId],
     );
 
     console.log("FLOW:", {
@@ -112,7 +145,7 @@ exports.handleMainIvr = async (body) => {
 
       return transfer(
         OFFICE_NUMBER,
-        "Welcome Back to SeaCarz. Please hold while we transfer your call to an operator.",
+        `Welcome back to ${companyName}. Please hold while we transfer your call to an operator.`,
       );
     }
 
@@ -121,7 +154,7 @@ exports.handleMainIvr = async (body) => {
       console.log("FLOW: DRIVER MENU");
 
       return waitForKeypress(
-        "Welcome Back to Sea Carz. Press 1 for your Customer. Press 0 for Operator",
+        `Welcome back to ${companyName}. Press 1 for your Customer. Press 0 for Operator`,
       );
     }
 
@@ -149,9 +182,10 @@ exports.handleMainIvr = async (body) => {
        FROM bookings b
        JOIN drivers d ON b.driver_id = d.id
        WHERE b.mobile = $1
+       AND b.company_id=$2
        ORDER BY b.id DESC
        LIMIT 1`,
-      [formattedNumber],
+      [formattedNumber, companyId],
     );
 
     const hasActiveBooking =
@@ -170,7 +204,7 @@ exports.handleMainIvr = async (body) => {
         console.log("FLOW: CUSTOMER ACTIVE BOOKING MENU");
 
         return waitForKeypress(
-          "Welcome Back to Sea Carz. Press 1 for your Driver. Press 0 for Operator",
+          `Welcome back to ${companyName}. Press 1 for your Driver. Press 0 for Operator`,
         );
       }
 
@@ -203,13 +237,29 @@ exports.handleMainIvr = async (body) => {
 };
 
 exports.handleFallbackIvr = async (body) => {
-  const { systemToken, uniqueCallId, callerNumber, text } = body;
+  const { systemToken, uniqueCallId, callerNumber, text, incomingNumber } =
+    body;
+  const company = await getCompanyByIVR(incomingNumber);
+
+  if (!company) {
+    console.log("IVR COMPANY NOT FOUND:", incomingNumber);
+
+    return transfer(
+      OFFICE_NUMBER,
+      "Company not found. Please hold while we transfer your call.",
+    );
+  }
+
+  const companyId = company.id;
+  const companyName = company.company_name;
 
   if (systemToken !== SYSTEM_TOKEN_FALLBACK) return hangup("Unauthorized");
 
   if (!sessions.has(uniqueCallId)) {
     sessions.set(uniqueCallId, {
       step: 1,
+      company_id: companyId,
+      company_name: companyName,
       pickup: null,
       dropoff: null,
       pickup_latitude: null,
@@ -229,11 +279,12 @@ exports.handleFallbackIvr = async (body) => {
 
   const session = sessions.get(uniqueCallId);
 
+  const sessionCompanyId = session.company_id || companyId;
   /* STEP 1 - PICKUP MENU */
   if (session.step === 1) {
     if (!text)
       return waitForKeypress(
-        "Welcome Back to SeaCarz. Thank you for calling. Press 1 to book a cab. Press 0 to contact the operator.",
+        `Welcome back to ${session.company_name}. Thank you for calling. Press 1 to book a cab. Press 0 to contact the operator.`,
       );
 
     if (text === "0") return transfer(OFFICE_NUMBER);
@@ -257,9 +308,10 @@ exports.handleFallbackIvr = async (body) => {
         FROM bookings b
         JOIN customers c ON b.customer_id = c.id
         WHERE b.mobile = $1
+        AND b.company_id=$2
         ORDER BY b.id DESC
         LIMIT 10`,
-        [callerNumber],
+        [callerNumber, sessionCompanyId],
       );
 
       if (!jobsRes.rows.length) return hangup("No recent jobs found.");
@@ -363,8 +415,9 @@ exports.handleFallbackIvr = async (body) => {
     const formattedNumber = formatMobile(callerNumber);
 
     const customerRes = await pool.query(
-      "SELECT id FROM customers WHERE mobile = $1",
-      [formattedNumber],
+      `SELECT id FROM customers WHERE mobile = $1 AND company_id=$2
+LIMIT 1`,
+      [formattedNumber, sessionCompanyId],
     );
 
     if (!customerRes.rows.length) return hangup("Customer not found.");
@@ -408,13 +461,14 @@ exports.handleFallbackIvr = async (body) => {
       arrived,
       passenger_on_board,
       completed,
-      controller_completed
+      controller_completed,
+      company_id
     ) VALUES (
       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,
       NULL,NULL,0,0,
       'ivr',1,1,1,1,
       '[]','[]','[]','[]',
-      true,false,false,false,false,false
+      true,false,false,false,false,false,$18
     ) RETURNING id`,
       [
         customerId,
@@ -434,6 +488,7 @@ exports.handleFallbackIvr = async (body) => {
         session.email,
         session.mobile,
         session.telephone,
+        sessionCompanyId,
       ],
     );
 
@@ -470,6 +525,11 @@ exports.handleFallbackIvr = async (body) => {
          SET miles=$1, eta=$2, fares=$3, total_charges=$4
          WHERE id=$5`,
           [miles, eta, fares, total_charges, bookingId],
+        );
+        const ivrBooking = await bookingModel.getBookingByIdEnriched(bookingId);
+        await ivrNotifcation.sendIVRBookingNotification(
+          ivrBooking,
+          sessionCompanyId,
         );
       } catch (err) {
         console.error("Background fare calculation failed:", err);

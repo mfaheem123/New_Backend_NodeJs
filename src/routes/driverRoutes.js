@@ -15,15 +15,36 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Routes
+// POST ROUTES
 router.post("/add", upload.any(), driverController.create);
-router.get("/get", driverController.getAll);
-router.get("/getbyid/:id", driverController.getById);
 router.post("/edit/:id", upload.any(), driverController.update);
-router.delete("/delete/:id", driverController.delete);
 router.post("/login", upload.none(), driverController.driverLogin);
+router.post("/forced-login", upload.none(), driverController.driverForcedLogin);
 router.post("/verifytoken", upload.none(), driverController.verifyDriverToken);
 router.post("/logout/:id", upload.none(), driverController.driverLogout);
+router.post("/on-break", upload.none(), driverController.onBreakDriver);
+router.post("/end-break", upload.none(), driverController.endBreakStatusDriver);
+router.post("/panic", upload.none(), driverController.onPanicDriver);
+router.post("/driver/biometric-login", driverController.driverBiometricLogin);
+router.post(
+  "/forced-logout",
+  upload.none(),
+  driverController.driverForcedLogout,
+);
+router.post(
+  "/break-request",
+  upload.none(),
+  driverController.breakStatusDriver,
+);
+router.post(
+  "/inactive/:id",
+  upload.none(),
+  driverController.updateDriverInactive,
+);
+
+// GET ROUTES
+router.get("/get", driverController.getAll);
+router.get("/getbyid/:id", driverController.getById);
 router.get("/company/:company_id", driverController.getByCompany);
 router.get("/commission", driverController.getDriversByCommissionType);
 router.get("/rent", driverController.getDriversByCommissionType);
@@ -31,9 +52,18 @@ router.get("/session", driverController.getBySessionStatus);
 router.get("/login-busy", driverController.getLoginDrivers);
 router.get("/tracking-drivers", driverController.getLoginDriverTracking);
 router.get("/fob-drivers", driverController.getFOBDrivers);
+router.get("/panic-disable/:driver_id", driverController.onPanicStatusDriver);
+router.get(
+  "/company-number/:company_id",
+  driverController.getCompanyNumberByCompanyId,
+);
+router.get(
+  "/driver-expiry-documents",
+  driverController.getDriverExpiryDocuments,
+);
 
-router.post("/on-break", upload.any(), driverController.onBreakDriver);
-router.post("/panic", upload.any(), driverController.onPanicDriver);
+//DELETE ROUTES
+router.delete("/delete/:id", driverController.delete);
 
 router.post("/test-upload", upload.any(), (req, res) => {
   console.log("Test uploaded files:", req.files);

@@ -1,6 +1,8 @@
 const Account = require("../models/accountModel");
 
+// ---------------------------------------------------------
 // CREATE ACCOUNT
+// ---------------------------------------------------------
 exports.createAccount = async (req, res) => {
   try {
     console.log(
@@ -20,7 +22,9 @@ exports.createAccount = async (req, res) => {
   }
 };
 
-// Get All Accounts
+// ---------------------------------------------------------
+// GET ALL ACCOUNT
+// ---------------------------------------------------------
 exports.getAccounts = async (req, res) => {
   try {
     let {
@@ -35,6 +39,7 @@ exports.getAccounts = async (req, res) => {
       contact_name,
       subsidiary,
       company_id,
+      closed,
     } = req.query;
 
     page = parseInt(page);
@@ -54,6 +59,7 @@ exports.getAccounts = async (req, res) => {
         contact_name,
         subsidiary,
         company_id,
+        closed,
       },
     });
 
@@ -71,7 +77,9 @@ exports.getAccounts = async (req, res) => {
   }
 };
 
-// READ: single account with relations
+// ---------------------------------------------------------
+// GET ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.getAccountById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -89,7 +97,9 @@ exports.getAccountById = async (req, res) => {
   }
 };
 
-// ✅ UPDATE (Edit Account + Relations)
+// ---------------------------------------------------------
+// UPDATE ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.updateAccount = async (req, res) => {
   try {
     const { id } = req.params;
@@ -116,7 +126,9 @@ exports.updateAccount = async (req, res) => {
   }
 };
 
-// ✅ DELETE (Delete Account + Child relations)
+// ---------------------------------------------------------
+// DELETE ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.deleteAccount = async (req, res) => {
   try {
     const { id } = req.params;
@@ -142,11 +154,19 @@ exports.deleteAccount = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ACCOUNT BY SUBSIDIARY ID
+// ---------------------------------------------------------
 exports.getAccountsBySubsidiary = async (req, res) => {
   try {
     const { subsidiary_id } = req.params;
+    const { company_id } = req.query;
+    // const company_id = 1;
 
-    const accounts = await Account.getAccountsBySubsidiary(subsidiary_id);
+    const accounts = await Account.getAccountsBySubsidiary(
+      subsidiary_id,
+      company_id,
+    );
 
     return res.json({
       status: true,

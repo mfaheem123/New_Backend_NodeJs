@@ -1,14 +1,49 @@
 const Customer = require("../models/customerModel");
-const sendEmail = require("../config/emailConfig");
+const { sendEmail } = require("../config/emailConfig");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const bcrypt = require("bcrypt");
+const companyConfiguration = require("../models/companyConfigurationModel");
 const BASE_URL = process.env.BASE_URL || "http://192.168.110.5:5000/uploads/";
 
 const {
   generateSecurityCode,
   validateSecurityCode,
 } = require("../utils/generateOTP");
+
+// Helper function to handle Subsidiary resolution & Email Sending
+const sendDynamicCustomerEmail = async ({
+  companyId,
+  to,
+  subject,
+  text,
+  html,
+}) => {
+  try {
+    // Company ID se pehli Subsidiary ID nikalein
+    let subsidiaryId = await companyConfiguration.getFirstSubsidiaryByCompanyId(
+      companyId || 1,
+    );
+
+    if (!subsidiaryId) {
+      // Fallback: Agar subsidiary id na mile to default 1 set karein
+      subsidiaryId = 10;
+    }
+
+    // Dynamic sendEmail Call
+    await sendEmail({
+      companyId: companyId || 3, // 👈 Explicitly passed
+      subsidiaryId,
+      to,
+      subject,
+      text,
+      html,
+    });
+  } catch (error) {
+    console.error("❌ Helper Email Send Error:", error);
+    throw error;
+  }
+};
 
 module.exports = {
   createCustomer: async (req, res) => {
@@ -141,7 +176,14 @@ module.exports = {
       // ✅ SEND EMAIL IN BACKGROUND
       setImmediate(async () => {
         try {
-          await sendEmail(req.body.email, "Email Verification OTP", message);
+          await sendDynamicCustomerEmail({
+            companyId: req.body.company_id || 1,
+            to: req.body.email,
+            subject: "Email Verification OTP",
+            text: message,
+            html: `<p>${message.replace(/\n/g, "<br>")}</p>`,
+          });
+          console.log("✅ Create Customer Email Sent Successfully");
           console.timeLog("CreateCustomer", "After Email (Background)");
           console.timeEnd("CreateCustomer");
         } catch (error) {
@@ -280,7 +322,7 @@ module.exports = {
 
   searchCustomerByMobile: async (req, res) => {
     try {
-      const { mobile } = req.query;
+      const { mobile, company_id } = req.query;
 
       if (!mobile) {
         return res.status(400).json({
@@ -289,7 +331,7 @@ module.exports = {
         });
       }
 
-      const customer = await Customer.searchByMobile(mobile);
+      const customer = await Customer.searchByMobile(mobile, company_id);
 
       return res.status(200).json({
         status: true,
@@ -419,9 +461,16 @@ This code will expire in 15 minutes.
       });
 
       // ✅ SEND EMAIL IN BACKGROUND
+      // ✅ SEND EMAIL IN BACKGROUND
       setImmediate(async () => {
         try {
-          await sendEmail(customer.email, "Your New OTP", message);
+          await sendDynamicCustomerEmail({
+            companyId: customer.company_id || 1,
+            to: customer.email,
+            subject: "Your New OTP",
+            text: message,
+            html: `<p>${message.replace(/\n/g, "<br>")}</p>`,
+          });
           console.timeLog("ResendOTP", "After Email (Background)");
           console.timeEnd("ResendOTP");
         } catch (error) {
@@ -439,7 +488,7 @@ This code will expire in 15 minutes.
 
   customerLogin: async (req, res) => {
     try {
-      const { email, password, fcm_token } = req.body;
+      const { email, password, fcm_token, company_id } = req.body;
 
       if (!email || !password) {
         return res.status(400).json({
@@ -452,7 +501,7 @@ This code will expire in 15 minutes.
       const customer = await Customer.findByEmailForLogin(email);
 
       if (!customer) {
-        return res.status(404).json({
+        return res.status(400).json({
           status: false,
           error: "Customer not found",
         });
@@ -460,17 +509,22 @@ This code will expire in 15 minutes.
 
       // 🔹 Check email verified
       if (!customer.email_verified) {
-        return res.status(401).json({
+        return res.status(400).json({
           status: false,
           error: "Email not verified",
         });
       }
-
+      if (Number(customer.company_id) !== Number(company_id)) {
+        return res.status(400).json({
+          status: false,
+          message: "Invalid User",
+        });
+      }
       // 🔹 Compare hashed password
       const isMatch = await bcrypt.compare(password, customer.password);
 
       if (!isMatch) {
-        return res.status(401).json({
+        return res.status(400).json({
           status: false,
           error: "Invalid password",
         });
@@ -557,10 +611,16 @@ This code will expire in 15 minutes.
         message: "A new OTP has been sent to your email",
       });
 
-      // ✅ SEND EMAIL IN BACKGROUND (NON-BLOCKING)
+      // ✅ SEND EMAIL IN BACKGROUND
       setImmediate(async () => {
         try {
-          await sendEmail(email, "Reset Password OTP", message);
+          await sendDynamicCustomerEmail({
+            companyId: customer.company_id || 1,
+            to: customer.email,
+            subject: "Reset Password OTP",
+            text: message,
+            html: `<p>${message.replace(/\n/g, "<br>")}</p>`,
+          });
           console.timeLog("ForgotPassword", "After Email (Background)");
           console.timeEnd("ForgotPassword");
         } catch (error) {

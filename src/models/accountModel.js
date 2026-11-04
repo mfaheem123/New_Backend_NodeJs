@@ -1,6 +1,9 @@
 const db = require("../db");
 const bcrypt = require("bcrypt");
 
+// ---------------------------------------------------------
+// CREATE ACCOUNT
+// ---------------------------------------------------------
 exports.createAccountWithRelations = async (data) => {
   try {
     await db.query("BEGIN");
@@ -172,7 +175,9 @@ exports.createAccountWithRelations = async (data) => {
   }
 };
 
-// --- GET ACCOUNTS WITH JOINS + PAGINATION + SEARCH ---
+// ---------------------------------------------------------
+// GET ALL ACCOUNT WITH JOINS + PAGINATION + SEARCH
+// ---------------------------------------------------------
 exports.getAccounts = async ({ offset = 0, limit = 100, filters = {} }) => {
   const {
     account_type,
@@ -184,6 +189,7 @@ exports.getAccounts = async ({ offset = 0, limit = 100, filters = {} }) => {
     contact_name,
     subsidiary,
     company_id,
+    closed,
   } = filters;
 
   const conditions = [];
@@ -226,6 +232,10 @@ exports.getAccounts = async ({ offset = 0, limit = 100, filters = {} }) => {
   if (company_id) {
     conditions.push(`a.company_id = $${idx++}`);
     params.push(company_id);
+  }
+  if (closed) {
+    conditions.push(`a.closed = $${idx++}`);
+    params.push(closed);
   }
   const whereClause = conditions.length
     ? `WHERE ${conditions.join(" AND ")}`
@@ -335,7 +345,9 @@ OFFSET $${idx++} LIMIT $${idx++};
   };
 };
 
-// --- GET SINGLE ACCOUNT WITH RELATIONS ---
+// ---------------------------------------------------------
+// GET ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.getAccountById = async (id) => {
   const result = await db.query(
     `
@@ -360,7 +372,9 @@ exports.getAccountById = async (id) => {
   return result.rows[0];
 };
 
-// Update account with all nested relations
+// ---------------------------------------------------------
+// UPDATE ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.updateAccountWithRelations = async (id, data) => {
   try {
     await db.query("BEGIN");
@@ -483,7 +497,9 @@ exports.updateAccountWithRelations = async (id, data) => {
   }
 };
 
-// Delete account with all child relations
+// ---------------------------------------------------------
+// DELETE ACCOUNT BY ID
+// ---------------------------------------------------------
 exports.deleteAccountWithRelations = async (id) => {
   try {
     await db.query("BEGIN");
@@ -506,10 +522,13 @@ exports.deleteAccountWithRelations = async (id) => {
   }
 };
 
-exports.getAccountsBySubsidiary = async (subsidiary_id) => {
+// ---------------------------------------------------------
+// GET ACCOUNT BY SUBSIDIARY ID
+// ---------------------------------------------------------
+exports.getAccountsBySubsidiary = async (subsidiary_id, company_id) => {
   const query = `
     SELECT
-      a.id,a.subsidiary_id,a.account_type,a.name,a.email,a.mobile,a.payment_types,a.information,a.background_color,a.foreground_color,
+      a.id,a.subsidiary_id,a.account_type,a.name,a.email,a.mobile,a.payment_types,a.information,a.background_color,a.foreground_color,a.has_escort,
       json_agg(DISTINCT jsonb_build_object('id', d.id, 'name', d.name)) AS departments,
       jsonb_build_object(
         'id', s.id,
@@ -520,11 +539,11 @@ exports.getAccountsBySubsidiary = async (subsidiary_id) => {
     FROM accounts a
     LEFT JOIN departments d ON a.id = d.account_id
     LEFT JOIN subsidiaries s ON a.subsidiary_id = s.id
-    WHERE a.subsidiary_id = $1
+    WHERE a.subsidiary_id = $1 AND a.company_id = $2
     GROUP BY a.id, s.id
     ORDER BY a.id ASC;
   `;
 
-  const result = await db.query(query, [subsidiary_id]);
+  const result = await db.query(query, [subsidiary_id, company_id]);
   return result.rows;
 };

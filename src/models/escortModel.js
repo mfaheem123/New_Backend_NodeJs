@@ -1,6 +1,9 @@
 const db = require("../db");
 
 const Escort = {
+  // ---------------------------------------------------------
+  // CREATE ESCORT WITH DOCUMENTS MODEL
+  // ---------------------------------------------------------
   async create(data) {
     const query = `
       INSERT INTO escorts (
@@ -44,9 +47,12 @@ const Escort = {
     return escort;
   },
 
+  // ---------------------------------------------------------
+  // GET ALL ESCORTS MODEL
+  // ---------------------------------------------------------
   async findAll({
     page = 1,
-    limit = 10,
+    limit = 100,
     name,
     safeguarding_expiry,
     pat_expiry,
@@ -115,6 +121,9 @@ const Escort = {
     };
   },
 
+  // ---------------------------------------------------------
+  // GET ESCORT BY ID MODEL
+  // ---------------------------------------------------------
   async findById(id) {
     const { rows } = await db.query(`SELECT * FROM escorts WHERE id = $1`, [
       id,
@@ -123,6 +132,9 @@ const Escort = {
     return escort;
   },
 
+  // ---------------------------------------------------------
+  // UPDATE ESCORT MODEL
+  // ---------------------------------------------------------
   async update(id, data) {
     const keys = Object.keys(data);
     if (keys.length === 0) return null;
@@ -140,10 +152,30 @@ const Escort = {
     return rows[0];
   },
 
+  // ---------------------------------------------------------
+  // DELETE ESCORT MODEL
+  // ---------------------------------------------------------
   async remove(id) {
     const result = await db.query("DELETE FROM escorts WHERE id = $1", [id]);
 
     return result;
+  },
+
+  // ---------------------------------------------------------
+  // GET ALL ESCORTS MODEL BY COMPANY ID
+  // ---------------------------------------------------------
+  async findAllByCompany(company_id) {
+    const query = `
+    SELECT *
+    FROM escorts
+    where company_id = $1 AND active = true
+    ORDER BY id ASC
+  `;
+    const { rows } = await db.query(query, [company_id]);
+
+    return {
+      escorts: rows.map(({ company_id, ...rest }) => rest),
+    };
   },
 };
 

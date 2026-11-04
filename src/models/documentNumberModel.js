@@ -2,7 +2,7 @@ const pool = require("../db");
 
 /* CREATE */
 exports.create = async (data) => {
-  const {
+  let {
     subsidiary_id,
     document_table,
     document_column,
@@ -10,57 +10,109 @@ exports.create = async (data) => {
     start_number,
     end_number,
     increment_value,
-    auto_increment
+    auto_increment,
+    company_id,
   } = data;
 
-  const res = await pool.query(`
-    INSERT INTO document_numbers (
-      subsidiary_id, document_table, document_column,
-      prefix, start_number, end_number,
-      increment_value, auto_increment
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+  if (end_number == null) {
+    end_number = start_number;
+  }
+
+  if (prefix) {
+    prefix = prefix.toLowerCase();
+  }
+
+  // ✅ Updated Duplicate Check (checking company_id, subsidiary_id, and document_table)
+  const exists = await pool.query(
+    `
+    SELECT id
+    FROM document_numbers
+    WHERE company_id = $1
+      AND subsidiary_id = $2
+      AND document_table = $3
+    `,
+    [company_id, subsidiary_id, document_table],
+  );
+
+  if (exists.rows.length) {
+    throw new Error(
+      "Document number already exists for this subsidiary and table.",
+    );
+  }
+
+  const res = await pool.query(
+    `
+    INSERT INTO document_numbers
+    (
+      subsidiary_id,
+      document_table,
+      document_column,
+      prefix,
+      start_number,
+      end_number,
+      increment_value,
+      auto_increment,
+      company_id
+    )
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)
     RETURNING *
-  `, [
-    subsidiary_id,
-    document_table,
-    document_column,
-    prefix,
-    start_number,
-    end_number,
-    increment_value,
-    auto_increment
-  ]);
+    `,
+    [
+      subsidiary_id,
+      document_table,
+      document_column,
+      prefix,
+      start_number,
+      end_number,
+      increment_value,
+      auto_increment,
+      company_id,
+    ],
+  );
 
   return res.rows[0];
 };
 
 /* GET ALL (WITH PAGINATION + JOIN) */
-exports.getAll = async ({ offset = 0, limit = 10 }) => {
-  const data = await pool.query(`
+exports.getAll = async ({ offset = 0, limit = 100, company_id }) => {
+  const data = await pool.query(
+    `
     SELECT
-      dn.*,
+      dn.id,
+      dn.subsidiary_id,
+      dn.document_table,
+      dn.document_column,
+      dn.prefix,
+      dn.start_number,
+      dn.end_number,
+      dn.increment_value,
+      dn.auto_increment,
+      dn.created_at,
+      dn.updated_at,
       json_build_object(
         'name', s.name
       ) AS subsidiary
     FROM document_numbers dn
     LEFT JOIN subsidiaries s ON s.id = dn.subsidiary_id
+    WHERE dn.company_id = $3
     ORDER BY dn.id
     OFFSET $1 LIMIT $2
-  `, [offset, limit]);
-
-  const count = await pool.query(
-    `SELECT COUNT(*) FROM document_numbers`
+  `,
+    [offset, limit, company_id],
   );
+
+  const count = await pool.query(`SELECT COUNT(*) FROM document_numbers`);
 
   return {
     rows: data.rows,
-    count: Number(count.rows[0].count)
+    count: Number(count.rows[0].count),
   };
 };
 
 /* GET BY ID */
 exports.getById = async (id) => {
-  const res = await pool.query(`
+  const res = await pool.query(
+    `
     SELECT
       dn.*,
       json_build_object(
@@ -69,39 +121,71 @@ exports.getById = async (id) => {
     FROM document_numbers dn
     LEFT JOIN subsidiaries s ON s.id = dn.subsidiary_id
     WHERE dn.id = $1
-  `, [id]);
+  `,
+    [id],
+  );
 
   return res.rows[0];
 };
 
 /* UPDATE */
 exports.update = async (id, data) => {
+  const allowedFields = [
+    "subsidiary_id",
+    "document_table",
+    "document_column",
+    "prefix",
+    "start_number",
+    "end_number",
+    "increment_value",
+    "auto_increment",
+  ];
+
   const fields = [];
   const values = [];
-  let idx = 1;
+  let index = 1;
 
-  for (const key in data) {
-    fields.push(`${key} = $${idx++}`);
-    values.push(data[key]);
+  for (const key of allowedFields) {
+    // Ignore undefined and null values
+    if (data[key] !== undefined && data[key] !== null) {
+      values.push(
+        key === "prefix" ? String(data[key]).toLowerCase() : data[key],
+      );
+
+      fields.push(`${key} = $${index++}`);
+    }
+  }
+
+  if (!fields.length) {
+    throw new Error("Nothing to update.");
   }
 
   values.push(id);
 
-  const res = await pool.query(`
-    UPDATE document_numbers
-    SET ${fields.join(", ")}, updated_at = now()
-    WHERE id = $${idx}
-    RETURNING *
-  `, values);
+  const result = await pool.query(
+    `
+      UPDATE document_numbers
+      SET
+        ${fields.join(", ")},
+        updated_at = NOW()
+      WHERE id = $${index}
+      RETURNING *;
+    `,
+    values,
+  );
 
-  return res.rows[0];
+  if (!result.rows.length) {
+    throw new Error("Document number not found.");
+  }
+
+  return result.rows[0];
 };
 
 /* DELETE */
 exports.remove = async (id) => {
   const res = await pool.query(
     `DELETE FROM document_numbers WHERE id = $1 RETURNING *`,
-    [id]
+    [id],
   );
   return res.rows[0];
 };

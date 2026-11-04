@@ -6,6 +6,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const upload = multer();
+// const { globalRateLimiter } = require("./middlewares/rateLimiter");
 
 // Routes
 const addressRoutes = require("./routes/addressRoutes");
@@ -55,6 +56,19 @@ const fareMeterDetailsRoutes = require("./routes/fareMeterDetailsRoutes");
 const driverRentRoutes = require("./routes/driverRentRoutes");
 const lostPropertyRoutes = require("./routes/lostPropertyRoutes");
 const authorizationRoutes = require("./routes/authorizationRoutes");
+const driverShiftRoutes = require("./routes/driverShiftHistoryRoutes");
+const EmployeeShiftRoutes = require("./routes/employeeShiftHistoryRoutes");
+const complaintRoutes = require("./routes/complaintRoutes");
+const customerInvoiceRoutes = require("./routes/customerInvoiceRoutes");
+const companyConfigurationRoutes = require("./routes/companyConfigurationRoutes");
+const clinetSubscriptionsRoutes = require("./routes/clinetSubscriptionsRoutes");
+const recordingRoutes = require("./routes/callRecordingRoutes");
+const driverSinBinRoutes = require("./routes/driverSinbinRoutes");
+const fareConfigurationMileageRoutes = require("./routes/fareConfigurationMileageRoutes");
+const driverAttributeRoutes = require("./routes/driverAttributeRoutes");
+const chatRoutes = require("./routes/chatRoutes");
+const emailRoutes = require("./routes/emailRoutes");
+const matrixRoutes = require("./routes/matrixRoutes");
 
 const app = express();
 
@@ -102,6 +116,7 @@ const skipFileUploadRoutes = [
   "/api/employees",
   "/api/drivers-app",
   "/api/customers",
+  "/api/call-recordings",
 ];
 
 app.use((req, res, next) => {
@@ -115,6 +130,9 @@ app.use((req, res, next) => {
 app.use(
   morgan(":method :url :status :response-time ms", { stream: logger.stream }),
 );
+
+//Global Rate Limiter
+// app.use(globalRateLimiter);
 
 // ✅ API Routes
 app.use("/api/addresses", addressRoutes);
@@ -163,6 +181,19 @@ app.use("/api/fare-meter", fareMeterDetailsRoutes);
 app.use("/api/driver_rent", driverRentRoutes);
 app.use("/api/lost-property", lostPropertyRoutes);
 app.use("/api/authorizations", authorizationRoutes);
+app.use("/api/driver_shift_history", driverShiftRoutes);
+app.use("/api/employee_shift_history", EmployeeShiftRoutes);
+app.use("/api/complaint", complaintRoutes);
+app.use("/api/customer-invoice", customerInvoiceRoutes);
+app.use("/api/company-configuration", companyConfigurationRoutes);
+app.use("/api/client-subscriptions", clinetSubscriptionsRoutes);
+app.use("/api/call-recordings", recordingRoutes);
+app.use("/api/sinbin", driverSinBinRoutes);
+app.use("/api/fare-configuration-mileage", fareConfigurationMileageRoutes);
+app.use("/api/driver-attributes", driverAttributeRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/emails", emailRoutes);
+app.use("/api/driver-zones", matrixRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

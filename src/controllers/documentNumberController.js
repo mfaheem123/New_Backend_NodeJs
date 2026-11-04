@@ -3,10 +3,42 @@ const Model = require("../models/documentNumberModel");
 /* CREATE */
 exports.create = async (req, res) => {
   try {
+    console.log(
+      "🚀 ADD DOCUMENT NUMBER BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    const { subsidiary_id, document_table, document_column } = req.body;
+    if (!subsidiary_id) {
+      return res
+        .status(400)
+        .json({ status: false, message: "subsidiary_id is required" });
+    }
+    if (!document_table) {
+      return res
+        .status(400)
+        .json({ status: false, message: "document_table is required" });
+    }
+
+    if (!document_column) {
+      return res
+        .status(400)
+        .json({ status: false, message: "document_column is required" });
+    }
+
     const doc = await Model.create(req.body);
     res.json({ status: true, document_number: doc });
   } catch (err) {
-    res.status(500).json({ status: false, message: err.message });
+    if (err.message == "Document number already exists.") {
+      return res.status(400).json({
+        status: false,
+        message: err.message,
+      });
+    }
+
+    res.status(500).json({
+      status: false,
+      message: err.message,
+    });
   }
 };
 
@@ -14,9 +46,11 @@ exports.create = async (req, res) => {
 exports.getAll = async (req, res) => {
   try {
     const offset = Number(req.query.offset || 0);
-    const limit = Number(req.query.limit || 10);
+    const limit = Number(req.query.limit || 100);
+    const { company_id } = req.query;
+    console.log(req.query);
 
-    const result = await Model.getAll({ offset, limit });
+    const result = await Model.getAll({ offset, limit, company_id });
 
     res.json({
       status: true,
@@ -44,6 +78,10 @@ exports.getById = async (req, res) => {
 /* UPDATE */
 exports.update = async (req, res) => {
   try {
+    console.log(
+      "🚀 UPDATE DOCUMENT NUMBER BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const doc = await Model.update(req.params.id, req.body);
     res.json({ status: true, document_number: doc });
   } catch (err) {

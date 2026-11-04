@@ -1,6 +1,58 @@
-const admin = require("../config/firebase"); // firebase-admin init
+const admin = require("../config/firebase");
 const pool = require("../db");
 
+// ---------------------------------------------------------
+// SAFE SEND FCM NOTIFICATION
+// ---------------------------------------------------------
+async function safeSendNotification(
+  message,
+  { driverId = null, customerId = null } = {},
+) {
+  try {
+    return await admin.messaging().send(message);
+  } catch (error) {
+    console.error("❌ FCM Error:", error.code);
+
+    // Driver invalid token
+    if (
+      driverId &&
+      error.code === "messaging/registration-token-not-registered"
+    ) {
+      await pool.query(
+        `UPDATE drivers
+         SET fcm_token = NULL
+         WHERE id = $1`,
+        [driverId],
+      );
+
+      console.log(`⚠️ Invalid driver token removed. Driver ID: ${driverId}`);
+    }
+
+    // Customer invalid token
+    if (
+      customerId &&
+      error.code === "messaging/registration-token-not-registered"
+    ) {
+      await pool.query(
+        `UPDATE customers
+         SET fcm_token = NULL
+         WHERE id = $1`,
+        [customerId],
+      );
+
+      console.log(
+        `⚠️ Invalid customer token removed. Customer ID: ${customerId}`,
+      );
+    }
+
+    // Error ko throw nahi karna
+    return null;
+  }
+}
+
+// ---------------------------------------------------------
+// SEND BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
 async function sendBookingNotification(driverId, booking) {
   // 1️⃣ Driver ka FCM token lao
   const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
@@ -23,17 +75,21 @@ async function sendBookingNotification(driverId, booking) {
       body: `Pickup: ${booking.pickup}`,
     },
     data: {
-      booking: JSON.stringify(bookingPayload),
-      booking_id: booking.id,
+      // booking: JSON.stringify(bookingPayload),
+      booking_id: String(booking.id),
       type: "NEW_BOOKING",
     },
   };
-
+  console.log("BOOKING DISPATCH Notification Data:", message);
   // 3️⃣ Send
-  await admin.messaging().send(message);
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
   console.log("✅ Notification sent to driver:", driverId);
 }
 
+// ---------------------------------------------------------
+// SEND RIDE ACCEPTED NOTIFICATION TO CUSTOMER
+// ---------------------------------------------------------
 async function sendRideAcceptedNotification(customerId, booking) {
   // 1️⃣ Customer ka FCM token lao
   const res = await pool.query(
@@ -63,12 +119,16 @@ async function sendRideAcceptedNotification(customerId, booking) {
       type: "RIDE_ACCEPTED",
     },
   };
-
+  console.log("RIDE ACCEPTED Notification Data:", message);
   // 3️⃣ Send
-  await admin.messaging().send(message);
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { customerId });
   console.log("✅ Notification sent to customer:", customerId);
 }
 
+// ---------------------------------------------------------
+// SEND FOLLOW ON BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
 async function sendFOBBookingNotification(driverId, booking) {
   // 1️⃣ Driver ka FCM token lao
   const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
@@ -99,12 +159,1397 @@ async function sendFOBBookingNotification(driverId, booking) {
   };
 
   // 3️⃣ Send
-  await admin.messaging().send(message);
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
   console.log("✅ FOB Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND PANIC NOTIFICATION TO DASHBOARD
+// ---------------------------------------------------------
+async function sendPanicDriverNotification(driverId, company_id) {
+  try {
+    // 1️⃣ Sare controllers ke web_device_id lao
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1
+      AND company_id = $1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `,
+      [company_id],
+    );
+
+    // 2️⃣ Tokens array banao
+    const tokens = res.rows.map((row) => row.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No FCM tokens found");
+      return;
+    }
+
+    const driverRes = await pool.query(
+      `
+  SELECT name, username, mobile
+      FROM drivers
+      WHERE id = $1`,
+      [driverId],
+    );
+
+    if (driverRes.rows.length === 0) {
+      console.log("Driver not found");
+      return;
+    }
+
+    const driver_name = driverRes.rows[0]?.name;
+    // 3️⃣ Notification payload
+    const message = {
+      tokens: tokens,
+      notification: {
+        title: "ALERT! Driver is On Panic",
+        body: `Driver: ${driver_name}`,
+      },
+      data: {
+        driver_status: "panic",
+        driver_id: driverId.toString(),
+        driver_username: driverRes.rows[0]?.username,
+        driver_name: driverRes.rows[0]?.name,
+        driver_mobile: driverRes.rows[0]?.mobile,
+        type: "PANIC_DRIVER",
+      },
+    };
+    console.log("Notification Data:", message);
+    // 4️⃣ Send notification to all
+    const response = await admin.messaging().sendEachForMulticast(message);
+
+    console.log(`✅ Notifications sent: ${response.successCount}`);
+    console.log(`❌ Failed: ${response.failureCount}`);
+  } catch (error) {
+    console.error("❌ Error sending panic notification:", error);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND ON BREAK NOTIFICATION TO DASHBOARD
+// ---------------------------------------------------------
+async function sendOnBreakDriverNotification(driverId, company_id) {
+  try {
+    // 1️⃣ Sare controllers ke web_device_id lao
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1
+      AND company_id = $1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `,
+      [company_id],
+    );
+
+    // 2️⃣ Tokens array banao
+    const tokens = res.rows.map((row) => row.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No FCM tokens found");
+      return;
+    }
+
+    const driverRes = await pool.query(
+      `
+  SELECT name, username, mobile
+      FROM drivers
+      WHERE id = $1`,
+      [driverId],
+    );
+    if (driverRes.rows.length === 0) {
+      console.log("Driver not found");
+      return;
+    }
+    const driver_name = driverRes.rows[0]?.name;
+    // 3️⃣ Notification payload
+    const message = {
+      tokens: tokens,
+      notification: {
+        title: "Driver Wants Break",
+        body: `Driver: ${driver_name}`,
+      },
+      data: {
+        driver_status: "on break",
+        driver_id: driverId.toString(),
+        driver_username: driverRes.rows[0]?.username,
+        driver_name: driverRes.rows[0]?.name,
+        driver_mobile: driverRes.rows[0]?.mobile,
+        type: "DRIVER_BREAK_WEB",
+      },
+    };
+    console.log("Notification Data:", message);
+
+    // 4️⃣ Send notification to all
+    const response = await admin.messaging().sendEachForMulticast(message);
+
+    console.log(`✅ Notifications sent: ${response.successCount}`);
+    console.log(`❌ Failed: ${response.failureCount}`);
+  } catch (error) {
+    console.error("❌ Error sending panic notification:", error);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND BREAK STATUS NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendBreakStatusNotification(driverId, break_status) {
+  // Driver Token
+  const res = await pool.query(`SELECT * FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // Dynamic Message
+  let title = "";
+  let body = "";
+
+  if (break_status === "accepted" || break_status === "Accepted") {
+    title = "Break Accepted";
+    body = "Your break request has been accepted";
+  } else {
+    title = "Break Rejected";
+    body = "Your break has been rejected";
+  }
+
+  // Notification Payload
+  const message = {
+    token: fcmToken,
+
+    notification: {
+      title,
+      body,
+    },
+
+    data: {
+      driver_id: driverId.toString(),
+      type: "BREAK_STATUS",
+      break_status: break_status,
+    },
+  };
+  console.log("Notification Data:", message);
+  // Send Notification
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ Break Status Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND FORCED BREAK STATUS NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendForcedBreakStatusNotification(driverId, break_status) {
+  // Driver Token
+  const res = await pool.query(`SELECT * FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // Dynamic Message
+  let title = "Forced Break By Controller";
+  let body = "Your Have Been Forced To Take A Break By Controller";
+
+  // Notification Payload
+  const message = {
+    token: fcmToken,
+
+    notification: {
+      title,
+      body,
+    },
+
+    data: {
+      driver_id: driverId.toString(),
+      type: "BREAK_STATUS",
+      break_status: break_status,
+    },
+  };
+  console.log("Notification Data:", message);
+  // Send Notification
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ Break Status Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND FORCED END BREAK STATUS NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendForcedEndBreakStatusNotification(driverId, break_status) {
+  // Driver Token
+  const res = await pool.query(`SELECT * FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // Dynamic Message
+  let title = "Forced End Break By Controller";
+  let body = "Your Have Been Forced To End Your Break By Controller";
+
+  // Notification Payload
+  const message = {
+    token: fcmToken,
+
+    notification: {
+      title,
+      body,
+    },
+
+    data: {
+      driver_id: driverId.toString(),
+      type: "END_BREAK_STATUS",
+      break_status: break_status,
+    },
+  };
+  console.log("Notification Data:", message);
+  // Send Notification
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ End Break Status Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND RECOVER BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendRecoverBookingNotification(driverId, booking) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Booking Recover From Controller",
+      // body: `Pickup: ${booking.pickup}`,
+    },
+    data: {
+      booking_id: booking.id.toString(),
+      type: "RECOVER_BOOKING",
+    },
+  };
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND APP BOOKING NOTIFICATION TO DASHBOARD
+// ---------------------------------------------------------
+async function sendAppBookingNotification(booking, company_id) {
+  try {
+    // ✅ Sirf APP bookings ke liye
+    if (
+      !booking.booking_source ||
+      booking.booking_source.toUpperCase() !== "APP"
+    ) {
+      return;
+    }
+
+    // ==============================
+    // ASAP YA SCHEDULE CHECK
+    // ==============================
+
+    let bookingType = "SCHEDULE";
+
+    try {
+      const now = new Date();
+
+      const pickupDateTime = new Date(
+        `${booking.pickup_date} ${booking.pickup_time}`,
+      );
+
+      // Agar booking next 10 minutes ke andar hai => ASAP
+      const diffMinutes = (pickupDateTime - now) / (1000 * 60);
+
+      if (diffMinutes <= 10) {
+        bookingType = "ASAP";
+      }
+    } catch (err) {
+      console.log("❌ Error detecting booking type:", err);
+    }
+
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1
+      AND company_id = $1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `,
+      [company_id],
+    );
+    console.log("COMPANY ID APP: ", company_id);
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+    const message = {
+      tokens,
+
+      notification: {
+        title: `New ${bookingType} App Booking`,
+        body: `${booking.pickup} → ${booking.dropoff}`,
+      },
+
+      data: {
+        type: "NEW_APP_BOOKING",
+        booking_mode: bookingType,
+        booking_id: String(booking.id),
+        // booking_id: "1234",
+      },
+    };
+
+    // ==============================
+    // SEND
+    // ==============================
+    console.log("App Booking Notification Data:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
+    console.log(
+      `✅ App booking notification sent: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendAppBookingNotification Error:", err);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND FUTURE BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendFutureBookingNotification(driverId, booking) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  const bookingPayload = { ...booking };
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "New Future Booking Assigned",
+      body: `Pickup: ${booking.pickup}`,
+    },
+    data: {
+      booking_status: "future",
+      booking_id: booking.id.toString(),
+      type: "FUTURE_BOOKING",
+    },
+  };
+
+  console.log("FUTURE BOOKING NOTIFICATION DATA: ", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ Future Booking Notification Sent To Driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND WEB BOOKING NOTIFICATION TO DASHBOARD
+// ---------------------------------------------------------
+async function sendWebBookingNotification(booking, company_id) {
+  try {
+    // ✅ Sirf WEB bookings ke liye
+    if (
+      !booking.booking_source ||
+      booking.booking_source.toUpperCase() !== "WEB"
+    ) {
+      return;
+    }
+
+    // ==============================
+    // ASAP YA SCHEDULE CHECK
+    // ==============================
+
+    let bookingType = "SCHEDULE";
+
+    try {
+      const now = new Date();
+
+      const pickupDateTime = new Date(
+        `${booking.pickup_date} ${booking.pickup_time}`,
+      );
+
+      // Agar booking next 10 minutes ke andar hai => ASAP
+      const diffMinutes = (pickupDateTime - now) / (1000 * 60);
+
+      if (diffMinutes <= 10) {
+        bookingType = "ASAP";
+      }
+    } catch (err) {
+      console.log("❌ Error detecting booking type:", err);
+    }
+
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1 
+      AND company_id = $1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `,
+      [company_id],
+    );
+    console.log("COMPANY ID WEB: ", company_id);
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+    const message = {
+      tokens,
+
+      notification: {
+        title: `New ${bookingType} Web Booking`,
+        body: `${booking.pickup} → ${booking.dropoff}`,
+      },
+
+      data: {
+        type: "NEW_WEB_BOOKING",
+        booking_mode: bookingType,
+        booking_id: String(booking.id),
+        // booking_id: "1235",
+      },
+    };
+
+    // ==============================
+    // SEND
+    // ==============================
+    console.log("Web Booking Notification Data:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
+    console.log(
+      `✅ Web booking notification sent: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendWebBookingNotification Error:", err);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND PDA UPDATE NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendPDANotification(driverId) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "PDA Updated",
+      body: "Your PDA Has Been Updated",
+    },
+    data: {
+      driver_id: String(driverId),
+      type: "PDA_UPDATE",
+      message: "Your PDA Has Been Updated",
+    },
+  };
+
+  console.log("PDA Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND IVR BOOKING NOTIFICATION TO DASHBOARD
+// ---------------------------------------------------------
+async function sendIVRBookingNotification(booking, companyId) {
+  try {
+    // ✅ Sirf IVR bookings ke liye
+    if (
+      !booking.booking_source ||
+      booking.booking_source.toUpperCase() !== "IVR"
+    ) {
+      return;
+    }
+
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1
+      AND company_id = $1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `,
+      [companyId],
+    );
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+    const message = {
+      tokens,
+
+      notification: {
+        title: "New IVR Booking",
+        body: `${booking.pickup} → ${booking.dropoff}`,
+      },
+
+      data: {
+        type: "NEW_IVR_BOOKING",
+        booking_mode: "ASAP",
+        booking_id: String(booking.id),
+        // booking_id: "1235",
+      },
+    };
+
+    // ==============================
+    // SEND
+    // ==============================
+    console.log("IVR Booking Notification Data:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
+    console.log(
+      `✅ Web booking notification sent: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendWebBookingNotification Error:", err);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND RECOVER BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER
+// ---------------------------------------------------------
+async function sendDriverRecoverBookingNotification(booking) {
+  try {
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1 
+      AND company_id = $1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `,
+      [booking.company_id],
+    );
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+    const message = {
+      tokens,
+      notification: {
+        title: "Recover Booking Request From Driver",
+        body: `Driver ${booking.driver_name} Has Requested To Recover This Booking.`,
+      },
+      data: {
+        booking_id: booking.id.toString(),
+        reference_number: booking.reference_number,
+        driver_id: booking.driver_id.toString(),
+        driver_name: booking.driver_name,
+        type: "DRIVER_RECOVER_BOOKING_REQUEST",
+      },
+    };
+
+    // ==============================
+    // SEND
+    // ==============================
+    console.log("Driver Recover Booking Notification Data:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
+    console.log(
+      `✅ Driver Recover Booking Notification Sent: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendDriverRecoverBookingNotification Error:", err);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND REJECT RECOVER BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendRejectRecoverBookingNotification(driverId, booking) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Your Request For Recover Booking Has Been Rejected",
+    },
+    data: {
+      booking_id: booking.id.toString(),
+      type: "DRIVER_RECOVER_BOOKING_REJECTED",
+    },
+  };
+  console.log("Reject Driver Recover Booking Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND NO PICKUP BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER
+// ---------------------------------------------------------
+async function sendDriverNoPickupBookingNotification(booking) {
+  try {
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id = 1 
+      AND company_id = $1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `,
+      [booking.company_id],
+    );
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+    const message = {
+      tokens,
+      notification: {
+        title: "No Pickup Booking Request From Driver",
+        body: `Driver ${booking.driver_name} Has Requested To No Pickup This Booking.`,
+      },
+      data: {
+        booking_id: booking.id.toString(),
+        reference_number: booking.reference_number,
+        driver_id: booking.driver_id.toString(),
+        driver_name: booking.driver_name,
+        type: "DRIVER_NOPICKUP_BOOKING_REQUEST",
+      },
+    };
+
+    // ==============================
+    // SEND
+    // ==============================
+    console.log("Driver No Pickup Booking Notification Data:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
+    console.log(
+      `✅ Driver No Pickup Booking Notification Sent: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendDriverNoPickupBookingNotification Error:", err);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND REJECT NO PICKUP BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendRejectNoPickupBookingNotification(driverId, booking) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Your Request For No Pickup Booking Has Been Rejected",
+    },
+    data: {
+      booking_id: booking.id.toString(),
+      type: "DRIVER_NOPICKUP_BOOKING_REJECTED",
+    },
+  };
+  console.log("Reject Driver No Pickup Booking Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND NO PICKUP BOOKING NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendNoPickupBookingNotification(driverId, booking) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "No Pickup Booking From Controller",
+      // body: `Pickup: ${booking.pickup}`,
+    },
+    data: {
+      booking_id: booking.id.toString(),
+      type: "NO_PICKUP_BOOKING",
+    },
+  };
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND PERMISSION NOTIFICATION TO CONTROLLER AND ADMIN
+// ---------------------------------------------------------
+async function sendPermissionNotification() {
+  try {
+    // ==============================
+    // DASHBOARD TOKENS
+    // ==============================
+
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id IN (1, 2)
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+    `,
+    );
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found");
+      return;
+    }
+
+    // ==============================
+    // NOTIFICATION PAYLOAD
+    // ==============================
+
+    const message = {
+      tokens,
+      notification: {
+        title: "Permission Updated",
+        body: "Your Permission Has Been Updated By Super Admin",
+      },
+      data: {
+        message: "Your Permission Has Been Updated By Super Admin",
+        type: "PERMISSION_UPDATE",
+      },
+    };
+
+    // ==============================
+    // SEND
+    // ==============================
+    console.log("Permission Update:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log("FCM RESPONSE:", JSON.stringify(response, null, 2));
+    console.log(
+      `✅ Permission Update Notification Sent: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendPermissionNotification Error:", err);
+  }
+}
+
+// ---------------------------------------------------------
+// SEND DRIVER ADDED TO SIN BIN NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendSinBinNotification(driverId, messages) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Sin Bin Update",
+      body: "You Have Been Placed In Sin Bin.",
+    },
+    data: {
+      driver_id: String(driverId),
+      type: "SIN_BIN_UPDATE",
+      message: messages,
+    },
+  };
+
+  console.log("Sin Bin Added Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND DRIVER REMOVED FROM SIN BIN NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendSinBinRemovedNotification(driverId, messages) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Sin Bin Update",
+      body: "You Have Been Removed From Sin Bin.",
+    },
+    data: {
+      driver_id: String(driverId),
+      type: "SIN_BIN_UPDATE",
+      message: messages,
+    },
+  };
+
+  console.log("Sin Bin Removed Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND FORCED LOGGED IN NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendForcedLoggedInNotification(driverId, messages) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Forced Login Update",
+      body: "You Have Been Forced To Log In.",
+    },
+    data: {
+      driver_id: String(driverId),
+      type: "FORCED_LOGIN_UPDATE",
+      message: messages,
+    },
+  };
+
+  console.log("Forced Login Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND FORCED LOGGED OUT NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendForcedLoggedOutNotification(driverId, messages) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Forced Logout Update",
+      body: "You Have Been Forced To Log Out.",
+    },
+    data: {
+      driver_id: String(driverId),
+      type: "FORCED_LOGOUT_UPDATE",
+      message: messages,
+    },
+  };
+
+  console.log("Forced Logout Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND NO SHOW NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendNoShowBookingNotification(driverId, bookingId, messages) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "No Show Update",
+      body: "Your Booking Has Been Marked As No Show.",
+    },
+    data: {
+      driver_id: String(driverId),
+      booking_id: String(bookingId),
+      type: "NO_SHOW_UPDATE",
+      message: messages,
+    },
+  };
+
+  console.log("No Show Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND COMPLETE BOOKING NOTIFICATION FROM WEB TO DRIVER
+// ---------------------------------------------------------
+async function sendCompleteBookingFromWebNotification(driverId, bookingId) {
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  const messages = "Your booking has been completed from the web dashboard.";
+
+  // 2️⃣ Notification payload
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Complete Booking Update",
+      body: "Your booking has been completed.",
+    },
+    data: {
+      driver_id: String(driverId),
+      booking_id: String(bookingId),
+      type: "COMPLETE_BOOKING_UPDATE",
+      message: messages,
+    },
+  };
+
+  console.log("Complete Booking Notification Data:", message);
+
+  // 3️⃣ Send
+  // await admin.messaging().send(message);
+  await safeSendNotification(message, { driverId });
+
+  console.log("✅ Notification sent to driver:", driverId);
+}
+
+// =========================================================
+// CHAT SYSTEM NOTIFICATIONS (NEWLY ADDED)
+// =========================================================
+
+/**
+ * 1. Unified Dynamic Chat Notification Function
+ * Call directly from sockets/chatSocket.js when recipient socket is offline/background
+ */
+async function sendChatMessageNotification({
+  companyId,
+  receiverId,
+  receiverRole,
+  senderId,
+  senderRole,
+  messageType = "text",
+  content = "",
+  chatType = "DRIVER_CHAT",
+}) {
+  try {
+    const formattedContent =
+      messageType === "text" ? content : `Sent an ${messageType}`;
+
+    const normalizedRole = receiverRole
+      ? receiverRole.toUpperCase().trim()
+      : "";
+
+    if (normalizedRole === "DRIVER") {
+      await sendChatMessageToDriver(
+        receiverId,
+        senderId,
+        formattedContent,
+        chatType,
+      );
+    } else if (normalizedRole === "CUSTOMER") {
+      await sendChatMessageToCustomer(
+        receiverId,
+        senderId,
+        formattedContent,
+        chatType,
+      );
+    } else if (
+      normalizedRole === "ADMIN" ||
+      normalizedRole === "CONTROLLER" ||
+      normalizedRole === "SUPER ADMIN" ||
+      normalizedRole === "EMPLOYEE"
+    ) {
+      await sendChatMessageToDashboard(
+        companyId,
+        senderId,
+        senderRole,
+        formattedContent,
+        chatType,
+      );
+    } else {
+      console.log("⚠️ Unknown Receiver Role for Notification:", receiverRole);
+    }
+  } catch (error) {
+    console.error("❌ sendChatMessageNotification Error:", error);
+  }
+}
+// ---------------------------------------------------------
+// SEND CHAT MESSAGE NOTIFICATION TO DRIVER
+// ---------------------------------------------------------
+async function sendChatMessageToDriver(
+  driverId,
+  senderId,
+  messageContent,
+  chatType,
+) {
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
+
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "New Message from Admin",
+      body: messageContent,
+    },
+    data: {
+      type: "CHAT_MESSAGE",
+      chat_type: chatType,
+      sender_id: String(senderId),
+      sender_role: "ADMIN",
+    },
+  };
+
+  console.log("Chat Notification Data to Driver:", message);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ Chat Notification sent to driver:", driverId);
+}
+
+// ---------------------------------------------------------
+// SEND CHAT MESSAGE NOTIFICATION TO CUSTOMER
+// ---------------------------------------------------------
+async function sendChatMessageToCustomer(
+  customerId,
+  senderId,
+  messageContent,
+  chatType,
+) {
+  const res = await pool.query(
+    `SELECT fcm_token FROM customers WHERE id = $1`,
+    [customerId],
+  );
+
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for customer:", customerId);
+    return;
+  }
+
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "New Message Support",
+      body: messageContent,
+    },
+    data: {
+      type: "CHAT_MESSAGE",
+      chat_type: chatType,
+      sender_id: String(senderId),
+      sender_role: "ADMIN",
+    },
+  };
+
+  console.log("Chat Notification Data to Customer:", message);
+  await safeSendNotification(message, { customerId });
+  console.log("✅ Chat Notification sent to customer:", customerId);
+}
+
+// ---------------------------------------------------------
+// SEND CHAT MESSAGE NOTIFICATION TO CONTROLLER DASHBOARD
+// ---------------------------------------------------------
+async function sendChatMessageToDashboard(
+  companyId,
+  senderId,
+  senderRole,
+  messageContent,
+  chatType,
+) {
+  try {
+    // 1️⃣ Fetch web_device_id of all controllers for this specific company
+    const res = await pool.query(
+      `
+      SELECT web_device_id
+      FROM employees
+      WHERE role_id IN (1, 2)
+      AND company_id = $1
+      AND web_device_id IS NOT NULL
+      AND web_device_id != ''
+      `,
+      [companyId],
+    );
+
+    const tokens = res.rows.map((r) => r.web_device_id);
+
+    if (tokens.length === 0) {
+      console.log("⚠️ No dashboard FCM tokens found for company:", companyId);
+      return;
+    }
+
+    // 2️⃣ Get sender name dynamically
+    let senderName = `${senderRole} #${senderId}`;
+    if (senderRole === "DRIVER") {
+      const driverRes = await pool.query(
+        `SELECT name FROM drivers WHERE id = $1`,
+        [senderId],
+      );
+      if (driverRes.rows[0]?.name) senderName = driverRes.rows[0].name;
+    } else if (senderRole === "CUSTOMER") {
+      const custRes = await pool.query(
+        `SELECT name FROM customers WHERE id = $1`,
+        [senderId],
+      );
+      if (custRes.rows[0]?.name) senderName = custRes.rows[0].name;
+    }
+
+    // 3️⃣ Payload Construction
+    const message = {
+      tokens,
+      notification: {
+        title: `New Message from ${senderName}`,
+        body: messageContent,
+      },
+      data: {
+        type: "CHAT_MESSAGE_WEB",
+        chat_type: chatType,
+        sender_id: String(senderId),
+        sender_role: senderRole,
+        company_id: String(companyId),
+      },
+    };
+
+    console.log("Dashboard Chat Notification Data:", message);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log(
+      `✅ Chat Notification sent to Dashboard: ${response.successCount} success`,
+    );
+  } catch (err) {
+    console.error("❌ sendChatMessageToDashboard Error:", err);
+  }
 }
 
 module.exports = {
   sendBookingNotification,
   sendFOBBookingNotification,
   sendRideAcceptedNotification,
+  sendPanicDriverNotification,
+  sendOnBreakDriverNotification,
+  sendBreakStatusNotification,
+  sendRecoverBookingNotification,
+  sendAppBookingNotification,
+  sendFutureBookingNotification,
+  sendWebBookingNotification,
+  sendPDANotification,
+  sendIVRBookingNotification,
+  sendDriverRecoverBookingNotification,
+  sendRejectRecoverBookingNotification,
+  sendDriverNoPickupBookingNotification,
+  sendRejectNoPickupBookingNotification,
+  sendNoPickupBookingNotification,
+  sendPermissionNotification,
+  sendSinBinNotification,
+  sendSinBinRemovedNotification,
+  sendChatMessageNotification,
+  sendChatMessageToDriver,
+  sendChatMessageToCustomer,
+  sendChatMessageToDashboard,
+  sendForcedLoggedInNotification,
+  sendForcedLoggedOutNotification,
+  sendForcedBreakStatusNotification,
+  sendForcedEndBreakStatusNotification,
+  sendNoShowBookingNotification,
+  sendCompleteBookingFromWebNotification,
 };

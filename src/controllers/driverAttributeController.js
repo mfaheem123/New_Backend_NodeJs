@@ -1,0 +1,133 @@
+const DriverAttribute = require("../models/driverAttributeModel");
+
+// ---------------------------------------------------------
+// GET ALL DRIVER ATTRIBUTES CONTROLLER
+// ---------------------------------------------------------
+exports.getAllAttributes = async (req, res) => {
+  try {
+    const company_id = req.query.company_id;
+    const attributes = await DriverAttribute.getAll(company_id);
+    return res.status(200).json({
+      status: true,
+      count: attributes.length,
+      driver_attribute: attributes,
+    });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: error.message });
+  }
+};
+
+// ---------------------------------------------------------
+// GET DRIVER ATTRIBUTE BY ID CONTROLLER
+// ---------------------------------------------------------
+exports.getAttributeById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const attribute = await DriverAttribute.getById(id);
+
+    if (!attribute) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Attribute not found" });
+    }
+
+    return res.status(200).json({
+      status: true,
+      driver_attribute: attribute,
+    });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: error.message });
+  }
+};
+
+// ---------------------------------------------------------
+// ADD DRIVER ATTRIBUTE CONTROLLER
+// ---------------------------------------------------------
+exports.addAttribute = async (req, res) => {
+  try {
+    console.log(
+      "🚀 INCOMING ADD DRIVER ATTRIBUTE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    const { attribute_name, short_name, company_id } = req.body;
+
+    if (!attribute_name || !short_name || !company_id) {
+      return res.status(400).json({
+        status: false,
+        message: "attribute_name, short_name, and company_id are required",
+      });
+    }
+
+    const newAttribute = await DriverAttribute.create(
+      attribute_name,
+      short_name,
+      company_id,
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver Attribute Added Successfully",
+      driver_attribute: newAttribute,
+    });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: error.message });
+  }
+};
+
+// ---------------------------------------------------------
+// UPDATE DRIVER ATTRIBUTE BY ID CONTROLLER
+// ---------------------------------------------------------
+exports.updateAttribute = async (req, res) => {
+  try {
+    console.log(
+      "🚀 INCOMING UPDATE DRIVER ATTRIBUTE BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+    const { id } = req.params;
+    const { attribute_name, short_name } = req.body;
+
+    // Direct values pass karein (undefined hone par bhi handled hai)
+    const updated = await DriverAttribute.update(
+      id,
+      attribute_name,
+      short_name,
+    );
+
+    if (!updated) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Attribute not found" });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver Attribute Updated Successfully",
+      driver_attribute: updated,
+    });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: error.message });
+  }
+};
+
+// ---------------------------------------------------------
+// DELETE DRIVER ATTRIBUTE BY ID CONTROLLER
+// ---------------------------------------------------------
+exports.deleteAttribute = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await DriverAttribute.delete(id);
+
+    if (!deleted) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Driver Attribute not found" });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Driver Attribute Deleted Successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({ status: false, message: error.message });
+  }
+};
