@@ -468,14 +468,14 @@ class DriverRent {
       d.balance AS old_balance,
       COALESCE(d.driver_commission, 20) AS driver_rent,
       
-      -- Cash jobs total (fares + all charges)
+      -- Cash Total: fare + wc + edc (where payment type is cash)
       COALESCE(SUM(CASE WHEN pt.name ILIKE '%cash%' THEN 
-        COALESCE(b.fares, 0) + COALESCE(b.parking_charges, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0) + COALESCE(b.congestion_charges, 0)
+        COALESCE(b.fares, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0)
       ELSE 0 END), 0) AS cash_jobs_total,
       
-      -- Account jobs total (fares + all charges)
+      -- Account Total: fare + wc + edc (where payment type is account)
       COALESCE(SUM(CASE WHEN pt.name ILIKE '%account%' THEN 
-        COALESCE(b.fares, 0) + COALESCE(b.parking_charges, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0) + COALESCE(b.congestion_charges, 0)
+        COALESCE(b.fares, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0)
       ELSE 0 END), 0) AS account_jobs_total,
       
       COUNT(b.id) AS bookings_count,

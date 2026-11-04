@@ -208,25 +208,29 @@ exports.getBulkPreview = async (req, res) => {
     const formattedData = reportData.map((row) => {
       const cashJobsTotal = Number(row.cash_jobs_total);
       const accountJobsTotal = Number(row.account_jobs_total);
-      const jobsTotal = cashJobsTotal + accountJobsTotal;
+      const parkingCongestionTotal = Number(row.parking_congestion_total);
+      
+      const commissionRate = Number(row.driver_commission); // e.g., 20%
 
-      const commissionRate = Number(row.driver_commission); // Driver table se commission percentage (e.g., 20)
-
-      // Calculate total commission by applying percentage on each booking's total charges
+      // Total Commission: Sum of all rows' CommissionTotal ((driverCommission / 100) * Without Commission)
       let commissionTotal = 0;
       if (row.bookings && Array.isArray(row.bookings)) {
-        row.bookings.exports = row.bookings.forEach((item) => {
-          const itemTotal = Number(item.total_charges || 0);
-          commissionTotal += itemTotal * (commissionRate / 100);
+        row.bookings.forEach((item) => {
+          const withoutCommission = Number(item.without_commission || 0);
+          commissionTotal += withoutCommission * (commissionRate / 100);
         });
       }
       commissionTotal = Number(commissionTotal.toFixed(2));
 
+      // Total: Cash Jobs Total + Account Jobs Total
+      const jobsTotal = Number((cashJobsTotal + accountJobsTotal).toFixed(2));
+
+      // Owed: Total Commission - Account Jobs Total - Parking/Congestion Total
+      const owed = Number((commissionTotal - accountJobsTotal - parkingCongestionTotal).toFixed(2));
+
+      // Current Balance: Old Balance + Owed
       const oldBalance = Number(row.old_balance);
-      // Balance calculation formula (Old Balance + Cash Jobs - Commission ya jo aapka business logic ho)
-      const currentBalance = Number(
-        (oldBalance + cashJobsTotal - commissionTotal).toFixed(2),
-      );
+      const currentBalance = Number((oldBalance + owed).toFixed(2));
 
       return {
         driver_id: row.driver_id,
@@ -239,11 +243,12 @@ exports.getBulkPreview = async (req, res) => {
         bookings_count: row.bookings_count,
         cash_jobs_total: cashJobsTotal.toFixed(2),
         account_jobs_total: accountJobsTotal.toFixed(2),
+        parking_congestion_total: parkingCongestionTotal.toFixed(2),
         jobs_total: jobsTotal.toFixed(2),
         commission_total: commissionTotal.toFixed(2),
         old_balance: oldBalance.toFixed(2),
+        owed: owed.toFixed(2),
         current_balance: currentBalance.toFixed(2),
-        owed: currentBalance.toFixed(2),
         driver_commission_lineitems: row.bookings,
       };
     });

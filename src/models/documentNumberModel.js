@@ -35,7 +35,9 @@ exports.create = async (data) => {
   );
 
   if (exists.rows.length) {
-    throw new Error("Document number already exists for this subsidiary and table.");
+    throw new Error(
+      "Document number already exists for this subsidiary and table.",
+    );
   }
 
   const res = await pool.query(

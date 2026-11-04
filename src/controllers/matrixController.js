@@ -8,7 +8,8 @@ class MatrixController {
   static async fetchMatrixData(req, res) {
     try {
       const { company_id } = req.query;
-      const matrixData = await MatrixModel.getZoneAvailabilityMatrix(company_id);
+      const matrixData =
+        await MatrixModel.getZoneAvailabilityMatrix(company_id);
 
       return res.status(200).json({
         success: true,

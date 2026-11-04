@@ -463,15 +463,20 @@ class DriverCommission {
       d.balance AS old_balance,
       COALESCE(d.driver_commission, 20) AS driver_commission,
       
-      -- Cash jobs total (fares + all charges)
+      -- Cash Jobs Total: Sum of (Fares + Waiting + Extra Drop) for Cash jobs
       COALESCE(SUM(CASE WHEN pt.name ILIKE '%cash%' THEN 
-        COALESCE(b.fares, 0) + COALESCE(b.parking_charges, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0) + COALESCE(b.congestion_charges, 0)
+        COALESCE(b.fares, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0)
       ELSE 0 END), 0) AS cash_jobs_total,
       
-      -- Account jobs total (fares + all charges)
+      -- Account Jobs Total: Sum of Fares for Account jobs
       COALESCE(SUM(CASE WHEN pt.name ILIKE '%account%' THEN 
-        COALESCE(b.fares, 0) + COALESCE(b.parking_charges, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0) + COALESCE(b.congestion_charges, 0)
+        COALESCE(b.fares, 0)
       ELSE 0 END), 0) AS account_jobs_total,
+
+      -- Parking & Congestion Total: Sum of parking + congestion charges for Account jobs
+      COALESCE(SUM(CASE WHEN pt.name ILIKE '%account%' THEN 
+        COALESCE(b.parking_charges, 0) + COALESCE(b.congestion_charges, 0)
+      ELSE 0 END), 0) AS parking_congestion_total,
       
       COUNT(b.id) AS bookings_count,
       
@@ -482,8 +487,9 @@ class DriverCommission {
         'waiting_charges', b.waiting_charges,
         'extra_drop_charges', b.extra_drop_charges,
         'congestion_charges', b.congestion_charges,
-        'total_charges', (COALESCE(b.fares, 0) + COALESCE(b.parking_charges, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0) + COALESCE(b.congestion_charges, 0)),
-        'payment_type', pt.name
+        'payment_type', pt.name,
+        -- Without Commission amount for individual booking: Fares + Waiting + Extra Drop
+        'without_commission', (COALESCE(b.fares, 0) + COALESCE(b.waiting_charges, 0) + COALESCE(b.extra_drop_charges, 0))
       )) AS bookings
     FROM drivers d
     JOIN bookings b ON b.driver_id = d.id

@@ -194,25 +194,30 @@ exports.getBulkPreview = async (req, res) => {
     );
 
     const formattedData = reportData.map((row) => {
-      const cashJobsTotal = Number(row.cash_jobs_total);
-      const accountJobsTotal = Number(row.account_jobs_total);
-      const jobsTotal = cashJobsTotal + accountJobsTotal;
+      const cashJobsTotal = Number(row.cash_jobs_total); // Cash Total (fare + wc + edc)
+      const accountJobsTotal = Number(row.account_jobs_total); // Account Total (fare + wc + edc)
+      
+      // Total: Cash Jobs Total + Account Jobs Total
+      const jobsTotal = Number((cashJobsTotal + accountJobsTotal).toFixed(2));
 
-      const rentRate = Number(row.driver_rent); // Rent percentage / fixed amount logic
+      const rentRate = Number(row.driver_rent); // Rent percentage / fixed logic
 
+      // Rent Total calculation based on line items or overall rule
       let rentTotal = 0;
       if (row.bookings && Array.isArray(row.bookings)) {
         row.bookings.forEach((item) => {
-          const itemTotal = Number(item.total_charges || 0);
-          rentTotal += itemTotal * (rentRate / 100);
+          const itemWithoutComm = Number(item.fares || 0) + Number(item.waiting_charges || 0) + Number(item.extra_drop_charges || 0);
+          rentTotal += itemWithoutComm * (rentRate / 100);
         });
       }
       rentTotal = Number(rentTotal.toFixed(2));
 
+      // Owed: Total - rentTotal
+      const owed = Number((jobsTotal - rentTotal).toFixed(2));
+
+      // New Balance: Owed + Old Balance
       const oldBalance = Number(row.old_balance);
-      const currentBalance = Number(
-        (oldBalance + cashJobsTotal - rentTotal).toFixed(2),
-      );
+      const currentBalance = Number((owed + oldBalance).toFixed(2));
 
       return {
         driver_id: row.driver_id,
@@ -228,8 +233,8 @@ exports.getBulkPreview = async (req, res) => {
         jobs_total: jobsTotal.toFixed(2),
         rent_total: rentTotal.toFixed(2),
         old_balance: oldBalance.toFixed(2),
+        owed: owed.toFixed(2),
         current_balance: currentBalance.toFixed(2),
-        owed: currentBalance.toFixed(2),
         driver_rent_lineitems: row.bookings,
       };
     });
