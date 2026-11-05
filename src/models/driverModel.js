@@ -2072,6 +2072,20 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     await db.query(query, [bookingId, driverId]);
     return true;
   },
+
+  // ---------------------------------------------------------
+  // UPDATE DRIVER BALANCE
+  // ---------------------------------------------------------
+  async updateDriverBalance(driverId, balance) {
+    const query = `
+        UPDATE drivers
+        SET
+          balance = $1
+        WHERE id = $2
+      `;
+    return db.query(query, [balance, driverId]);
+  },
+
 };
 
 module.exports = Driver;

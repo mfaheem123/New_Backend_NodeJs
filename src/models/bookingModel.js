@@ -303,7 +303,6 @@ const updateBooking = async (id, updates) => {
 // LEFT JOIN employees e
 //   ON b.employee_id = e.id
 
-
 // -- PICKUP LOCATION
 // -- Select only the most specific matching location
 // LEFT JOIN LATERAL (
@@ -315,7 +314,6 @@ const updateBooking = async (id, updates) => {
 //   LIMIT 1
 // ) lp ON true
 
-
 // -- DROPOFF LOCATION
 // -- Select only the most specific matching location
 // LEFT JOIN LATERAL (
@@ -326,7 +324,6 @@ const updateBooking = async (id, updates) => {
 //   ORDER BY LENGTH(l.name) DESC, l.id ASC
 //   LIMIT 1
 // ) ld ON true
-
 
 // LEFT JOIN location_types ltp
 //   ON lp.location_type_id = ltp.id
@@ -3501,7 +3498,7 @@ const getAllMultiBookings = async ({
   limit = 20,
   filters = {},
 }) => {
-  let whereClauses = ["b.multi_booking_id IS NOT NULL"];
+  let whereClauses = ["b.multi_booking_id IS NOT NULL AND b.trash = false AND b.booking_type_id = 2"];
   let queryParams = [];
 
   if (filters.reference_number) {
