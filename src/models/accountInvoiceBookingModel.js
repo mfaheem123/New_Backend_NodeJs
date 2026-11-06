@@ -157,6 +157,9 @@ LEFT JOIN location_types ltd ON ld.location_type_id = ltd.id
 
 `;
 
+// ---------------------------------------------------------
+// GET BOOKING FOR ACCOUNT INVOICE
+// ---------------------------------------------------------
 exports.getForAccountInvoice = async (filters) => {
   const {
     subsidiary_id,
@@ -180,6 +183,62 @@ exports.getForAccountInvoice = async (filters) => {
   conditions.push(`b.booking_status_id = 11`);
   conditions.push(`b.invoice_number IS NULL`);
 
+  conditions.push(`b.pickup_date::date BETWEEN $${idx++} AND $${idx++}`);
+  values.push(from_date, to_date);
+
+  if (department) {
+    conditions.push(`b.department = $${idx++}`);
+    values.push(department);
+  }
+
+  if (order_number) {
+    conditions.push(`b.order_number = $${idx++}`);
+    values.push(order_number);
+  }
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    WHERE ${conditions.join(" AND ")}
+    ORDER BY b.pickup_date ASC, b.pickup_time ASC
+  `;
+
+  const res = await pool.query(sql, values);
+
+  return res.rows;
+};
+
+
+// ---------------------------------------------------------
+// GET PRE BOOKING FOR ACCOUNT PRE INVOICE
+// ---------------------------------------------------------
+exports.getPreBookingForAccountPreInvoice = async (filters) => {
+  const {
+    subsidiary_id,
+    account_id,
+    from_date,
+    to_date,
+    department,
+    order_number,
+  } = filters;
+
+  const conditions = [];
+  const values = [];
+  let idx = 1;
+
+  conditions.push(`b.subsidiary_id = $${idx++}`);
+  values.push(subsidiary_id);
+
+  conditions.push(`b.account_id = $${idx++}`);
+  values.push(account_id);
+
+  // Fix: 'IS NOT IN' ki jagah 'NOT IN' use hota hai PostgreSQL mein
+  conditions.push(`b.booking_status_id NOT IN (11)`);
+  conditions.push(`b.invoice_number IS NULL`);
+
+  // Aaj ke baad ki future bookings (Agar aaj ka din bhi include karna ho toh '>=' use karein)
+  conditions.push(`b.pickup_date::date > CURRENT_DATE`);
+
+  // From aur To date range ki condition
   conditions.push(`b.pickup_date::date BETWEEN $${idx++} AND $${idx++}`);
   values.push(from_date, to_date);
 

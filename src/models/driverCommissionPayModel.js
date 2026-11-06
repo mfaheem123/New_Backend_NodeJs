@@ -1,7 +1,10 @@
 const pool = require("../db");
 
 class DriverCommissionModel {
-  // Get all ledgers with filters, offset, and limit
+
+  // ---------------------------------------------------------
+// GET LEDGERS
+// ---------------------------------------------------------
   static async getAll(driver_id, invoice_type, limit, offset, company_id) {
     let query = `SELECT * FROM driver_commission_ledgers WHERE 1=1`;
     let queryParams = [];
@@ -41,14 +44,18 @@ class DriverCommissionModel {
     return { count, rows: result.rows };
   }
 
-  // Get ledger by ID
+   // ---------------------------------------------------------
+// GET LEDGER BY ID
+// ---------------------------------------------------------
   static async getById(id) {
     const query = `SELECT * FROM driver_commission_ledgers WHERE id = $1`;
     const result = await pool.query(query, [id]);
     return result.rows[0];
   }
 
-  // Create new entry
+  // ---------------------------------------------------------
+// CREATE LEDGER
+// ---------------------------------------------------------
   static async create(data) {
     const {
       driver_id,
@@ -80,7 +87,9 @@ class DriverCommissionModel {
     return result.rows[0];
   }
 
-  // Update entry
+  // ---------------------------------------------------------
+// UPDATE LEDGER
+// ---------------------------------------------------------
   static async update(id, data) {
     const allowedFields = [
       "driver_id",
@@ -127,7 +136,9 @@ class DriverCommissionModel {
     return result.rows[0];
   }
 
-  // Delete entry
+   // ---------------------------------------------------------
+// DELETE LEDGER
+// ---------------------------------------------------------
   static async delete(id) {
     const query = `DELETE FROM driver_commission_ledgers WHERE id = $1 RETURNING *;`;
     const result = await pool.query(query, [id]);

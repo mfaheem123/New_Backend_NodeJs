@@ -2,7 +2,10 @@ const driverCommissionPayModel = require("../models/driverCommissionPayModel");
 const driverModel = require("../models/driverModel");
 
 class DriverCommissionPayController {
-  // GET: Fetch ledgers
+
+  // ---------------------------------------------------------
+// GET LEDGERS
+// ---------------------------------------------------------
   static async getLedgers(req, res) {
     try {
       const offset = parseInt(req.query.offset) || 0;
@@ -32,7 +35,9 @@ class DriverCommissionPayController {
     }
   }
 
-  // GET: Fetch single ledger by ID
+  // ---------------------------------------------------------
+// GET LEDGER BY ID
+// ---------------------------------------------------------
   static async getLedgerById(req, res) {
     try {
       const { id } = req.params;
@@ -56,7 +61,9 @@ class DriverCommissionPayController {
     }
   }
 
-  // POST: Add new ledger entry
+  // ---------------------------------------------------------
+// CREATE LEDGER
+// ---------------------------------------------------------
   static async createLedger(req, res) {
     try {
       const {
@@ -71,9 +78,9 @@ class DriverCommissionPayController {
       } = req.body;
 
       console.log(
-      "🚀 INCOMING ADD DRIVER PAY LEDGER BODY:",
-      JSON.stringify(req.body, null, 2),
-    );
+        "🚀 INCOMING ADD DRIVER PAY LEDGER BODY:",
+        JSON.stringify(req.body, null, 2),
+      );
 
       if (
         !driver_id ||
@@ -111,7 +118,9 @@ class DriverCommissionPayController {
     }
   }
 
-  // POST: Update ledger entry
+  // ---------------------------------------------------------
+// UPDATE LEDGER
+// ---------------------------------------------------------
   static async updateLedger(req, res) {
     try {
       const { id } = req.params;
@@ -125,11 +134,11 @@ class DriverCommissionPayController {
         description,
         company_id,
       } = req.body;
-      
+
       console.log(
-      "🚀 INCOMING UPDATE DRIVER PAY LEDGER BODY:",
-      JSON.stringify(req.body, null, 2),
-    );
+        "🚀 INCOMING UPDATE DRIVER PAY LEDGER BODY:",
+        JSON.stringify(req.body, null, 2),
+      );
 
       const updatedLedger = await driverCommissionPayModel.update(id, {
         driver_id,
@@ -160,7 +169,9 @@ class DriverCommissionPayController {
     }
   }
 
-  // DELETE: Delete ledger entry
+ // ---------------------------------------------------------
+// DELETE LEDGER
+// ---------------------------------------------------------
   static async deleteLedger(req, res) {
     try {
       const { id } = req.params;

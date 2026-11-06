@@ -57,6 +57,7 @@ const {
   getBookingDriverCustomerById,
   getAllMultiBookings,
   fetchBookingsByMultiBookingId,
+  getBookingsForCustomerPreInvoice
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -3501,6 +3502,80 @@ exports.updateMultiBookings = async (req, res) => {
     res.status(500).json({
       success: false,
       message: err.message || "Internal server error",
+    });
+  }
+};
+
+
+// ---------------------------------------------------------
+// GET PRE BOOKINGS FOR CUSTOMER PRE INVOICE
+// ---------------------------------------------------------
+exports.getBookingsForCustomerPreInvoice = async (req, res) => {
+  try {
+    let { customer_id, from_date, to_date, payment_type_ids } = req.query;
+
+    if (!customer_id) {
+      return res.status(400).json({
+        status: false,
+        message: "customer_id is required",
+      });
+    }
+
+    if (!from_date || !to_date) {
+      return res.status(400).json({
+        status: false,
+        message: "from_date and to_date are required",
+      });
+    }
+
+    if (typeof payment_type_ids === "string") {
+      payment_type_ids = JSON.parse(payment_type_ids);
+    }
+
+    payment_type_ids = payment_type_ids.map(Number);
+
+    if (
+      !payment_type_ids ||
+      !Array.isArray(payment_type_ids) ||
+      payment_type_ids.length === 0
+    ) {
+      return res.status(400).json({
+        status: false,
+        message: "payment_type_ids must be a non-empty array",
+      });
+    }
+
+    const today = new Date();
+    const currentDate = today.getFullYear() + '-' + 
+                        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(today.getDate()).padStart(2, '0');
+
+    if (from_date <= currentDate) {
+      return res.status(400).json({
+        status: false,
+        message: "from_date must be greater than current date",
+      });
+    }
+
+    const bookings = await getBookingsForCustomerPreInvoice(
+      customer_id,
+      from_date,
+      to_date,
+      payment_type_ids,
+    );
+
+    return res.status(200).json({
+      status: true,
+      total_records: bookings.length,
+      bookings,
+    });
+  } catch (error) {
+    console.error("Get Customer Pre Invoice Bookings Error:", error);
+
+    return res.status(500).json({
+      status: false,
+      message: "Failed to fetch bookings",
+      error: error.message,
     });
   }
 };

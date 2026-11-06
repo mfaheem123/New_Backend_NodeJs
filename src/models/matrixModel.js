@@ -2,9 +2,6 @@
 const pool = require("../db");
 
 class MatrixModel {
-  // ---------------------------------------------------------
-  // FETCH ZONE AVAILABILITY MATRIX BY COMPANY ID
-  // ---------------------------------------------------------
   static async getZoneAvailabilityMatrix(company_id) {
     const query = `
         SELECT 
@@ -12,33 +9,35 @@ class MatrixModel {
             z.name AS zone_name,
             z.secondary_name,
             
-            -- 1. Available Drivers Count for this Company & Zone
+            -- 1. Available Drivers Count
             COALESCE(d.driver_count, 0) AS available_drivers,
 
-            -- 2. J0 Jobs (Immediate / Active bookings)
+            -- 2. J0 Jobs
             COALESCE(j.j0_jobs, 0) AS j0_count,
 
-            -- 3. J15 Jobs (Next 15 minutes window)
+            -- 3. J15 Jobs
             COALESCE(j.j15_jobs, 0) AS j15_count,
 
-            -- 4. J30 Jobs (Between 15 and 30 minutes window)
+            -- 4. J30 Jobs
             COALESCE(j.j30_jobs, 0) AS j30_count
 
         FROM zones z 
         
-        -- Drivers Subquery: Count active & available drivers matching company_id and zone name
+        -- Drivers Subquery: Matches driver's zone string with zone name OR zone id for this company
         LEFT JOIN (
             SELECT 
                 zone, 
                 COUNT(*) AS driver_count
             FROM drivers
             WHERE active = true 
-              AND driver_status = 'Available'
+              AND UPPER(driver_status) = 'AVAILABLE'
               AND company_id = $1
+              AND zone IS NOT NULL
             GROUP BY zone
-        ) d ON z.name = d.zone
+        ) d ON UPPER(TRIM(z.name)) = UPPER(TRIM(d.zone)) 
+            OR CAST(z.id AS VARCHAR) = TRIM(d.zone)
 
-        -- Jobs Subquery: Count unassigned bookings linked via pickup_plot and company_id
+        -- Jobs Subquery: Strict filtering for bookings based on company_id and matching pickup_plot with zone id
         LEFT JOIN (
             SELECT 
                 pickup_plot AS zone_id,
@@ -69,10 +68,10 @@ class MatrixModel {
               AND completed = false
               AND driver_id IS NULL
               AND company_id = $1
+              AND pickup_plot IS NOT NULL
             GROUP BY pickup_plot
         ) j ON z.id = j.zone_id
 
-        -- WHERE clause sabse akhir mein aayega
         WHERE z.company_id = $1;
     `;
 

@@ -146,6 +146,7 @@ exports.getAll = async ({
   invoice_date,
   invoice_due_date,
   company_id,
+  invoice_type,
 }) => {
   try {
     const conditions = [];
@@ -216,6 +217,12 @@ exports.getAll = async ({
     if (status && status.trim() !== "" && status.toLowerCase() !== "all") {
       conditions.push(`LOWER(ai.status) = LOWER($${idx++})`);
       values.push(status.trim());
+    }
+
+    // 📌 Invoice Type Filter
+    if (invoice_type && invoice_type.trim() !== "") {
+      conditions.push(`LOWER(ai.invoice_type) = LOWER($${idx++})`);
+      values.push(invoice_type.trim());
     }
 
     const whereClause =
