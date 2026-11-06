@@ -3498,7 +3498,9 @@ const getAllMultiBookings = async ({
   limit = 20,
   filters = {},
 }) => {
-  let whereClauses = ["b.multi_booking_id IS NOT NULL AND b.trash = false AND b.booking_type_id = 2"];
+  let whereClauses = [
+    "b.multi_booking_id IS NOT NULL AND b.trash = false AND b.booking_type_id = 2",
+  ];
   let queryParams = [];
 
   if (filters.reference_number) {

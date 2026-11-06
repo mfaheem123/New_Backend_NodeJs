@@ -2085,7 +2085,6 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
       `;
     return db.query(query, [balance, driverId]);
   },
-
 };
 
 module.exports = Driver;
