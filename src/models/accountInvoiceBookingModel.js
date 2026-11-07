@@ -207,7 +207,6 @@ exports.getForAccountInvoice = async (filters) => {
   return res.rows;
 };
 
-
 // ---------------------------------------------------------
 // GET PRE BOOKING FOR ACCOUNT PRE INVOICE
 // ---------------------------------------------------------

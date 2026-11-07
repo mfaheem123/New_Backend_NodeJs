@@ -2,10 +2,9 @@ const driverCommissionPayModel = require("../models/driverCommissionPayModel");
 const driverModel = require("../models/driverModel");
 
 class DriverCommissionPayController {
-
   // ---------------------------------------------------------
-// GET LEDGERS
-// ---------------------------------------------------------
+  // GET LEDGERS
+  // ---------------------------------------------------------
   static async getLedgers(req, res) {
     try {
       const offset = parseInt(req.query.offset) || 0;
@@ -36,8 +35,8 @@ class DriverCommissionPayController {
   }
 
   // ---------------------------------------------------------
-// GET LEDGER BY ID
-// ---------------------------------------------------------
+  // GET LEDGER BY ID
+  // ---------------------------------------------------------
   static async getLedgerById(req, res) {
     try {
       const { id } = req.params;
@@ -62,8 +61,8 @@ class DriverCommissionPayController {
   }
 
   // ---------------------------------------------------------
-// CREATE LEDGER
-// ---------------------------------------------------------
+  // CREATE LEDGER
+  // ---------------------------------------------------------
   static async createLedger(req, res) {
     try {
       const {
@@ -119,8 +118,8 @@ class DriverCommissionPayController {
   }
 
   // ---------------------------------------------------------
-// UPDATE LEDGER
-// ---------------------------------------------------------
+  // UPDATE LEDGER
+  // ---------------------------------------------------------
   static async updateLedger(req, res) {
     try {
       const { id } = req.params;
@@ -169,9 +168,9 @@ class DriverCommissionPayController {
     }
   }
 
- // ---------------------------------------------------------
-// DELETE LEDGER
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // DELETE LEDGER
+  // ---------------------------------------------------------
   static async deleteLedger(req, res) {
     try {
       const { id } = req.params;

@@ -1,10 +1,9 @@
 const pool = require("../db");
 
 class DriverCommissionModel {
-
   // ---------------------------------------------------------
-// GET LEDGERS
-// ---------------------------------------------------------
+  // GET LEDGERS
+  // ---------------------------------------------------------
   static async getAll(driver_id, invoice_type, limit, offset, company_id) {
     let query = `SELECT * FROM driver_commission_ledgers WHERE 1=1`;
     let queryParams = [];
@@ -44,9 +43,9 @@ class DriverCommissionModel {
     return { count, rows: result.rows };
   }
 
-   // ---------------------------------------------------------
-// GET LEDGER BY ID
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // GET LEDGER BY ID
+  // ---------------------------------------------------------
   static async getById(id) {
     const query = `SELECT * FROM driver_commission_ledgers WHERE id = $1`;
     const result = await pool.query(query, [id]);
@@ -54,8 +53,8 @@ class DriverCommissionModel {
   }
 
   // ---------------------------------------------------------
-// CREATE LEDGER
-// ---------------------------------------------------------
+  // CREATE LEDGER
+  // ---------------------------------------------------------
   static async create(data) {
     const {
       driver_id,
@@ -88,8 +87,8 @@ class DriverCommissionModel {
   }
 
   // ---------------------------------------------------------
-// UPDATE LEDGER
-// ---------------------------------------------------------
+  // UPDATE LEDGER
+  // ---------------------------------------------------------
   static async update(id, data) {
     const allowedFields = [
       "driver_id",
@@ -136,9 +135,9 @@ class DriverCommissionModel {
     return result.rows[0];
   }
 
-   // ---------------------------------------------------------
-// DELETE LEDGER
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
+  // DELETE LEDGER
+  // ---------------------------------------------------------
   static async delete(id) {
     const query = `DELETE FROM driver_commission_ledgers WHERE id = $1 RETURNING *;`;
     const result = await pool.query(query, [id]);

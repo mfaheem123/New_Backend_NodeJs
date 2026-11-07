@@ -113,9 +113,12 @@ exports.getPreBookingsForInvoice = async (req, res) => {
 
     // Fix: Yahan currentDate ko define kiya gaya hai (YYYY-MM-DD format mein local time ke mutabiq)
     const today = new Date();
-    const currentDate = today.getFullYear() + '-' + 
-                        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-                        String(today.getDate()).padStart(2, '0');
+    const currentDate =
+      today.getFullYear() +
+      "-" +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(today.getDate()).padStart(2, "0");
 
     if (from_date <= currentDate) {
       return res.status(400).json({
@@ -192,4 +195,3 @@ exports.getPreBookingsForInvoice = async (req, res) => {
     });
   }
 };
-

@@ -89,7 +89,9 @@ router.get(
   bookingController.getBookingsForCustomerInvoice,
 );
 
-router.get("/customer-pre-invoice-bookings", bookingController.getBookingsForCustomerPreInvoice
+router.get(
+  "/customer-pre-invoice-bookings",
+  bookingController.getBookingsForCustomerPreInvoice,
 );
 
 //BOOKING POST APIS ROUTES

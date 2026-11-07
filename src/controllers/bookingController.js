@@ -57,7 +57,7 @@ const {
   getBookingDriverCustomerById,
   getAllMultiBookings,
   fetchBookingsByMultiBookingId,
-  getBookingsForCustomerPreInvoice
+  getBookingsForCustomerPreInvoice,
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -3506,7 +3506,6 @@ exports.updateMultiBookings = async (req, res) => {
   }
 };
 
-
 // ---------------------------------------------------------
 // GET PRE BOOKINGS FOR CUSTOMER PRE INVOICE
 // ---------------------------------------------------------
@@ -3546,9 +3545,12 @@ exports.getBookingsForCustomerPreInvoice = async (req, res) => {
     }
 
     const today = new Date();
-    const currentDate = today.getFullYear() + '-' + 
-                        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-                        String(today.getDate()).padStart(2, '0');
+    const currentDate =
+      today.getFullYear() +
+      "-" +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(today.getDate()).padStart(2, "0");
 
     if (from_date <= currentDate) {
       return res.status(400).json({

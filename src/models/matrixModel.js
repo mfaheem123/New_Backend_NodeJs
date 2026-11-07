@@ -1,4 +1,3 @@
-
 // models/matrixModel.js
 
 const pool = require("../db");

@@ -3594,8 +3594,6 @@ const fetchBookingsByMultiBookingId = async (multiBookingId) => {
   return rows;
 };
 
-
-
 // ---------------------------------------------------------
 // GET BOOKINGS FOR CUSTOMER PRE INVOICE
 // ---------------------------------------------------------
@@ -3695,5 +3693,5 @@ module.exports = {
   getAllMultiBookings,
   getCompanyIdByBookingId,
   fetchBookingsByMultiBookingId,
-  getBookingsForCustomerPreInvoice
+  getBookingsForCustomerPreInvoice,
 };
