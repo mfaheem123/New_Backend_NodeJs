@@ -19,6 +19,7 @@ const { calculateSingleFare } = require("../controllers/fareController");
 const driverAppFeatureModel = require("../models/driverAppFeaturesModel");
 const { sendSMSWithTemplate } = require("../services/smsService");
 const { sendEmailWithTemplate } = require("../services/emailService");
+const AuditModel = require("../models/auditModel");
 
 const DEFAULT_EMPLOYEE_ID = 28;
 
@@ -267,11 +268,7 @@ async function fallbackRandomRef() {
   return ref;
 }
 
-function strOrNull(v) {
-  if (v === undefined || v === null) return null;
-  if (typeof v === "string") return v;
-  return JSON.stringify(v);
-}
+
 
 // NORMALIZER
 async function normalizeBookingPayload(poolClient, src) {
@@ -488,6 +485,24 @@ async function createBookingRow(pool, bookingObj) {
 
   // INSERT
   const inserted = await insertBookingRow(pool, row);
+
+  // 🔥 Yahan par global audit log laga dein taake har tarah ki booking create hone par log ban jaye
+  try {
+    await AuditModel.createAuditLog({
+      type: 'booking',
+      operation: 'activity',
+      previous: [],
+      next: ['booking created'], // Ya 'booking created successfully'
+      employee_id: inserted.employee_id || null,
+      booking_id: inserted.id,
+      driver_id: inserted.driver_id || null,
+      company_id: inserted.company_id || 1
+    });
+    console.log("✅ Audit Log Created for Booking ID:", inserted.id);
+  } catch (auditErr) {
+    console.error("❌ Audit Log Error on Create:", auditErr);
+  }
+
   return inserted;
 }
 
@@ -536,29 +551,7 @@ async function createSimpleBooking(payload) {
 
     console.log("BOOKING DATA FOR SENDING SMS: ", clean);
 
-    // Run notifications asynchronously after commit Without Email
-    // try {
-    //   // 1. SEND SMS
-    //   await sendBookingSMS(clean);
-
-    //   // 2. SEND NOTIFICATION TO DRIVER
-    //   if (clean.driver_id) {
-    //     await sendBookingNotification(clean.driver_id, clean);
-    //   }
-
-    //   // 3. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
-    //   if (clean.booking_source === "app") {
-    //     await sendAppBookingNotification(clean, payload.company_id);
-    //   }
-
-    //   // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS WEB
-    //   if (clean.booking_source === "web") {
-    //     await sendWebBookingNotification(clean, payload.company_id);
-    //   }
-    // } catch (notifErr) {
-    //   // Log notification failure but don't fail the API call since DB commit succeeded
-    //   console.error("NOTIFICATION / SMS ERROR (Booking saved):", notifErr);
-    // }
+    
 
     // Run notifications asynchronously after commit WITH EMAIL SUPPORT
     try {
@@ -610,66 +603,7 @@ async function createSimpleBooking(payload) {
   }
 }
 
-// CREATE TWO-WAY BOOKING
-async function createTwoWayBooking(payload) {
-  try {
-    await pool.query("BEGIN");
 
-    let customerId = payload.customer_id || null;
-    // 🔥 Customer Upsert Logic (Insert if new, Update details if mobile exists)
-    if (!customerId) {
-      customerId = await upsertCustomer(pool, payload);
-    }
-
-    const normalized = await normalizeBookingPayload(pool, payload);
-    if (customerId) normalized.customer_id = customerId;
-
-    const primary = await createBookingRow(pool, normalized);
-
-    const returnBooking = { ...normalized };
-
-    returnBooking.pickup = normalized.dropoff;
-    returnBooking.dropoff = normalized.pickup;
-
-    returnBooking.pickup_door_number = normalized.dropoff_door_number;
-    returnBooking.dropoff_door_number = normalized.pickup_door_number;
-
-    returnBooking.pickup_plot = normalized.dropoff_plot;
-    returnBooking.dropoff_plot = normalized.pickup_plot;
-
-    returnBooking.pickup_location_type_id = normalized.dropoff_location_type_id;
-    returnBooking.dropoff_location_type_id = normalized.pickup_location_type_id;
-
-    returnBooking.pickup_latitude = normalized.dropoff_latitude;
-    returnBooking.pickup_longitude = normalized.dropoff_longitude;
-    returnBooking.dropoff_latitude = normalized.pickup_latitude;
-    returnBooking.dropoff_longitude = normalized.pickup_longitude;
-
-    returnBooking.associated_booking = primary.id;
-    returnBooking.reference_number = await genRef(
-      pool,
-      payload.company_id,
-      payload.subsidiary_id,
-    );
-    returnBooking.driver_id = returnBooking.driver_id || null;
-    returnBooking.on_route = false;
-
-    const retInserted = await createBookingRow(pool, returnBooking);
-
-    const primaryEnriched = await getBookingDriverCustomerById(primary.id);
-    const returnEnriched = await getBookingDriverCustomerById(retInserted.id);
-    const clean = parseJSONFields(primaryEnriched);
-    const returnClean = parseJSONFields(returnEnriched);
-
-    await pool.query("COMMIT");
-
-    // return { booking: [primary, retInserted] };
-    return { bookings: [clean, returnClean] };
-  } catch (err) {
-    await pool.query("ROLLBACK");
-    throw err;
-  }
-}
 
 // RETURN WAY BOOKING (Journey Type = 3)
 async function createReturnWayBooking(payload) {
@@ -909,13 +843,7 @@ async function createMultiReservationBooking(payload) {
       customerId = await upsertCustomer(pool, payload);
     }
 
-    // /* -----------------------------
-    //  * GENERATE MULTI BOOKING ID
-    //  * ----------------------------- */
-    // const multiBookingIdRes = await pool.query(
-    //   "SELECT nextval('bookings_id_seq') AS nextid",
-    // );
-    // const multiBookingId = parseInt(multiBookingIdRes.rows[0].nextid, 10);
+  
 
     /* -----------------------------
      * INSERT BOOKINGS
@@ -955,16 +883,7 @@ async function createMultiReservationBooking(payload) {
       outboundClone.fares = outboundFare.fare;
       outboundClone.total_charges = outboundFare.total_fare;
 
-      //OLD BOOKING ID FOR MULTI RESERVATION
-      // const normalizedOutbound = await normalizeBookingPayload(outboundClone);
 
-      // normalizedOutbound.customer_id = customerId;
-      // normalizedOutbound.multi_booking_id = multiBookingId;
-      // normalizedOutbound.reference_number = await genRef();
-
-      // const outboundInserted = await createBookingRow(pool, normalizedOutbound);
-
-      // createdBookingIds.push(outboundInserted.id);
 
       const normalizedOutbound = await normalizeBookingPayload(
         pool,
@@ -1168,224 +1087,6 @@ async function create(payload) {
   return createSimpleBooking(payload);
 }
 
-// ============================== OLD UPDATE BOOKINGS BY ID ==============================
-// async function updateBookingService(bookingId, payload) {
-//   //  COMPLETED STATUS
-//   const COMPLETED_STATUS_ID = 11;
-
-//   // 0️ Existing booking fetch
-//   const existing = await findBookingsById(bookingId);
-//   if (!existing) return null;
-
-//   const isCompleted =
-//     Number(existing.booking_status_id) === COMPLETED_STATUS_ID;
-
-//   // 1 Allowed columns (UPDATE ke liye)
-//   // const allowed = [
-//   //   "booking_status_id",
-//   //   "driver_id",
-//   //   "vehicle_id",
-//   //   "pickup",
-//   //   "dropoff",
-//   //   "pickup_date",
-//   //   "pickup_time",
-//   //   "dropoff_date",
-//   //   "dropoff_time",
-//   //   "pickup_latitude",
-//   //   "pickup_longitude",
-//   //   "dropoff_latitude",
-//   //   "dropoff_longitude",
-//   //   "pickup_door_number",
-//   //   "dropoff_door_number",
-//   //   "pickup_plot",
-//   //   "drpoff_plot",
-//   //   "notes",
-//   //   "viapoints",
-//   //   "restricted_drivers",
-//   //   "child_seat",
-//   //   "fares",
-//   //   "total_charges",
-//   //   "waiting_charges",
-//   //   "parking_charges",
-//   //   "extra_drop_charges",
-//   //   "payment_type_id",
-//   //   "account_id",
-//   //   "on_route",
-//   //   "arrived",
-//   //   "passenger_on_board",
-//   //   "completed",
-//   //   "cancelled_reason",
-//   //   "dispatch",
-//   //   "dispatch_as",
-//   //   "department",
-//   //   "passengers",
-//   //   "luggages",
-//   //   "hand_luggages"
-//   // ];
-
-//   // ALL FILEDS ALLOWED
-//   const allowed = [
-//     // Booking operational
-//     "booking_status_id",
-//     "driver_id",
-//     "vehicle_id",
-//     "vehicle_type_id",
-//     "pickup",
-//     "dropoff",
-//     "pickup_date",
-//     "pickup_time",
-//     "dropoff_date",
-//     "dropoff_time",
-//     "pickup_latitude",
-//     "pickup_longitude",
-//     "dropoff_latitude",
-//     "dropoff_longitude",
-//     "pickup_door_number",
-//     "dropoff_door_number",
-//     "pickup_plot",
-//     "dropoff_plot",
-//     "viapoints",
-//     "restricted_drivers",
-//     "child_seat",
-//     "notes",
-//     "special_instructions",
-//     "fares",
-//     "total_charges",
-//     "waiting_charges",
-//     "parking_charges",
-//     "extra_drop_charges",
-//     "congestion_charges",
-//     "credit_card_charges",
-//     "company_price",
-//     "eta",
-//     "miles",
-//     "payment_type_id",
-//     "account_id",
-//     "on_route",
-//     "arrived",
-//     "passenger_on_board",
-//     "completed",
-//     "cancelled_reason",
-//     "dispatch",
-//     "dispatch_as",
-
-//     // Passenger / booking info
-//     "passengers",
-//     "luggages",
-//     "hand_luggages",
-//     "name",
-//     "email",
-//     "mobile",
-//     "telephone",
-//     "department",
-//     "journey_type_id",
-//     "booking_type_id",
-//     "booking_source",
-//     "quotation",
-//     "sms",
-//     "emailFlag",
-//     "escort_id",
-//     "meet_and_greet",
-//     "add_return_fare",
-//     "fare_meter_status",
-//     "fare_meter",
-//     "toggle_driver_text",
-//     "toggle_passenger_text",
-//     "permanent",
-//     "multi_booking_id",
-//     "associated_booking",
-//     "invoice_status",
-//     "commission_status",
-//     "commission",
-//     "skipped_bookings",
-//     "booked_by",
-//     "booked_at",
-//     "stripe_customer_id",
-//     "stripe_payment_id",
-//     "invoice_number",
-//     "initial_subsidiary_id",
-//     "lead_time",
-//     "company_id",
-//   ];
-
-//   // 2️ Filter payload
-//   const updates = {};
-//   for (const key of allowed) {
-//     if (payload[key] !== undefined) {
-//       updates[key] = payload[key];
-//     }
-//   }
-
-//   // 3️ JSON stringify
-//   const jsonFields = ["viapoints", "restricted_drivers", "child_seat", "notes"];
-//   for (const f of jsonFields) {
-//     if (updates[f] !== undefined) {
-//       updates[f] =
-//         typeof updates[f] === "string"
-//           ? updates[f]
-//           : JSON.stringify(updates[f]);
-//     }
-//   }
-
-//   if (Object.keys(updates).length === 0) {
-//     throw new Error("No valid fields provided for update");
-//   }
-
-//   // =====================================================
-//   //  CASE 1: BOOKING NOT COMPLETED → NORMAL UPDATE
-//   // =====================================================
-//   if (!isCompleted) {
-//     const oldDriverId = existing.driver_id;
-//     const updated = await updateBooking(bookingId, updates);
-//     if (!updated) return null;
-
-//     const enriched = await getBookingDriverCustomerById(updated.id);
-//     const clean = parseJSONFields(enriched);
-//     // 🔔 SEND NOTIFICATION IF DRIVER ASSIGNED / CHANGED
-//     if (
-//       updates.driver_id &&
-//       Number(updates.driver_id) !== Number(oldDriverId)
-//     ) {
-//       await sendBookingNotification(updates.driver_id, clean);
-//     }
-
-//     return clean;
-//   }
-
-//   // =====================================================
-//   //  CASE 2: BOOKING COMPLETED → CREATE NEW BOOKING
-//   // =====================================================
-//   const newBookingPayload = {
-//     ...existing,
-//     ...updates,
-
-//     id: undefined,
-//     booking_status_id: payload.booking_status_id || 1, // Saved / Pending
-//     completed: false,
-//     reference_number: await genRef(),
-//     created_at: new Date(),
-//     updated_at: new Date(),
-//     company_id: payload.company_id,
-//   };
-
-//   //  Remove non-insertable fields
-//   delete newBookingPayload.id;
-
-//   // Normalize JSON fields again
-//   const normalized = await normalizeBookingPayload(newBookingPayload);
-
-//   const inserted = await createBookingRow(pool, normalized);
-
-//   const enriched = await getBookingDriverCustomerById(inserted.id);
-//   const clean = parseJSONFields(enriched);
-
-//   // 8️ SEND NOTIFICATION
-//   if (clean.driver_id) {
-//     await sendBookingNotification(clean.driver_id, clean);
-//   }
-
-//   return clean;
-// }
 
 // ---------------------------------------------------------
 // UPDATE BOOKING BY ID
@@ -1585,12 +1286,7 @@ async function updateBookingService(bookingId, payload) {
   if (Number(payload.journey_type_id) === 3 && returnBooking) {
     console.log("🔄 RETURN WAY EDIT DETECTED");
 
-    // ===================================================
-    // REMOVE ANY RETURN_* FROM NORMAL UPDATE
-    // ===================================================
-
-    // Payload ke normal fields primary booking ko jayenge.
-    // Return fields alag se returnUpdates mein jayenge.
+  
 
     // ===================================================
     // RETURN BOOKING UPDATES
@@ -2051,75 +1747,6 @@ async function cloneOneWayBookingService(payload) {
 }
 
 // ASSIGN DRIVER TO PRESENT BOOKINGS
-// async function assignDriverService(bookingId, driverId, company_id) {
-//   let fare_meter = false;
-//   if (driverId) {
-//     const driverFeatures = await driverAppFeatureModel.getByDriverId(
-//       driverId,
-//       company_id,
-//     );
-//     console.log("DRIVER FEATURES:", driverFeatures);
-//     if (driverFeatures) {
-//       fare_meter = !!driverFeatures.fare_meter;
-//     }
-//   }
-//   console.log("FARE METER:", fare_meter);
-//   // 1️ Update booking with driver
-//   const updated = await updateBooking(bookingId, {
-//     driver_id: driverId,
-//     booking_status_id: 1,
-//     fare_meter: fare_meter,
-//     dispatched_at: new Date(),
-//   });
-
-//   if (!updated) return null;
-//   console.log(
-//     "=================== FARE METER STATUS =================",
-//     fare_meter,
-//   );
-//   // 2️ Get enriched booking
-//   const enriched = await getBookingDriverCustomerById(bookingId);
-
-//   console.log("ENRICHED BOOKING DATA", enriched);
-
-//   // 3️ Send notification to driver
-//   await sendBookingNotification(driverId, enriched);
-//   // -------------------------------
-//   // 📩 DISPATCH SMS (TEMPLATE 3)
-//   // -------------------------------
-//   try {
-//     if (enriched?.mobile && enriched?.driver_id) {
-//       const totalFare = enriched?.total_charges ?? "0.00";
-
-//       const template3Data = {
-//         company_name: enriched?.subsidiary?.name ?? "",
-//         company_telephone: enriched?.subsidiary?.telephone_number ?? "",
-//         company_email: enriched?.subsidiary?.email ?? "",
-//         vehicle_type: enriched?.vehicle_type?.name ?? "",
-//         vehicle_color: enriched?.driver?.vehicle?.color ?? "",
-//         vehicle_make: enriched?.driver?.vehicle?.make ?? "",
-//         vehicle_model: enriched?.driver?.vehicle?.model ?? "",
-//         vehicle_number: enriched?.driver?.vehicle?.vehicle_number ?? "",
-//         driver_name: enriched?.driver?.name ?? "",
-//         fares: totalFare,
-//       };
-
-//       console.log("📩 Sending DISPATCH SMS...");
-
-//       await sendSMSWithTemplate({
-//         template_id: 3,
-//         mobile: enriched.mobile,
-//         port: 5,
-//         data: template3Data,
-//       });
-//     }
-//   } catch (err) {
-//     console.error("❌ Dispatch SMS Error:", err);
-//   }
-//   return enriched;
-// }
-
-// SERVICE
 async function assignDriverService(
   bookingId,
   driverId,

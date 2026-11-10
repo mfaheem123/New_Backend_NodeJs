@@ -151,7 +151,7 @@ zone_jobs AS (
       AND b.company_id = $1
       AND b.pickup_plot IS NOT NULL
       AND b.pickup_date::DATE = CURRENT_DATE
-      AND b.status = 1
+      AND b.booking_status_id = 1
 
     GROUP BY b.pickup_plot
 )
@@ -166,7 +166,7 @@ zone_jobs AS (
           AS available_drivers,
 
         COALESCE(j.j0_jobs, 0)::INTEGER AS j0_count,
-        COALESCE(j.j15_jobs, 0)::INTEGER AS j15_count,
+        COALESCE(j.j10_jobs, 0)::INTEGER AS j15_count,
         COALESCE(j.j30_jobs, 0)::INTEGER AS j30_count
 
       FROM zones z

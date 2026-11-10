@@ -81,6 +81,7 @@ const {
 } = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 const SinbinService = require("../services/sinbinService");
+const AuditModel = require("../models/auditModel");
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -690,6 +691,7 @@ exports.updateBookingStatus = async (req, res) => {
       });
     }
 
+  const bookingData = booking.rows[0];  
     const driverId = booking.rows[0].driver_id;
     const customerId = booking.rows[0].customer_id;
     const booking_source = booking.rows[0].booking_source;
@@ -707,7 +709,7 @@ exports.updateBookingStatus = async (req, res) => {
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
       if (booking_source == "app") {
-        await sendRideAcceptedNotification(customerId, booking.rows[0]);
+        await sendRideAcceptedNotification(customerId, bookingData);
       }
     }
 
@@ -721,8 +723,8 @@ exports.updateBookingStatus = async (req, res) => {
 
     // ARRIVED
     if (booking_status_id == 6) {
-      const pickupDate = booking.rows[0].pickup_date;
-      const pickupTime = booking.rows[0].pickup_time;
+      const pickupDate = bookingData.pickup_date;
+      const pickupTime = bookingData.pickup_time;
 
       const now = new Date();
 
@@ -857,6 +859,62 @@ exports.updateBookingStatus = async (req, res) => {
 
     // UPDATE BOOKING STATUS
     await updateBookingStatus(bookingId, booking_status_id);
+
+
+    // =========================================================
+    // 📝 AUDIT LOG GENERATION BASED ON STATUS ID
+    // =========================================================
+    let activityMessage = "";
+
+    // RIDE ACCEPTED
+    if (booking_status_id == 15) {
+      activityMessage = "driver accepted the booking";
+    }
+    // ON ROUTE
+    else if (booking_status_id == 3) {
+      activityMessage = "driver on route";
+    }
+    // ARRIVED
+    else if (booking_status_id == 6) {
+      activityMessage = "driver arrived at booking";
+    }
+    // COMPLETED
+    else if (booking_status_id == 11) {
+      // Check karein ke controller ne complete kiya ya driver ne
+      activityMessage = "driver completed the booking"; 
+    }
+    // REJECTED
+    else if (booking_status_id == 5) {
+      activityMessage = "driver rejected the booking";
+    }
+    // MISSED
+    else if (booking_status_id == 4) {
+      activityMessage = "driver missed the booking";
+    }
+    // NO SHOW
+    else if (booking_status_id == 7) {
+      activityMessage = "booking marked as no show";
+    }
+
+    // Agar activity message mil jaye toh Audit Log insert karein
+    if (activityMessage) {
+      try {
+        await AuditModel.createAuditLog({
+          type: 'booking',
+          operation: 'activity',
+          previous: [],
+          next: [activityMessage],
+          employee_id: req.user?.id || bookingData.employee_id || null, // Request user ya existing employee id
+          booking_id: bookingId,
+          driver_id: driverId || null,
+          company_id: bookingData.company_id || 1
+        });
+      } catch (auditErr) {
+        console.error("❌ Audit Log Error on Status Update:", auditErr);
+      }
+    }
+
+    
 
     //GET FRESH DATA AFTER UPDATE
     const freshBooking = await findBookingById(bookingId);
