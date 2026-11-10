@@ -104,51 +104,58 @@ class MatrixModel {
         GROUP BY z.id
       ),
 
-      zone_jobs AS (
-        SELECT
-          pickup_plot AS zone_id,
+      
+zone_jobs AS (
+    SELECT
+        b.pickup_plot AS zone_id,
 
-          COUNT(*) FILTER (
+        COUNT(*) FILTER (
             WHERE
-              (pickup_date || ' ' ||
-                COALESCE(pickup_time, '00:00:00'))::TIMESTAMP <= NOW()
-              AND driver_id IS NULL
-          )::INTEGER AS j0_jobs,
+                b.pickup_date::DATE +
+                COALESCE(b.pickup_time::TIME, TIME '00:00:00')
+                <= NOW()
+        )::INTEGER AS j0_jobs,
 
-          COUNT(*) FILTER (
+        COUNT(*) FILTER (
             WHERE
-              (pickup_date || ' ' ||
-                COALESCE(pickup_time, '00:00:00'))::TIMESTAMP > NOW()
-              AND
-              (pickup_date || ' ' ||
-                COALESCE(pickup_time, '00:00:00'))::TIMESTAMP
-                  <= NOW() + INTERVAL '15 minutes'
-              AND driver_id IS NULL
-          )::INTEGER AS j15_jobs,
+                b.pickup_date::DATE +
+                COALESCE(b.pickup_time::TIME, TIME '00:00:00')
+                > NOW()
+                AND
+                b.pickup_date::DATE +
+                COALESCE(b.pickup_time::TIME, TIME '00:00:00')
+                <= NOW() + INTERVAL '10 minutes'
+        )::INTEGER AS j10_jobs,
 
-          COUNT(*) FILTER (
+        COUNT(*) FILTER (
             WHERE
-              (pickup_date || ' ' ||
-                COALESCE(pickup_time, '00:00:00'))::TIMESTAMP
-                  > NOW() + INTERVAL '15 minutes'
-              AND
-              (pickup_date || ' ' ||
-                COALESCE(pickup_time, '00:00:00'))::TIMESTAMP
-                  <= NOW() + INTERVAL '30 minutes'
-              AND driver_id IS NULL
-          )::INTEGER AS j30_jobs
+                b.pickup_date::DATE +
+                COALESCE(b.pickup_time::TIME, TIME '00:00:00')
+                > NOW() + INTERVAL '10 minutes'
+                AND
+                b.pickup_date::DATE +
+                COALESCE(b.pickup_time::TIME, TIME '00:00:00')
+                <= NOW() + INTERVAL '30 minutes'
+        )::INTEGER AS j30_jobs
 
-        FROM bookings
+    FROM bookings b
 
-        WHERE trash = false
-          AND hidden = false
-          AND completed = false
-          AND driver_id IS NULL
-          AND company_id = $1
-          AND pickup_plot IS NOT NULL
+    INNER JOIN zones z
+        ON z.id = b.pickup_plot
+        AND z.company_id = b.company_id
 
-        GROUP BY pickup_plot
-      )
+    WHERE b.trash = false
+      AND b.hidden = false
+      AND b.completed = false
+      AND b.driver_id IS NULL
+      AND b.company_id = $1
+      AND b.pickup_plot IS NOT NULL
+      AND b.pickup_date::DATE = CURRENT_DATE
+      AND b.status = 1
+
+    GROUP BY b.pickup_plot
+)
+
 
       SELECT
         z.id AS zone_id,
