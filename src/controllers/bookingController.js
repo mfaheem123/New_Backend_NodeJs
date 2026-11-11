@@ -3495,7 +3495,7 @@ exports.getAllMultiBookings = async (req, res) => {
 // ---------------------------------------------------------
 exports.getBookingsBySpecificMultiBookingId = async (req, res) => {
   try {
-    const { multiBookingId } = req.query;
+  const { multiBookingId, reference_number, pickup_date, journey_type_id } = req.query;
 
     if (!multiBookingId) {
       return res.status(400).json({
@@ -3504,8 +3504,15 @@ exports.getBookingsBySpecificMultiBookingId = async (req, res) => {
       });
     }
 
+    // Search filters object banayein
+    const filters = {
+      reference_number,
+      pickup_date,
+      journey_type_id,
+    };
+
     // Call Model Function
-    const bookings = await fetchBookingsByMultiBookingId(multiBookingId);
+    const bookings = await fetchBookingsByMultiBookingId(multiBookingId, filters);
 
     // Parse JSON fields agar zaroorat ho (jaise viapoints, notes, etc.)
     const bookingsData = bookings.map((row) => parseJSONFields(row));

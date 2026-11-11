@@ -158,7 +158,7 @@ LEFT JOIN location_types ltd ON ld.location_type_id = ltd.id
 `;
 
 // ---------------------------------------------------------
-// GET BOOKING FOR ACCOUNT INVOICE
+// GET BOOKINGS FOR ACCOUNT INVOICE WITH DYNAMIC SEARCH FILTERS
 // ---------------------------------------------------------
 exports.getForAccountInvoice = async (filters) => {
   const {
@@ -302,7 +302,7 @@ exports.getForAccountInvoice = async (filters) => {
 };
 
 // ---------------------------------------------------------
-// GET PRE BOOKING FOR ACCOUNT PRE INVOICE
+// GET BOOKINGS FOR ACCOUNT PRE INVOICE WITH DYNAMIC SEARCH FILTERS
 // ---------------------------------------------------------
 exports.getPreBookingForAccountPreInvoice = async (filters) => {
   const {

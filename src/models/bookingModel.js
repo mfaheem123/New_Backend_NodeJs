@@ -3518,10 +3518,6 @@ const getBookingDriverCustomerById = async (id) => {
 // ---------------------------------------------------------
 // GET CUSTOMER BOOKINGS BY CATEGORY & COUNTS
 // ---------------------------------------------------------
-
-/**
- * Fetch categorized customer bookings (Current, Past, Quoted) & Total Stats
- */
 const getCustomerBookingsAndStats = async (customerId) => {
   // 1️⃣ Get categorized bookings query
   // Note: Adjust status IDs according to your database scheme:
@@ -3538,9 +3534,9 @@ const getCustomerBookingsAndStats = async (customerId) => {
   return allBookings;
 };
 
-/**
- * Fetch booking counts summary for bottom stats cards
- */
+// ---------------------------------------------------------
+// GET CUSTOMER BOOKINGS STATS (TOTAL, CURRENT, COMPLETED, CANCELLED, QUOTED)
+// ---------------------------------------------------------
 const getCustomerBookingStats = async (customerId) => {
   const sql = `
     SELECT 
@@ -3675,14 +3671,51 @@ const getCompanyIdByBookingId = async (bookingId) => {
 // ---------------------------------------------------------
 // FETCH ALL BOOKINGS BY SPECIFIC MULTI BOOKING ID MODEL
 // ---------------------------------------------------------
-const fetchBookingsByMultiBookingId = async (multiBookingId) => {
+// const fetchBookingsByMultiBookingId = async (multiBookingId) => {
+//   const sql = `
+//     ${ENRICHED_SELECT}
+//     WHERE b.multi_booking_id = $1
+//     ORDER BY b.pickup_date ASC, b.pickup_time ASC
+//   `;
+
+//   const { rows } = await pool.query(sql, [multiBookingId]);
+//   return rows;
+// };
+
+// ---------------------------------------------------------
+// FETCH ALL BOOKINGS BY SPECIFIC MULTI BOOKING ID WITH FILTERS MODEL
+// ---------------------------------------------------------
+const fetchBookingsByMultiBookingId = async (multiBookingId, filters = {}) => {
+  let queryParams = [multiBookingId];
+  let conditions = ["b.multi_booking_id = $1"];
+
+  // 1. Reference Number Filter (Partial match ke liye ILIKE use kar sakte hain)
+  if (filters.reference_number) {
+    queryParams.push(`%${filters.reference_number}%`);
+    conditions.push(`b.reference_number ILIKE $${queryParams.length}`);
+  }
+
+  // 2. Pickup Date Filter
+  if (filters.pickup_date) {
+    queryParams.push(filters.pickup_date);
+    conditions.push(`b.pickup_date = $${queryParams.length}`);
+  }
+
+  // 3. Journey Type Filter
+  if (filters.journey_type_id) {
+    queryParams.push(filters.journey_type_id);
+    conditions.push(`b.journey_type_id = $${queryParams.length}`);
+  }
+
+  const whereClause = conditions.join(" AND ");
+
   const sql = `
     ${ENRICHED_SELECT}
-    WHERE b.multi_booking_id = $1
+    WHERE ${whereClause}
     ORDER BY b.pickup_date ASC, b.pickup_time ASC
   `;
 
-  const { rows } = await pool.query(sql, [multiBookingId]);
+  const { rows } = await pool.query(sql, queryParams);
   return rows;
 };
 

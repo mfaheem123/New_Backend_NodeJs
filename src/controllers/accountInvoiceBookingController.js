@@ -1,7 +1,7 @@
 const Model = require("../models/accountInvoiceBookingModel");
 
 // ---------------------------------------------------------
-// GET BOOKING FOR ACCOUNT INVOICE
+// GET BOOKINGS FOR ACCOUNT INVOICE WITH DYNAMIC SEARCH FILTERS
 // ---------------------------------------------------------
 exports.getBookingsForInvoice = async (req, res) => {
   try {
@@ -119,7 +119,7 @@ exports.getBookingsForInvoice = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// GET PRE BOOKING FOR ACCOUNT PRE INVOICE
+// GET BOOKINGS FOR ACCOUNT PRE INVOICE WITH DYNAMIC SEARCH FILTERS
 // ---------------------------------------------------------
 exports.getPreBookingsForInvoice = async (req, res) => {
   try {
