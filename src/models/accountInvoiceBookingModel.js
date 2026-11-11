@@ -246,9 +246,9 @@ exports.getForAccountInvoice = async (filters) => {
     values.push(`%${journey_type}%`);
   }
 
-  // 7. DateTime Filter (b.pickup_date + b.pickup_time)
+  // 7. DateTime Filter (b.pickup_date + b.pickup_time ki jagah || use karein)
   if (datetime) {
-    conditions.push(`(b.pickup_date + b.pickup_time)::text ILIKE $${idx++}`);
+    conditions.push(`(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`);
     values.push(`%${datetime}%`);
   }
 
@@ -310,20 +310,20 @@ exports.getPreBookingForAccountPreInvoice = async (filters) => {
     to_date,
     department,
     order_number,
-     ref_number,
-      datetime,
-      pickup,
-      dropoff,
-      customer,
-      vehicle,
-      journey_type,
-      fare,
-      parking_charges,
-      waiting_charges,
-      extra_drop_charges,
-      meet_and_greet,
-      congestion_charges,
-      total_charges,
+    ref_number,
+    datetime,
+    pickup,
+    dropoff,
+    customer,
+    vehicle,
+    journey_type,
+    fare,
+    parking_charges,
+    waiting_charges,
+    extra_drop_charges,
+    meet_and_greet,
+    congestion_charges,
+    total_charges,
   } = filters;
 
   const conditions = [];
@@ -393,9 +393,9 @@ exports.getPreBookingForAccountPreInvoice = async (filters) => {
     values.push(`%${journey_type}%`);
   }
 
-  // 7. DateTime Filter (b.pickup_date + b.pickup_time)
+  // 7. DateTime Filter (b.pickup_date + b.pickup_time ki jagah || use karein)
   if (datetime) {
-    conditions.push(`(b.pickup_date + b.pickup_time)::text ILIKE $${idx++}`);
+    conditions.push(`(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`);
     values.push(`%${datetime}%`);
   }
 

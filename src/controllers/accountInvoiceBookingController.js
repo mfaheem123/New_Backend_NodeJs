@@ -130,7 +130,7 @@ exports.getPreBookingsForInvoice = async (req, res) => {
       to_date,
       department,
       order_number,
-       ref_number,
+      ref_number,
       datetime,
       pickup,
       dropoff,
