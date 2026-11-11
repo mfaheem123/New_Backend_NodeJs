@@ -248,7 +248,9 @@ exports.getForAccountInvoice = async (filters) => {
 
   // 7. DateTime Filter (b.pickup_date + b.pickup_time ki jagah || use karein)
   if (datetime) {
-    conditions.push(`(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`);
+    conditions.push(
+      `(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`,
+    );
     values.push(`%${datetime}%`);
   }
 
@@ -395,7 +397,9 @@ exports.getPreBookingForAccountPreInvoice = async (filters) => {
 
   // 7. DateTime Filter (b.pickup_date + b.pickup_time ki jagah || use karein)
   if (datetime) {
-    conditions.push(`(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`);
+    conditions.push(
+      `(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`,
+    );
     values.push(`%${datetime}%`);
   }
 

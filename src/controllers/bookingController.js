@@ -2584,7 +2584,7 @@ exports.getDriverTodayEarning = async (req, res) => {
 // ---------------------------------------------------------
 exports.getBookingsForCustomerInvoice = async (req, res) => {
   try {
-    let { customer_id, from_date, to_date, payment_type_ids } = req.query;
+    let { customer_id, from_date, to_date, payment_type_ids, ref_number, datetime, pickup, dropoff, customer, vehicle, journey_type, fare, parking_charges, waiting_charges, extra_drop_charges, meet_and_greet, congestion_charges, total_charges } = req.query;
 
     if (!customer_id) {
       return res.status(400).json({
@@ -2622,6 +2622,20 @@ exports.getBookingsForCustomerInvoice = async (req, res) => {
       from_date,
       to_date,
       payment_type_ids,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges
     );
 
     return res.status(200).json({
@@ -3569,7 +3583,8 @@ exports.updateMultiBookings = async (req, res) => {
 // ---------------------------------------------------------
 exports.getBookingsForCustomerPreInvoice = async (req, res) => {
   try {
-    let { customer_id, from_date, to_date, payment_type_ids } = req.query;
+        let { customer_id, from_date, to_date, payment_type_ids, ref_number, datetime, pickup, dropoff, customer, vehicle, journey_type, fare, parking_charges, waiting_charges, extra_drop_charges, meet_and_greet, congestion_charges, total_charges } = req.query;
+
 
     if (!customer_id) {
       return res.status(400).json({
@@ -3622,6 +3637,20 @@ exports.getBookingsForCustomerPreInvoice = async (req, res) => {
       from_date,
       to_date,
       payment_type_ids,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
     );
 
     return res.status(200).json({

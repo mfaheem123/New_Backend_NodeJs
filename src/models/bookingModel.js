@@ -2565,30 +2565,122 @@ const getDriverTodayEarning = async (driver_id) => {
 // ---------------------------------------------------------
 // GET BOOKINGS FOR CUSTOMER INVOICE
 // ---------------------------------------------------------
-const getBookingsForCustomerInvoice = async (
-  customer_id,
-  from_date,
-  to_date,
-  payment_type_ids,
-) => {
-  const sql = `
-    ${ENRICHED_SELECT}
-
-    WHERE b.customer_id = $1
-    AND b.pickup_date::date BETWEEN $2 AND $3
-    AND b.payment_type_id = ANY($4::int[])
-    AND b.booking_status_id = 11
-
-    ORDER BY b.pickup_date ASC
-  `;
-
-  const { rows } = await pool.query(sql, [
+const getBookingsForCustomerInvoice = async (filters) => {
+  const {
     customer_id,
     from_date,
     to_date,
     payment_type_ids,
-  ]);
+    ref_number,
+    datetime,
+    pickup,
+    dropoff,
+    customer,
+    vehicle,
+    journey_type,
+    fare,
+    parking_charges,
+    waiting_charges,
+    extra_drop_charges,
+    meet_and_greet,
+    congestion_charges,
+    total_charges,
+  } = filters;
 
+  const conditions = [];
+  const values = [];
+  let idx = 1;
+
+  // 1. Mandatory / Base Filters (Dynamic Indexing ke sath)
+  conditions.push(`b.customer_id = $${idx++}`);
+  values.push(customer_id);
+
+  conditions.push(`b.pickup_date::date BETWEEN $${idx++} AND $${idx++}`);
+  values.push(from_date, to_date);
+
+  conditions.push(`b.payment_type_id = ANY($${idx++}::int[])`);
+  values.push(payment_type_ids);
+
+  conditions.push(`b.booking_status_id = 11`);
+
+  // 2. Search Filters
+  if (ref_number) {
+    conditions.push(`b.reference_number ILIKE $${idx++}`);
+    values.push(`%${ref_number}%`);
+  }
+
+  if (pickup) {
+    conditions.push(`b.pickup ILIKE $${idx++}`);
+    values.push(`%${pickup}%`);
+  }
+
+  if (dropoff) {
+    conditions.push(`b.dropoff ILIKE $${idx++}`);
+    values.push(`%${dropoff}%`);
+  }
+
+  if (customer) {
+    conditions.push(`b.name ILIKE $${idx++}`);
+    values.push(`%${customer}%`);
+  }
+
+  if (vehicle) {
+    conditions.push(`vt.name ILIKE $${idx++}`);
+    values.push(`%${vehicle}%`);
+  }
+
+  if (journey_type) {
+    conditions.push(`jt.journey_type ILIKE $${idx++}`);
+    values.push(`%${journey_type}%`);
+  }
+
+  if (datetime) {
+    conditions.push(`(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`);
+    values.push(`%${datetime}%`);
+  }
+
+  if (fare) {
+    conditions.push(`b.fares::text ILIKE $${idx++}`);
+    values.push(`%${fare}%`);
+  }
+
+  if (parking_charges) {
+    conditions.push(`b.parking_charges::text ILIKE $${idx++}`);
+    values.push(`%${parking_charges}%`);
+  }
+
+  if (waiting_charges) {
+    conditions.push(`b.waiting_charges::text ILIKE $${idx++}`);
+    values.push(`%${waiting_charges}%`);
+  }
+
+  if (extra_drop_charges) {
+    conditions.push(`b.extra_drop_charges::text ILIKE $${idx++}`);
+    values.push(`%${extra_drop_charges}%`);
+  }
+
+  if (meet_and_greet) {
+    conditions.push(`b.meet_and_greet::text ILIKE $${idx++}`);
+    values.push(`%${meet_and_greet}%`);
+  }
+
+  if (congestion_charges) {
+    conditions.push(`b.congestion_charges::text ILIKE $${idx++}`);
+    values.push(`%${congestion_charges}%`);
+  }
+
+  if (total_charges) {
+    conditions.push(`b.total_charges::text ILIKE $${idx++}`);
+    values.push(`%${total_charges}%`);
+  }
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    WHERE ${conditions.join(" AND ")}
+    ORDER BY b.pickup_date ASC, b.pickup_time ASC
+  `;
+
+  const { rows } = await pool.query(sql, values);
   return rows;
 };
 
@@ -3597,33 +3689,124 @@ const fetchBookingsByMultiBookingId = async (multiBookingId) => {
 // ---------------------------------------------------------
 // GET BOOKINGS FOR CUSTOMER PRE INVOICE
 // ---------------------------------------------------------
-const getBookingsForCustomerPreInvoice = async (
-  customer_id,
-  from_date,
-  to_date,
-  payment_type_ids,
-) => {
-  const sql = `
-    ${ENRICHED_SELECT}
-
-    WHERE b.customer_id = $1
-    AND b.pickup_date::date BETWEEN $2 AND $3
-    AND b.payment_type_id = ANY($4::int[])
-    AND b.booking_status_id = 11
-
-    ORDER BY b.pickup_date ASC
-  `;
-
-  const { rows } = await pool.query(sql, [
+const getBookingsForCustomerPreInvoice = async (filters) => {
+  const {
     customer_id,
     from_date,
     to_date,
     payment_type_ids,
-  ]);
+    ref_number,
+    datetime,
+    pickup,
+    dropoff,
+    customer,
+    vehicle,
+    journey_type,
+    fare,
+    parking_charges,
+    waiting_charges,
+    extra_drop_charges,
+    meet_and_greet,
+    congestion_charges,
+    total_charges,
+  } = filters;
 
+  const conditions = [];
+  const values = [];
+  let idx = 1;
+
+  // 1. Mandatory / Base Filters (Dynamic Indexing ke sath)
+  conditions.push(`b.customer_id = $${idx++}`);
+  values.push(customer_id);
+
+  conditions.push(`b.pickup_date::date BETWEEN $${idx++} AND $${idx++}`);
+  values.push(from_date, to_date);
+
+  conditions.push(`b.payment_type_id = ANY($${idx++}::int[])`);
+  values.push(payment_type_ids);
+
+  conditions.push(`b.booking_status_id = 1`);
+
+  // 2. Search Filters
+  if (ref_number) {
+    conditions.push(`b.reference_number ILIKE $${idx++}`);
+    values.push(`%${ref_number}%`);
+  }
+
+  if (pickup) {
+    conditions.push(`b.pickup ILIKE $${idx++}`);
+    values.push(`%${pickup}%`);
+  }
+
+  if (dropoff) {
+    conditions.push(`b.dropoff ILIKE $${idx++}`);
+    values.push(`%${dropoff}%`);
+  }
+
+  if (customer) {
+    conditions.push(`b.name ILIKE $${idx++}`);
+    values.push(`%${customer}%`);
+  }
+
+  if (vehicle) {
+    conditions.push(`vt.name ILIKE $${idx++}`);
+    values.push(`%${vehicle}%`);
+  }
+
+  if (journey_type) {
+    conditions.push(`jt.journey_type ILIKE $${idx++}`);
+    values.push(`%${journey_type}%`);
+  }
+
+  if (datetime) {
+    conditions.push(`(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`);
+    values.push(`%${datetime}%`);
+  }
+
+  if (fare) {
+    conditions.push(`b.fares::text ILIKE $${idx++}`);
+    values.push(`%${fare}%`);
+  }
+
+  if (parking_charges) {
+    conditions.push(`b.parking_charges::text ILIKE $${idx++}`);
+    values.push(`%${parking_charges}%`);
+  }
+
+  if (waiting_charges) {
+    conditions.push(`b.waiting_charges::text ILIKE $${idx++}`);
+    values.push(`%${waiting_charges}%`);
+  }
+
+  if (extra_drop_charges) {
+    conditions.push(`b.extra_drop_charges::text ILIKE $${idx++}`);
+    values.push(`%${extra_drop_charges}%`);
+  }
+
+  if (meet_and_greet) {
+    conditions.push(`b.meet_and_greet::text ILIKE $${idx++}`);
+    values.push(`%${meet_and_greet}%`);
+  }
+
+  if (congestion_charges) {
+    conditions.push(`b.congestion_charges::text ILIKE $${idx++}`);
+    values.push(`%${congestion_charges}%`);
+  }
+
+  if (total_charges) {
+    conditions.push(`b.total_charges::text ILIKE $${idx++}`);
+    values.push(`%${total_charges}%`);
+  }
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    WHERE ${conditions.join(" AND ")}
+    ORDER BY b.pickup_date ASC, b.pickup_time ASC
+  `;
+
+  const { rows } = await pool.query(sql, values);
   return rows;
 };
-
 module.exports = {
   pool,
   insertBookingRow,
