@@ -47,7 +47,7 @@ exports.generateInvoiceNumber = async (company_id) => {
     LIMIT 1
     FOR UPDATE
     `,
-    [company_id] // Assuming you have a company_id parameter
+    [company_id], // Assuming you have a company_id parameter
   );
 
   if (!res.rows.length) {
@@ -64,7 +64,7 @@ exports.generateInvoiceNumber = async (company_id) => {
     SET end_number = $1, updated_at = now()
     WHERE id = $2 AND company_id = $3
     `,
-    [nextNumber, doc.id, company_id] // Assuming you have a company_id parameter,
+    [nextNumber, doc.id, company_id], // Assuming you have a company_id parameter,
   );
 
   return invoiceNumber;
@@ -82,7 +82,7 @@ exports.generatepreInvoiceNumber = async (company_id) => {
     LIMIT 1
     FOR UPDATE
     `,
-    [company_id] // Assuming you have a company_id parameter
+    [company_id], // Assuming you have a company_id parameter
   );
 
   if (!res.rows.length) {
@@ -99,7 +99,7 @@ exports.generatepreInvoiceNumber = async (company_id) => {
     SET end_number = $1, updated_at = now()
     WHERE id = $2 AND company_id = $3
     `,
-    [nextNumber, doc.id, company_id] // Assuming you have a company_id parameter,
+    [nextNumber, doc.id, company_id], // Assuming you have a company_id parameter,
   );
 
   return invoiceNumber;

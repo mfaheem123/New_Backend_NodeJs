@@ -1,5 +1,8 @@
 const pool = require("../db");
-const { generateInvoiceNumber, generatepreInvoiceNumber } = require("./documentNumberHelper");
+const {
+  generateInvoiceNumber,
+  generatepreInvoiceNumber,
+} = require("./documentNumberHelper");
 
 exports.create = async (data) => {
   try {
@@ -37,10 +40,10 @@ exports.create = async (data) => {
     await pool.query("BEGIN");
 
     // 🔐 Generate invoice number
-    if(invoice_type === "pre" || invoice_type === "PRE") {
+    if (invoice_type === "pre" || invoice_type === "PRE") {
       invoice_number = await generatepreInvoiceNumber(company_id);
     }
-    if(invoice_type === "post" || invoice_type === "POST") {
+    if (invoice_type === "post" || invoice_type === "POST") {
       invoice_number = await generateInvoiceNumber(company_id);
     }
 

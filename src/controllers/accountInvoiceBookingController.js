@@ -12,6 +12,20 @@ exports.getBookingsForInvoice = async (req, res) => {
       to_date,
       department,
       order_number,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
     } = req.query;
 
     if (!subsidiary_id || !account_id || !from_date || !to_date) {
@@ -29,6 +43,20 @@ exports.getBookingsForInvoice = async (req, res) => {
       to_date,
       department,
       order_number,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
     });
 
     // 🔢 totals calculate
@@ -102,6 +130,20 @@ exports.getPreBookingsForInvoice = async (req, res) => {
       to_date,
       department,
       order_number,
+       ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
     } = req.query;
 
     if (!subsidiary_id || !account_id || !from_date || !to_date) {
@@ -135,6 +177,20 @@ exports.getPreBookingsForInvoice = async (req, res) => {
       to_date,
       department,
       order_number,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
     });
 
     // 🔢 totals calculate

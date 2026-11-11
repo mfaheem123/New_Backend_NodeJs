@@ -168,6 +168,20 @@ exports.getForAccountInvoice = async (filters) => {
     to_date,
     department,
     order_number,
+    ref_number,
+    datetime,
+    pickup,
+    dropoff,
+    customer,
+    vehicle,
+    journey_type,
+    fare,
+    parking_charges,
+    waiting_charges,
+    extra_drop_charges,
+    meet_and_greet,
+    congestion_charges,
+    total_charges,
   } = filters;
 
   const conditions = [];
@@ -196,6 +210,84 @@ exports.getForAccountInvoice = async (filters) => {
     values.push(order_number);
   }
 
+  // 1. Ref #
+  if (ref_number) {
+    conditions.push(`b.reference_number ILIKE $${idx++}`);
+    values.push(`%${ref_number}%`);
+  }
+
+  // 2. Pickup Address
+  if (pickup) {
+    conditions.push(`b.pickup ILIKE $${idx++}`);
+    values.push(`%${pickup}%`);
+  }
+
+  // 3. Dropoff Address
+  if (dropoff) {
+    conditions.push(`b.dropoff ILIKE $${idx++}`);
+    values.push(`%${dropoff}%`);
+  }
+
+  // 4. Customer Name (b.name)
+  if (customer) {
+    conditions.push(`b.name ILIKE $${idx++}`);
+    values.push(`%${customer}%`);
+  }
+
+  // 5. Vehicle Type Name (vt.name)
+  if (vehicle) {
+    conditions.push(`vt.name ILIKE $${idx++}`);
+    values.push(`%${vehicle}%`);
+  }
+
+  // 6. Journey Type (jt.journey_type)
+  if (journey_type) {
+    conditions.push(`jt.journey_type ILIKE $${idx++}`);
+    values.push(`%${journey_type}%`);
+  }
+
+  // 7. DateTime Filter (b.pickup_date + b.pickup_time)
+  if (datetime) {
+    conditions.push(`(b.pickup_date + b.pickup_time)::text ILIKE $${idx++}`);
+    values.push(`%${datetime}%`);
+  }
+
+  // 8. Numeric / Charges Filters (Text casting use ki hai taaki partial amount bhi search ho sake)
+  if (fare) {
+    conditions.push(`b.fares::text ILIKE $${idx++}`);
+    values.push(`%${fare}%`);
+  }
+
+  if (parking_charges) {
+    conditions.push(`b.parking_charges::text ILIKE $${idx++}`);
+    values.push(`%${parking_charges}%`);
+  }
+
+  if (waiting_charges) {
+    conditions.push(`b.waiting_charges::text ILIKE $${idx++}`);
+    values.push(`%${waiting_charges}%`);
+  }
+
+  if (extra_drop_charges) {
+    conditions.push(`b.extra_drop_charges::text ILIKE $${idx++}`);
+    values.push(`%${extra_drop_charges}%`);
+  }
+
+  if (meet_and_greet) {
+    conditions.push(`b.meet_and_greet::text ILIKE $${idx++}`);
+    values.push(`%${meet_and_greet}%`);
+  }
+
+  if (congestion_charges) {
+    conditions.push(`b.congestion_charges::text ILIKE $${idx++}`);
+    values.push(`%${congestion_charges}%`);
+  }
+
+  if (total_charges) {
+    conditions.push(`b.total_charges::text ILIKE $${idx++}`);
+    values.push(`%${total_charges}%`);
+  }
+
   const sql = `
     ${ENRICHED_SELECT}
     WHERE ${conditions.join(" AND ")}
@@ -218,6 +310,20 @@ exports.getPreBookingForAccountPreInvoice = async (filters) => {
     to_date,
     department,
     order_number,
+     ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
   } = filters;
 
   const conditions = [];
@@ -249,6 +355,84 @@ exports.getPreBookingForAccountPreInvoice = async (filters) => {
   if (order_number) {
     conditions.push(`b.order_number = $${idx++}`);
     values.push(order_number);
+  }
+
+  // 1. Ref #
+  if (ref_number) {
+    conditions.push(`b.reference_number ILIKE $${idx++}`);
+    values.push(`%${ref_number}%`);
+  }
+
+  // 2. Pickup Address
+  if (pickup) {
+    conditions.push(`b.pickup ILIKE $${idx++}`);
+    values.push(`%${pickup}%`);
+  }
+
+  // 3. Dropoff Address
+  if (dropoff) {
+    conditions.push(`b.dropoff ILIKE $${idx++}`);
+    values.push(`%${dropoff}%`);
+  }
+
+  // 4. Customer Name (b.name)
+  if (customer) {
+    conditions.push(`b.name ILIKE $${idx++}`);
+    values.push(`%${customer}%`);
+  }
+
+  // 5. Vehicle Type Name (vt.name)
+  if (vehicle) {
+    conditions.push(`vt.name ILIKE $${idx++}`);
+    values.push(`%${vehicle}%`);
+  }
+
+  // 6. Journey Type (jt.journey_type)
+  if (journey_type) {
+    conditions.push(`jt.journey_type ILIKE $${idx++}`);
+    values.push(`%${journey_type}%`);
+  }
+
+  // 7. DateTime Filter (b.pickup_date + b.pickup_time)
+  if (datetime) {
+    conditions.push(`(b.pickup_date + b.pickup_time)::text ILIKE $${idx++}`);
+    values.push(`%${datetime}%`);
+  }
+
+  // 8. Numeric / Charges Filters (Text casting use ki hai taaki partial amount bhi search ho sake)
+  if (fare) {
+    conditions.push(`b.fares::text ILIKE $${idx++}`);
+    values.push(`%${fare}%`);
+  }
+
+  if (parking_charges) {
+    conditions.push(`b.parking_charges::text ILIKE $${idx++}`);
+    values.push(`%${parking_charges}%`);
+  }
+
+  if (waiting_charges) {
+    conditions.push(`b.waiting_charges::text ILIKE $${idx++}`);
+    values.push(`%${waiting_charges}%`);
+  }
+
+  if (extra_drop_charges) {
+    conditions.push(`b.extra_drop_charges::text ILIKE $${idx++}`);
+    values.push(`%${extra_drop_charges}%`);
+  }
+
+  if (meet_and_greet) {
+    conditions.push(`b.meet_and_greet::text ILIKE $${idx++}`);
+    values.push(`%${meet_and_greet}%`);
+  }
+
+  if (congestion_charges) {
+    conditions.push(`b.congestion_charges::text ILIKE $${idx++}`);
+    values.push(`%${congestion_charges}%`);
+  }
+
+  if (total_charges) {
+    conditions.push(`b.total_charges::text ILIKE $${idx++}`);
+    values.push(`%${total_charges}%`);
   }
 
   const sql = `
