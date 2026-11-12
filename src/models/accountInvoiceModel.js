@@ -39,13 +39,7 @@ exports.create = async (data) => {
 
     await pool.query("BEGIN");
 
-    // 🔐 Generate invoice number
-    if (invoice_type === "pre" || invoice_type === "PRE") {
-      invoice_number = await generatepreInvoiceNumber(company_id);
-    }
-    if (invoice_type === "post" || invoice_type === "POST") {
-      invoice_number = await generateInvoiceNumber(company_id);
-    }
+    
 
     // 📄 Insert invoice
     const invoiceRes = await pool.query(
@@ -106,6 +100,13 @@ exports.create = async (data) => {
           [invoice.invoice_number, item.booking_id],
         );
       }
+    }
+    // 🔐 Generate invoice number
+    if (invoice_type === "pre" || invoice_type === "PRE") {
+      invoice_number = await generatepreInvoiceNumber(company_id);
+    }
+    if (invoice_type === "post" || invoice_type === "POST") {
+      invoice_number = await generateInvoiceNumber(company_id);
     }
 
     await pool.query("COMMIT");

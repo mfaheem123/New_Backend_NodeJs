@@ -199,7 +199,10 @@ function toNullableFloat(value) {
   return parseFloat(value);
 }
 
-// DYNAMIC REFERENCE NUMBER GENERATOR FROM document_numbers
+
+// ---------------------------------------------------------
+// DYNAMIC REFERENCE NUMBER GENERATOR FROM DOCUMENT_NUMBERS TABLE
+// ---------------------------------------------------------
 async function genRef(poolClient, companyId, subsidiaryId) {
   try {
     const compId = companyId || 1;
@@ -254,7 +257,10 @@ async function genRef(poolClient, companyId, subsidiaryId) {
   }
 }
 
-// Fallback random generator if configuration doesn't exist
+
+// ---------------------------------------------------------
+// FALLBACK RANDOM REFERENCE NUMBER GENERATOR IF CONFIG MISSING
+// ---------------------------------------------------------
 async function fallbackRandomRef() {
   let ref;
   let exists = true;
@@ -270,7 +276,10 @@ async function fallbackRandomRef() {
 
 
 
-// NORMALIZER
+
+// ---------------------------------------------------------
+// NORMALIZE BOOKING PAYLOAD
+// ---------------------------------------------------------
 async function normalizeBookingPayload(poolClient, src) {
   const b = { ...src };
 
@@ -368,7 +377,10 @@ async function normalizeBookingPayload(poolClient, src) {
   return b;
 }
 
+
+// ---------------------------------------------------------
 // INSERT BOOKING ROW
+// ---------------------------------------------------------
 async function createBookingRow(pool, bookingObj) {
   // List of allowed DB columns
   const allowed = [
@@ -506,7 +518,10 @@ async function createBookingRow(pool, bookingObj) {
   return inserted;
 }
 
+
+// ---------------------------------------------------------
 // CREATE SIMPLE BOOKING
+// ---------------------------------------------------------
 async function createSimpleBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -605,7 +620,10 @@ async function createSimpleBooking(payload) {
 
 
 
+
+// ---------------------------------------------------------
 // RETURN WAY BOOKING (Journey Type = 3)
+// ---------------------------------------------------------
 async function createReturnWayBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -754,7 +772,10 @@ async function createReturnWayBooking(payload) {
   }
 }
 
-// MULTI VEHICLE booking
+// 
+// ---------------------------------------------------------
+// MULTI VEHICLE BOOKING SERVICE
+// ---------------------------------------------------------
 async function createMultiVehicleBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -823,12 +844,18 @@ async function createMultiVehicleBooking(payload) {
   }
 }
 
+
+// ---------------------------------------------------------
 // CREATE MULTI BOOKINGS
+// ---------------------------------------------------------
 async function createMultiBookings(payload) {
   return createMultiVehicleBooking(payload);
 }
 
+
+// ---------------------------------------------------------
 // MULTI RESERVATION WITH RETURN WAY BOOKING
+// ---------------------------------------------------------
 async function createMultiReservationBooking(payload) {
   try {
     await pool.query("BEGIN");
@@ -1009,7 +1036,10 @@ async function createMultiReservationBooking(payload) {
   }
 }
 
-// MAIN CONTROLLER
+
+// ---------------------------------------------------------
+// MAIN CONTROLLER FOR CREATE BOOKING
+// ---------------------------------------------------------
 async function create(payload) {
   // Force parse multi_reservation if string
   if (typeof payload.multi_reservation === "string") {
@@ -1276,6 +1306,27 @@ async function updateBookingService(bookingId, payload) {
         typeof updates[field] === "string"
           ? updates[field]
           : JSON.stringify(updates[field]);
+    }
+  }
+
+
+// =====================================================
+  // 5.5 DYNAMIC AUDIT CHANGES TRACKING (PREVIOUS VS NEXT)
+  // =====================================================
+  const changesPrevious = [];
+  const changesNext = [];
+
+  for (const key of Object.keys(updates)) {
+    const oldValue = primaryBooking[key];
+    const newValue = updates[key];
+
+    // Values ko string mein convert karke safely compare karein
+    const oldStr = oldValue !== null && oldValue !== undefined ? String(oldValue).trim() : "";
+    const newStr = newValue !== null && newValue !== undefined ? String(newValue).trim() : "";
+
+    if (oldStr !== newStr) {
+      changesPrevious.push(`${key}: ${oldStr || "-"}`);
+      changesNext.push(`${key}: ${newStr || "-"}`);
     }
   }
 
@@ -1546,6 +1597,26 @@ async function updateBookingService(bookingId, payload) {
     }
 
     // ---------------------------------------------------
+    // 🔥 INSERT AUDIT LOG IF ANY FIELD CHANGED
+    // ---------------------------------------------------
+    if (changesNext.length > 0) {
+      try {
+        await AuditModel.createAuditLog({
+          type: 'booking',
+          operation: 'update',
+          previous: changesPrevious,
+          next: changesNext,
+          employee_id: payload.employee_id || primaryBooking.employee_id || null,
+          booking_id: primaryBooking.id,
+          driver_id: primaryBooking.driver_id || null,
+          company_id: primaryBooking.company_id || 3
+        });
+      } catch (auditErr) {
+        console.error("❌ Audit Log Error on Update:", auditErr);
+      }
+    }
+
+    // ---------------------------------------------------
     // GET FRESH PRIMARY BOOKING
     // ---------------------------------------------------
 
@@ -1648,7 +1719,10 @@ async function updateBookingService(bookingId, payload) {
   return clean;
 }
 
-//CREATE CLI BOOKING
+
+// ---------------------------------------------------------
+// CREATE CLI BOOKING
+// ---------------------------------------------------------
 async function cloneOneWayBookingService(payload) {
   const {
     booking_id,
@@ -1746,7 +1820,10 @@ async function cloneOneWayBookingService(payload) {
   return clean;
 }
 
-// ASSIGN DRIVER TO PRESENT BOOKINGS
+
+// ---------------------------------------------------------
+//  ASSIGN DRIVER TO PRESENT BOOKINGS
+// ---------------------------------------------------------
 async function assignDriverService(
   bookingId,
   driverId,
@@ -1831,7 +1908,10 @@ async function assignDriverService(
   return enriched;
 }
 
-// ASSIGN DRIVER TO FOLLOW ON BOOKINGS
+
+// ---------------------------------------------------------
+//  ASSIGN DRIVER TO FOLLOW ON BOOKINGS
+// ---------------------------------------------------------
 async function assignFOBDriverService(bookingId, driverId, company_id) {
   let fare_meter = false;
   if (driverId) {
@@ -1903,7 +1983,10 @@ async function assignFOBDriverService(bookingId, driverId, company_id) {
   return enriched;
 }
 
+
+// ---------------------------------------------------------
 // ASSIGN DRIVER TO FUTURE ON BOOKINGS
+// ---------------------------------------------------------
 async function assignFutureBookingDriverService(
   bookingId,
   driverId,

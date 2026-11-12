@@ -3703,8 +3703,8 @@ const fetchBookingsByMultiBookingId = async (multiBookingId, filters = {}) => {
 
   // 3. Journey Type Filter
   if (filters.journey_type_id) {
-    queryParams.push(filters.journey_type_id);
-    conditions.push(`b.journey_type_id = $${queryParams.length}`);
+    queryParams.push(`%${filters.journey_type_id}%`);
+    conditions.push(`jt.journey_type ILIKE $${queryParams.length}`);
   }
 
   const whereClause = conditions.join(" AND ");
