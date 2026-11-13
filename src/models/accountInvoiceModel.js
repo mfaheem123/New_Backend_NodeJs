@@ -4,6 +4,9 @@ const {
   generatepreInvoiceNumber,
 } = require("./documentNumberHelper");
 
+// ---------------------------------------------------------
+// CREATE ACCOUNT INVOICE
+// ---------------------------------------------------------
 exports.create = async (data) => {
   try {
     let {
@@ -139,7 +142,10 @@ exports.create = async (data) => {
   }
 };
 
-// ACCOUNT INVOICE MODEL
+
+// ---------------------------------------------------------
+// GET ALL ACCOUNT INVOICES
+// ---------------------------------------------------------
 exports.getAll = async ({
   page = 1,
   limit = 100,
@@ -307,6 +313,10 @@ exports.getAll = async ({
   }
 };
 
+
+// ---------------------------------------------------------
+// GET ACCOUNT INVOICES BY ID
+// ---------------------------------------------------------
 exports.getById = async (id) => {
   try {
     const query = `
@@ -455,6 +465,9 @@ exports.getById = async (id) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE ACCOUNT INVOICE BY ID
+// ---------------------------------------------------------
 exports.update = async (id, data) => {
   try {
     await pool.query("BEGIN");
@@ -586,6 +599,9 @@ exports.update = async (id, data) => {
   }
 };
 
+// ---------------------------------------------------------
+// DELETE ACCOUNT INVOICE BY ID
+// ---------------------------------------------------------
 exports.delete = async (id) => {
   try {
     await pool.query("BEGIN");

@@ -715,7 +715,7 @@ exports.updateBookingStatus = async (req, res) => {
 
     // ON ROUTE
     if (booking_status_id == 3) {
-      await updateBookingonRoute(bookingId, true, false, false);
+      await updateBookingonRoute(bookingId, true, false, true);
       await Driver.updateDriverStatus(driverId, "On Route", "Unavailable");
       await notifyDriverBookingStatus(driverId);
       await notifyDriverBookingStatusWeb(driverId);
@@ -783,6 +783,13 @@ exports.updateBookingStatus = async (req, res) => {
         console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
         notifyBusyDriverUpdate(driver);
       }
+    }
+
+    // PASSENGER ON BOARD
+    if (booking_status_id == 9) {
+      await Driver.updateDriverStatus(driverId, "POB", "Unavailable");
+      await notifyDriverBookingStatus(driverId);
+      await notifyDriverBookingStatusWeb(driverId);
     }
 
     // SOON TO CLEAR
@@ -894,6 +901,10 @@ exports.updateBookingStatus = async (req, res) => {
     // NO SHOW
     else if (booking_status_id == 7) {
       activityMessage = "booking marked as no show";
+    }
+    // PASSENGER ON BOARD
+    else if (booking_status_id == 9) {
+      activityMessage = "driver pob the booking";
     }
 
     // Agar activity message mil jaye toh Audit Log insert karein
@@ -2085,6 +2096,22 @@ exports.recoverDashboardBooking = async (req, res) => {
       // 4️⃣ Notify PDA/App regarding status change
       await notifyDriverBookingStatus(driverId);
 
+      //Create Audit Log for Bookking Recovery
+    try {
+        await AuditModel.createAuditLog({
+          type: 'booking',
+          operation: 'activity',
+          previous: [],
+          next: ["booking recovered"],
+          employee_id:  booking.employee_id || null, // Request user ya existing employee id
+          booking_id: bookingId,
+          driver_id: booking.driver_id || null,
+          company_id: booking.company_id || 1
+        });
+      } catch (auditErr) {
+        console.error("❌ Audit Log Error on Status Update:", auditErr);
+      }
+
       // 5️⃣ Fetch fresh updated driver details & Trigger Dashboard Shift (Busy -> Login List)
       const freshDriver = await Driver.getById(driverId);
       if (freshDriver) {
@@ -2795,7 +2822,7 @@ exports.rejectRecoverBooking = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// SEND RECOVER BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER
+// SEND NO PICKUP BOOKING NOTIFICATION TO DASHBOARD FROM DRIVER
 // ---------------------------------------------------------
 exports.noPickupDriverBooking = async (req, res) => {
   try {
@@ -2830,7 +2857,7 @@ exports.noPickupDriverBooking = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// RECOVER DASHBOARD BOOKING
+// REJECT NO PICKUP DASHBOARD BOOKING
 // ---------------------------------------------------------
 exports.rejectNoPickupBooking = async (req, res) => {
   try {
@@ -3050,6 +3077,22 @@ exports.noPickupDashboardBooking = async (req, res) => {
     );
     await notifyDriverBookingStatus(booking.driver_id);
     await notifyDriverBookingStatusWeb(booking.driver_id);
+
+    //Create Audit Log for Bookking No Pickup
+    try {
+        await AuditModel.createAuditLog({
+          type: 'booking',
+          operation: 'activity',
+          previous: [],
+          next: ["booking marked as no pickup"],
+          employee_id:  booking.employee_id || null, // Request user ya existing employee id
+          booking_id: bookingId,
+          driver_id: booking.driver_id || null,
+          company_id: booking.company_id || 1
+        });
+      } catch (auditErr) {
+        console.error("❌ Audit Log Error on Status Update:", auditErr);
+      }
 
     const driver = await Driver.getById(booking.driver_id);
 

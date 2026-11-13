@@ -496,23 +496,26 @@ async function createBookingRow(pool, bookingObj) {
   if (row.multi_booking_id === undefined) row.multi_booking_id = 0;
 
   // INSERT
+  Console.log("INSERTING EMPLOYEE ID BEFORE:", row.employee_id);
   const inserted = await insertBookingRow(pool, row);
+  Console.log("INSERTING EMPLOYEE ID AFTER:", row.employee_id);
 
-  // 🔥 Yahan par global audit log laga dein taake har tarah ki booking create hone par log ban jaye
+ // 🔥 SAFE AUDIT LOG CREATION
   try {
     await AuditModel.createAuditLog({
       type: 'booking',
       operation: 'activity',
       previous: [],
-      next: ['booking created'], // Ya 'booking created successfully'
-      employee_id: inserted.employee_id || null,
+      next: ['booking created'],
+      // Agar employee_id invalid ya foreign key error de, toh ise safe rakhein
+      employee_id: inserted.employee_id ? Number(inserted.employee_id) : null,
       booking_id: inserted.id,
-      driver_id: inserted.driver_id || null,
-      company_id: inserted.company_id || 1
+      driver_id: inserted.driver_id ? Number(inserted.driver_id) : null,
+      company_id: inserted.company_id ? Number(inserted.company_id) : 1
     });
     console.log("✅ Audit Log Created for Booking ID:", inserted.id);
   } catch (auditErr) {
-    console.error("❌ Audit Log Error on Create:", auditErr);
+    console.error("❌ Audit Log Error on Create (Ignored):", auditErr.message);
   }
 
   return inserted;
@@ -637,11 +640,13 @@ async function createReturnWayBooking(payload) {
     }
 
     /* ---------------- OUTBOUND ---------------- */
-    const outbound = await normalizeBookingPayload({
-      pool,
+    // 🔥 FIX: Pehla argument poolClient (pool) hona chahiye, baqi payload spread karein
+    const outboundPayload = {
       ...payload,
       journey_type_id: 3,
-    });
+    };
+    const outbound = await normalizeBookingPayload(pool, outboundPayload);
+    
 
     outbound.customer_id = customerId;
     outbound.reference_number = await genRef(
@@ -1871,6 +1876,22 @@ async function assignDriverService(
     // Send notification to driver
     await sendBookingNotification(driverId, enriched);
 
+    //Create Booking Audit Log for Driver Assignment
+    try {
+        await AuditModel.createAuditLog({
+          type: 'booking',
+          operation: 'activity',
+          previous: [],
+          next: ["booking dispatch"],
+          employee_id:  enriched.employee_id || null, // Request user ya existing employee id
+          booking_id: bookingId,
+          driver_id: driverId || null,
+          company_id: company_id || 1
+        });
+      } catch (auditErr) {
+        console.error("❌ Audit Log Error on Status Update:", auditErr);
+      }
+
     // 📩 DISPATCH SMS (TEMPLATE 3)
     try {
       if (enriched?.mobile && enriched?.driver_id) {
@@ -1948,6 +1969,23 @@ async function assignFOBDriverService(bookingId, driverId, company_id) {
 
   // 3️ Send notification to driver
   await sendFOBBookingNotification(driverId, enriched);
+
+  //Create Booking Audit Log for Driver Assignment
+    try {
+        await AuditModel.createAuditLog({
+          type: 'booking',
+          operation: 'activity',
+          previous: [],
+          next: ["booking dispatch"],
+          employee_id:  enriched.employee_id || null, // Request user ya existing employee id
+          booking_id: bookingId,
+          driver_id: driverId || null,
+          company_id: company_id || 1
+        });
+      } catch (auditErr) {
+        console.error("❌ Audit Log Error on Status Update:", auditErr);
+      }
+
   // -------------------------------
   // 📩 DISPATCH SMS (TEMPLATE 3)
   // -------------------------------
@@ -2029,6 +2067,24 @@ async function assignFutureBookingDriverService(
 
   // 3️ Send notification to driver
   await sendFutureBookingNotification(driverId, enriched);
+
+  //Create Booking Audit Log for Driver Assignment
+    try {
+        await AuditModel.createAuditLog({
+          type: 'booking',
+          operation: 'activity',
+          previous: [],
+          next: ["booking dispatch"],
+          employee_id:  enriched.employee_id || null, // Request user ya existing employee id
+          booking_id: bookingId,
+          driver_id: driverId || null,
+          company_id: company_id || 1
+        });
+      } catch (auditErr) {
+        console.error("❌ Audit Log Error on Status Update:", auditErr);
+      }
+
+      
   // -------------------------------
   // 📩 DISPATCH SMS (TEMPLATE 3)
   // -------------------------------
