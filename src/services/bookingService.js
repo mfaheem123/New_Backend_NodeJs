@@ -554,6 +554,10 @@ async function createSimpleBooking(payload) {
     // Set dispatched_at here if driver exists to keep DB operations inside transaction
     if (normalized.driver_id) {
       normalized.dispatched_at = new Date();
+
+// Update Booking Status ID 1(Waiting) to 2(Pending) if driver is assigned
+normalized.booking_status_id = 2; // Pending
+
     }
 
     const inserted = await createBookingRow(pool, normalized);
@@ -595,6 +599,21 @@ async function createSimpleBooking(payload) {
       // 3. SEND NOTIFICATION TO DRIVER
       if (clean.driver_id) {
         await sendBookingNotification(clean.driver_id, clean);
+        //Create Booking Audit Log for Driver Assignment
+    try {
+        await AuditModel.createAuditLog({
+          type: 'booking',
+          operation: 'activity',
+          previous: [],
+          next: ["booking dispatch"],
+          employee_id:  clean.employee_id || null, // Request user ya existing employee id
+          booking_id: clean.id,
+          driver_id: clean.driver_id || null,
+          company_id: payload.company_id || 1
+        });
+      } catch (auditErr) {
+        console.error("❌ Audit Log Error on Status Update:", auditErr);
+      }      
       }
 
       // 4. SEND NOTIFICATION TO WEB IF BOOKING SOURCE IS APP
@@ -2084,7 +2103,7 @@ async function assignFutureBookingDriverService(
         console.error("❌ Audit Log Error on Status Update:", auditErr);
       }
 
-      
+
   // -------------------------------
   // 📩 DISPATCH SMS (TEMPLATE 3)
   // -------------------------------

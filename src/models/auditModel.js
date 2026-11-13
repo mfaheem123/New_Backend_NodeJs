@@ -18,8 +18,8 @@ class AuditModel {
                 CASE 
                     WHEN d.id IS NOT NULL THEN json_build_object(
                         'username', d.username, 
-                        'first_name', d.first_name, 
-                        'last_name', d.last_name
+                        'name', d.name, 
+                        'mobile', d.mobile
                     )
                     ELSE NULL 
                 END AS driver
