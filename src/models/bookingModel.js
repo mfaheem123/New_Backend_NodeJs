@@ -2635,7 +2635,9 @@ const getBookingsForCustomerInvoice = async (filters) => {
   }
 
   if (datetime) {
-    conditions.push(`(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`);
+    conditions.push(
+      `(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`,
+    );
     values.push(`%${datetime}%`);
   }
 
@@ -3792,7 +3794,9 @@ const getBookingsForCustomerPreInvoice = async (filters) => {
   }
 
   if (datetime) {
-    conditions.push(`(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`);
+    conditions.push(
+      `(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`,
+    );
     values.push(`%${datetime}%`);
   }
 

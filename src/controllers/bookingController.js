@@ -691,7 +691,7 @@ exports.updateBookingStatus = async (req, res) => {
       });
     }
 
-  const bookingData = booking.rows[0];  
+    const bookingData = booking.rows[0];
     const driverId = booking.rows[0].driver_id;
     const customerId = booking.rows[0].customer_id;
     const booking_source = booking.rows[0].booking_source;
@@ -867,7 +867,6 @@ exports.updateBookingStatus = async (req, res) => {
     // UPDATE BOOKING STATUS
     await updateBookingStatus(bookingId, booking_status_id);
 
-
     // =========================================================
     // 📝 AUDIT LOG GENERATION BASED ON STATUS ID
     // =========================================================
@@ -888,7 +887,7 @@ exports.updateBookingStatus = async (req, res) => {
     // COMPLETED
     else if (booking_status_id == 11) {
       // Check karein ke controller ne complete kiya ya driver ne
-      activityMessage = "driver completed the booking"; 
+      activityMessage = "driver completed the booking";
     }
     // REJECTED
     else if (booking_status_id == 5) {
@@ -911,21 +910,19 @@ exports.updateBookingStatus = async (req, res) => {
     if (activityMessage) {
       try {
         await AuditModel.createAuditLog({
-          type: 'booking',
-          operation: 'activity',
+          type: "booking",
+          operation: "activity",
           previous: [],
           next: [activityMessage],
           employee_id: req.user?.id || bookingData.employee_id || null, // Request user ya existing employee id
           booking_id: bookingId,
           driver_id: driverId || null,
-          company_id: bookingData.company_id || 1
+          company_id: bookingData.company_id || 1,
         });
       } catch (auditErr) {
         console.error("❌ Audit Log Error on Status Update:", auditErr);
       }
     }
-
-    
 
     //GET FRESH DATA AFTER UPDATE
     const freshBooking = await findBookingById(bookingId);
@@ -2097,16 +2094,16 @@ exports.recoverDashboardBooking = async (req, res) => {
       await notifyDriverBookingStatus(driverId);
 
       //Create Audit Log for Bookking Recovery
-    try {
+      try {
         await AuditModel.createAuditLog({
-          type: 'booking',
-          operation: 'activity',
+          type: "booking",
+          operation: "activity",
           previous: [],
           next: ["booking recovered"],
-          employee_id:  booking.employee_id || null, // Request user ya existing employee id
+          employee_id: booking.employee_id || null, // Request user ya existing employee id
           booking_id: bookingId,
           driver_id: booking.driver_id || null,
-          company_id: booking.company_id || 1
+          company_id: booking.company_id || 1,
         });
       } catch (auditErr) {
         console.error("❌ Audit Log Error on Status Update:", auditErr);
@@ -2611,7 +2608,26 @@ exports.getDriverTodayEarning = async (req, res) => {
 // ---------------------------------------------------------
 exports.getBookingsForCustomerInvoice = async (req, res) => {
   try {
-    let { customer_id, from_date, to_date, payment_type_ids, ref_number, datetime, pickup, dropoff, customer, vehicle, journey_type, fare, parking_charges, waiting_charges, extra_drop_charges, meet_and_greet, congestion_charges, total_charges } = req.query;
+    let {
+      customer_id,
+      from_date,
+      to_date,
+      payment_type_ids,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
+    } = req.query;
 
     if (!customer_id) {
       return res.status(400).json({
@@ -2662,7 +2678,7 @@ exports.getBookingsForCustomerInvoice = async (req, res) => {
       extra_drop_charges,
       meet_and_greet,
       congestion_charges,
-      total_charges
+      total_charges,
     );
 
     return res.status(200).json({
@@ -3080,19 +3096,19 @@ exports.noPickupDashboardBooking = async (req, res) => {
 
     //Create Audit Log for Bookking No Pickup
     try {
-        await AuditModel.createAuditLog({
-          type: 'booking',
-          operation: 'activity',
-          previous: [],
-          next: ["booking marked as no pickup"],
-          employee_id:  booking.employee_id || null, // Request user ya existing employee id
-          booking_id: bookingId,
-          driver_id: booking.driver_id || null,
-          company_id: booking.company_id || 1
-        });
-      } catch (auditErr) {
-        console.error("❌ Audit Log Error on Status Update:", auditErr);
-      }
+      await AuditModel.createAuditLog({
+        type: "booking",
+        operation: "activity",
+        previous: [],
+        next: ["booking marked as no pickup"],
+        employee_id: booking.employee_id || null, // Request user ya existing employee id
+        booking_id: bookingId,
+        driver_id: booking.driver_id || null,
+        company_id: booking.company_id || 1,
+      });
+    } catch (auditErr) {
+      console.error("❌ Audit Log Error on Status Update:", auditErr);
+    }
 
     const driver = await Driver.getById(booking.driver_id);
 
@@ -3538,7 +3554,8 @@ exports.getAllMultiBookings = async (req, res) => {
 // ---------------------------------------------------------
 exports.getBookingsBySpecificMultiBookingId = async (req, res) => {
   try {
-  const { multiBookingId, reference_number, pickup_date, journey_type_id } = req.query;
+    const { multiBookingId, reference_number, pickup_date, journey_type_id } =
+      req.query;
 
     if (!multiBookingId) {
       return res.status(400).json({
@@ -3555,7 +3572,10 @@ exports.getBookingsBySpecificMultiBookingId = async (req, res) => {
     };
 
     // Call Model Function
-    const bookings = await fetchBookingsByMultiBookingId(multiBookingId, filters);
+    const bookings = await fetchBookingsByMultiBookingId(
+      multiBookingId,
+      filters,
+    );
 
     // Parse JSON fields agar zaroorat ho (jaise viapoints, notes, etc.)
     const bookingsData = bookings.map((row) => parseJSONFields(row));
@@ -3633,8 +3653,26 @@ exports.updateMultiBookings = async (req, res) => {
 // ---------------------------------------------------------
 exports.getBookingsForCustomerPreInvoice = async (req, res) => {
   try {
-        let { customer_id, from_date, to_date, payment_type_ids, ref_number, datetime, pickup, dropoff, customer, vehicle, journey_type, fare, parking_charges, waiting_charges, extra_drop_charges, meet_and_greet, congestion_charges, total_charges } = req.query;
-
+    let {
+      customer_id,
+      from_date,
+      to_date,
+      payment_type_ids,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
+    } = req.query;
 
     if (!customer_id) {
       return res.status(400).json({

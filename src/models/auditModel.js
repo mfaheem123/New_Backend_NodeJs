@@ -1,8 +1,8 @@
-const pool = require('../db'); // Aapka PostgreSQL connection pool
+const pool = require("../db"); // Aapka PostgreSQL connection pool
 
 class AuditModel {
-    static async getAuditsByBookingId(bookingId) {
-        const query = `
+  static async getAuditsByBookingId(bookingId) {
+    const query = `
             SELECT 
                 a.id, 
                 a.type, 
@@ -29,32 +29,41 @@ class AuditModel {
             WHERE a.booking_id = $1
             ORDER BY a.date DESC, a.time DESC;
         `;
-        const { rows } = await pool.query(query, [bookingId]);
-        return rows;
-    }
+    const { rows } = await pool.query(query, [bookingId]);
+    return rows;
+  }
 
-    static async createAuditLog({ type, operation, previous, next, employee_id, booking_id, driver_id, company_id }) {
-    const currentDate = new Date().toISOString().split('T')[0];
-    const currentTime = new Date().toTimeString().split(' ')[0];
+  static async createAuditLog({
+    type,
+    operation,
+    previous,
+    next,
+    employee_id,
+    booking_id,
+    driver_id,
+    company_id,
+  }) {
+    const currentDate = new Date().toISOString().split("T")[0];
+    const currentTime = new Date().toTimeString().split(" ")[0];
 
     const query = `
         INSERT INTO audits (type, date, time, operation, previous, next, employee_id, booking_id, driver_id, company_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     `;
-    
+
     await pool.query(query, [
-        type || 'booking',
-        currentDate,
-        currentTime,
-        operation,
-        JSON.stringify(previous || []),
-        JSON.stringify(next || []),
-        employee_id || null,
-        booking_id,
-        driver_id || null,
-        company_id || null
+      type || "booking",
+      currentDate,
+      currentTime,
+      operation,
+      JSON.stringify(previous || []),
+      JSON.stringify(next || []),
+      employee_id || null,
+      booking_id,
+      driver_id || null,
+      company_id || null,
     ]);
-}
+  }
 }
 
 module.exports = AuditModel;
