@@ -496,9 +496,9 @@ async function createBookingRow(pool, bookingObj) {
   if (row.multi_booking_id === undefined) row.multi_booking_id = 0;
 
   // INSERT
-  Console.log("INSERTING EMPLOYEE ID BEFORE:", row.employee_id);
+  console.log("INSERTING EMPLOYEE ID BEFORE:", row.employee_id);
   const inserted = await insertBookingRow(pool, row);
-  Console.log("INSERTING EMPLOYEE ID AFTER:", row.employee_id);
+  console.log("INSERTING EMPLOYEE ID AFTER:", row.employee_id);
 
  // 🔥 SAFE AUDIT LOG CREATION
   try {

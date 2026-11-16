@@ -1,6 +1,9 @@
 const AuditModel = require("../models/auditModel");
 
 class AuditController {
+  // ---------------------------------------------------------
+// GET AUDITS BY BOOKING ID
+// ---------------------------------------------------------
   static async getAudits(req, res) {
     try {
       const bookingId = req.query.booking_id;
