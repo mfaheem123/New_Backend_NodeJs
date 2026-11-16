@@ -3687,12 +3687,12 @@ exports.getBookingsForCustomerPreInvoice = async (req, res) => {
         message: "from_date and to_date are required",
       });
     }
-if (!payment_type_ids) {
-  return res.status(400).json({
-    status: false,
-    message: "payment_type_ids is required",
-  });
-}
+    if (!payment_type_ids) {
+      return res.status(400).json({
+        status: false,
+        message: "payment_type_ids is required",
+      });
+    }
     if (typeof payment_type_ids === "string") {
       payment_type_ids = JSON.parse(payment_type_ids);
     }
@@ -3726,25 +3726,25 @@ if (!payment_type_ids) {
     }
 
     const bookings = await getBookingsForCustomerPreInvoice({
-  customer_id,
-  from_date,
-  to_date,
-  payment_type_ids,
-  ref_number,
-  datetime,
-  pickup,
-  dropoff,
-  customer,
-  vehicle,
-  journey_type,
-  fare,
-  parking_charges,
-  waiting_charges,
-  extra_drop_charges,
-  meet_and_greet,
-  congestion_charges,
-  total_charges,
-});
+      customer_id,
+      from_date,
+      to_date,
+      payment_type_ids,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
+    });
 
     return res.status(200).json({
       status: true,

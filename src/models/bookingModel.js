@@ -2903,7 +2903,7 @@ const getDriverEarningsBookings = async ({
 };
 
 // ---------------------------------------------------------
-// RECOVER DASHBOARD BOOKING
+// NO PICKUP DASHBOARD BOOKING
 // ---------------------------------------------------------
 const noPickupDashboardBooking = async (id) => {
   const query = `

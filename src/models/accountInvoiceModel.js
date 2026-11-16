@@ -42,8 +42,6 @@ exports.create = async (data) => {
 
     await pool.query("BEGIN");
 
-    
-
     // 📄 Insert invoice
     const invoiceRes = await pool.query(
       `INSERT INTO account_invoices (
@@ -141,7 +139,6 @@ exports.create = async (data) => {
     throw err;
   }
 };
-
 
 // ---------------------------------------------------------
 // GET ALL ACCOUNT INVOICES
@@ -312,7 +309,6 @@ exports.getAll = async ({
     throw err;
   }
 };
-
 
 // ---------------------------------------------------------
 // GET ACCOUNT INVOICES BY ID

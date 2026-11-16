@@ -2,8 +2,8 @@ const pool = require("../db"); // Aapka PostgreSQL connection pool
 
 class AuditModel {
   // ---------------------------------------------------------
-// GET AUDITS BY BOOKING ID
-// ---------------------------------------------------------
+  // GET AUDITS BY BOOKING ID
+  // ---------------------------------------------------------
   static async getAuditsByBookingId(bookingId) {
     const query = `
             SELECT 
@@ -37,8 +37,8 @@ class AuditModel {
   }
 
   // ---------------------------------------------------------
-// CREATE BOOKING AUDITS LOGS
-// ---------------------------------------------------------
+  // CREATE BOOKING AUDITS LOGS
+  // ---------------------------------------------------------
   static async createAuditLog({
     type,
     operation,
