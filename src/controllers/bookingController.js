@@ -82,6 +82,7 @@ const {
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 const SinbinService = require("../services/sinbinService");
 const AuditModel = require("../models/auditModel");
+const { syncDriverState } = require("../services/driverStateService");
 
 function parseJSONFields(row) {
   if (!row) return row;
@@ -692,47 +693,19 @@ exports.updateBookingStatus = async (req, res) => {
     }
 
     const bookingData = booking.rows[0];
-    const driverId = booking.rows[0].driver_id;
-    const customerId = booking.rows[0].customer_id;
-    const booking_source = booking.rows[0].booking_source;
+    const driverId = bookingData.driver_id;
+    const customerId = bookingData.customer_id;
+    const booking_source = bookingData.booking_source;
     console.log("Booking Source: ", booking_source);
 
-    //RIDE ACCEPTED
-    if (booking_status_id == 15) {
-      if (booking.rows[0].future == true) {
-        await Driver.updateDriverStatus(driverId, "Accepted", "Available");
-      } else {
-        await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
-      }
-      //Update Last Booking Status in Driver Table
-      await Driver.updateDriverLastBooking(driverId, bookingId);
-      await notifyDriverBookingStatus(driverId);
-      await notifyDriverBookingStatusWeb(driverId);
-      if (booking_source == "app") {
-        await sendRideAcceptedNotification(customerId, bookingData);
-      }
-    }
+    
 
-    // ON ROUTE
-    if (booking_status_id == 3) {
-      await updateBookingonRoute(bookingId, true, false, true);
-      await Driver.updateDriverStatus(driverId, "On Route", "Unavailable");
-      await notifyDriverBookingStatus(driverId);
-      await notifyDriverBookingStatusWeb(driverId);
-    }
-
-    // ARRIVED
+    // 1. ARRIVED (Status 6) — 2 Hours Future Check
     if (booking_status_id == 6) {
       const pickupDate = bookingData.pickup_date;
       const pickupTime = bookingData.pickup_time;
 
       const now = new Date();
-
-      // Current Date
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      const today = `${year}-${month}-${day}`;
 
       // Parse booking date
       const [bookingYear, bookingMonth, bookingDay] = pickupDate
@@ -761,111 +734,105 @@ exports.updateBookingStatus = async (req, res) => {
       console.log("Hours Remaining:", diffHours);
 
       // More than 2 hours remaining
-      if (booking.rows[0].future == true) {
-        if (diffHours > 2) {
-          return res.status(400).json({
-            status: false,
-            message:
-              "You cannot mark Arrived more than 2 hours before the pickup time.",
-          });
-        }
+      if (bookingData.future == true && diffHours > 2) {
+        return res.status(400).json({
+          status: false,
+          message:
+            "You cannot mark Arrived more than 2 hours before the pickup time.",
+        });
       }
+      
       //Update Last Booking Status in Driver Table
       await Driver.updateDriverLastBooking(driverId, bookingId);
 
-      await updateBookingonRoute(bookingId, false, false, true);
-      await Driver.updateDriverStatus(driverId, "Arrived", "Unavailable");
-      await notifyDriverBookingStatus(driverId);
-      await notifyDriverBookingStatusWeb(driverId);
+      // Update Booking on Route Status
+      await updateBookingonRoute(bookingId, false, false, true, false);
+      
+    }
 
-      if (booking.rows[0].future == true) {
-        const driver = await Driver.getById(driverId);
-        console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
-        notifyBusyDriverUpdate(driver);
+    // 2. RIDE ACCEPTED (Status 15)
+if (booking_status_id == 15) {
+      // Agar FOB booking nahi hai toh last booking update karein
+      if (!bookingData.fob) {
+        await Driver.updateDriverLastBooking(driverId, bookingId);
+      }
+      if (booking_source == "app") {
+        await sendRideAcceptedNotification(customerId, bookingData);
       }
     }
 
-    // PASSENGER ON BOARD
-    if (booking_status_id == 9) {
-      await Driver.updateDriverStatus(driverId, "POB", "Unavailable");
-      await notifyDriverBookingStatus(driverId);
-      await notifyDriverBookingStatusWeb(driverId);
+    // 3. ON ROUTE (Status 3)
+    if (booking_status_id == 3) {
+      await updateBookingonRoute(bookingId, true, false, true, true);
+     await Driver.updateDriverLastBooking(driverId, bookingId);
     }
 
-    // SOON TO CLEAR
-    if (booking_status_id == 10) {
-      await Driver.updateDriverStatus(driverId, "STC", "Unavailable");
-      await notifyDriverBookingStatus(driverId);
-      await notifyDriverBookingStatusWeb(driverId);
-    }
 
-    // COMPLETED
+   // 4. COMPLETED (Status 11)
     if (booking_status_id == 11) {
-      await updateBookingonRoute(bookingId, false, true, true);
+      await updateBookingonRoute(bookingId, false, true, true, true);
 
-      // await Driver.updateDriverStatus(driverId, "Available", "Available");
+      // Check karein ke next accepted FOB booking hai ya nahi (fob flag true hi rahega)
+      const nextFob = await checkDriverFobBooking(driverId);
+      console.log("FOB CHECK: ", nextFob);
 
-      // CHECK DRIVER HAS FOB OR NOT
-      const hasFob = await checkDriverFobBooking(driverId);
-      console.log("FOB CHECK: ", hasFob);
+      if (nextFob) {
+        await Driver.updateDriverLastBooking(driverId, nextFob.id);
+      } 
 
-      if (hasFob) {
-        await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
-      } else {
-        await Driver.updateDriverStatus(driverId, "Available", "Available");
-
-        const driver = await Driver.getById(driverId);
-
-        notifyBusyDriverUpdate(driver);
-      }
       if (driver_web_complete == true || driver_web_complete == "true") {
         await sendCompleteBookingFromWebNotification(driverId, bookingId);
       }
-      await notifyDriverBookingStatus(driverId);
-      await notifyDriverBookingStatusWeb(driverId);
-
-      // const driver = await Driver.getById(driverId);
-
-      // notifyBusyDriverUpdate(driver);
+      
       await DriverShiftHistory.addBookingToShift(driverId, bookingId);
     }
 
-    //REJECTED
+
+
+
+// 5. NO SHOW (Status 7)
+    if (booking_status_id == 7) {
+      let message = "This Booking has been marked as No Show.";
+      // Send No Show Notification to Driver
+      await sendNoShowBookingNotification(driverId, bookingId, message);
+    }    
+
+//6. PASSENGER ON BOARD (Status 9)
+    if (booking_status_id == 9) {
+      await updateBookingonRoute(bookingId, false, false, true, true);
+    }
+
+// 7. PEHLE BOOKING STATUS DB MEIN UPDATE KAREIN (Taake syncDriverState ko fresh status mile)
+await updateBookingStatus(bookingId, booking_status_id);
+
+
+   
+
+
+    
+
+
+    // 8. SIN BIN CHECK FOR REJECT (5) & MISSED (4)
     if (booking_status_id == 5) {
-      await Driver.updateDriverStatus(driverId, "Available", "Available");
-      await notifyDriverBookingStatus(driverId);
-      await notifyDriverBookingStatusWeb(driverId);
       await SinbinService.checkAndApplySinbin(
-        booking.rows[0].company_id,
+        bookingData.company_id,
         driverId,
         "REJECT",
       );
-    }
-
-    //MISSED
-    if (booking_status_id == 4) {
-      await Driver.updateDriverStatus(driverId, "Available", "Available");
-      await notifyDriverBookingStatus(driverId);
-      await notifyDriverBookingStatusWeb(driverId);
+    } else if (booking_status_id == 4) {
       await SinbinService.checkAndApplySinbin(
-        booking.rows[0].company_id,
+        bookingData.company_id,
         driverId,
         "MISSED",
       );
     }
 
-    //NO SHOW
-    if (booking_status_id == 7) {
-      let message = "This Booking has been marked as No Show.";
-      // Send No Show Notification to Driver
-      await sendNoShowBookingNotification(driverId, bookingId, message);
-      await Driver.updateDriverStatus(driverId, "Available", "Available");
-      await notifyDriverBookingStatus(driverId);
-      await notifyDriverBookingStatusWeb(driverId);
+  // 9. CENTRALIZED STATE SYNC (Available / Busy / FOB / Future / SinBin sab handle karega)
+    if (driverId) {
+      await syncDriverState(driverId);
     }
 
-    // UPDATE BOOKING STATUS
-    await updateBookingStatus(bookingId, booking_status_id);
+  
 
     // =========================================================
     // 📝 AUDIT LOG GENERATION BASED ON STATUS ID
@@ -924,39 +891,16 @@ exports.updateBookingStatus = async (req, res) => {
       }
     }
 
-    //GET FRESH DATA AFTER UPDATE
-    const freshBooking = await findBookingById(bookingId);
-    console.log("📦 Fresh Booking:", freshBooking.rows[0]);
 
-    // -------------------------------
-    // 📩 SEND SMS (AFTER UPDATE)
-    // -------------------------------
+ 
+    // 10. SEND ARRIVED SMS
     if (booking_status_id == 6) {
+      const freshBooking = await findBookingById(bookingId);
       console.log("📩 Sending ARRIVED SMS...");
       await sendBookingSMS(freshBooking.rows[0]);
     }
 
-    // DRIVER UNAVAILABLE FOR THESE STATUS
-    const booking_status_ids = Number(req.body.booking_status_id);
-    console.log(booking_status_ids);
-
-    const unavailableStatuses = [15];
-
-    // if (unavailableStatuses.includes(booking_status_ids)) {
-    //   await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
-
-    //   const driver = await Driver.getById(driverId);
-    //   console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
-    //   notifyBusyDriverUpdate(driver);
-    // }
-
-    if (booking_status_ids == 15 && booking.rows[0].future !== true) {
-      await Driver.updateDriverStatus(driverId, "Accepted", "Unavailable");
-
-      const driver = await Driver.getById(driverId);
-      console.log("📡 Sending BUSY_DRIVER_UPDATE:", driver.id);
-      notifyBusyDriverUpdate(driver);
-    }
+ 
 
     return res.status(200).json({
       status: true,
@@ -2080,20 +2024,18 @@ exports.recoverDashboardBooking = async (req, res) => {
     await recoverDashboardBooking(bookingId);
 
     if (driverId) {
-      // 2️⃣ Reset Driver Booking Status to 'Available' in DB
-      await Driver.updateDriverStatus(driverId, "Available", "Available");
-
-      // 3️⃣ Apply SinBin logic (Updates driver_status to 'SinBin' & emits WebSockets)
+      // 2️⃣ Apply SinBin logic
       await SinbinService.checkAndApplySinbin(
         booking.company_id,
         driverId,
         "RECOVER",
       );
 
-      // 4️⃣ Notify PDA/App regarding status change
-      await notifyDriverBookingStatus(driverId);
+// 3️⃣ Sync Driver State (Busy -> Available List with SinBin status & WebSockets)
+      await syncDriverState(driverId);      
+  
 
-      //Create Audit Log for Bookking Recovery
+      // 4️⃣ Create Audit Log for Bookking Recovery
       try {
         await AuditModel.createAuditLog({
           type: "booking",
@@ -2109,11 +2051,6 @@ exports.recoverDashboardBooking = async (req, res) => {
         console.error("❌ Audit Log Error on Status Update:", auditErr);
       }
 
-      // 5️⃣ Fetch fresh updated driver details & Trigger Dashboard Shift (Busy -> Login List)
-      const freshDriver = await Driver.getById(driverId);
-      if (freshDriver) {
-        notifyBusyDriverUpdate(freshDriver);
-      }
     }
 
     return res.status(200).json({
@@ -2643,6 +2580,13 @@ exports.getBookingsForCustomerInvoice = async (req, res) => {
       });
     }
 
+    if (!payment_type_ids) {
+  return res.status(400).json({
+    status: false,
+    message: "payment_type_ids is required",
+  });
+}
+
     if (typeof payment_type_ids === "string") {
       payment_type_ids = JSON.parse(payment_type_ids);
     }
@@ -2660,7 +2604,8 @@ exports.getBookingsForCustomerInvoice = async (req, res) => {
       });
     }
 
-    const bookings = await getBookingsForCustomerInvoice(
+   // ✅ SAHI TAREEQA (Object bana kar bhejein):
+    const bookings = await getBookingsForCustomerInvoice({
       customer_id,
       from_date,
       to_date,
@@ -2679,7 +2624,7 @@ exports.getBookingsForCustomerInvoice = async (req, res) => {
       meet_and_greet,
       congestion_charges,
       total_charges,
-    );
+    });
 
     return res.status(200).json({
       status: true,
@@ -3065,7 +3010,7 @@ exports.getDriverEarningsBookings = async (req, res) => {
 };
 
 // ---------------------------------------------------------
-// NO PICKUP DASHBOARD BOOKING
+// NO PICKUP DASHBOARD BOOKING WITH SIN BIN UPDATE
 // ---------------------------------------------------------
 exports.noPickupDashboardBooking = async (req, res) => {
   try {
@@ -3081,50 +3026,58 @@ exports.noPickupDashboardBooking = async (req, res) => {
     }
     // ✅ Actual booking object
     const booking = bookingResult.rows[0];
+const driverId = booking.driver_id;
 
-    console.log("BOOKING:", booking);
-    console.log(booking.id);
-    await sendNoPickupBookingNotification(booking.driver_id, booking);
-    await noPickupDashboardBooking(bookingId);
-    await Driver.updateDriverStatus(
-      booking.driver_id,
-      "Available",
-      "Available",
-    );
-    await notifyDriverBookingStatus(booking.driver_id);
-    await notifyDriverBookingStatusWeb(booking.driver_id);
-
-    //Create Audit Log for Bookking No Pickup
-    try {
-      await AuditModel.createAuditLog({
-        type: "booking",
-        operation: "activity",
-        previous: [],
-        next: ["booking marked as no pickup"],
-        employee_id: booking.employee_id || null, // Request user ya existing employee id
-        booking_id: bookingId,
-        driver_id: booking.driver_id || null,
-        company_id: booking.company_id || 1,
-      });
-    } catch (auditErr) {
-      console.error("❌ Audit Log Error on Status Update:", auditErr);
+// 1️⃣ Send FCM Notification & Mark Booking No Pickup in DB
+    if (driverId) {
+      await sendNoPickupBookingNotification(driverId, booking);
     }
 
-    const driver = await Driver.getById(booking.driver_id);
 
-    notifyBusyDriverUpdate(driver);
+
+await noPickupDashboardBooking(bookingId);
+    
+if (driverId) {
+      // 2️⃣ Apply SinBin logic (No Pickup par bhi SinBin lagega)
+      await SinbinService.checkAndApplySinbin(
+        booking.company_id,
+        driverId,
+        "RECOVER", // Agar aapki settings table mein RECOVER ka time use hota hai toh "RECOVER" rakhein
+      );
+
+      // 3️⃣ Sync Driver State (Busy -> Available List with SinBin status & WebSockets)
+      await syncDriverState(driverId);
+
+      // 4️⃣ Audit Log
+      try {
+        await AuditModel.createAuditLog({
+          type: "booking",
+          operation: "activity",
+          previous: [],
+          next: ["booking marked as no pickup"],
+          employee_id: booking.employee_id || null,
+          booking_id: bookingId,
+          driver_id: driverId,
+          company_id: booking.company_id || 1,
+        });
+      } catch (auditErr) {
+        console.error("❌ Audit Log Error on No Pickup:", auditErr);
+      }
+    }
+
     return res.status(200).json({
       status: true,
       message: "No Pickup Booking Successfully",
     });
   } catch (error) {
-    console.error("Recover Booking Error:", error);
+    console.error("No Pickup Booking Error:", error);
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",
     });
   }
 };
+
 
 // ---------------------------------------------------------
 // GET FUTURE BOOKING HISTORY BY DRIVER ID

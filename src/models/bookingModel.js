@@ -985,13 +985,16 @@ const updateBookingStatus = async (id, statusId) => {
 // ---------------------------------------------------------
 // UPDATE BOOKING ON ROUTE STATUS
 // ---------------------------------------------------------
-const updateBookingonRoute = async (id, on_route, completed, arrived) => {
+const updateBookingonRoute = async (id, on_route, completed, arrived, passenger_on_board) => {
   const query = `
     UPDATE bookings
-    SET on_route = $1, completed = $2, arrived = $3
-    WHERE id = $4
+    SET on_route = $1,
+        completed = $2, 
+        arrived = $3, 
+        passenger_on_board = $4
+    WHERE id = $5
   `;
-  return pool.query(query, [on_route, completed, arrived, id]);
+  return pool.query(query, [on_route, completed, arrived, passenger_on_board, id]);
 };
 
 // ---------------------------------------------------------
@@ -1368,7 +1371,7 @@ const checkDriverFobBooking = async (driver_id) => {
   const values = [driver_id];
 
   const res = await pool.query(sql, values);
-  return res.rows[0]; // 👈 only one booking
+  return res.rows[0] || null; // 👈 only one booking
 };
 
 // ---------------------------------------------------------

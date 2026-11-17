@@ -64,6 +64,7 @@ exports.createCustomerInvoice = async (req, res) => {
       customer_invoice_lineitems: result.customer_invoice_lineitems,
     });
   } catch (error) {
+  console.error("Error creating customer invoice:", error);
     res.status(500).json({
       status: false,
       message: error.message,

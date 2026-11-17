@@ -132,11 +132,11 @@ exports.createCustomerInvoice = async (payload) => {
     );
 
     // 🔐 Generate invoice number
-    if (invoice_type === "pre" || invoice_type === "PRE") {
-      invoice_number = await generateCustomerPreInvoiceNumber(company_id);
+    if (payload.invoice_type === "pre" || payload.invoice_type === "PRE") {
+      payload.invoice_number = await generateCustomerPreInvoiceNumber(payload.company_id);
     }
-    if (invoice_type === "post" || invoice_type === "POST") {
-      invoice_number = await generateCustomerInvoiceNumber(company_id);
+    if (payload.invoice_type === "post" || payload.invoice_type === "POST") {
+      payload.invoice_number = await generateCustomerInvoiceNumber(payload.company_id);
     }
     await pool.query("COMMIT");
 

@@ -13,6 +13,7 @@ const notification = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 const { panicDriverClients } = require("../sockets/panicSocket");
 const { breakDriverClients } = require("../sockets/breakSocket");
+const { syncDriverState } = require("../services/driverStateService"); // Path apni directory ke mutabiq adjust karein
 
 // const io = getIO();
 
@@ -686,6 +687,8 @@ exports.driverLogin = async (req, res) => {
     const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
+
+    // 1. Session aur location update karein
     await Driver.updateDriverLoginStatus(driver.id, latitude, longitude, zone);
 
     // INSERT SHIFT HISTORY LOGIN
@@ -694,11 +697,17 @@ exports.driverLogin = async (req, res) => {
     if (fcm_token) {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
     }
-    // ONLY IMPORTANT FIX
-    const updatedDriver = await Driver.getLoginDriverById(driver.id);
-    const updatedDriverSocket = await Driver.getById(driver.id);
 
-    notifyDriverLogin(updatedDriverSocket);
+// 2. Exact status sync karein (SinBin / Today's Future Booking / Available)
+    // Ye automatically Busy/Available WebSockets bhi update kar dega
+    const syncedDriver = await syncDriverState(driver.id);
+
+    // 3. Available list socket ko notify karein (agar driver Available/SinBin mein hai)
+    notifyDriverLogin(syncedDriver);
+
+// 4. Fresh driverInfo app response ke liye fetch karein
+    const updatedDriver = await Driver.getLoginDriverById(driver.id);
+    
     return res.status(200).json({
       message: "Login successful",
       driverInfo: updatedDriver,
@@ -1435,9 +1444,11 @@ exports.driverForcedLogin = async (req, res) => {
     const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-    await Driver.updateDriverLoginStatus(driver.id, 0.0, 0.0);
 
-    //Update FCM Token if provided
+    // 1. Session aur location update karein
+    await Driver.updateDriverLoginStatus(driver.id, 0.0, 0.0, null);
+
+    // Update FCM Token if provided
     if (fcmToken) {
       await Driver.updateDriverFcmToken(driver.id, fcmToken);
     }
@@ -1445,11 +1456,15 @@ exports.driverForcedLogin = async (req, res) => {
     // INSERT SHIFT HISTORY LOGIN
     await DriverShiftHistory.createLoginShift(driver.id, 0.0, 0.0);
 
-    // ONLY IMPORTANT FIX
-    const updatedDriver = await Driver.getLoginDriverById(driver.id);
-    const updatedDriverSocket = await Driver.getById(driver.id);
+    // 2. Exact status sync karein (SinBin / Today's Future Booking / Available)
+    const syncedDriver = await syncDriverState(driver.id);
 
-    notifyDriverLogin(updatedDriverSocket);
+    // 3. Available list socket ko notify karein
+    notifyDriverLogin(syncedDriver);
+
+    // 4. Fresh driverInfo app response ke liye fetch karein
+    const updatedDriver = await Driver.getLoginDriverById(driver.id);
+
     const messages =
       "You have been forcibly logged in by the admin. Please contact support if you have any questions.";
     // Send Forced Login Notification to Driver
