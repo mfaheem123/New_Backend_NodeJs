@@ -47,6 +47,7 @@ cron.schedule("*/100 * * * * *", async () => {
 // =========================================================
 cron.schedule("*/10 * * * *", async () => {
   try {
+    console.log("⏰ Checking Driver Future Bookings...")
     // Un logged-in drivers ko dhundein jinki accepted future booking aaj ki date ki hai
     // aur wo abhi Available list mein hain (d.driver_status != 'Unavailable')
     const query = `
