@@ -29,6 +29,7 @@ const loggedInDrivers = new Map();
 // Busy drivers list (memory)
 const busyDrivers = new Map();
 
+// Format driver data for WebSocket payload
 function formatDriverData(driver) {
   return {
     id: driver.id,
@@ -40,12 +41,12 @@ function formatDriverData(driver) {
     booking_status: driver.booking_status,
     session_status: driver.session_status,
     driver_status: driver.driver_status,
-    vehicle_type: driver.vehicle?.vehicle_type?.name || null,
+    vehicle_type: driver.vehicle?.vehicle_type?.name || driver.vehicle_type || null,
     last_login_at: driver.last_login_at,
-    vehicle_no: driver.vehicle?.vehicle_number || null,
-    make: driver.vehicle?.make || null,
-    model: driver.vehicle?.model || null,
-    color: driver.vehicle?.color || null,
+    vehicle_no: driver.vehicle?.vehicle_number || driver.vehicle_no || null,
+    make: driver.vehicle?.make || driver.make || null,
+    model: driver.vehicle?.model || driver.model || null,
+    color: driver.vehicle?.color || driver.color || null,
   };
 }
 
@@ -61,22 +62,22 @@ function handleDriverLoginSocket(ws, req) {
     company_id: ws.company_id,
   });
 
-  // 1️⃣ Sirf available logged in drivers bhejo
-  const availableDrivers = Array.from(loggedInDrivers.values()).filter(
+// 1️⃣ Sirf available logged in drivers bhejo (Available, SinBin, On Break)
+const availableDrivers = Array.from(loggedInDrivers.values()).filter(
     (driver) =>
       driver.session_status === "logged_in" &&
-      driver.booking_status === "Available" &&
       (driver.driver_status === "Available" ||
-        driver.driver_status === "SinBin"),
+        driver.driver_status === "SinBin" ||
+        driver.driver_status === "On Break"),
   );
 
-  // 2️⃣ Subscribe future updates
+ // 2️⃣ Subscribe future updates
   const driverLoginListener = (driver) => {
     if (driver.session_status !== "logged_in") return;
-    if (driver.booking_status !== "Available") return;
     if (
       driver.driver_status !== "Available" &&
-      driver.driver_status !== "SinBin"
+      driver.driver_status !== "SinBin" &&
+      driver.driver_status !== "On Break"
     )
       return;
 
@@ -97,6 +98,7 @@ function handleDriverLoginSocket(ws, req) {
   });
 }
 
+// Busy Dashboard Socket
 async function handleBusyDriverSocket(ws, req) {
   const { searchParams } = new URL(req.url, "http://localhost");
 
@@ -123,18 +125,19 @@ async function handleBusyDriverSocket(ws, req) {
 
 // Driver Login Notify At Web
 function notifyDriverLogin(driver) {
-  // Sirf available logged-in drivers allow
+// Available, SinBin aur On Break drivers Available list mein show honge
   if (
     driver.session_status !== "logged_in" ||
-    driver.booking_status !== "Available" ||
-    (driver.driver_status !== "Available" && driver.driver_status !== "SinBin")
+    (driver.driver_status !== "Available" &&
+      driver.driver_status !== "SinBin" &&
+      driver.driver_status !== "On Break")
   ) {
     return;
   }
 
   const existing = loggedInDrivers.get(driver.id);
 
-  // 🚫 Already available → skip
+// 🚫 Already same state in available → skip
   if (!hasDriverStateChanged(existing, driver)) {
     logger.info("ws:skip-duplicate-available", {
       driverId: driver.id,
@@ -186,69 +189,53 @@ function notifyDriverLogout(driverId) {
     driverId,
   });
 }
+
+// Notify Busy Driver Update
 function notifyBusyDriverUpdate(driver) {
   console.log("BUSY CLIENTS:", busyDashboardClients.size);
 
   if (driver.session_status !== "logged_in") return;
 
-  // 🟢 DRIVER AVAILABLE → REMOVE FROM BUSY
-  if (
-    driver.booking_status === "Available" &&
-    driver.driver_status === "Available"
-  ) {
-    // Driver busy list se remove
+  // 🟢 DRIVER AVAILABLE LIST MEIN HONA CHAHIYE (Available, SinBin, ya On Break)
+  const isInAvailableList =
+    driver.driver_status === "Available" ||
+    driver.driver_status === "SinBin" ||
+    driver.driver_status === "On Break";
+
+  if (isInAvailableList) {
     busyDrivers.delete(driver.id);
-    // =================================================
-    // 🚫 ALREADY AVAILABLE → DO NOT SEND AGAIN
-    // =================================================
-    const existingAvailable = loggedInDrivers.get(driver.id);
-
-    if (existingAvailable) {
-      logger.info("Already available, skip", {
-        driverId: driver.id,
-      });
-
-      return;
-    }
-
-    // =================================================
-    // FIRST TIME AVAILABLE
-    // =================================================
     loggedInDrivers.set(driver.id, driver);
 
-    const payload = JSON.stringify({
+    // Available Dashboard ko add/update bhejein
+    const loginPayload = JSON.stringify({
       event: "DRIVER_LOGIN",
       data: formatDriverData(driver),
     });
     console.log("Driver Company ID: ", driver.company_id);
 
-    // AVAILABLE DASHBOARD
     dashboardClients.forEach((client) => {
       if (
         client.readyState === WebSocket.OPEN &&
         client.company_id === driver.company_id
       ) {
-        client.send(payload);
+        client.send(loginPayload);
       }
     });
 
-    // =================================================
-    // 🔥 BUSY SOCKET → REMOVE DRIVER
-    // =================================================
-    const busyPayload = JSON.stringify({
-      event: "BUSY_DRIVER_REMOVE", // ⚠️ Flutter me else hit karega
+    // Busy Dashboard se remove karein
+    const busyRemovePayload = JSON.stringify({
+      event: "BUSY_DRIVER_REMOVE",
       data: {
         id: driver.id,
       },
     });
-    console.log("Driver Company ID: ", driver.company_id);
 
     busyDashboardClients.forEach((client) => {
       if (
         client.readyState === WebSocket.OPEN &&
         client.company_id === driver.company_id
       ) {
-        client.send(busyPayload);
+        client.send(busyRemovePayload);
       }
     });
 
@@ -256,24 +243,14 @@ function notifyBusyDriverUpdate(driver) {
   }
 
   // =====================================================
-  // 🔴 DRIVER BUSY
+  // 🔴 DRIVER BUSY LIST MEIN HONA CHAHIYE (driver_status === 'Unavailable')
   // =====================================================
-  const existingBusy = busyDrivers.get(driver.id);
-  // 🚫 ALREADY BUSY → DO NOT SEND AGAIN
-  if (existingBusy) {
-    logger.info("Already busy, skip");
-    return;
-  }
-
-  // Available list se remove
   loggedInDrivers.delete(driver.id);
-
-  // Busy list mein add
   busyDrivers.set(driver.id, driver);
-  // 🔴 DRIVER BUSY → ADD
-  const payload = JSON.stringify({
+
+  const busyUpdatePayload = JSON.stringify({
     event: "BUSY_DRIVER_UPDATE",
-    data: formatDriverData(driver), // ✅ only required fields
+    data: formatDriverData(driver),
   });
   console.log("Driver Company ID: ", driver.company_id);
 
@@ -282,7 +259,7 @@ function notifyBusyDriverUpdate(driver) {
       client.readyState === WebSocket.OPEN &&
       client.company_id === driver.company_id
     ) {
-      client.send(payload);
+      client.send(busyUpdatePayload);
     }
   });
 }
@@ -291,7 +268,7 @@ function notifyBusyDriverUpdate(driver) {
 // DRIVER BOOKING STATUS UPDATE
 // ==============================
 async function notifyDriverBookingStatusWeb(driverId) {
-  try {
+try {
     const result = await db.query(
       `
       SELECT 
@@ -376,10 +353,11 @@ async function notifyDriverBookingStatusWeb(driverId) {
       },
     });
 
-    // AVAILABLE → dashboard
-    if (
-      driver.booking_status === "Available" &&
-      driver.driver_status === "Available"
+  // AVAILABLE LIST (Available, SinBin, On Break) → dashboard
+if (
+      driver.driver_status === "Available" ||
+      driver.driver_status === "SinBin" ||
+      driver.driver_status === "On Break"
     ) {
       dashboardClients.forEach((client) => {
         if (
