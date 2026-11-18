@@ -3,32 +3,49 @@ const { parseTemplate } = require("../utils/templateParser");
 const { formatMobile } = require("../utils/formatMobile");
 const { sendViaDinstar } = require("./dinstarService");
 const { createSMSLog, getSMSLogs } = require("../models/smsLogModel");
+const { getByCompanyId } = require("../models/companyConfigurationModel");
 
 async function sendSMSWithTemplate(payload) {
-  const { template_id, mobile, data, port, company_id } = payload;
+const { template_id, mobile, data, port, company_id, custom_message } = payload;
 
-  // 1️⃣ Get Template
-  const template = await getTemplateById(template_id);
-  if (!template) throw new Error("Template not found");
+if (!mobile) {
+     throw new Error("Mobile number is required");
+  }
 
-  // 2️⃣ Format Mobile
+  // 1️⃣ Format Mobile
   const formattedMobile = formatMobile(mobile);
   console.log("Formatted Mobile No. : ", formattedMobile);
 
-  // 3️⃣ Parse Template
-  const message = parseTemplate(template.content, data);
-  // const message = "MESSAGE FROM SERVER"
+// 2️⃣ Fetch Company SMS Configuration Dynamically from DB
+let companyConfig = null;
+if (company_id) {
+  companyConfig = await getByCompanyId(company_id);
+}
 
-  console.log(
-    "--------------------------------------------------------------------------------------------------------",
-  );
-  console.log("MESSAGE SENT: ", message);
-  console.log(
-    "--------------------------------------------------------------------------------------------------------",
-  );
+  let message = "";
+
+// Agar direct message diya hai toh woh use hoga, warna template se banega
+if (custom_message) {
+    message = custom_message;
+} else if (template_id) {
+   const template = await getTemplateById(template_id);
+   if (!template) throw new Error("Template not found");
+   message = parseTemplate(template.content, data);
+} else {
+ throw new Error("Either template_id or custom_message is required");
+}
+
+
+
+
+
+
+ console.log("--------------------------------------------------------------------------------");
+  console.log("MESSAGE TO SEND: ", message);
+  console.log("--------------------------------------------------------------------------------");
 
   // // 4️⃣ Send via Dinstar
-  // const gatewayResponse = await sendViaDinstar(formattedMobile, message, port);
+  // const gatewayResponse = await sendViaDinstar(formattedMobile, message, port, companyConfig);
 
   // // 5️⃣ Save Log in DB
   // await createSMSLog({

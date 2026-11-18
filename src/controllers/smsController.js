@@ -12,6 +12,7 @@ async function sendSMS(req, res) {
 
     res.json({
       status: true,
+      message: "SMS sent successfully",
       gateway: result,
     });
   } catch (error) {

@@ -1249,7 +1249,7 @@ async function updateBookingService(bookingId, payload) {
     // Other
     "department",
     "journey_type_id",
-    "booking_type_id",
+    // "booking_type_id",
     "booking_source",
     "quotation",
     "sms",

@@ -204,3 +204,14 @@ exports.getFirstSubsidiaryByCompanyId = async (companyId) => {
   const { rows } = await pool.query(query, [companyId]);
   return rows[0]?.id || null;
 };
+
+// Company Configuration Model mein ye function add karein:
+exports.getByCompanyId = async (companyId) => {
+  const query = `
+    SELECT * FROM company_configurations 
+    WHERE company_id = $1 
+    LIMIT 1;
+  `;
+  const { rows } = await pool.query(query, [companyId]);
+  return rows[0] || null;
+};

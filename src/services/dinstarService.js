@@ -1,22 +1,29 @@
 const httpClient = require("urllib");
 const dinstarConfig = require("../config/dinstarConfig");
 
-async function sendViaDinstar(number, text, port) {
+async function sendViaDinstar(number, text, port, config) {
   try {
-    // port = port ?? 7;
-    port = 5;
-    const url = `${dinstarConfig.baseURL}/send_sms`;
+// 📌 DB se direct sms_host aur sms_port lena, agar na ho toh fallback use karna
+    const url = config?.sms_host || "https://217.40.112.65/api/send_sms";
+
+    // Agar function mein port pass na ho toh DB wale `sms_port` ko number mein convert kar ke use karein, warna default 5 rahe
+    //pehle config wala port aye agar wo na ho tou phr function wala port aye agar wo na ho tou phr default 5 aye
+
+    const activePort = config?.sms_port ? parseInt(config.sms_port, 10) : port || 5;
+
+    const username = config?.sms_username || process.env.DINSTAR_USER;
+    const password = config?.sms_password || process.env.DINSTAR_PASS;
 
     const options = {
       method: "POST",
       rejectUnauthorized: false,
 
       // ✅ Digest Authentication
-      digestAuth: `${dinstarConfig.auth.username}:${dinstarConfig.auth.password}`,
+digestAuth: `${username}:${password}`,
 
       content: JSON.stringify({
         text: "#param#",
-        port: [port],
+        port: [activePort],
         param: [
           {
             number: number,
@@ -26,7 +33,9 @@ async function sendViaDinstar(number, text, port) {
         ],
       }),
 
-      headers: dinstarConfig.headers,
+      headers: {
+        "Content-Type": "application/json",
+      },
     };
 
     const response = await httpClient.request(url, options);

@@ -1,5 +1,9 @@
 const EmailLogModel = require("../models/emailLogModel");
+const { sendEmail } = require("../config/emailConfig");
 
+// ---------------------------------------------------------
+// GET EMAIL LOGS
+// ---------------------------------------------------------
 const getEmailLogs = async (req, res) => {
   try {
     const {
@@ -62,4 +66,50 @@ const getEmailLogs = async (req, res) => {
   }
 };
 
-module.exports = { getEmailLogs };
+// ---------------------------------------------------------
+// SEND CUSTOM EMAIL
+// ---------------------------------------------------------
+const sendCustomEmail = async (req, res) => {
+  try {
+    const { company_id, subsidiary_id, to, subject, text, html } = req.body;
+
+    console.log(
+      "🚀 INCOMING SEND CUSTOM EMAIL BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
+
+    // Basic validation
+    if (!company_id || !subsidiary_id || !to || !subject) {
+      return res.status(400).json({
+        status: false,
+        message: "company_id, subsidiary_id, to, and subject are required fields.",
+      });
+    }
+
+    // Aapka purana dynamic sendEmail function call hoga
+    const info = await sendEmail({
+      companyId: company_id,
+      subsidiaryId: subsidiary_id,
+      to,
+      subject,
+      text,
+      html,
+    });
+
+console.log("📧 Email sent successfully:", info);
+
+    return res.status(200).json({
+      status: true,
+      message: "Email sent successfully!",
+      info,
+    });
+  } catch (error) {
+    console.error("❌ Send Custom Email Error:", error);
+    return res.status(500).json({
+      status: false,
+      message: error.message || "Internal server error while sending email",
+    });
+  }
+};
+
+module.exports = { getEmailLogs, sendCustomEmail };
