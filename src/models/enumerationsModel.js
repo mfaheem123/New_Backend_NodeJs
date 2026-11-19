@@ -328,7 +328,7 @@ const EnumerationsModel = {
           WHEN 1 THEN (
             SELECT COUNT(*) FROM bookings 
             WHERE DATE(pickup_date) = CURRENT_DATE 
-            AND booking_status_id IN (1, 4, 5, 13, 8) 
+            AND booking_status_id IN (1, 4, 5, 13, 8, 2) 
             AND trash = false
             AND company_id = $1
           )

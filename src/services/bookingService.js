@@ -13,6 +13,7 @@ const {
   sendAppBookingNotification,
   sendWebBookingNotification,
   sendFutureBookingNotification,
+  sendBookingUpdateNotification
 } = require("./notificationService");
 const { sendBookingSMS } = require("../utils/sendBookingSMS");
 const { calculateSingleFare } = require("../controllers/fareController");
@@ -1636,11 +1637,13 @@ async function updateBookingService(bookingId, payload) {
     // DRIVER NOTIFICATION - PRIMARY
     // ---------------------------------------------------
 
-    if (
-      updates.driver_id &&
-      Number(updates.driver_id) !== Number(oldDriverId)
-    ) {
-      await sendBookingNotification(updates.driver_id, primaryClean);
+    if (updates.driver_id &&Number(updates.driver_id) !== Number(oldDriverId)) {
+      if(payload.booking_status_id && (Number(payload.booking_status_id) === 1 || Number(payload.booking_status_id) === 2)){
+          await sendBookingNotification(updates.driver_id, primaryClean);
+        }
+        // else{
+        //   await sendBookingUpdateNotification(updates.driver_id, primaryClean);
+        // }
     }
 
     // ===================================================
@@ -1662,7 +1665,12 @@ async function updateBookingService(bookingId, payload) {
         payload.return_driver_id &&
         Number(payload.return_driver_id) !== Number(returnBooking.driver_id)
       ) {
-        await sendBookingNotification(payload.return_driver_id, returnClean);
+        if(payload.booking_status_id && (Number(payload.booking_status_id) === 1 || Number(payload.booking_status_id) === 2)){
+          await sendBookingNotification(payload.return_driver_id, returnClean);
+        }
+        // else{
+        //   await sendBookingUpdateNotification(payload.return_driver_id, returnClean);
+        // }
       }
 
       return {

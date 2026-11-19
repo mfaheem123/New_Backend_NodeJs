@@ -2,25 +2,36 @@ const WebSocket = require("ws");
 const db = require("../db");
 const logger = require("../utils/logger");
 const { URL } = require("url");
-const {
-  getAvailableLoggedInDrivers,
-  getBusyLoggedInDrivers,
-} = require("../models/driverModel");
+
 
 // Sirf dashboard sockets
 const dashboardClients = new Set();
 const busyDashboardClients = new Set();
 
 function hasDriverStateChanged(existing, incoming) {
-  if (!existing) return true;
+if (!existing) return true;
 
-  return (
-    existing.booking_status !== incoming.booking_status ||
-    existing.driver_status !== incoming.driver_status ||
-    existing.session_status !== incoming.session_status ||
-    existing.latitude !== incoming.latitude ||
-    existing.longitude !== incoming.longitude
+return (
+  existing.booking_status !== incoming.booking_status ||
+  existing.driver_status !== incoming.driver_status ||
+  existing.session_status !== incoming.session_status ||
+  existing.latitude !== incoming.latitude ||
+  existing.longitude !== incoming.longitude
   );
+}
+
+// Helper: Check company_id + optional subsidiary_id match
+function matchesClientFilter(client, driver) {
+if (client.readyState !== WebSocket.OPEN) return false;
+if (client.company_id !== Number(driver.company_id)) return false;
+
+  // Agar client ne specific subsidiary_id select ki hui hai toh match karein
+if (client.subsidiary_id) {
+  return Number(driver.subsidiary_id) === client.subsidiary_id;
+  }
+
+  // Warna ALL SUBSIDIARY allow karein
+  return true;
 }
 
 // Logged-in drivers list (memory)
@@ -32,70 +43,59 @@ const busyDrivers = new Map();
 // Format driver data for WebSocket payload
 function formatDriverData(driver) {
   return {
-    id: driver.id,
-    name: driver.name,
-    username: driver.username,
-    zone: driver.zone,
-    latitude: driver.latitude,
-    longitude: driver.longitude,
-    booking_status: driver.booking_status,
-    session_status: driver.session_status,
-    driver_status: driver.driver_status,
-    vehicle_type: driver.vehicle?.vehicle_type?.name || driver.vehicle_type || null,
-    last_login_at: driver.last_login_at,
-    vehicle_no: driver.vehicle?.vehicle_number || driver.vehicle_no || null,
-    make: driver.vehicle?.make || driver.make || null,
-    model: driver.vehicle?.model || driver.model || null,
-    color: driver.vehicle?.color || driver.color || null,
+  id: driver.id,
+  name: driver.name,
+  username: driver.username,
+  zone: driver.zone,
+  latitude: driver.latitude,
+  longitude: driver.longitude,
+  booking_status: driver.booking_status,
+  session_status: driver.session_status,
+  driver_status: driver.driver_status,
+  vehicle_type: driver.vehicle?.vehicle_type?.name || driver.vehicle_type || null,
+  last_login_at: driver.last_login_at,
+  vehicle_no: driver.vehicle?.vehicle_number || driver.vehicle_no || null,
+  make: driver.vehicle?.make || driver.make || null,
+  model: driver.vehicle?.model || driver.model || null,
+  color: driver.vehicle?.color || driver.color || null,
   };
 }
 
 //Driver Login Socket
 function handleDriverLoginSocket(ws, req) {
-  const { searchParams } = new URL(req.url, "http://localhost");
-  ws.company_id = Number(searchParams.get("company_id"));
-  console.log("Socket Company ID:", ws.company_id);
+const { searchParams } = new URL(req.url, "http://localhost");
+ws.company_id = Number(searchParams.get("company_id"));
+const subParam = searchParams.get("subsidiary_id");
+ws.subsidiary_id = subParam && subParam !== "all" && subParam !== "null" ? Number(subParam) : null;
+console.log("Socket Company ID:", ws.company_id);
+console.log("Socket Subsidiary ID:", ws.subsidiary_id);
 
-  dashboardClients.add(ws);
-  logger.info("ws:dashboard-connected", {
-    socketId: ws.id,
-    company_id: ws.company_id,
+dashboardClients.add(ws);
+logger.info("ws:dashboard-connected", {
+  socketId: ws.id,
+  company_id: ws.company_id,
+  subsidiary_id: ws.subsidiary_id,
+});
+
+// Frontend se live filter change karne ke liye optional message listener
+  ws.on("message", (msg) => {
+    try {
+      const parsed = JSON.parse(msg);
+      if (parsed.event === "SET_SUBSIDIARY_FILTER") {
+        const val = parsed.subsidiary_id;
+        ws.subsidiary_id = val && val !== "all" ? Number(val) : null;
+      }
+    } catch (_) {}
   });
 
-// 1️⃣ Sirf available logged in drivers bhejo (Available, SinBin, On Break)
-const availableDrivers = Array.from(loggedInDrivers.values()).filter(
-    (driver) =>
-      driver.session_status === "logged_in" &&
-      (driver.driver_status === "Available" ||
-        driver.driver_status === "SinBin" ||
-        driver.driver_status === "On Break"),
-  );
+ws.on("close", () => {
+  dashboardClients.delete(ws);
+  logger.info("ws:dashboard-disconnect", { socketId: ws.id });
+});
 
- // 2️⃣ Subscribe future updates
-  const driverLoginListener = (driver) => {
-    if (driver.session_status !== "logged_in") return;
-    if (
-      driver.driver_status !== "Available" &&
-      driver.driver_status !== "SinBin" &&
-      driver.driver_status !== "On Break"
-    )
-      return;
-
-    ws.send(JSON.stringify({ event: "DRIVER_LOGIN", data: driver }));
-  };
-
-  const driverLogoutListener = (driverId) => {
-    ws.send(JSON.stringify({ event: "DRIVER_LOGOUT", data: { driverId } }));
-  };
-
-  ws.on("close", () => {
-    dashboardClients.delete(ws);
-    logger.info("ws:dashboard-disconnect", { socketId: ws.id });
-  });
-
-  ws.on("error", (err) => {
-    logger.error("ws:error", { socketId: ws.id, error: err.message });
-  });
+ws.on("error", (err) => {
+  logger.error("ws:error", { socketId: ws.id, error: err.message });
+});
 }
 
 // Busy Dashboard Socket
@@ -104,12 +104,28 @@ async function handleBusyDriverSocket(ws, req) {
 
   ws.company_id = Number(searchParams.get("company_id"));
 
+  const subParam = searchParams.get("subsidiary_id");
+  ws.subsidiary_id = subParam && subParam !== "all" && subParam !== "null" ? Number(subParam) : null;
+
   busyDashboardClients.add(ws);
 
   logger.info("ws:busy-dashboard-connected", {
     socketId: ws.id,
     company_id: ws.company_id,
+    subsidiary_id: ws.subsidiary_id,
   });
+
+
+ws.on("message", (msg) => {
+    try {
+      const parsed = JSON.parse(msg);
+      if (parsed.event === "SET_SUBSIDIARY_FILTER") {
+        const val = parsed.subsidiary_id;
+        ws.subsidiary_id = val && val !== "all" ? Number(val) : null;
+      }
+    } catch (_) {}
+  });
+
 
   ws.on("close", () => {
     busyDashboardClients.delete(ws);
@@ -152,11 +168,9 @@ function notifyDriverLogin(driver) {
     data: formatDriverData(driver),
   });
   console.log("Driver Company ID: ", driver.company_id);
+  console.log("Driver Subsidiary ID: ", driver.subsidiary_id);
   dashboardClients.forEach((client) => {
-    if (
-      client.readyState === WebSocket.OPEN &&
-      client.company_id === driver.company_id
-    ) {
+    if (matchesClientFilter(client, driver)) {
       client.send(payload);
     }
   });
@@ -164,79 +178,76 @@ function notifyDriverLogin(driver) {
 
 // Driver Logout Notify At Web
 function notifyDriverLogout(driverId) {
-  const driver = loggedInDrivers.get(driverId) || busyDrivers.get(driverId);
+const driver = loggedInDrivers.get(driverId) || busyDrivers.get(driverId);
 
-  loggedInDrivers.delete(driverId);
-  busyDrivers.delete(driverId);
-  if (!driver) return;
+loggedInDrivers.delete(driverId);
+busyDrivers.delete(driverId);
+if (!driver) return;
 
-  const payload = JSON.stringify({
-    event: "DRIVER_LOGOUT",
-    data: { driverId },
-  });
-  console.log("Driver Company ID: ", driver.company_id);
+const payload = JSON.stringify({
+event: "DRIVER_LOGOUT",
+data: { driverId },
+});
+console.log("Driver Company ID: ", driver.company_id);
 
   dashboardClients.forEach((client) => {
-    if (
-      client.readyState === WebSocket.OPEN &&
-      client.company_id === driver.company_id
-    ) {
+    if (matchesClientFilter(client, driver)) {
       client.send(payload);
     }
   });
 
-  logger.info("ws:driver-logout", {
-    driverId,
-  });
+  busyDashboardClients.forEach((client) => {
+  if (matchesClientFilter(client, driver)) {
+  client.send(JSON.stringify({ event: "BUSY_DRIVER_REMOVE", data: { id: driverId } }));
+    }
+});
+
+logger.info("ws:driver-logout", {
+  driverId,
+});
 }
 
 // Notify Busy Driver Update
 function notifyBusyDriverUpdate(driver) {
-  console.log("BUSY CLIENTS:", busyDashboardClients.size);
+console.log("BUSY CLIENTS:", busyDashboardClients.size);
+if (driver.session_status !== "logged_in") return;
 
-  if (driver.session_status !== "logged_in") return;
+// 🟢 DRIVER AVAILABLE LIST MEIN HONA CHAHIYE (Available, SinBin, ya On Break)
+const isInAvailableList =
+     driver.driver_status === "Available" ||
+  driver.driver_status === "SinBin" ||
+  driver.driver_status === "On Break";
 
-  // 🟢 DRIVER AVAILABLE LIST MEIN HONA CHAHIYE (Available, SinBin, ya On Break)
-  const isInAvailableList =
-    driver.driver_status === "Available" ||
-    driver.driver_status === "SinBin" ||
-    driver.driver_status === "On Break";
+if (isInAvailableList) {
+  busyDrivers.delete(driver.id);
+  loggedInDrivers.set(driver.id, driver);
 
-  if (isInAvailableList) {
-    busyDrivers.delete(driver.id);
-    loggedInDrivers.set(driver.id, driver);
+   // Available Dashboard ko add/update bhejein
+  const loginPayload = JSON.stringify({
+    event: "DRIVER_LOGIN",
+    data: formatDriverData(driver),
+  });
 
-    // Available Dashboard ko add/update bhejein
-    const loginPayload = JSON.stringify({
-      event: "DRIVER_LOGIN",
-      data: formatDriverData(driver),
-    });
-    console.log("Driver Company ID: ", driver.company_id);
+   console.log("Driver Company ID: ", driver.company_id);
 
-    dashboardClients.forEach((client) => {
-      if (
-        client.readyState === WebSocket.OPEN &&
-        client.company_id === driver.company_id
-      ) {
-        client.send(loginPayload);
-      }
-    });
+   dashboardClients.forEach((client) => {
+     if (matchesClientFilter(client, driver)) {
+       client.send(loginPayload);
+     }
+  });
 
     // Busy Dashboard se remove karein
-    const busyRemovePayload = JSON.stringify({
-      event: "BUSY_DRIVER_REMOVE",
-      data: {
-        id: driver.id,
-      },
-    });
+   const busyRemovePayload = JSON.stringify({
+     event: "BUSY_DRIVER_REMOVE",
+     data: {
+       id: driver.id,
+     },
+   });
 
-    busyDashboardClients.forEach((client) => {
-      if (
-        client.readyState === WebSocket.OPEN &&
-        client.company_id === driver.company_id
-      ) {
-        client.send(busyRemovePayload);
-      }
+   busyDashboardClients.forEach((client) => {
+     if (matchesClientFilter(client, driver)) {
+    client.send(busyRemovePayload);
+    }
     });
 
     return;
@@ -255,139 +266,87 @@ function notifyBusyDriverUpdate(driver) {
   console.log("Driver Company ID: ", driver.company_id);
 
   busyDashboardClients.forEach((client) => {
-    if (
-      client.readyState === WebSocket.OPEN &&
-      client.company_id === driver.company_id
-    ) {
+    if (matchesClientFilter(client, driver)) {
       client.send(busyUpdatePayload);
     }
   });
 }
 
 // ==============================
+// SHARED DRIVER QUERY FOR SOCKET HELPERS
+// ==============================
+async function fetchDriverForSocket(driverId) {
+  const result = await db.query(
+    `
+    SELECT 
+      d.id, 
+      d.name, 
+      d.username, 
+      d.zone, 
+      d.latitude, 
+      d.longitude,
+      d.booking_status, 
+      d.session_status, 
+      d.driver_status,
+      d.last_login_at, 
+      d.has_pda, 
+      d.company_id, 
+      d.subsidiary_id,
+      CASE WHEN d.use_company_vehicle = true THEN vt_cv.name ELSE vt_v.name END AS vehicle_type,
+      CASE WHEN d.use_company_vehicle = true THEN cv.vehicle_number ELSE v.vehicle_number END AS vehicle_no,
+      CASE WHEN d.use_company_vehicle = true THEN cv.make ELSE v.make END AS make,
+      CASE WHEN d.use_company_vehicle = true THEN cv.model ELSE v.model END AS model,
+      CASE WHEN d.use_company_vehicle = true THEN cv.color ELSE v.color END AS color
+    FROM drivers d
+    LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
+    LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
+    LEFT JOIN vehicles v ON v.id = d.vehicle_id
+    LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
+    WHERE d.id = $1
+    `,
+    [driverId]
+  );
+  return result.rows[0] || null;
+}
+
+// ==============================
 // DRIVER BOOKING STATUS UPDATE
 // ==============================
 async function notifyDriverBookingStatusWeb(driverId) {
-try {
-    const result = await db.query(
-      `
-      SELECT 
-      d.id,
-      d.name,
-      d.username,
-      d.zone,
-      d.latitude,
-      d.longitude,
-      d.booking_status,
-      d.session_status,
-      d.driver_status,
-      d.last_login_at,
-      d.has_pda,
-      d.company_id,
-      
-      -- Vehicle Type (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN vt_cv.name
-        ELSE vt_v.name
-      END AS vehicle_type,
+  try {
+   const driver = await fetchDriverForSocket(driverId);
+   if (!driver || driver.session_status !== "logged_in") return;
 
-      -- Vehicle Number (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
-        ELSE v.vehicle_number
-      END AS vehicle_no,
-
-      -- Vehicle Make (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.make
-        ELSE v.make
-      END AS make,
-
-      -- Vehicle Model (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.model
-        ELSE v.model
-      END AS model,
-
-      -- Vehicle Color (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.color
-        ELSE v.color
-      END AS color
-
-    FROM drivers d
-
-    -- Company vehicle joins
-    LEFT JOIN company_vehicles cv 
-      ON cv.id = d.company_vehicle_id
-
-    LEFT JOIN vehicle_types vt_cv 
-      ON vt_cv.id = cv.vehicle_type_id
-
-    -- Personal vehicle joins
-    LEFT JOIN vehicles v 
-      ON v.id = d.vehicle_id
-
-    LEFT JOIN vehicle_types vt_v 
-      ON vt_v.id = v.vehicle_type_id
-      WHERE d.id=$1
-      `,
-      [driverId],
-    );
-
-    if (!result.rows.length) return;
-
-    const driver = result.rows[0];
-
-    if (driver.session_status !== "logged_in") return;
-
-    const payload = JSON.stringify({
-      event: "DRIVER_BOOKING_STATUS_WEB_UPDATE",
-      data: {
-        ...formatDriverData(driver),
-        vehicle: {
-          vehicle_type: {
-            name: driver.vehicle_type,
-          },
-        },
-      },
+  const payload = JSON.stringify({
+    event: "DRIVER_BOOKING_STATUS_WEB_UPDATE",
+     data: {
+      ...formatDriverData(driver),
+     vehicle: {
+    vehicle_type: { name: driver.vehicle_type },
+     },
+     },
     });
 
-  // AVAILABLE LIST (Available, SinBin, On Break) → dashboard
-if (
-      driver.driver_status === "Available" ||
-      driver.driver_status === "SinBin" ||
-      driver.driver_status === "On Break"
-    ) {
+  if (
+   driver.driver_status === "Available" ||
+    driver.driver_status === "SinBin" ||
+    driver.driver_status === "On Break"
+  ) {
       dashboardClients.forEach((client) => {
-        if (
-          client.readyState === WebSocket.OPEN &&
-          client.company_id === driver.company_id
-        ) {
+        if (matchesClientFilter(client, driver)) {
           client.send(payload);
         }
       });
-
       return;
     }
 
-    // BUSY → busy dashboard
     busyDashboardClients.forEach((client) => {
-      if (
-        client.readyState === WebSocket.OPEN &&
-        client.company_id === driver.company_id
-      ) {
+      if (matchesClientFilter(client, driver)) {
         client.send(payload);
       }
     });
-
-    logger.info("ws:driver-booking-status-web-update", {
-      driverId,
-    });
   } catch (err) {
-    logger.error("ws:driver-booking-status-web-error", {
-      error: err.message,
-    });
+    logger.error("ws:driver-booking-status-web-error", { error: err.message });
   }
 }
 
@@ -395,118 +354,22 @@ if (
 // DRIVER BREAK STATUS UPDATE
 // ==============================
 async function notifyDriverBreakStatusWeb(driverId) {
-  try {
-    const result = await db.query(
-      `
-      SELECT 
-      d.id,
-      d.name,
-      d.username,
-      d.zone,
-      d.latitude,
-      d.longitude,
-      d.booking_status,
-      d.session_status,
-      d.driver_status,
-      d.last_login_at,
-      d.has_pda,
-      d.company_id,
-      
-      -- Vehicle Type (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN vt_cv.name
-        ELSE vt_v.name
-      END AS vehicle_type,
+try {
+  const driver = await fetchDriverForSocket(driverId);
+  if (!driver || driver.session_status !== "logged_in") return;
 
-      -- Vehicle Number (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
-        ELSE v.vehicle_number
-      END AS vehicle_no,
+   const payload = JSON.stringify({
+     event: "DRIVER_BREAK_STATUS_UPDATE",
+     data: formatDriverData(driver),
+   });
 
-      -- Vehicle Make (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.make
-        ELSE v.make
-      END AS make,
-
-      -- Vehicle Model (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.model
-        ELSE v.model
-      END AS model,
-
-      -- Vehicle Color (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.color
-        ELSE v.color
-      END AS color
-
-    FROM drivers d
-
-    -- Company vehicle joins
-    LEFT JOIN company_vehicles cv 
-      ON cv.id = d.company_vehicle_id
-
-    LEFT JOIN vehicle_types vt_cv 
-      ON vt_cv.id = cv.vehicle_type_id
-
-    -- Personal vehicle joins
-    LEFT JOIN vehicles v 
-      ON v.id = d.vehicle_id
-
-    LEFT JOIN vehicle_types vt_v 
-      ON vt_v.id = v.vehicle_type_id
-      WHERE d.id=$1
-      `,
-      [driverId],
-    );
-
-    if (!result.rows.length) return;
-
-    const driver = result.rows[0];
-
-    if (driver.session_status !== "logged_in") return;
-
-    const payload = JSON.stringify({
-      event: "DRIVER_BREAK_STATUS_UPDATE",
-      data: {
-        id: driver.id,
-        name: driver.name,
-        username: driver.username,
-        zone: driver.zone,
-        latitude: driver.latitude,
-        longitude: driver.longitude,
-        booking_status: driver.booking_status,
-        session_status: driver.session_status,
-        driver_status: driver.driver_status,
-        vehicle_type: driver.vehicle_type,
-        last_login_at: driver.last_login_at,
-        vehicle_no: driver.vehicle_no,
-        make: driver.make,
-        model: driver.model,
-        color: driver.color,
-      },
-    });
-
-    // ✅ SIRF AVAILABLE DASHBOARD KO SEND HOGA
-    dashboardClients.forEach((client) => {
-      if (
-        client.readyState === WebSocket.OPEN &&
-        client.company_id === driver.company_id
-      ) {
-        client.send(payload);
-      }
-    });
-
-    logger.info("ws:driver-break-status-update", {
-      driverId,
-      driver_status: driver.driver_status,
+  dashboardClients.forEach((client) => {
+    if (matchesClientFilter(client, driver)) {
+      client.send(payload);
+    }
     });
   } catch (err) {
-    logger.error("ws:driver-break-error", {
-      error: err.message,
-    });
+   logger.error("ws:driver-break-error", { error: err.message });
   }
 }
 
@@ -515,118 +378,21 @@ async function notifyDriverBreakStatusWeb(driverId) {
 // ==============================
 async function notifyDriverSinBinStatusWeb(driverId) {
   try {
-    const result = await db.query(
-      `
-      SELECT 
-        d.id,
-        d.name,
-        d.username,
-        d.zone,
-        d.latitude,
-        d.longitude,
-        d.booking_status,
-        d.session_status,
-        d.driver_status,
-        d.last_login_at,
-        d.company_id,
-        d.has_pda,
-        
-        -- Vehicle Type (Dynamic)
-        CASE 
-          WHEN d.use_company_vehicle = true THEN vt_cv.name
-          ELSE vt_v.name
-        END AS vehicle_type,
+  const driver = await fetchDriverForSocket(driverId);
+   if (!driver || driver.session_status !== "logged_in") return;
 
-        -- Vehicle Number (Dynamic)
-        CASE 
-          WHEN d.use_company_vehicle = true THEN cv.vehicle_number
-          ELSE v.vehicle_number
-        END AS vehicle_no,
+  const payload = JSON.stringify({
+    event: "DRIVER_SIN_BIN_STATUS_UPDATE",
+    data: formatDriverData(driver),
+   });
 
-        -- Vehicle Make (Dynamic)
-        CASE 
-          WHEN d.use_company_vehicle = true THEN cv.make
-          ELSE v.make
-        END AS make,
-
-        -- Vehicle Model (Dynamic)
-        CASE 
-          WHEN d.use_company_vehicle = true THEN cv.model
-          ELSE v.model
-        END AS model,
-
-        -- Vehicle Color (Dynamic)
-        CASE 
-          WHEN d.use_company_vehicle = true THEN cv.color
-          ELSE v.color
-        END AS color
-
-      FROM drivers d
-
-      -- Company vehicle joins
-      LEFT JOIN company_vehicles cv 
-        ON cv.id = d.company_vehicle_id
-
-      LEFT JOIN vehicle_types vt_cv 
-        ON vt_cv.id = cv.vehicle_type_id
-
-      -- Personal vehicle joins
-      LEFT JOIN vehicles v 
-        ON v.id = d.vehicle_id
-
-      LEFT JOIN vehicle_types vt_v 
-        ON vt_v.id = v.vehicle_type_id
-
-      WHERE d.id = $1
-      `,
-      [driverId],
-    );
-
-    if (!result.rows.length) return;
-
-    const driver = result.rows[0];
-
-    if (driver.session_status !== "logged_in") return;
-
-    const payload = JSON.stringify({
-      event: "DRIVER_SIN_BIN_STATUS_UPDATE",
-      data: {
-        id: driver.id,
-        name: driver.name,
-        username: driver.username,
-        zone: driver.zone,
-        latitude: driver.latitude,
-        longitude: driver.longitude,
-        booking_status: driver.booking_status,
-        session_status: driver.session_status,
-        driver_status: driver.driver_status,
-        vehicle_type: driver.vehicle_type,
-        last_login_at: driver.last_login_at,
-        vehicle_no: driver.vehicle_no,
-        make: driver.make,
-        model: driver.model,
-        color: driver.color,
-      },
-    });
-
-    // 🚀 Available Dashboard Sockets ko event send hoga
-    dashboardClients.forEach((client) => {
-      if (
-        client.readyState === WebSocket.OPEN &&
-        client.company_id === driver.company_id
-      ) {
-        client.send(payload);
-      }
-    });
-
-    logger.info("ws:driver-sinbin-status-update", {
-      driverId,
-      driver_status: driver.driver_status,
-    });
+  dashboardClients.forEach((client) => {
+     if (matchesClientFilter(client, driver)) {
+      client.send(payload);
+     }
+   });
   } catch (err) {
-    logger.error("ws:driver-sinbin-error", {
-      error: err.message,
-    });
+   logger.error("ws:driver-sinbin-error", { error: err.message });
   }
 }
 

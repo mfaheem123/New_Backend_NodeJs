@@ -1037,22 +1037,22 @@ exports.onPanicDriver = async (req, res) => {
 // ---------------------------------------------------------
 exports.getLoginDrivers = async (req, res) => {
   try {
-    const { company_id } = req.query;
-    const login_drivers = await Driver.getLoginDrivers(company_id);
-    const busy_drivers = await Driver.getBusyDrivers(company_id);
+  const { company_id, subsidiary_id } = req.query;
+   const login_drivers = await Driver.getLoginDrivers(company_id, subsidiary_id);
+   const busy_drivers = await Driver.getBusyDrivers(company_id, subsidiary_id);
 
-    res.status(200).json({
-      status: true,
-      login_drivers: login_drivers,
-      busy_drivers: busy_drivers,
-    });
+   res.status(200).json({
+   status: true,
+   login_drivers: login_drivers,
+  busy_drivers: busy_drivers,
+});
   } catch (err) {
-    console.error("Error fetching login drivers:", err);
-    res.status(500).json({
-      status: false,
-      message: "Server error",
-    });
-  }
+ console.error("Error fetching login drivers:", err);
+   res.status(500).json({
+  status: false,
+  message: "Server error",
+  });
+}
 };
 
 // ---------------------------------------------------------
