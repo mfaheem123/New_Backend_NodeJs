@@ -3847,6 +3847,153 @@ const getBookingsForCustomerPreInvoice = async (filters) => {
   const { rows } = await pool.query(sql, values);
   return rows;
 };
+
+
+
+// ---------------------------------------------------------
+// GET DRIVER PCO REPORT
+// ---------------------------------------------------------
+const getDriverPcoReport = async ({
+  from_date,
+  to_date,
+  subsidiary_id,
+  booking_status_ids,
+  company_id,
+}) => {
+  const conditions = [
+    "b.trash = false",
+    "b.driver_id IS NOT NULL",
+    "b.booking_status_id = ANY($1::int[])",
+  ];
+  const params = [booking_status_ids];
+  let idx = 2;
+
+  if (from_date) {
+    conditions.push(`b.pickup_date::date >= $${idx++}::date`);
+    params.push(from_date);
+  }
+
+  if (to_date) {
+    conditions.push(`b.pickup_date::date <= $${idx++}::date`);
+    params.push(to_date);
+  }
+
+  if (subsidiary_id) {
+    conditions.push(`b.subsidiary_id = $${idx++}`);
+    params.push(Number(subsidiary_id));
+  }
+  if (company_id) {
+    conditions.push(`b.company_id = $${idx++}`);
+    params.push(Number(company_id));
+  }
+
+  const sql = `
+    SELECT
+      d.id AS driver_id,
+      d.username,
+      d.phc_driver_number,
+      SPLIT_PART(TRIM(COALESCE(d.name, '')), ' ', 1) AS first_name,
+      CASE
+        WHEN POSITION(' ' IN TRIM(COALESCE(d.name, ''))) > 0
+          THEN SUBSTRING(TRIM(COALESCE(d.name, '')) FROM POSITION(' ' IN TRIM(COALESCE(d.name, ''))) + 1)
+        ELSE ''
+      END AS last_name,
+      COALESCE(d.name, '') AS driver_name,
+      COALESCE(v.vehicle_number, d.phc_vehicle_number, '') AS vehicle_number,
+      COALESCE(vt.name, '') AS vehicle_type,
+      COUNT(b.id)::text AS count
+    FROM bookings b
+    INNER JOIN drivers d
+      ON b.driver_id = d.id
+    LEFT JOIN vehicles v
+      ON COALESCE(b.vehicle_id, d.vehicle_id) = v.id
+    LEFT JOIN vehicle_types vt
+      ON COALESCE(b.vehicle_type_id, v.vehicle_type_id) = vt.id
+    WHERE ${conditions.join(" AND ")}
+    GROUP BY
+      d.id,
+      d.username,
+      d.phc_driver_number,
+      d.name,
+      v.vehicle_number,
+      d.phc_vehicle_number,
+      vt.name
+    ORDER BY d.id ASC
+  `;
+
+  const { rows } = await pool.query(sql, params);
+  return rows;
+};
+
+// ---------------------------------------------------------
+// GET VEHICLE PCO REPORT
+// ---------------------------------------------------------
+const getVehiclePcoReport = async ({
+  from_date,
+  to_date,
+  subsidiary_id,
+  booking_status_ids,
+  company_id,
+}) => {
+  const conditions = [
+    "b.trash = false",
+    "b.booking_status_id = ANY($1::int[])",
+    "v.id IS NOT NULL",
+  ];
+  const params = [booking_status_ids];
+  let idx = 2;
+
+  if (from_date) {
+    conditions.push(`b.pickup_date::date >= $${idx++}::date`);
+    params.push(from_date);
+  }
+
+  if (to_date) {
+    conditions.push(`b.pickup_date::date <= $${idx++}::date`);
+    params.push(to_date);
+  }
+
+  if (subsidiary_id) {
+    conditions.push(`b.subsidiary_id = $${idx++}`);
+    params.push(Number(subsidiary_id));
+  }
+
+  if (company_id) {
+    conditions.push(`b.company_id = $${idx++}`);
+    params.push(Number(company_id));
+  }
+
+  const sql = `
+    SELECT
+      v.id AS vehicle_id,
+      COALESCE(v.vehicle_number, '') AS vehicle_number,
+      COALESCE(v.make, '') AS vehicle_make,
+      COALESCE(vt.name, '') AS vehicle_type,
+      COALESCE(v.phc_vehicle_number, d.phc_vehicle_number, '') AS phc_vehicle_number,
+      COUNT(b.id)::text AS count
+    FROM bookings b
+    LEFT JOIN drivers d
+      ON b.driver_id = d.id
+    INNER JOIN vehicles v
+      ON COALESCE(b.vehicle_id, d.vehicle_id) = v.id
+    LEFT JOIN vehicle_types vt
+      ON COALESCE(v.vehicle_type_id, b.vehicle_type_id) = vt.id
+    WHERE ${conditions.join(" AND ")}
+    GROUP BY
+      v.id,
+      v.vehicle_number,
+      v.make,
+      vt.name,
+      v.phc_vehicle_number,
+      d.phc_vehicle_number
+    ORDER BY v.id ASC
+  `;
+
+  const { rows } = await pool.query(sql, params);
+  return rows;
+};
+
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -3917,4 +4064,6 @@ module.exports = {
   getCompanyIdByBookingId,
   fetchBookingsByMultiBookingId,
   getBookingsForCustomerPreInvoice,
+  getDriverPcoReport,
+  getVehiclePcoReport
 };

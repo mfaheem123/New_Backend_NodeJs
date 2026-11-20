@@ -58,6 +58,8 @@ const {
   getAllMultiBookings,
   fetchBookingsByMultiBookingId,
   getBookingsForCustomerPreInvoice,
+  getDriverPcoReport,
+  getVehiclePcoReport
 } = require("../models/bookingModel");
 const Driver = require("../models/driverModel");
 const {
@@ -112,6 +114,120 @@ function parseJSONFields(row) {
   });
 
   return parsed;
+}
+
+// Helper: Parse booking_status_id from array, JSON string "[11,12]", or comma string "11,12"
+function parseStatusIds(rawStatusIds) {
+  if (!rawStatusIds) return [11, 12];
+
+  if (Array.isArray(rawStatusIds)) {
+    return rawStatusIds.map(Number).filter((n) => !isNaN(n));
+  }
+
+  if (typeof rawStatusIds === "string") {
+    const trimmed = rawStatusIds.trim();
+    if (trimmed.startsWith("[")) {
+      const parsed = JSON.parse(trimmed);
+      if (!Array.isArray(parsed)) return null;
+      return parsed.map(Number).filter((n) => !isNaN(n));
+    }
+    return trimmed
+      .split(",")
+      .map((s) => Number(s.trim()))
+      .filter((n) => !isNaN(n));
+  }
+
+  return null;
+}
+
+
+// Shared validation & status resolution helper for PCO reports
+function resolvePcoQuery(req) {
+  const {
+    from_date,
+    to_date,
+    subsidiary_id,
+    booking_status_id,
+    job_type,
+    company_id,
+  } = req.query;
+
+  if (!from_date || !to_date) {
+    return {
+      error: {
+        status: 400,
+        body: {
+          status: false,
+          message: "from_date and to_date are required",
+        },
+      },
+    };
+  }
+
+  if (new Date(from_date) > new Date(to_date)) {
+    return {
+      error: {
+        status: 400,
+        body: {
+          status: false,
+          message: "from_date cannot be later than to_date",
+        },
+      },
+    };
+  }
+
+  let parsedCompanyId = null;
+  if (company_id !== undefined && company_id !== null && String(company_id).trim() !== "") {
+    parsedCompanyId = Number(company_id);
+    if (Number.isNaN(parsedCompanyId) || parsedCompanyId <= 0) {
+      return {
+        error: {
+          status: 400,
+          body: {
+            status: false,
+            message: "company_id must be a valid positive number",
+          },
+        },
+      };
+    }
+  }
+
+  let statusIds;
+
+  // Support explicit job_type ("all" | "completed" | "cancelled") alongside booking_status_id
+  if (job_type) {
+    const normalized = String(job_type).trim().toLowerCase();
+    if (normalized === "completed") statusIds = [11];
+    else if (normalized === "cancelled") statusIds = [12];
+    else if (normalized === "all") statusIds = [11, 12];
+  }
+
+  if (!statusIds) {
+    statusIds = parseStatusIds(booking_status_id);
+  }
+
+  if (!statusIds || statusIds.length === 0) {
+    return {
+      error: {
+        status: 400,
+        body: {
+          status: false,
+          message:
+            "booking_status_id must be a valid array or IDs (e.g. [11,12], [11], or [12])",
+        },
+      },
+    };
+  }
+
+  return {
+    filters: {
+      from_date,
+      to_date,
+      subsidiary_id: subsidiary_id ? Number(subsidiary_id) : null,
+      booking_status_ids: statusIds,
+      company_id: parsedCompanyId,
+    },
+  };
 }
 
 // Helper Function: Driver Vehicle Type Match Check
@@ -2037,15 +2153,15 @@ exports.recoverDashboardBooking = async (req, res) => {
 
       // 4️⃣ Create Audit Log for Bookking Recovery
       try {
-        await AuditModel.createAuditLog({
-          type: "booking",
-          operation: "activity",
-          previous: [],
-          next: ["booking recovered"],
-          employee_id: booking.employee_id || null, // Request user ya existing employee id
-          booking_id: bookingId,
-          driver_id: booking.driver_id || null,
-          company_id: booking.company_id || 1,
+      await AuditModel.createAuditLog({
+        type: "booking",
+        operation: "activity",
+        previous: [],
+        next: ["booking recovered"],
+        employee_id: booking.employee_id || null, // Request user ya existing employee id
+        booking_id: bookingId,
+        driver_id: booking.driver_id || null,
+        company_id: booking.company_id || 1,
         });
       } catch (auditErr) {
         console.error("❌ Audit Log Error on Status Update:", auditErr);
@@ -3086,61 +3202,61 @@ exports.getFutureBookingHIstoryByDriverId = async (req, res) => {
   const driver_id = req.params.id;
 
   if (!driver_id) {
-    return res.status(400).json({
-      status: false,
-      message: "Driver ID Required",
-    });
+  return res.status(400).json({
+status: false,
+message: "Driver ID Required",
+});
   }
 
-  const bookings = await getFutureBookingHIstoryByDriverId(driver_id);
+const bookings = await getFutureBookingHIstoryByDriverId(driver_id);
 
-  if (!bookings || bookings.length === 0) {
-    return res.status(404).json({
-      success: false,
-      message: "No Future bookings found for this driver",
-    });
-  }
+if (!bookings || bookings.length === 0) {
+   return res.status(404).json({
+    success: false,
+     message: "No Future bookings found for this driver",
+ });
+}
 
-  const data = bookings.map((b) => parseJSONFields(b));
+const data = bookings.map((b) => parseJSONFields(b));
 
-  res.status(200).json({
-    success: true,
-    count: bookings.length,
-    bookings: data,
-  });
+res.status(200).json({
+   success: true,
+   count: bookings.length,
+   bookings: data,
+});
 };
 
 // ---------------------------------------------------------
 // DELETE BOOKING BY ID (PERMANENTLY)
 // ---------------------------------------------------------
 exports.deleteBookingById = async (req, res) => {
-  try {
-    const bookingId = parseInt(req.params.id, 10);
+try {
+  const bookingId = parseInt(req.params.id, 10);
 
-    if (isNaN(bookingId)) {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid booking ID",
-      });
+   if (isNaN(bookingId)) {
+     return res.status(400).json({
+       status: false,
+       message: "Invalid booking ID",
+     });
+   }
+
+  const booking = await findBookingforDelete(bookingId);
+
+   if (!booking || booking.rowCount === 0) {
+    return res.status(404).json({
+       status: false,
+       message: "Booking not found",
+    });
     }
 
-    const booking = await findBookingforDelete(bookingId);
+  const deletedBooking = await deleteBookingByIdModel(bookingId);
 
-    if (!booking || booking.rowCount === 0) {
-      return res.status(404).json({
-        status: false,
-        message: "Booking not found",
-      });
-    }
-
-    const deletedBooking = await deleteBookingByIdModel(bookingId);
-
-    if (!deletedBooking) {
-      return res.status(404).json({
-        status: false,
-        message: "Booking could not be deleted",
-      });
-    }
+   if (!deletedBooking) {
+     return res.status(404).json({
+      status: false,
+      message: "Booking could not be deleted",
+     });
+   }
 
     return res.status(200).json({
       status: true,
@@ -3711,6 +3827,58 @@ exports.getBookingsForCustomerPreInvoice = async (req, res) => {
       status: false,
       message: "Failed to fetch bookings",
       error: error.message,
+    });
+  }
+};
+
+
+
+// ---------------------------------------------------------
+// GET DRIVER PCO REPORT
+// ---------------------------------------------------------
+exports.getDriverPcoReport = async (req, res) => {
+  try {
+  const { filters, error } = resolvePcoQuery(req);
+    if (error) {
+    return res.status(error.status).json(error.body);
+  }
+
+  const bookings = await getDriverPcoReport(filters);
+
+  return res.status(200).json({
+    status: true,
+     bookings,
+  });
+  } catch (err) {
+  console.error("getDriverPcoReport error:", err);
+  return res.status(500).json({
+    status: false,
+    message: err.message || "Internal Server Error",
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET VEHICLE PCO REPORT
+// ---------------------------------------------------------
+exports.getVehiclePcoReport = async (req, res) => {
+  try {
+    const { filters, error } = resolvePcoQuery(req);
+    if (error) {
+      return res.status(error.status).json(error.body);
+    }
+
+    const bookings = await getVehiclePcoReport(filters);
+
+    return res.status(200).json({
+      status: true,
+      bookings,
+    });
+  } catch (err) {
+    console.error("getVehiclePcoReport error:", err);
+    return res.status(500).json({
+      status: false,
+      message: err.message || "Internal Server Error",
     });
   }
 };
