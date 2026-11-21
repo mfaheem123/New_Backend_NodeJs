@@ -3861,24 +3861,24 @@ exports.getDriverPcoReport = async (req, res) => {
 // ---------------------------------------------------------
 // GET VEHICLE PCO REPORT
 // ---------------------------------------------------------
-exports.getVehiclePcoReport = async (req, res) => {
-  try {
-    const { filters, error } = resolvePcoQuery(req);
-    if (error) {
-      return res.status(error.status).json(error.body);
-    }
+// exports.getVehiclePcoReport = async (req, res) => {
+//   try {
+//     const { filters, error } = resolvePcoQuery(req);
+//     if (error) {
+//       return res.status(error.status).json(error.body);
+//     }
 
-    const bookings = await getVehiclePcoReport(filters);
+//     const bookings = await getVehiclePcoReport(filters);
 
-    return res.status(200).json({
-      status: true,
-      bookings,
-    });
-  } catch (err) {
-    console.error("getVehiclePcoReport error:", err);
-    return res.status(500).json({
-      status: false,
-      message: err.message || "Internal Server Error",
-    });
-  }
-};
+//     return res.status(200).json({
+//       status: true,
+//       bookings,
+//     });
+//   } catch (err) {
+//     console.error("getVehiclePcoReport error:", err);
+//     return res.status(500).json({
+//       status: false,
+//       message: err.message || "Internal Server Error",
+//     });
+//   }
+// };

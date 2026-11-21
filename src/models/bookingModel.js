@@ -3928,70 +3928,70 @@ const getDriverPcoReport = async ({
 // ---------------------------------------------------------
 // GET VEHICLE PCO REPORT
 // ---------------------------------------------------------
-const getVehiclePcoReport = async ({
-  from_date,
-  to_date,
-  subsidiary_id,
-  booking_status_ids,
-  company_id,
-}) => {
-  const conditions = [
-    "b.trash = false",
-    "b.booking_status_id = ANY($1::int[])",
-    "v.id IS NOT NULL",
-  ];
-  const params = [booking_status_ids];
-  let idx = 2;
+// const getVehiclePcoReport = async ({
+//   from_date,
+//   to_date,
+//   subsidiary_id,
+//   booking_status_ids,
+//   company_id,
+// }) => {
+//   const conditions = [
+//     "b.trash = false",
+//     "b.booking_status_id = ANY($1::int[])",
+//     "v.id IS NOT NULL",
+//   ];
+//   const params = [booking_status_ids];
+//   let idx = 2;
 
-  if (from_date) {
-    conditions.push(`b.pickup_date::date >= $${idx++}::date`);
-    params.push(from_date);
-  }
+//   if (from_date) {
+//     conditions.push(`b.pickup_date::date >= $${idx++}::date`);
+//     params.push(from_date);
+//   }
 
-  if (to_date) {
-    conditions.push(`b.pickup_date::date <= $${idx++}::date`);
-    params.push(to_date);
-  }
+//   if (to_date) {
+//     conditions.push(`b.pickup_date::date <= $${idx++}::date`);
+//     params.push(to_date);
+//   }
 
-  if (subsidiary_id) {
-    conditions.push(`b.subsidiary_id = $${idx++}`);
-    params.push(Number(subsidiary_id));
-  }
+//   if (subsidiary_id) {
+//     conditions.push(`b.subsidiary_id = $${idx++}`);
+//     params.push(Number(subsidiary_id));
+//   }
 
-  if (company_id) {
-    conditions.push(`b.company_id = $${idx++}`);
-    params.push(Number(company_id));
-  }
+//   if (company_id) {
+//     conditions.push(`b.company_id = $${idx++}`);
+//     params.push(Number(company_id));
+//   }
 
-  const sql = `
-    SELECT
-      v.id AS vehicle_id,
-      COALESCE(v.vehicle_number, '') AS vehicle_number,
-      COALESCE(v.make, '') AS vehicle_make,
-      COALESCE(vt.name, '') AS vehicle_type,
-      COALESCE(v.phc_vehicle_number, d.phc_vehicle_number, '') AS phc_vehicle_number,
-      COUNT(b.id)::text AS count
-    FROM bookings b
-    LEFT JOIN drivers d
-      ON b.driver_id = d.id
-    INNER JOIN vehicles v
-      ON COALESCE(b.vehicle_id, d.vehicle_id) = v.id
-    LEFT JOIN vehicle_types vt
-      ON COALESCE(v.vehicle_type_id, b.vehicle_type_id) = vt.id
-    WHERE ${conditions.join(" AND ")}
-    GROUP BY
-      v.id,
-      v.vehicle_number,
-      v.make,
-      vt.name,
-      v.phc_vehicle_number,
-      d.phc_vehicle_number
-    ORDER BY v.id ASC
-  `;
+//   const sql = `
+//     SELECT
+//       v.id AS vehicle_id,
+//       COALESCE(v.vehicle_number, '') AS vehicle_number,
+//       COALESCE(v.make, '') AS vehicle_make,
+//       COALESCE(vt.name, '') AS vehicle_type,
+//       COALESCE(v.phc_vehicle_number, d.phc_vehicle_number, '') AS phc_vehicle_number,
+//       COUNT(b.id)::text AS count
+//     FROM bookings b
+//     LEFT JOIN drivers d
+//       ON b.driver_id = d.id
+//     INNER JOIN vehicles v
+//       ON COALESCE(b.vehicle_id, d.vehicle_id) = v.id
+//     LEFT JOIN vehicle_types vt
+//       ON COALESCE(v.vehicle_type_id, b.vehicle_type_id) = vt.id
+//     WHERE ${conditions.join(" AND ")}
+//     GROUP BY
+//       v.id,
+//       v.vehicle_number,
+//       v.make,
+//       vt.name,
+//       v.phc_vehicle_number,
+//       d.phc_vehicle_number
+//     ORDER BY v.id ASC
+//   `;
 
-  const { rows } = await pool.query(sql, params);
-  return rows;
-};
+//   const { rows } = await pool.query(sql, params);
+//   return rows;
+// };
 
 
 module.exports = {
