@@ -14,6 +14,7 @@ const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 const { panicDriverClients } = require("../sockets/panicSocket");
 const { breakDriverClients } = require("../sockets/breakSocket");
 const { syncDriverState } = require("../services/driverStateService"); // Path apni directory ke mutabiq adjust karein
+const AuditModel = require("../models/auditModel");
 
 // const io = getIO();
 
@@ -31,6 +32,123 @@ function cleanEmptyToNull(obj) {
     return cleaned;
   }
   return obj;
+}
+
+// Helper: Compare Old & New Driver + Vehicle Data for Audit Logs
+function buildDriverAuditDiff(oldDriver, newDriver) {
+  const previous = [];
+  const next = [];
+
+  // 1. Driver ki top-level fields jo track karni hain
+  const driverTrackFields = [
+    "name",
+    "username",
+    "email",
+    "mobile",
+    "telephone",
+    "address",
+    "dob",
+    "driver_type",
+    "driver_commission",
+    "rent_limit",
+    "rent_paid",
+    "balance",
+    "has_pda",
+    "use_company_vehicle",
+    "company_vehicle_id",
+    "active",
+    "start_date",
+    "end_date",
+    "ni",
+    "subsidiary_id",
+    "licence_number",
+    "licence_expiry",
+    "licence_expiry_time",
+    "phc_driver_number",
+    "phc_driver_expiry",
+    "phc_driver_expiry_time",
+    "insurance_number",
+    "insurance_expiry",
+    "insurance_expiry_time",
+    "rental_agreement_number",
+    "rental_agreement_expiry",
+    "rental_agreement_expiry_time",
+    "road_tax_number",
+    "road_tax_expiry",
+    "road_tax_expiry_time",
+    "v5_registration_number",
+    "v5_registration_expiry",
+    "v5_registration_expiry_time",
+    "mot_number",
+    "mot_expiry",
+    "mot_expiry_time",
+    "mot2_number",
+    "mot2_expiry",
+    "mot2_expiry_time",
+    "phc_vehicle_number",
+    "phc_vehicle_expiry",
+    "phc_vehicle_expiry_time",
+  ];
+
+  const formatVal = (val) => {
+    if (val === null || val === undefined || String(val).trim() === "") {
+      return "-";
+    }
+    return String(val).trim();
+  };
+
+  for (const field of driverTrackFields) {
+    const oldStr = formatVal(oldDriver?.[field]);
+    const newStr = formatVal(newDriver?.[field]);
+
+    if (oldStr !== newStr) {
+      previous.push(`${field}: ${oldStr}`);
+      next.push(`${field}: ${newStr}`);
+    }
+  }
+
+  // 2. Nested Vehicle fields (vehicle_number, make, model, color, etc.)
+  const vehicleTrackFields = [
+    "vehicle_type_id",
+    "vehicle_number",
+    "make",
+    "model",
+    "color",
+    "owner",
+    "start_date",
+    "end_date",
+  ];
+
+  const oldVeh = oldDriver?.vehicle || {};
+  const newVeh = newDriver?.vehicle || {};
+
+  for (const field of vehicleTrackFields) {
+    const oldStr = formatVal(oldVeh[field]);
+    const newStr = formatVal(newVeh[field]);
+
+    if (oldStr !== newStr) {
+      previous.push(`${field}: ${oldStr}`);
+      next.push(`${field}: ${newStr}`);
+    }
+  }
+
+  // 3. Log book number check
+  const oldLogBook = formatVal(oldVeh?.log_book?.log_book_number);
+  const newLogBook = formatVal(newVeh?.log_book?.log_book_number);
+  if (oldLogBook !== newLogBook) {
+    previous.push(`log_book_number: ${oldLogBook}`);
+    next.push(`log_book_number: ${newLogBook}`);
+  }
+
+  // 4. Attributes JSON comparison
+  const oldAttr = JSON.stringify(oldDriver?.attributes || []);
+  const newAttr = JSON.stringify(newDriver?.attributes || []);
+  if (oldAttr !== newAttr) {
+    previous.push(`attributes: ${oldAttr}`);
+    next.push(`attributes: ${newAttr}`);
+  }
+
+  return { previous, next };
 }
 
 function normalizeDateFields(obj) {
@@ -273,6 +391,22 @@ exports.create = async (req, res) => {
     const result = await Driver.create(driverData);
 
     const fullDriver = await Driver.getById(result.id);
+
+    // 🔥 DRIVER CREATE AUDIT LOG
+    // try {
+    //   await AuditModel.createAuditLog({
+    //     type: "driver",
+    //     operation: "activity",
+    //     previous: [],
+    //     next: ["driver created"],
+    //     employee_id: req.user?.id || req.body.employee_id || null,
+    //     booking_id: null,
+    //     driver_id: fullDriver.id,
+    //     company_id: fullDriver.company_id || req.body.company_id || 1,
+    //   });
+    // } catch (auditErr) {
+    //   console.error("❌ Driver Create Audit Error:", auditErr.message);
+    // }
 
     res.status(200).json({
       status: true,
@@ -596,11 +730,44 @@ exports.update = async (req, res) => {
       }
     }
 
-    // ✅ Update driver in DB
+    // ✅ 1. Update se PEHLE purana driver snapshot lein
+    const existingDriver = await Driver.getById(driverId);
+    if (!existingDriver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
+
+   // ✅ 2. Update driver in DB
     const driverData = cleanEmptyToNull(req.body);
     await Driver.update(driverId, driverData);
 
+    // ✅ 3. Update ke BAAD naya driver snapshot lein
     const updatedDriver = await Driver.getById(driverId);
+
+
+    // // 🔥 4. COMPARE & SAVE DRIVER UPDATE AUDIT LOG
+    // const { previous, next } = buildDriverAuditDiff(existingDriver, updatedDriver);
+
+    // if (next.length > 0) {
+    //   try {
+    //     await AuditModel.createAuditLog({
+    //       type: "driver",
+    //       operation: "update",
+    //       previous,
+    //       next,
+    //       employee_id: req.user?.id || req.body.employee_id || null,
+    //       booking_id: null,
+    //       driver_id: Number(driverId),
+    //       company_id: updatedDriver.company_id || companyId || 1,
+    //     });
+    //   } catch (auditErr) {
+    //     console.error("❌ Driver Update Audit Error:", auditErr.message);
+    //   }
+    // }
+
+
 
     res.status(200).json({
       status: true,

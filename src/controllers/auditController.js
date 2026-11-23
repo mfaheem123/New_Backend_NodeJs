@@ -2,16 +2,36 @@ const AuditModel = require("../models/auditModel");
 
 class AuditController {
   // ---------------------------------------------------------
-  // GET AUDITS BY BOOKING ID
+  // GET AUDITS BY BOOKING ID OR DRIVER ID
   // ---------------------------------------------------------
   static async getAudits(req, res) {
     try {
-      const bookingId = req.query.booking_id;
+      const { booking_id: bookingId, driver_id: driverId, type } = req.query;
+
+      if (type === "driver" || (driverId && !bookingId)) {
+        if (!driverId) {
+          return res.status(400).json({
+            status: false,
+            message: "driver_id query parameter is required.",
+          });
+        }
+
+        const audits = await AuditModel.getAuditsByDriverId(
+          driverId,
+          type || "driver"
+        );
+
+        return res.status(200).json({
+          status: true,
+          count: audits.length,
+          audits,
+        });
+      }
 
       if (!bookingId) {
         return res.status(400).json({
           status: false,
-          message: "booking_id query parameter is required.",
+          message: "booking_id or driver_id query parameter is required.",
         });
       }
 
@@ -20,7 +40,7 @@ class AuditController {
       return res.status(200).json({
         status: true,
         count: audits.length,
-        audits: audits,
+        audits,
       });
     } catch (error) {
       console.error(error);

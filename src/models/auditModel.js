@@ -37,7 +37,7 @@ class AuditModel {
   }
 
   // ---------------------------------------------------------
-  // CREATE BOOKING AUDITS LOGS
+  // CREATE AUDIT LOG (BOOKING / DRIVER)
   // ---------------------------------------------------------
   static async createAuditLog({
     type,
@@ -53,8 +53,8 @@ class AuditModel {
     const currentTime = new Date().toTimeString().split(" ")[0];
 
     const query = `
-        INSERT INTO audits (type, date, time, operation, previous, next, employee_id, booking_id, driver_id, company_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      INSERT INTO audits (type, date, time, operation, previous, next, employee_id, booking_id, driver_id, company_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     `;
 
     await pool.query(query, [
@@ -65,11 +65,49 @@ class AuditModel {
       JSON.stringify(previous || []),
       JSON.stringify(next || []),
       employee_id || null,
-      booking_id,
+      booking_id || null,
       driver_id || null,
       company_id || null,
     ]);
   }
+
+  // ---------------------------------------------------------
+  // GET AUDITS BY DRIVER ID
+  // ---------------------------------------------------------
+  static async getAuditsByDriverId(driverId, type = "driver") {
+  const query = `
+      SELECT 
+        a.id, 
+        a.type, 
+        a.date, 
+        a.time, 
+        a.operation, 
+        a.previous, 
+        a.next, 
+        a.employee_id, 
+        a.booking_id, 
+        a.driver_id,
+        json_build_object('username', e.username) AS employee,
+        CASE 
+          WHEN d.id IS NOT NULL THEN json_build_object(
+            'username', d.username,
+            'name', d.name,
+            'mobile', d.mobile
+          )
+          ELSE NULL 
+        END AS driver
+      FROM audits a
+      LEFT JOIN employees e ON a.employee_id = e.id
+      LEFT JOIN drivers d ON a.driver_id = d.id
+      WHERE a.driver_id = $1
+        AND ($2::text IS NULL OR a.type = $2)
+      ORDER BY a.date DESC, a.time DESC, a.id DESC;
+    `;
+    const { rows } = await pool.query(query, [driverId, type || null]);
+    return rows;
+  }
+
+
 }
 
 module.exports = AuditModel;

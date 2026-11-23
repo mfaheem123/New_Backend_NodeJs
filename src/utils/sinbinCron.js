@@ -8,7 +8,7 @@ console.log("🚀 Sin Bin Cron Scheduler Started!");
 // =========================================================
 // 1️⃣ SIN BIN EXPIRY CRON (Har 100 second check karega)
 // =========================================================
-cron.schedule("*/10000 * * * * *", async () => {
+cron.schedule("*/1 * * * * *", async () => {
   console.log("⏰ Checking expired Sin-Bins...");
   try {
     // 1. Fetch drivers jinka sinbin time expire ho chuka hai
