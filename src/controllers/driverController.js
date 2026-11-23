@@ -698,16 +698,16 @@ exports.driverLogin = async (req, res) => {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
     }
 
-// 2. Exact status sync karein (SinBin / Today's Future Booking / Available)
+    // 2. Exact status sync karein (SinBin / Today's Future Booking / Available)
     // Ye automatically Busy/Available WebSockets bhi update kar dega
     const syncedDriver = await syncDriverState(driver.id);
 
     // 3. Available list socket ko notify karein (agar driver Available/SinBin mein hai)
     notifyDriverLogin(syncedDriver);
 
-// 4. Fresh driverInfo app response ke liye fetch karein
+    // 4. Fresh driverInfo app response ke liye fetch karein
     const updatedDriver = await Driver.getLoginDriverById(driver.id);
-    
+
     return res.status(200).json({
       message: "Login successful",
       driverInfo: updatedDriver,
@@ -1037,22 +1037,25 @@ exports.onPanicDriver = async (req, res) => {
 // ---------------------------------------------------------
 exports.getLoginDrivers = async (req, res) => {
   try {
-  const { company_id, subsidiary_id } = req.query;
-   const login_drivers = await Driver.getLoginDrivers(company_id, subsidiary_id);
-   const busy_drivers = await Driver.getBusyDrivers(company_id, subsidiary_id);
+    const { company_id, subsidiary_id } = req.query;
+    const login_drivers = await Driver.getLoginDrivers(
+      company_id,
+      subsidiary_id,
+    );
+    const busy_drivers = await Driver.getBusyDrivers(company_id, subsidiary_id);
 
-   res.status(200).json({
-   status: true,
-   login_drivers: login_drivers,
-  busy_drivers: busy_drivers,
-});
+    res.status(200).json({
+      status: true,
+      login_drivers: login_drivers,
+      busy_drivers: busy_drivers,
+    });
   } catch (err) {
- console.error("Error fetching login drivers:", err);
-   res.status(500).json({
-  status: false,
-  message: "Server error",
-  });
-}
+    console.error("Error fetching login drivers:", err);
+    res.status(500).json({
+      status: false,
+      message: "Server error",
+    });
+  }
 };
 
 // ---------------------------------------------------------

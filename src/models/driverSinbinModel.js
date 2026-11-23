@@ -4,7 +4,6 @@ const driverModel = require("../models/driverModel");
 const { notifyDriverSinBinStatusWeb } = require("../sockets/driverWebSocket");
 const { syncDriverState } = require("../services/driverStateService");
 
-
 class SinbinModel {
   // Add or Update Driver Sinbin Status
   static async updateDriverSinbin(
@@ -44,18 +43,16 @@ class SinbinModel {
       isActive,
     ]);
 
-//Sync the driver state to ensure the driver's status is updated correctly
-await syncDriverState(driver_id);
+    //Sync the driver state to ensure the driver's status is updated correctly
+    await syncDriverState(driver_id);
 
     if (isActive == true) {
-
       // Send notification to the driver about being added to the sin bin
       await sinBinNotificationService.sendSinBinNotification(
         driver_id,
         message,
       );
     } else {
-     
       // Send notification to the driver about being removed from the sin bin
       await sinBinNotificationService.sendSinBinRemovedNotification(
         driver_id,

@@ -1678,19 +1678,19 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
     return true;
   },
 
-// ---------------------------------------------------------
+  // ---------------------------------------------------------
   // GET LOGGED IN DRIVERS BY COMPANY ID (+ OPTIONAL SUBSIDIARY ID)
   // ---------------------------------------------------------
-async getLoginDrivers(company_id, subsidiary_id = null) {
-  const params = [company_id];
-  let subsidiaryFilter = "";
+  async getLoginDrivers(company_id, subsidiary_id = null) {
+    const params = [company_id];
+    let subsidiaryFilter = "";
 
-  if (subsidiary_id && subsidiary_id !== "all" && subsidiary_id !== "null") {
-    params.push(Number(subsidiary_id));
-     subsidiaryFilter = ` AND d.subsidiary_id = $${params.length}`;
+    if (subsidiary_id && subsidiary_id !== "all" && subsidiary_id !== "null") {
+      params.push(Number(subsidiary_id));
+      subsidiaryFilter = ` AND d.subsidiary_id = $${params.length}`;
     }
 
-   const query = `
+    const query = `
       SELECT 
         d.id,
         d.name,
@@ -1722,23 +1722,23 @@ async getLoginDrivers(company_id, subsidiary_id = null) {
         ${subsidiaryFilter}
     `;
 
-   const result = await db.query(query, params);
-   return result.rows;
-},
+    const result = await db.query(query, params);
+    return result.rows;
+  },
 
   // ---------------------------------------------------------
   // GET BUSY LOGGED IN DRIVERS BY COMPANY ID (+ OPTIONAL SUBSIDIARY ID)
   // ---------------------------------------------------------
-async getBusyDrivers(company_id, subsidiary_id = null) {
-  const params = [company_id];
+  async getBusyDrivers(company_id, subsidiary_id = null) {
+    const params = [company_id];
     let subsidiaryFilter = "";
 
-   if (subsidiary_id && subsidiary_id !== "all" && subsidiary_id !== "null") {
-    params.push(Number(subsidiary_id));
+    if (subsidiary_id && subsidiary_id !== "all" && subsidiary_id !== "null") {
+      params.push(Number(subsidiary_id));
       subsidiaryFilter = ` AND d.subsidiary_id = $${params.length}`;
     }
 
-   const query = `
+    const query = `
       SELECT 
         d.id,
         d.name,
@@ -1771,9 +1771,9 @@ async getBusyDrivers(company_id, subsidiary_id = null) {
         ${subsidiaryFilter}
     `;
 
-  const result = await db.query(query, params);
-   return result.rows;
-},
+    const result = await db.query(query, params);
+    return result.rows;
+  },
 
   // ---------------------------------------------------------
   // GET LOGGED IN DRIVERS FOR TRACKING BY COMPANY ID

@@ -19,9 +19,6 @@ const getAllAddresses = async (req, res) => {
   }
 };
 
-
-
-
 // ---------------------------------------------------------
 // SEARCH LOCATION WITH POSTCODE EXACT IN ORDER WISE SORTING WITH SPECIFIC FLAT NUMBER EXTRACTION
 // ---------------------------------------------------------
@@ -30,7 +27,6 @@ const searchAddresses = async (req, res) => {
     const rawSearch = (req.query.search || "").trim();
     if (!rawSearch) return res.status(200).json([]);
 
-    
     // 1️⃣ Search Term parsing (Extract Number & Postcode)
     // Matches numbers like 24, 49, 10A, Flat 12, etc.
     const numberMatch = rawSearch.match(/\b\d+[a-zA-Z]?\b/);
@@ -132,7 +128,6 @@ const searchAddresses = async (req, res) => {
     res.status(500).json({ message: "Search failed" });
   }
 };
-
 
 // ---------------------------------------------------------
 // GET LATITUDE & LONGITUDE FOR A GIVEN ADDRESS (Name + Postcode)

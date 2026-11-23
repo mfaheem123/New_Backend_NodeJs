@@ -23,8 +23,8 @@ router.get("/income-report", bookingController.getIncomeReport);
 router.get("/clear", bookingController.getClearBookings);
 router.get("/driver-earnings", bookingController.getDriverEarningsBookings);
 router.get("/pick-bookings", bookingController.getPickBookings);
-router.get('/driver-pco', bookingController.getDriverPcoReport);
-router.get('/vehicle-pco', bookingController.getVehiclePcoReport);
+router.get("/driver-pco", bookingController.getDriverPcoReport);
+router.get("/vehicle-pco", bookingController.getVehiclePcoReport);
 
 router.get(
   "/multi-bookings-id",

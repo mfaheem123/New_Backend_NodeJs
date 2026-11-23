@@ -6,7 +6,9 @@ const {
   notifyDriverBookingStatusWeb,
   notifyDriverSinBinStatusWeb,
 } = require("../sockets/driverWebSocket");
-const { notifyDriverBookingStatus } = require("../sockets/driverTrackingSocket");
+const {
+  notifyDriverBookingStatus,
+} = require("../sockets/driverTrackingSocket");
 
 const STATUS_MAP = {
   15: "Accepted",
@@ -17,7 +19,9 @@ const STATUS_MAP = {
 };
 
 async function syncDriverState(driverId) {
-  const driverRes = await db.query(`SELECT * FROM drivers WHERE id = $1`, [driverId]);
+  const driverRes = await db.query(`SELECT * FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
   if (!driverRes.rows.length) return null;
   const driver = driverRes.rows[0];
 
@@ -28,8 +32,8 @@ async function syncDriverState(driverId) {
   // 1️⃣ Check Active Booking for TODAY (Accepted=15, On Route=3, Arrived=6, POB=9, STC=10)
   // Note: Future booking bhi agar aaj ki date ki hai aur accepted hai toh busy hogi
   // driverStateService.js ke andar activeBookingRes query:
-const activeBookingRes = await db.query(
-  `
+  const activeBookingRes = await db.query(
+    `
   SELECT id, booking_status_id
   FROM bookings
   WHERE driver_id = $1
@@ -49,8 +53,8 @@ const activeBookingRes = await db.query(
     dispatched_at ASC
   LIMIT 1
   `,
-  [driverId]
-);
+    [driverId],
+  );
 
   let nextDriverStatus = "Available";
   let nextBookingStatus = "Available";
@@ -70,7 +74,7 @@ const activeBookingRes = await db.query(
         AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) > CURRENT_TIMESTAMP
       LIMIT 1
       `,
-      [driverId]
+      [driverId],
     );
 
     if (sinbinRes.rows.length > 0) {
@@ -89,7 +93,11 @@ const activeBookingRes = await db.query(
   }
 
   // Update DB
-  await Driver.updateDriverStatus(driverId, nextBookingStatus, nextDriverStatus);
+  await Driver.updateDriverStatus(
+    driverId,
+    nextBookingStatus,
+    nextDriverStatus,
+  );
 
   // Fetch Fresh Enriched Driver
   const freshDriver = await Driver.getById(driverId);

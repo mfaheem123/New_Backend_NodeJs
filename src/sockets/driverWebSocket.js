@@ -3,31 +3,30 @@ const db = require("../db");
 const logger = require("../utils/logger");
 const { URL } = require("url");
 
-
 // Sirf dashboard sockets
 const dashboardClients = new Set();
 const busyDashboardClients = new Set();
 
 function hasDriverStateChanged(existing, incoming) {
-if (!existing) return true;
+  if (!existing) return true;
 
-return (
-  existing.booking_status !== incoming.booking_status ||
-  existing.driver_status !== incoming.driver_status ||
-  existing.session_status !== incoming.session_status ||
-  existing.latitude !== incoming.latitude ||
-  existing.longitude !== incoming.longitude
+  return (
+    existing.booking_status !== incoming.booking_status ||
+    existing.driver_status !== incoming.driver_status ||
+    existing.session_status !== incoming.session_status ||
+    existing.latitude !== incoming.latitude ||
+    existing.longitude !== incoming.longitude
   );
 }
 
 // Helper: Check company_id + optional subsidiary_id match
 function matchesClientFilter(client, driver) {
-if (client.readyState !== WebSocket.OPEN) return false;
-if (client.company_id !== Number(driver.company_id)) return false;
+  if (client.readyState !== WebSocket.OPEN) return false;
+  if (client.company_id !== Number(driver.company_id)) return false;
 
   // Agar client ne specific subsidiary_id select ki hui hai toh match karein
-if (client.subsidiary_id) {
-  return Number(driver.subsidiary_id) === client.subsidiary_id;
+  if (client.subsidiary_id) {
+    return Number(driver.subsidiary_id) === client.subsidiary_id;
   }
 
   // Warna ALL SUBSIDIARY allow karein
@@ -43,41 +42,45 @@ const busyDrivers = new Map();
 // Format driver data for WebSocket payload
 function formatDriverData(driver) {
   return {
-  id: driver.id,
-  name: driver.name,
-  username: driver.username,
-  zone: driver.zone,
-  latitude: driver.latitude,
-  longitude: driver.longitude,
-  booking_status: driver.booking_status,
-  session_status: driver.session_status,
-  driver_status: driver.driver_status,
-  vehicle_type: driver.vehicle?.vehicle_type?.name || driver.vehicle_type || null,
-  last_login_at: driver.last_login_at,
-  vehicle_no: driver.vehicle?.vehicle_number || driver.vehicle_no || null,
-  make: driver.vehicle?.make || driver.make || null,
-  model: driver.vehicle?.model || driver.model || null,
-  color: driver.vehicle?.color || driver.color || null,
+    id: driver.id,
+    name: driver.name,
+    username: driver.username,
+    zone: driver.zone,
+    latitude: driver.latitude,
+    longitude: driver.longitude,
+    booking_status: driver.booking_status,
+    session_status: driver.session_status,
+    driver_status: driver.driver_status,
+    vehicle_type:
+      driver.vehicle?.vehicle_type?.name || driver.vehicle_type || null,
+    last_login_at: driver.last_login_at,
+    vehicle_no: driver.vehicle?.vehicle_number || driver.vehicle_no || null,
+    make: driver.vehicle?.make || driver.make || null,
+    model: driver.vehicle?.model || driver.model || null,
+    color: driver.vehicle?.color || driver.color || null,
   };
 }
 
 //Driver Login Socket
 function handleDriverLoginSocket(ws, req) {
-const { searchParams } = new URL(req.url, "http://localhost");
-ws.company_id = Number(searchParams.get("company_id"));
-const subParam = searchParams.get("subsidiary_id");
-ws.subsidiary_id = subParam && subParam !== "all" && subParam !== "null" ? Number(subParam) : null;
-console.log("Socket Company ID:", ws.company_id);
-console.log("Socket Subsidiary ID:", ws.subsidiary_id);
+  const { searchParams } = new URL(req.url, "http://localhost");
+  ws.company_id = Number(searchParams.get("company_id"));
+  const subParam = searchParams.get("subsidiary_id");
+  ws.subsidiary_id =
+    subParam && subParam !== "all" && subParam !== "null"
+      ? Number(subParam)
+      : null;
+  console.log("Socket Company ID:", ws.company_id);
+  console.log("Socket Subsidiary ID:", ws.subsidiary_id);
 
-dashboardClients.add(ws);
-logger.info("ws:dashboard-connected", {
-  socketId: ws.id,
-  company_id: ws.company_id,
-  subsidiary_id: ws.subsidiary_id,
-});
+  dashboardClients.add(ws);
+  logger.info("ws:dashboard-connected", {
+    socketId: ws.id,
+    company_id: ws.company_id,
+    subsidiary_id: ws.subsidiary_id,
+  });
 
-// Frontend se live filter change karne ke liye optional message listener
+  // Frontend se live filter change karne ke liye optional message listener
   ws.on("message", (msg) => {
     try {
       const parsed = JSON.parse(msg);
@@ -88,14 +91,14 @@ logger.info("ws:dashboard-connected", {
     } catch (_) {}
   });
 
-ws.on("close", () => {
-  dashboardClients.delete(ws);
-  logger.info("ws:dashboard-disconnect", { socketId: ws.id });
-});
+  ws.on("close", () => {
+    dashboardClients.delete(ws);
+    logger.info("ws:dashboard-disconnect", { socketId: ws.id });
+  });
 
-ws.on("error", (err) => {
-  logger.error("ws:error", { socketId: ws.id, error: err.message });
-});
+  ws.on("error", (err) => {
+    logger.error("ws:error", { socketId: ws.id, error: err.message });
+  });
 }
 
 // Busy Dashboard Socket
@@ -105,7 +108,10 @@ async function handleBusyDriverSocket(ws, req) {
   ws.company_id = Number(searchParams.get("company_id"));
 
   const subParam = searchParams.get("subsidiary_id");
-  ws.subsidiary_id = subParam && subParam !== "all" && subParam !== "null" ? Number(subParam) : null;
+  ws.subsidiary_id =
+    subParam && subParam !== "all" && subParam !== "null"
+      ? Number(subParam)
+      : null;
 
   busyDashboardClients.add(ws);
 
@@ -115,8 +121,7 @@ async function handleBusyDriverSocket(ws, req) {
     subsidiary_id: ws.subsidiary_id,
   });
 
-
-ws.on("message", (msg) => {
+  ws.on("message", (msg) => {
     try {
       const parsed = JSON.parse(msg);
       if (parsed.event === "SET_SUBSIDIARY_FILTER") {
@@ -125,7 +130,6 @@ ws.on("message", (msg) => {
       }
     } catch (_) {}
   });
-
 
   ws.on("close", () => {
     busyDashboardClients.delete(ws);
@@ -141,7 +145,7 @@ ws.on("message", (msg) => {
 
 // Driver Login Notify At Web
 function notifyDriverLogin(driver) {
-// Available, SinBin aur On Break drivers Available list mein show honge
+  // Available, SinBin aur On Break drivers Available list mein show honge
   if (
     driver.session_status !== "logged_in" ||
     (driver.driver_status !== "Available" &&
@@ -153,7 +157,7 @@ function notifyDriverLogin(driver) {
 
   const existing = loggedInDrivers.get(driver.id);
 
-// 🚫 Already same state in available → skip
+  // 🚫 Already same state in available → skip
   if (!hasDriverStateChanged(existing, driver)) {
     logger.info("ws:skip-duplicate-available", {
       driverId: driver.id,
@@ -178,17 +182,17 @@ function notifyDriverLogin(driver) {
 
 // Driver Logout Notify At Web
 function notifyDriverLogout(driverId) {
-const driver = loggedInDrivers.get(driverId) || busyDrivers.get(driverId);
+  const driver = loggedInDrivers.get(driverId) || busyDrivers.get(driverId);
 
-loggedInDrivers.delete(driverId);
-busyDrivers.delete(driverId);
-if (!driver) return;
+  loggedInDrivers.delete(driverId);
+  busyDrivers.delete(driverId);
+  if (!driver) return;
 
-const payload = JSON.stringify({
-event: "DRIVER_LOGOUT",
-data: { driverId },
-});
-console.log("Driver Company ID: ", driver.company_id);
+  const payload = JSON.stringify({
+    event: "DRIVER_LOGOUT",
+    data: { driverId },
+  });
+  console.log("Driver Company ID: ", driver.company_id);
 
   dashboardClients.forEach((client) => {
     if (matchesClientFilter(client, driver)) {
@@ -197,57 +201,59 @@ console.log("Driver Company ID: ", driver.company_id);
   });
 
   busyDashboardClients.forEach((client) => {
-  if (matchesClientFilter(client, driver)) {
-  client.send(JSON.stringify({ event: "BUSY_DRIVER_REMOVE", data: { id: driverId } }));
+    if (matchesClientFilter(client, driver)) {
+      client.send(
+        JSON.stringify({ event: "BUSY_DRIVER_REMOVE", data: { id: driverId } }),
+      );
     }
-});
+  });
 
-logger.info("ws:driver-logout", {
-  driverId,
-});
+  logger.info("ws:driver-logout", {
+    driverId,
+  });
 }
 
 // Notify Busy Driver Update
 function notifyBusyDriverUpdate(driver) {
-console.log("BUSY CLIENTS:", busyDashboardClients.size);
-if (driver.session_status !== "logged_in") return;
+  console.log("BUSY CLIENTS:", busyDashboardClients.size);
+  if (driver.session_status !== "logged_in") return;
 
-// 🟢 DRIVER AVAILABLE LIST MEIN HONA CHAHIYE (Available, SinBin, ya On Break)
-const isInAvailableList =
-     driver.driver_status === "Available" ||
-  driver.driver_status === "SinBin" ||
-  driver.driver_status === "On Break";
+  // 🟢 DRIVER AVAILABLE LIST MEIN HONA CHAHIYE (Available, SinBin, ya On Break)
+  const isInAvailableList =
+    driver.driver_status === "Available" ||
+    driver.driver_status === "SinBin" ||
+    driver.driver_status === "On Break";
 
-if (isInAvailableList) {
-  busyDrivers.delete(driver.id);
-  loggedInDrivers.set(driver.id, driver);
+  if (isInAvailableList) {
+    busyDrivers.delete(driver.id);
+    loggedInDrivers.set(driver.id, driver);
 
-   // Available Dashboard ko add/update bhejein
-  const loginPayload = JSON.stringify({
-    event: "DRIVER_LOGIN",
-    data: formatDriverData(driver),
-  });
+    // Available Dashboard ko add/update bhejein
+    const loginPayload = JSON.stringify({
+      event: "DRIVER_LOGIN",
+      data: formatDriverData(driver),
+    });
 
-   console.log("Driver Company ID: ", driver.company_id);
+    console.log("Driver Company ID: ", driver.company_id);
 
-   dashboardClients.forEach((client) => {
-     if (matchesClientFilter(client, driver)) {
-       client.send(loginPayload);
-     }
-  });
+    dashboardClients.forEach((client) => {
+      if (matchesClientFilter(client, driver)) {
+        client.send(loginPayload);
+      }
+    });
 
     // Busy Dashboard se remove karein
-   const busyRemovePayload = JSON.stringify({
-     event: "BUSY_DRIVER_REMOVE",
-     data: {
-       id: driver.id,
-     },
-   });
+    const busyRemovePayload = JSON.stringify({
+      event: "BUSY_DRIVER_REMOVE",
+      data: {
+        id: driver.id,
+      },
+    });
 
-   busyDashboardClients.forEach((client) => {
-     if (matchesClientFilter(client, driver)) {
-    client.send(busyRemovePayload);
-    }
+    busyDashboardClients.forEach((client) => {
+      if (matchesClientFilter(client, driver)) {
+        client.send(busyRemovePayload);
+      }
     });
 
     return;
@@ -304,7 +310,7 @@ async function fetchDriverForSocket(driverId) {
     LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
     WHERE d.id = $1
     `,
-    [driverId]
+    [driverId],
   );
   return result.rows[0] || null;
 }
@@ -314,24 +320,24 @@ async function fetchDriverForSocket(driverId) {
 // ==============================
 async function notifyDriverBookingStatusWeb(driverId) {
   try {
-   const driver = await fetchDriverForSocket(driverId);
-   if (!driver || driver.session_status !== "logged_in") return;
+    const driver = await fetchDriverForSocket(driverId);
+    if (!driver || driver.session_status !== "logged_in") return;
 
-  const payload = JSON.stringify({
-    event: "DRIVER_BOOKING_STATUS_WEB_UPDATE",
-     data: {
-      ...formatDriverData(driver),
-     vehicle: {
-    vehicle_type: { name: driver.vehicle_type },
-     },
-     },
+    const payload = JSON.stringify({
+      event: "DRIVER_BOOKING_STATUS_WEB_UPDATE",
+      data: {
+        ...formatDriverData(driver),
+        vehicle: {
+          vehicle_type: { name: driver.vehicle_type },
+        },
+      },
     });
 
-  if (
-   driver.driver_status === "Available" ||
-    driver.driver_status === "SinBin" ||
-    driver.driver_status === "On Break"
-  ) {
+    if (
+      driver.driver_status === "Available" ||
+      driver.driver_status === "SinBin" ||
+      driver.driver_status === "On Break"
+    ) {
       dashboardClients.forEach((client) => {
         if (matchesClientFilter(client, driver)) {
           client.send(payload);
@@ -354,22 +360,22 @@ async function notifyDriverBookingStatusWeb(driverId) {
 // DRIVER BREAK STATUS UPDATE
 // ==============================
 async function notifyDriverBreakStatusWeb(driverId) {
-try {
-  const driver = await fetchDriverForSocket(driverId);
-  if (!driver || driver.session_status !== "logged_in") return;
+  try {
+    const driver = await fetchDriverForSocket(driverId);
+    if (!driver || driver.session_status !== "logged_in") return;
 
-   const payload = JSON.stringify({
-     event: "DRIVER_BREAK_STATUS_UPDATE",
-     data: formatDriverData(driver),
-   });
+    const payload = JSON.stringify({
+      event: "DRIVER_BREAK_STATUS_UPDATE",
+      data: formatDriverData(driver),
+    });
 
-  dashboardClients.forEach((client) => {
-    if (matchesClientFilter(client, driver)) {
-      client.send(payload);
-    }
+    dashboardClients.forEach((client) => {
+      if (matchesClientFilter(client, driver)) {
+        client.send(payload);
+      }
     });
   } catch (err) {
-   logger.error("ws:driver-break-error", { error: err.message });
+    logger.error("ws:driver-break-error", { error: err.message });
   }
 }
 
@@ -378,21 +384,21 @@ try {
 // ==============================
 async function notifyDriverSinBinStatusWeb(driverId) {
   try {
-  const driver = await fetchDriverForSocket(driverId);
-   if (!driver || driver.session_status !== "logged_in") return;
+    const driver = await fetchDriverForSocket(driverId);
+    if (!driver || driver.session_status !== "logged_in") return;
 
-  const payload = JSON.stringify({
-    event: "DRIVER_SIN_BIN_STATUS_UPDATE",
-    data: formatDriverData(driver),
-   });
+    const payload = JSON.stringify({
+      event: "DRIVER_SIN_BIN_STATUS_UPDATE",
+      data: formatDriverData(driver),
+    });
 
-  dashboardClients.forEach((client) => {
-     if (matchesClientFilter(client, driver)) {
-      client.send(payload);
-     }
-   });
+    dashboardClients.forEach((client) => {
+      if (matchesClientFilter(client, driver)) {
+        client.send(payload);
+      }
+    });
   } catch (err) {
-   logger.error("ws:driver-sinbin-error", { error: err.message });
+    logger.error("ws:driver-sinbin-error", { error: err.message });
   }
 }
 

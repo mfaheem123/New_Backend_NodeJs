@@ -82,7 +82,8 @@ const sendCustomEmail = async (req, res) => {
     if (!company_id || !subsidiary_id || !to || !subject) {
       return res.status(400).json({
         status: false,
-        message: "company_id, subsidiary_id, to, and subject are required fields.",
+        message:
+          "company_id, subsidiary_id, to, and subject are required fields.",
       });
     }
 
@@ -96,7 +97,7 @@ const sendCustomEmail = async (req, res) => {
       html,
     });
 
-console.log("📧 Email sent successfully:", info);
+    console.log("📧 Email sent successfully:", info);
 
     return res.status(200).json({
       status: true,

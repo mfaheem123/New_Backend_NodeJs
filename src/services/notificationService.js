@@ -1525,37 +1525,37 @@ async function sendChatMessageToDashboard(
 // SEND BOOKING UPDATE NOTIFICATION TO DRIVER
 // ---------------------------------------------------------
 async function sendBookingUpdateNotification(driverId, booking) {
- // 1️⃣ Driver ka FCM token lao
- const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
-   driverId,
-]);
+  // 1️⃣ Driver ka FCM token lao
+  const res = await pool.query(`SELECT fcm_token FROM drivers WHERE id = $1`, [
+    driverId,
+  ]);
 
-const fcmToken = res.rows[0]?.fcm_token;
-if (!fcmToken) {
-  console.log("⚠️ No FCM token for driver:", driverId);
-  return;
-}
+  const fcmToken = res.rows[0]?.fcm_token;
+  if (!fcmToken) {
+    console.log("⚠️ No FCM token for driver:", driverId);
+    return;
+  }
 
-const bookingPayload = { ...booking };
+  const bookingPayload = { ...booking };
 
   // 2️⃣ Notification payload
-const message = {
-  token: fcmToken,
-  notification: {
-   title: "Your Booking Has Been Updated",
-    body: `Pickup: ${booking.pickup}`,
-  },
-  data: {
-    // booking: JSON.stringify(bookingPayload),
-    booking_id: String(booking.id),
-    type: "BOOKING_UPDATE",
-  },
+  const message = {
+    token: fcmToken,
+    notification: {
+      title: "Your Booking Has Been Updated",
+      body: `Pickup: ${booking.pickup}`,
+    },
+    data: {
+      // booking: JSON.stringify(bookingPayload),
+      booking_id: String(booking.id),
+      type: "BOOKING_UPDATE",
+    },
   };
-console.log("BOOKING UPDATE Notification Data:", message);
+  console.log("BOOKING UPDATE Notification Data:", message);
   // 3️⃣ Send
   // await admin.messaging().send(message);
-await safeSendNotification(message, { driverId });
-console.log("✅ Notification sent to driver:", driverId);
+  await safeSendNotification(message, { driverId });
+  console.log("✅ Notification sent to driver:", driverId);
 }
 
 module.exports = {
@@ -1589,5 +1589,5 @@ module.exports = {
   sendForcedEndBreakStatusNotification,
   sendNoShowBookingNotification,
   sendCompleteBookingFromWebNotification,
-  sendBookingUpdateNotification
+  sendBookingUpdateNotification,
 };
