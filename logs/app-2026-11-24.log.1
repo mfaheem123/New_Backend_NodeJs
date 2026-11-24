@@ -15150,3 +15150,4 @@
 {"level":"info","message":"GET /api/location-types 200 21.198 ms","timestamp":"2026-11-24T18:51:38.291Z"}
 {"duration":63,"level":"info","message":"db-query","rows":26,"text":"SELECT * FROM location_types","timestamp":"2026-11-24T18:51:38.336Z"}
 {"level":"info","message":"GET /api/location-types 200 64.820 ms","timestamp":"2026-11-24T18:51:38.338Z"}
+{"duration":68,"level":"info","message":"db-query","rows":0,"text":"\n      SELECT company_id, driver_id \n      FROM driver_sinbins \n      WHERE is_active = TRUE \n      AND (updated_at + (sinbin_time || ' minutes')::INTERVAL) <= CURRENT_TIMESTAMP;\n    ","timestamp":"2026-11-24T18:52:00.085Z"}
