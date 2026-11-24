@@ -1769,6 +1769,3 @@ exports.driverBiometricLogin = async (req, res) => {
       .json({ message: "An error occurred during biometric login" });
   }
 };
-
-
-

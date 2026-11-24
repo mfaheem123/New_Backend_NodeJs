@@ -195,7 +195,7 @@ function resolvePcoQuery(req) {
     }
   }
 
-  
+
 
   let statusIds;
 
@@ -3894,3 +3894,4 @@ exports.getVehiclePcoReport = async (req, res) => {
     });
   }
 };
+

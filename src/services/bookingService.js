@@ -1279,7 +1279,7 @@ async function updateBookingService(bookingId, payload) {
   ];
 
 
-  
+
 
   // =====================================================
   // 4. CREATE NORMAL/OUTBOUND UPDATES
@@ -2194,10 +2194,5 @@ module.exports = {
   assignFOBDriverService,
   cloneOneWayBookingService,
   assignFutureBookingDriverService,
-  updateMultiBookingsService,
+  updateMultiBookingsService
 };
-
-
-
-
-

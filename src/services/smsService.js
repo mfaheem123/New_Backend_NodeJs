@@ -115,4 +115,10 @@ async function fetchSMSLogsService(query) {
   };
 }
 
-module.exports = { sendSMSWithTemplate, fetchSMSLogsService };
+module.exports = { 
+  sendSMSWithTemplate, 
+  fetchSMSLogsService 
+};
+
+
+
