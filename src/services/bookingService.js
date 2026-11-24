@@ -1278,6 +1278,9 @@ async function updateBookingService(bookingId, payload) {
     "company_id",
   ];
 
+
+  
+
   // =====================================================
   // 4. CREATE NORMAL/OUTBOUND UPDATES
   // =====================================================
@@ -1506,6 +1509,11 @@ async function updateBookingService(bookingId, payload) {
       returnUpdates.waiting_charges = payload.return_waiting_charges;
     }
 
+
+
+
+
+
     if (payload.return_parking_charges !== undefined) {
       returnUpdates.parking_charges = payload.return_parking_charges;
     }
@@ -1565,6 +1573,11 @@ async function updateBookingService(bookingId, payload) {
       returnUpdates.lead_time = payload.return_lead_time;
     }
 
+
+
+
+
+
     // ---------------------------------------------------
     // RETURN JOURNEY TYPE
     // ---------------------------------------------------
@@ -1622,6 +1635,10 @@ async function updateBookingService(bookingId, payload) {
         console.error("❌ Audit Log Error on Update:", auditErr);
       }
     }
+
+
+
+
 
     // ---------------------------------------------------
     // GET FRESH PRIMARY BOOKING
@@ -1743,6 +1760,7 @@ async function updateBookingService(bookingId, payload) {
 
   return clean;
 }
+
 
 // ---------------------------------------------------------
 // CREATE CLI BOOKING
@@ -2178,3 +2196,8 @@ module.exports = {
   assignFutureBookingDriverService,
   updateMultiBookingsService,
 };
+
+
+
+
+

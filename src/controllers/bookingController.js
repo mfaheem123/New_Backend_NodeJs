@@ -195,6 +195,8 @@ function resolvePcoQuery(req) {
     }
   }
 
+  
+
   let statusIds;
 
   // Support explicit job_type ("all" | "completed" | "cancelled") alongside booking_status_id

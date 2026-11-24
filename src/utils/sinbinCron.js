@@ -8,7 +8,7 @@ console.log("🚀 Sin Bin Cron Scheduler Started!");
 // =========================================================
 // 1️⃣ SIN BIN EXPIRY CRON (Har 100 second check karega)
 // =========================================================
-cron.schedule("*/1000 * * * * *", async () => {
+cron.schedule("*/10 * * * * *", async () => {
   console.log("⏰ Checking expired Sin-Bins...");
   try {
     // 1. Fetch drivers jinka sinbin time expire ho chuka hai
@@ -44,7 +44,7 @@ cron.schedule("*/1000 * * * * *", async () => {
 // =========================================================
 // 2️⃣ FUTURE BOOKING ACTIVATION CRON (Har 10 minute baad)
 // =========================================================
-cron.schedule("*/1000 * * * *", async () => {
+cron.schedule("*/10 * * * *", async () => {
   try {
     console.log("⏰ Checking Driver Future Bookings...");
     // Un logged-in drivers ko dhundein jinki accepted future booking aaj ki date ki hai
