@@ -1648,9 +1648,9 @@ async function updateBookingService(bookingId, payload) {
       ) {
         await sendBookingNotification(updates.driver_id, primaryClean);
       }
-      // else{
-      //   await sendBookingUpdateNotification(updates.driver_id, primaryClean);
-      // }
+      else{
+        await sendBookingUpdateNotification(updates.driver_id, primaryClean);
+      }
     }
 
     // ===================================================
@@ -1679,9 +1679,9 @@ async function updateBookingService(bookingId, payload) {
         ) {
           await sendBookingNotification(payload.return_driver_id, returnClean);
         }
-        // else{
-        //   await sendBookingUpdateNotification(payload.return_driver_id, returnClean);
-        // }
+        else{
+          await sendBookingUpdateNotification(payload.return_driver_id, returnClean);
+        }
       }
 
       return {

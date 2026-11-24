@@ -1,4 +1,4 @@
-const { getTemplateById } = require("./templateService");
+const { getTemplateById, getCompanyTemplateByName } = require("./templateService");
 const { parseTemplate } = require("../utils/templateParser");
 const { formatMobile } = require("../utils/formatMobile");
 const { sendViaDinstar } = require("./dinstarService");
@@ -6,7 +6,15 @@ const { createSMSLog, getSMSLogs } = require("../models/smsLogModel");
 const { getByCompanyId } = require("../models/companyConfigurationModel");
 
 async function sendSMSWithTemplate(payload) {
-const { template_id, mobile, data, port, company_id, custom_message } = payload;
+const {
+    template_id,
+    template_name, // ✅ Naya option
+    mobile,
+    data,
+    port,
+    company_id,
+    custom_message,
+  } = payload;
 
 if (!mobile) {
      throw new Error("Mobile number is required");
@@ -23,17 +31,30 @@ if (company_id) {
 }
 
   let message = "";
+  let resolvedTemplateId = template_id || null;
 
 // Agar direct message diya hai toh woh use hoga, warna template se banega
 if (custom_message) {
     message = custom_message;
-} else if (template_id) {
-   const template = await getTemplateById(template_id);
-   if (!template) throw new Error("Template not found");
-   message = parseTemplate(template.content, data);
-} else {
- throw new Error("Either template_id or custom_message is required");
-}
+  } else if (template_id) {
+    const template = await getTemplateById(template_id);
+    if (!template) throw new Error("Template not found");
+    message = parseTemplate(template.content, data);
+  } else if (template_name) {
+    // ✅ Dynamic template lookup by company_id + template_name
+    const template = await getCompanyTemplateByName(company_id, template_name);
+    if (!template) {
+      throw new Error(
+        `Template "${template_name}" not found for company_id: ${company_id}`
+      );
+    }
+    resolvedTemplateId = template.id;
+    message = parseTemplate(template.content, data);
+  } else {
+    throw new Error(
+      "Either template_id, template_name, or custom_message is required"
+    );
+  }
 
 
 
@@ -47,10 +68,10 @@ if (custom_message) {
   // // 4️⃣ Send via Dinstar
   // const gatewayResponse = await sendViaDinstar(formattedMobile, message, port, companyConfig);
 
-  // // 5️⃣ Save Log in DB
+  // // 5️⃣ Save Log in DB (resolvedTemplateId use karein taake log mein sahi ID save ho)
   // await createSMSLog({
   //   company_id,
-  //   template_id,
+  //   template_id: resolvedTemplateId,
   //   mobile: formattedMobile,
   //   message,
   //   status: gatewayResponse.success ? "SENT" : "FAILED",

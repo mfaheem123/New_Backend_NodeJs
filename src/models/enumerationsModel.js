@@ -330,6 +330,7 @@ const EnumerationsModel = {
             WHERE DATE(pickup_date) = CURRENT_DATE 
             AND booking_status_id IN (1, 4, 5, 13, 8, 2) 
             AND trash = false
+            AND quotation = false
             AND company_id = $1
           )
           WHEN 2 THEN (
@@ -337,6 +338,7 @@ const EnumerationsModel = {
             WHERE DATE(pickup_date) > CURRENT_DATE 
             AND booking_status_id NOT IN (11)
             AND trash = false
+            AND quotation = false
             AND company_id = $1
           )
           WHEN 3 THEN (
@@ -353,7 +355,7 @@ const EnumerationsModel = {
           )
           WHEN 5 THEN (
             SELECT COUNT(*) FROM bookings 
-            WHERE quoted = true 
+            WHERE quotation = true  
             AND trash = false
             AND company_id = $1
           )
