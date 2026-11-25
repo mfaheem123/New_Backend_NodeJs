@@ -1177,13 +1177,41 @@ const getBookingByDriverIdAndStatus = async (driver_id, booking_status_id) => {
 // ---------------------------------------------------------
 // CHECK ACTIVE BOOKING TODAY
 // ---------------------------------------------------------
+// const hasActiveBookingToday = async (driverId) => {
+//   const query = `
+//     SELECT id
+//     FROM bookings
+//     WHERE driver_id = $1
+//       AND booking_status_id IN (3,6,9,10,13,14,15)
+//       AND TO_DATE(pickup_date, 'YYYY-FMMM-FMDD') = CURRENT_DATE
+//     LIMIT 1;
+//   `;
+
+//   const result = await pool.query(query, [driverId]);
+
+//   if (result.rows.length > 0) {
+//     return {
+//       has_active: true,
+//       booking_id: result.rows[0].id,
+//     };
+//   }
+
+//   return {
+//     has_active: false,
+//     booking_id: null,
+//   };
+// };
+
+// ---------------------------------------------------------
+// CHECK ACTIVE BOOKING (TODAY & YESTERDAY FOR MIDNIGHT RIDES)
+// ---------------------------------------------------------
 const hasActiveBookingToday = async (driverId) => {
   const query = `
     SELECT id
     FROM bookings
     WHERE driver_id = $1
-      AND booking_status_id IN (2,3,6,10,14,15)
-      AND TO_DATE(pickup_date, 'YYYY-FMMM-FMDD') = CURRENT_DATE
+      AND booking_status_id IN (3, 6, 9, 10, 13, 14, 15)
+      AND TO_DATE(pickup_date, 'YYYY-FMMM-FMDD') BETWEEN (CURRENT_DATE - INTERVAL '1 day')::date AND CURRENT_DATE
     LIMIT 1;
   `;
 

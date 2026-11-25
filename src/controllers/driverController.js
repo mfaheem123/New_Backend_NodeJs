@@ -1,4 +1,5 @@
 const Driver = require("../models/driverModel");
+const bookingModel = require("../models/bookingModel")
 const {
   notifyDriverLogin,
   notifyDriverLogout,
@@ -39,7 +40,6 @@ function buildDriverAuditDiff(oldDriver, newDriver) {
   const previous = [];
   const next = [];
 
-  // 1. Driver ki top-level fields jo track karni hain
   const driverTrackFields = [
     "name",
     "username",
@@ -61,6 +61,7 @@ function buildDriverAuditDiff(oldDriver, newDriver) {
     "end_date",
     "ni",
     "subsidiary_id",
+    "image", // ✅ Driver profile image added
     "licence_number",
     "licence_expiry",
     "licence_expiry_time",
@@ -107,7 +108,7 @@ function buildDriverAuditDiff(oldDriver, newDriver) {
     }
   }
 
-  // 2. Nested Vehicle fields (vehicle_number, make, model, color, etc.)
+  // Vehicle fields
   const vehicleTrackFields = [
     "vehicle_type_id",
     "vehicle_number",
@@ -132,7 +133,7 @@ function buildDriverAuditDiff(oldDriver, newDriver) {
     }
   }
 
-  // 3. Log book number check
+  // ✅ Log book number & document check
   const oldLogBook = formatVal(oldVeh?.log_book?.log_book_number);
   const newLogBook = formatVal(newVeh?.log_book?.log_book_number);
   if (oldLogBook !== newLogBook) {
@@ -140,7 +141,36 @@ function buildDriverAuditDiff(oldDriver, newDriver) {
     next.push(`log_book_number: ${newLogBook}`);
   }
 
-  // 4. Attributes JSON comparison
+  const oldLogBookDoc = formatVal(oldVeh?.log_book?.log_book_document);
+  const newLogBookDoc = formatVal(newVeh?.log_book?.log_book_document);
+  if (oldLogBookDoc !== newLogBookDoc) {
+    previous.push(`log_book_document: ${oldLogBookDoc}`);
+    next.push(`log_book_document: ${newLogBookDoc}`);
+  }
+
+  // ✅ Other document files inside vehicle object (MOT, PHC, Insurance, etc.)
+  const docKeys = [
+    ["mot", "mot_document"],
+    ["mot2", "mot2_document"],
+    ["insurance", "insurance_document"],
+    ["phc_vehicle", "phc_vehicle_document"],
+    ["road_tax", "road_tax_document"],
+    ["rental_agreement", "rental_agreement_document"],
+    ["v5_registration", "v5_registration_document"],
+    ["licence", "licence_document"],
+    ["phc_driver", "phc_driver_document"],
+  ];
+
+  for (const [section, docField] of docKeys) {
+    const oldDoc = formatVal(oldVeh?.[section]?.[docField]);
+    const newDoc = formatVal(newVeh?.[section]?.[docField]);
+    if (oldDoc !== newDoc) {
+      previous.push(`${docField}: ${oldDoc}`);
+      next.push(`${docField}: ${newDoc}`);
+    }
+  }
+
+  // Attributes JSON comparison
   const oldAttr = JSON.stringify(oldDriver?.attributes || []);
   const newAttr = JSON.stringify(newDriver?.attributes || []);
   if (oldAttr !== newAttr) {
@@ -393,20 +423,20 @@ exports.create = async (req, res) => {
     const fullDriver = await Driver.getById(result.id);
 
     // 🔥 DRIVER CREATE AUDIT LOG
-    // try {
-    //   await AuditModel.createAuditLog({
-    //     type: "driver",
-    //     operation: "activity",
-    //     previous: [],
-    //     next: ["driver created"],
-    //     employee_id: req.user?.id || req.body.employee_id || null,
-    //     booking_id: null,
-    //     driver_id: fullDriver.id,
-    //     company_id: fullDriver.company_id || req.body.company_id || 1,
-    //   });
-    // } catch (auditErr) {
-    //   console.error("❌ Driver Create Audit Error:", auditErr.message);
-    // }
+    try {
+      await AuditModel.createAuditLog({
+        type: "driver",
+        operation: "activity",
+        previous: [],
+        next: ["driver created"],
+        employee_id: req.user?.id || req.body.employee_id || null,
+        booking_id: null,
+        driver_id: fullDriver.id,
+        company_id: fullDriver.company_id || req.body.company_id || 1,
+      });
+    } catch (auditErr) {
+      console.error("❌ Driver Create Audit Error:", auditErr.message);
+    }
 
     res.status(200).json({
       status: true,
@@ -747,25 +777,25 @@ exports.update = async (req, res) => {
     const updatedDriver = await Driver.getById(driverId);
 
 
-    // // 🔥 4. COMPARE & SAVE DRIVER UPDATE AUDIT LOG
-    // const { previous, next } = buildDriverAuditDiff(existingDriver, updatedDriver);
+    // 🔥 4. COMPARE & SAVE DRIVER UPDATE AUDIT LOG
+    const { previous, next } = buildDriverAuditDiff(existingDriver, updatedDriver);
 
-    // if (next.length > 0) {
-    //   try {
-    //     await AuditModel.createAuditLog({
-    //       type: "driver",
-    //       operation: "update",
-    //       previous,
-    //       next,
-    //       employee_id: req.user?.id || req.body.employee_id || null,
-    //       booking_id: null,
-    //       driver_id: Number(driverId),
-    //       company_id: updatedDriver.company_id || companyId || 1,
-    //     });
-    //   } catch (auditErr) {
-    //     console.error("❌ Driver Update Audit Error:", auditErr.message);
-    //   }
-    // }
+    if (next.length > 0) {
+      try {
+        await AuditModel.createAuditLog({
+          type: "driver",
+          operation: "update",
+          previous,
+          next,
+          employee_id: req.user?.id || req.body.employee_id || null,
+          booking_id: null,
+          driver_id: Number(driverId),
+          company_id: updatedDriver.company_id || companyId || 1,
+        });
+      } catch (auditErr) {
+        console.error("❌ Driver Update Audit Error:", auditErr.message);
+      }
+    }
 
 
 
@@ -1669,12 +1699,21 @@ exports.driverForcedLogout = async (req, res) => {
       return res.status(404).json({ message: "Driver not found" });
     }
 
-    // UPDATE DRIVER STATUS
-    await Driver.updateDriverLogoutStatus(driverId);
+    //Check Active Booking
+    const checkActiveBooking = await bookingModel.hasActiveBookingToday(driverId)
+
+    if(checkActiveBooking.has_active === true){
+      return res.status(400).json({ message: "Driver Has Active Booking You Cannot Logged Out Driver" });
+    }
 
     // Send Forced Logout Notification to Driver
     const messages = "You have been forcibly logged out by the Controller.";
     await notification.sendForcedLoggedOutNotification(driverId, messages);
+
+    // UPDATE DRIVER STATUS
+    await Driver.updateDriverLogoutStatus(driverId);
+
+    
 
     // CLEAR FCM TOKEN
     await Driver.clearDriverFcmToken(driverId);
