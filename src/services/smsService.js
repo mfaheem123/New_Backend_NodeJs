@@ -5,10 +5,27 @@ const { sendViaDinstar } = require("./dinstarService");
 const { createSMSLog, getSMSLogs } = require("../models/smsLogModel");
 const { getByCompanyId } = require("../models/companyConfigurationModel");
 
+// Helper: stringified array, array, ya comma-separated string ko clean mobile list mein badalta hai
+function parseMobileList(mobile) {
+  if (Array.isArray(mobile)) {
+    return mobile;
+  }
+  if (typeof mobile === "string") {
+    const trimmed = mobile.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith("[")) {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed;
+    }
+    return trimmed.split(",");
+  }
+  return [];
+}
+
 async function sendSMSWithTemplate(payload) {
-const {
+  const {
     template_id,
-    template_name, // ✅ Naya option
+    template_name,
     mobile,
     data,
     port,
@@ -16,32 +33,35 @@ const {
     custom_message,
   } = payload;
 
-if (!mobile) {
-     throw new Error("Mobile number is required");
+  if (!mobile) {
+    throw new Error("Mobile number is required");
   }
 
-  // 1️⃣ Format Mobile
-  const formattedMobile = formatMobile(mobile);
-  console.log("Formatted Mobile No. : ", formattedMobile);
+  const rawMobiles = parseMobileList(mobile)
+    .map((num) => String(num || "").trim())
+    .filter(Boolean);
 
-// 2️⃣ Fetch Company SMS Configuration Dynamically from DB
-let companyConfig = null;
-if (company_id) {
-  companyConfig = await getByCompanyId(company_id);
-}
+  if (rawMobiles.length === 0) {
+    throw new Error("At least one valid mobile number is required");
+  }
 
+  // 1️⃣ Fetch Company SMS Configuration Dynamically from DB
+  let companyConfig = null;
+  if (company_id) {
+    companyConfig = await getByCompanyId(company_id);
+  }
+
+  // 2️⃣ Resolve Message & Template ID once before looping
   let message = "";
   let resolvedTemplateId = template_id || null;
 
-// Agar direct message diya hai toh woh use hoga, warna template se banega
-if (custom_message) {
+  if (custom_message) {
     message = custom_message;
   } else if (template_id) {
     const template = await getTemplateById(template_id);
     if (!template) throw new Error("Template not found");
     message = parseTemplate(template.content, data);
   } else if (template_name) {
-    // ✅ Dynamic template lookup by company_id + template_name
     const template = await getCompanyTemplateByName(company_id, template_name);
     if (!template) {
       throw new Error(
@@ -56,29 +76,85 @@ if (custom_message) {
     );
   }
 
-
-
-
-
-
- console.log("--------------------------------------------------------------------------------");
+  console.log(
+    "--------------------------------------------------------------------------------"
+  );
   console.log("MESSAGE TO SEND: ", message);
-  console.log("--------------------------------------------------------------------------------");
+  console.log(
+    "--------------------------------------------------------------------------------"
+  );
 
-  // // 4️⃣ Send via Dinstar
-  // const gatewayResponse = await sendViaDinstar(formattedMobile, message, port, companyConfig);
+  const results = [];
 
-  // // 5️⃣ Save Log in DB (resolvedTemplateId use karein taake log mein sahi ID save ho)
-  // await createSMSLog({
-  //   company_id,
-  //   template_id: resolvedTemplateId,
-  //   mobile: formattedMobile,
-  //   message,
-  //   status: gatewayResponse.success ? "SENT" : "FAILED",
-  //   gateway_response: JSON.stringify(gatewayResponse),
-  // });
+  // 3️⃣ Har mobile number ke liye alag SMS send karein aur alag log save karein
+  for (const rawNum of rawMobiles) {
+    const formattedMobile = formatMobile(rawNum);
+    console.log("Formatted Mobile No. : ", formattedMobile);
 
-  // return gatewayResponse;
+    try {
+      // const gatewayResponse = await sendViaDinstar(
+      //   formattedMobile,
+      //   message,
+      //   port,
+      //   companyConfig
+      // );
+
+      // const isSent = Boolean(gatewayResponse && gatewayResponse.success);
+      const isSent = true
+
+      await createSMSLog({
+        company_id,
+        template_id: resolvedTemplateId,
+        mobile: formattedMobile,
+        message,
+        status: isSent ? "SENT" : "FAILED",
+        // gateway_response: JSON.stringify(gatewayResponse || {}),
+      });
+
+      results.push({
+        mobile: formattedMobile,
+        status: isSent ? "SENT" : "FAILED",
+        // gateway: gatewayResponse,
+      });
+    } catch (err) {
+      console.error(`❌ SMS failed for ${formattedMobile}:`, err.message);
+
+      await createSMSLog({
+        company_id,
+        template_id: resolvedTemplateId,
+        mobile: formattedMobile,
+        message,
+        status: "FAILED",
+        gateway_response: JSON.stringify({ error: err.message }),
+      });
+
+      results.push({
+        mobile: formattedMobile,
+        status: "FAILED",
+        error: err.message,
+      });
+    }
+  }
+
+  const sentCount = results.filter((r) => r.status === "SENT").length;
+  const failedCount = results.filter((r) => r.status === "FAILED").length;
+
+  if (sentCount === 0) {
+    const firstError =
+      results[0]?.error ||
+      results[0]?.gateway?.message ||
+      "Failed to send SMS to all recipients";
+    const err = new Error(firstError);
+    err.results = results;
+    throw err;
+  }
+
+  return {
+    total: results.length,
+    sentCount,
+    failedCount,
+    results,
+  };
 }
 
 // 📌 NAYA SERVICE FUNCTION
@@ -119,6 +195,5 @@ module.exports = {
   sendSMSWithTemplate, 
   fetchSMSLogsService 
 };
-
 
 

@@ -8,6 +8,10 @@ const {
 // ---------------------------------------------------------
 async function sendSMS(req, res) {
   try {
+    console.log(
+      "🚀 INCOMING SEND SMS BODY:",
+      JSON.stringify(req.body, null, 2),
+    );
     const result = await sendSMSWithTemplate(req.body);
 
     res.json({

@@ -213,7 +213,7 @@ function printRoutes(stack, prefix = "") {
       printRoutes(
         r.handle.stack,
         prefix +
-          r.regexp.source.replace("^\\", "").replace("\\/?(?=\\/|$)", ""),
+        r.regexp.source.replace("^\\", "").replace("\\/?(?=\\/|$)", ""),
       );
     }
   });

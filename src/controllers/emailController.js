@@ -66,6 +66,23 @@ const getEmailLogs = async (req, res) => {
   }
 };
 
+
+// Helper: stringified array, array, ya comma-separated string ko clean email array mein badalta hai
+const parseEmailList = (to) => {
+  if (Array.isArray(to)) {
+    return to;
+  }
+  if (typeof to === "string") {
+    const trimmed = to.trim();
+    if (trimmed.startsWith("[")) {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed;
+    }
+    return trimmed.split(",");
+  }
+  return [];
+};
+
 // ---------------------------------------------------------
 // SEND CUSTOM EMAIL
 // ---------------------------------------------------------
@@ -75,10 +92,9 @@ const sendCustomEmail = async (req, res) => {
 
     console.log(
       "🚀 INCOMING SEND CUSTOM EMAIL BODY:",
-      JSON.stringify(req.body, null, 2),
+      JSON.stringify(req.body, null, 2)
     );
 
-    // Basic validation
     if (!company_id || !subsidiary_id || !to || !subject) {
       return res.status(400).json({
         status: false,
@@ -87,22 +103,55 @@ const sendCustomEmail = async (req, res) => {
       });
     }
 
-    // Aapka purana dynamic sendEmail function call hoga
-    const info = await sendEmail({
-      companyId: company_id,
-      subsidiaryId: subsidiary_id,
-      to,
-      subject,
-      text,
-      html,
-    });
+    const recipients = parseEmailList(to)
+      .map((email) => String(email || "").trim())
+      .filter(Boolean);
 
-    console.log("📧 Email sent successfully:", info);
+    if (recipients.length === 0) {
+      return res.status(400).json({
+        status: false,
+        message: "At least one valid recipient email is required.",
+      });
+    }
+
+    const results = [];
+
+    // Har email ko alag-alag send karein
+    for (const recipient of recipients) {
+      try {
+        const info = await sendEmail({
+          companyId: company_id,
+          subsidiaryId: subsidiary_id,
+          to: recipient,
+          subject,
+          text,
+          html,
+        });
+
+        results.push({
+          email: recipient,
+          status: "sent",
+          messageId: info?.messageId || null,
+        });
+      } catch (err) {
+        console.error(`❌ Failed sending email to ${recipient}:`, err.message);
+        results.push({
+          email: recipient,
+          status: "failed",
+          error: err.message,
+        });
+      }
+    }
+
+    const sentCount = results.filter((r) => r.status === "sent").length;
+    const failedCount = results.filter((r) => r.status === "failed").length;
 
     return res.status(200).json({
-      status: true,
-      message: "Email sent successfully!",
-      info,
+      status: sentCount > 0,
+      message: `Processed ${recipients.length} email(s): ${sentCount} sent, ${failedCount} failed.`,
+      sentCount,
+      failedCount,
+      results,
     });
   } catch (error) {
     console.error("❌ Send Custom Email Error:", error);
