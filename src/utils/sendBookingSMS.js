@@ -14,6 +14,36 @@ const buildViapointsStr = (viapoints) => {
   return "";
 };
 
+const getMultiReservationDateRange = (clean) => {
+  let multiRes = clean?.multi_reservation ?? clean?._multi_reservation;
+
+  if (typeof multiRes === "string") {
+    try {
+      multiRes = JSON.parse(multiRes);
+    } catch {
+      multiRes = [];
+    }
+  }
+
+const activeSlots = Array.isArray(multiRes)
+    ? multiRes.filter((item) => item && !item.exclude && item.pickup_date)
+    : [];
+
+  if (activeSlots.length > 0) {
+    return {
+      from: activeSlots[0].pickup_date ?? "",
+      to: activeSlots[activeSlots.length - 1].pickup_date ?? "",
+    };
+  }
+
+  // Fallback agar single booking row mein multi_reservation array na ho
+  const fallbackDate = clean?.pickup_date ?? "";
+  return {
+    from: fallbackDate,
+    to: fallbackDate,
+  };
+};  
+
 const sendDriverAssignedSMS = async (clean, companyId) => {
   if (!clean.driver_id) return;
 
@@ -61,6 +91,9 @@ const sendBookingSMS = async (clean) => {
     const isType2 =
       clean.booking_type_id === 2 || clean.booking_type_id === "2";
 
+  // ✅ First & Last active pickup_date from multi_reservation
+  const { from: fromDate, to: toDate } = getMultiReservationDateRange(clean);
+
     const baseBookingData = {
       pickup_door_number: clean.pickup_door_number
         ? `Door: ${clean.pickup_door_number}`
@@ -71,6 +104,8 @@ const sendBookingSMS = async (clean) => {
         ? `Door: ${clean.dropoff_door_number}`
         : "",
       dropoff: clean.dropoff ?? "",
+      from: fromDate,
+      to: toDate,
       customer: clean.name ?? clean.customer?.name ?? "",
       date: clean.pickup_date ?? "",
       time: clean.pickup_time ?? "",
