@@ -238,3 +238,27 @@ exports.getByCompanyId = async (companyId) => {
   const { rows } = await pool.query(query, [companyId]);
   return rows[0] || null;
 };
+
+ // ---------------------------------------------------------
+ // GET STRIPE CONFIGURATION BY COMPANY ID
+ // ---------------------------------------------------------
+ exports.getStripeConfigByCompanyId = async (companyId) => {
+   const query = `
+    SELECT
+      id,
+      company_id,
+      subsidiary_id,
+      stripe_public_key,
+      stripe_secret_key,
+      endpoint_key,
+      invoice_endpoint_key,
+      credit_card_charges
+    FROM company_configurations
+    WHERE company_id = $1
+    ORDER BY id ASC
+    LIMIT 1
+  `;
+   const { rows } = await pool.query(query, [companyId]);
+    return rows[0] || null;
+ };
+ 

@@ -4031,6 +4031,73 @@ const getVehiclePcoReport = async ({
   return rows;
 };
 
+// Checkout start hote hi customer ID attach karne ke liye (optional pre-link)
+// ---------------------------------------------------------
+// ATTACH STRIPE CUSTOMER
+// ---------------------------------------------------------
+const attachStripeCustomer = async (bookingId, companyId, stripeCustomerId) => {
+  const query = `
+    UPDATE bookings
+    SET
+      stripe_customer_id = COALESCE($1, stripe_customer_id),
+      updated_at = NOW()
+    WHERE id = $2
+      AND company_id = $3
+    RETURNING id, reference_number, driver_id, stripe_customer_id
+  `;
+  const { rows } = await pool.query(query, [stripeCustomerId, bookingId, companyId]);
+  return rows[0] || null;
+};
+
+// Webhook par payment confirm hone ke baad invoice_status + Stripe IDs update karne ke liye
+// ---------------------------------------------------------
+// MARK STRIPE BOOKING AS PAID
+// ---------------------------------------------------------
+const markBookingAsPaid = async ({
+  bookingId,
+  companyId,
+  stripeCustomerId,
+  stripePaymentId,
+}) => {
+  const query = `
+    UPDATE bookings
+    SET
+      stripe_customer_id = COALESCE($1, stripe_customer_id),
+      stripe_payment_id  = $2,
+      updated_at         = NOW()
+    WHERE id = $3
+      AND company_id = $4
+      AND COALESCE(stripe_payment_id, '') <> $2
+    RETURNING
+      id,
+      reference_number,
+      company_id,
+      subsidiary_id,
+      driver_id,
+      customer_id,
+      name AS passenger_name,
+      pickup,
+      dropoff,
+      pickup_date,
+      pickup_time,
+      fares,
+      total_charges,
+      booking_status_id,
+      invoice_status,
+      stripe_customer_id,
+      stripe_payment_id
+  `;
+
+  const { rows } = await pool.query(query, [
+    stripeCustomerId || null,
+    stripePaymentId,
+    bookingId,
+    companyId,
+  ]);
+
+  return rows[0] || null;
+};
+
 module.exports = {
   pool,
   insertBookingRow,
@@ -4103,4 +4170,6 @@ module.exports = {
   getBookingsForCustomerPreInvoice,
   getDriverPcoReport,
   getVehiclePcoReport,
+  attachStripeCustomer,
+  markBookingAsPaid
 };

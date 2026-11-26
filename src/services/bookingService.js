@@ -1698,13 +1698,13 @@ if (isPrimaryDriverChanged) {
   ) {
   await sendBookingNotification(currentPrimaryDriverId, primaryClean);
   } else {
-  // await sendBookingUpdateNotification(currentPrimaryDriverId, primaryClean);
-  console.log("Booking Notification Send To Driver")
+    console.log("BOOKING UPDATE NOTIFICATION SENT")
+  await sendBookingUpdateNotification(currentPrimaryDriverId, primaryClean);
   }
   } else if (changesNext.length > 0) {
   // Driver pehle se assign tha aur booking mein kuch update hua hai
   console.log("📢 BOOKING UPDATE NOTIFICATION SENT TO:", currentPrimaryDriverId);
-  // await sendBookingUpdateNotification(currentPrimaryDriverId, primaryClean);
+  await sendBookingUpdateNotification(currentPrimaryDriverId, primaryClean);
 }
 }
 
@@ -1740,13 +1740,12 @@ if (currentReturnDriverId) {
     ) {
       await sendBookingNotification(currentReturnDriverId, returnClean);
     } else {
-      // await sendBookingUpdateNotification(currentReturnDriverId, returnClean);
-      console.log("Booking Notification Send To Driver")
+      await sendBookingUpdateNotification(currentReturnDriverId, returnClean);
     }
   } else {
     // Return par driver pehle se assign tha aur return booking update hui hai
     console.log("📢 RETURN BOOKING UPDATE NOTIFICATION SENT TO:", currentReturnDriverId);
-    // await sendBookingUpdateNotification(currentReturnDriverId, returnClean);
+    await sendBookingUpdateNotification(currentReturnDriverId, returnClean);
   }
 }
 
