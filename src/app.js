@@ -71,6 +71,8 @@ const emailRoutes = require("./routes/emailRoutes");
 const matrixRoutes = require("./routes/matrixRoutes");
 const driverCommissionPayRoutes = require("./routes/driverCommissionPayRoutes");
 const auditRoutes = require("./routes/auditRoutes");
+const searchCustomerAccountDriverRoutes = require("./routes/searchCustomerAccountDriverRoutes");
+
 
 const app = express();
 
@@ -198,6 +200,8 @@ app.use("/api/emails", emailRoutes);
 app.use("/api/driver-zones", matrixRoutes);
 app.use("/api/driver-pay", driverCommissionPayRoutes);
 app.use("/api/audits", auditRoutes);
+app.use("/api/sms-email", searchCustomerAccountDriverRoutes);
+
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {

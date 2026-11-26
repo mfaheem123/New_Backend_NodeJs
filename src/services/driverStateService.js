@@ -111,4 +111,6 @@ const activeBookingRes = await db.query(
   return freshDriver;
 }
 
-module.exports = { syncDriverState };
+module.exports = { 
+  syncDriverState 
+};
