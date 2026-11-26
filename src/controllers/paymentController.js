@@ -83,8 +83,8 @@ exports.createServicePayment = async (req, res) => {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      managed_payments: { enabled: false },
-      allowed_payment_method_types: ["card"],
+    //   managed_payments: { enabled: false },
+    //   allowed_payment_method_types: ["card"],
       customer: stripeCustomerId || undefined,
       customer_email: !stripeCustomerId && email ? email.trim() : undefined,
       line_items: [
