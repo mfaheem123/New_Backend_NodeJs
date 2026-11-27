@@ -1182,10 +1182,12 @@ async function updateBookingService(bookingId, payload) {
   // -----------------------------------------------------
 
   const returnBooking =
-    bookingPair.find(
-      (booking) =>
-        Number(booking.associated_booking) === Number(primaryBooking.id),
-    ) || null;
+  bookingPair.find(
+    (booking) =>
+      Number(booking.associated_booking) === Number(primaryBooking.id),
+  ) || null;
+
+const oldReturnDriverId = returnBooking ? returnBooking.driver_id : null;
 
   console.log("==========================================");
   console.log("EDIT BOOKING ID:", bookingId);
@@ -1375,8 +1377,7 @@ async function updateBookingService(bookingId, payload) {
   if (Number(payload.journey_type_id) === 3 && returnBooking) {
     console.log("🔄 RETURN WAY EDIT DETECTED");
 
-    //OLD RETURN DRIVER ID
-    const oldReturnDriverId = returnBooking.driver_id;
+   
 
     // ===================================================
     // RETURN BOOKING UPDATES

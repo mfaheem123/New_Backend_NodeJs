@@ -75,7 +75,7 @@ class AuditModel {
   // GET AUDITS BY DRIVER ID
   // ---------------------------------------------------------
   static async getAuditsByDriverId(driverId, type = "driver") {
-  const query = `
+    const query = `
       SELECT 
         a.id, 
         a.type, 

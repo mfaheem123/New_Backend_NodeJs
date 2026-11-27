@@ -1,9 +1,7 @@
 const Stripe = require("stripe");
 const CompanyConfig = require("../models/companyConfigurationModel");
 const BookingModel = require("../models/bookingModel");
-// Apne existing notification/socket helpers import karein:
 const { sendPaymentDoneNotification } = require("../services/notificationService");
-;
 
 const stripeClientCache = new Map();
 
@@ -19,22 +17,22 @@ function getStripeInstance(secretKey) {
 }
 
 // ---------------------------------------------------------
-// 1. CREATE STRIPE CHECKOUT SESSION (/service/pay)
+// 1. CREATE STRIPE CHECKOUT SESSION (Booking create hone se PEHLE)
 // ---------------------------------------------------------
 exports.createServicePayment = async (req, res) => {
   try {
     const {
-      booking_id,
       email,
       fare,
       mobile,
       company_id,
       subsidiary_id,
       currency = "gbp",
+      tax_code = "txcd_20030000",
     } = req.body;
 
     const companyId = Number(company_id);
-    const bookingId = booking_id ? Number(booking_id) : null;
+    const subsidiaryId = subsidiary_id ? Number(subsidiary_id) : null;
     const numericFare = Number(fare);
 
     if (!companyId || Number.isNaN(companyId)) {
@@ -51,11 +49,11 @@ exports.createServicePayment = async (req, res) => {
 
     const stripe = getStripeInstance(config.stripe_secret_key);
 
-    // Customer find ya create karein
     let stripeCustomerId = null;
-    if (email) {
+    if (email && String(email).trim()) {
+      const cleanEmail = String(email).trim();
       const existingCustomers = await stripe.customers.list({
-        email: email.trim(),
+        email: cleanEmail,
         limit: 1,
       });
 
@@ -63,65 +61,56 @@ exports.createServicePayment = async (req, res) => {
         stripeCustomerId = existingCustomers.data[0].id;
       } else {
         const customer = await stripe.customers.create({
-          email: email.trim(),
+          email: cleanEmail,
           phone: mobile ? String(mobile).trim() : undefined,
           metadata: {
             company_id: String(companyId),
-            subsidiary_id: subsidiary_id ? String(subsidiary_id) : "",
+            subsidiary_id: subsidiaryId ? String(subsidiaryId) : "",
           },
         });
         stripeCustomerId = customer.id;
       }
     }
 
-    // Agar booking_id aayi hai to pehle hi stripe_customer_id link kar dein
-    if (bookingId && stripeCustomerId) {
-      await BookingModel.attachStripeCustomer(bookingId, companyId, stripeCustomerId);
-    }
-
     const unitAmount = Math.round(numericFare * 100);
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-    //   managed_payments: { enabled: false },
-    //   allowed_payment_method_types: ["card"],
+      allowed_payment_method_types: ["card"],
       customer: stripeCustomerId || undefined,
-      customer_email: !stripeCustomerId && email ? email.trim() : undefined,
+      customer_email: !stripeCustomerId && email ? String(email).trim() : undefined,
       line_items: [
         {
           price_data: {
-            currency: currency.toLowerCase(),
+            currency: String(currency).toLowerCase(),
             product_data: {
-              name: bookingId ? `Booking #${bookingId} Fare` : "Service Booking Fare",
+              name: "Service Booking Fare",
+              tax_code: String(tax_code).trim(),
             },
             unit_amount: unitAmount,
           },
           quantity: 1,
         },
       ],
-      // PaymentIntent mein bhi metadata pass karein
       payment_intent_data: {
         metadata: {
           company_id: String(companyId),
-          subsidiary_id: subsidiary_id ? String(subsidiary_id) : "",
-          booking_id: bookingId ? String(bookingId) : "",
+          subsidiary_id: subsidiaryId ? String(subsidiaryId) : "",
         },
       },
       metadata: {
         company_id: String(companyId),
-        subsidiary_id: subsidiary_id ? String(subsidiary_id) : "",
-        booking_id: bookingId ? String(bookingId) : "",
-        mobile: mobile ? String(mobile) : "",
+        subsidiary_id: subsidiaryId ? String(subsidiaryId) : "",
+        mobile: mobile ? String(mobile).trim() : "",
       },
       success_url: "https://nexustechgroupz.co.uk/",
       cancel_url: "https://nexustechgroupz.co.uk/",
-    //   success_url: "https://www.mycabify.co.uk/payment-success?session_id={CHECKOUT_SESSION_ID}",
-    //   cancel_url: "https://www.mycabify.co.uk/payment-cancel",
     });
 
     return res.status(200).json({
       status: true,
       url: session.url,
+      checkout_session_id: session.id,
       stripe_customer_id: stripeCustomerId,
       payment_intent: session.payment_intent || null,
     });
@@ -156,7 +145,6 @@ exports.handleStripeWebhook = async (req, res) => {
 
     const stripe = getStripeInstance(config.stripe_secret_key);
 
-    // Signature verify (req.body yahan raw Buffer hona chahiye)
     let event;
     try {
       event = stripe.webhooks.constructEvent(req.body, signature, config.endpoint_key.trim());
@@ -168,24 +156,22 @@ exports.handleStripeWebhook = async (req, res) => {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
 
-      // Sirf tab proceed karein jab payment actually 'paid' ho
       if (session.payment_status === "paid") {
         const bookingId = Number(session.metadata?.booking_id);
-        const stripeCustomerId = typeof session.customer === "string" ? session.customer : session.customer?.id || null;
-        const stripePaymentId = typeof session.payment_intent === "string" ? session.payment_intent : session.id;
+        const stripeCustomerId =
+          typeof session.customer === "string" ? session.customer : session.customer?.id || null;
+        const stripePaymentId =
+          typeof session.payment_intent === "string" ? session.payment_intent : session.id;
 
         if (bookingId) {
-          // Apne booking_statuses table ka exact 'Paid/Confirmed' ID yahan pass karein (maslan 2)
-          const PAID_BOOKING_STATUS_ID = 2;
-
           const updatedBooking = await BookingModel.markBookingAsPaid({
-  bookingId,
-  companyId,
-  stripeCustomerId,
-  stripePaymentId,
-});
+            bookingId,
+            companyId,
+            stripeCustomerId,
+            stripePaymentId,
+            paidPaymentTypeId: 4, // "credit card paid"
+          });
 
-          // Post-commit side effects: DB update hone ke baad driver ko notify karein
           if (updatedBooking && updatedBooking.driver_id) {
             const payload = {
               type: "BOOKING_PAYMENT_RECEIVED",
@@ -193,15 +179,14 @@ exports.handleStripeWebhook = async (req, res) => {
               reference_number: updatedBooking.reference_number,
               driver_id: updatedBooking.driver_id,
               amount: updatedBooking.total_charges || updatedBooking.fares,
+              payment_type_id: updatedBooking.payment_type_id,
               stripe_customer_id: updatedBooking.stripe_customer_id,
               stripe_payment_id: updatedBooking.stripe_payment_id,
               message: `Payment received for Booking #${updatedBooking.reference_number || updatedBooking.id}`,
             };
 
             await Promise.allSettled([
-              // 1. Firebase FCM Push Notification to Driver
               sendPaymentDoneNotification(updatedBooking.driver_id, payload),
-             
             ]);
           }
         }
@@ -214,6 +199,3 @@ exports.handleStripeWebhook = async (req, res) => {
     return res.status(500).json({ status: false, message: "Internal webhook error" });
   }
 };
-
-
-

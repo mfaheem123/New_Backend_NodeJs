@@ -4043,7 +4043,7 @@ const attachStripeCustomer = async (bookingId, companyId, stripeCustomerId) => {
       updated_at = NOW()
     WHERE id = $2
       AND company_id = $3
-    RETURNING id, reference_number, driver_id, stripe_customer_id
+    RETURNING id, reference_number, driver_id, stripe_customer_id, payment_type_id
   `;
   const { rows } = await pool.query(query, [stripeCustomerId, bookingId, companyId]);
   return rows[0] || null;
@@ -4058,15 +4058,17 @@ const markBookingAsPaid = async ({
   companyId,
   stripeCustomerId,
   stripePaymentId,
+  paidPaymentTypeId = 4, // "credit card paid"
 }) => {
   const query = `
     UPDATE bookings
     SET
       stripe_customer_id = COALESCE($1, stripe_customer_id),
       stripe_payment_id  = $2,
+      payment_type_id    = $3,
       updated_at         = NOW()
-    WHERE id = $3
-      AND company_id = $4
+    WHERE id = $4
+      AND company_id = $5
       AND COALESCE(stripe_payment_id, '') <> $2
     RETURNING
       id,
@@ -4083,6 +4085,7 @@ const markBookingAsPaid = async ({
       fares,
       total_charges,
       booking_status_id,
+      payment_type_id,
       invoice_status,
       stripe_customer_id,
       stripe_payment_id
@@ -4091,6 +4094,7 @@ const markBookingAsPaid = async ({
   const { rows } = await pool.query(query, [
     stripeCustomerId || null,
     stripePaymentId,
+    paidPaymentTypeId,
     bookingId,
     companyId,
   ]);
