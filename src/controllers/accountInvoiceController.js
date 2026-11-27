@@ -45,6 +45,7 @@ exports.getAll = async (req, res) => {
       invoice_date,
       invoice_due_date,
       company_id,
+      invoice_type,
     } = req.query;
 
     const result = await InvoiceModel.getAll({
@@ -62,6 +63,7 @@ exports.getAll = async (req, res) => {
       invoice_date,
       invoice_due_date,
       company_id,
+      invoice_type,
     });
 
     res.json(result);

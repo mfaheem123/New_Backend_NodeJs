@@ -1,7 +1,7 @@
 const Model = require("../models/accountInvoiceBookingModel");
 
 // ---------------------------------------------------------
-// GET BOOKING FOR ACCOUNT INVOICE
+// GET BOOKINGS FOR ACCOUNT INVOICE WITH DYNAMIC SEARCH FILTERS
 // ---------------------------------------------------------
 exports.getBookingsForInvoice = async (req, res) => {
   try {
@@ -12,6 +12,20 @@ exports.getBookingsForInvoice = async (req, res) => {
       to_date,
       department,
       order_number,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
     } = req.query;
 
     if (!subsidiary_id || !account_id || !from_date || !to_date) {
@@ -29,6 +43,154 @@ exports.getBookingsForInvoice = async (req, res) => {
       to_date,
       department,
       order_number,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
+    });
+
+    // 🔢 totals calculate
+    const totals = bookings.reduce(
+      (acc, b) => {
+        const fare = Number(b.fares || 0);
+        const parking = Number(b.parking_charges || 0);
+        const waiting = Number(b.waiting_charges || 0);
+        const extraDrop = Number(b.extra_drop_charges || 0);
+        const meet = Number(b.meet_and_greet || 0);
+        const congestion = Number(b.congestion_charges || 0);
+
+        acc.fare_total += fare;
+        acc.parking_charges_total += parking;
+        acc.waiting_charges_total += waiting;
+        acc.extra_drop_charges_total += extraDrop;
+        acc.meet_and_greet_total += meet;
+        acc.congestion_charges_total += congestion;
+
+        acc.total += fare + parking + waiting + extraDrop + meet + congestion;
+
+        return acc;
+      },
+      {
+        fare_total: 0,
+        parking_charges_total: 0,
+        waiting_charges_total: 0,
+        extra_drop_charges_total: 0,
+        meet_and_greet_total: 0,
+        congestion_charges_total: 0,
+        total: 0,
+      },
+    );
+
+    // Final response
+    res.status(200).json({
+      status: true,
+      count: bookings.length,
+      bookings,
+      total: [
+        {
+          fare_total: totals.fare_total.toFixed(2),
+          parking_charges_total: totals.parking_charges_total.toFixed(2),
+          waiting_charges_total: totals.waiting_charges_total.toFixed(2),
+          extra_drop_charges_total: totals.extra_drop_charges_total.toFixed(2),
+          meet_and_greet_total: totals.meet_and_greet_total.toFixed(2),
+          congestion_charges_total: totals.congestion_charges_total.toFixed(2),
+          total: totals.total.toFixed(2),
+          grand_total: totals.total.toFixed(2),
+        },
+      ],
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      status: false,
+      message: err.message,
+    });
+  }
+};
+
+// ---------------------------------------------------------
+// GET BOOKINGS FOR ACCOUNT PRE INVOICE WITH DYNAMIC SEARCH FILTERS
+// ---------------------------------------------------------
+exports.getPreBookingsForInvoice = async (req, res) => {
+  try {
+    const {
+      subsidiary_id,
+      account_id,
+      from_date,
+      to_date,
+      department,
+      order_number,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
+    } = req.query;
+
+    if (!subsidiary_id || !account_id || !from_date || !to_date) {
+      return res.status(400).json({
+        status: false,
+        message: "subsidiary_id, account_id, from_date, to_date are required",
+      });
+    }
+
+    // Fix: Yahan currentDate ko define kiya gaya hai (YYYY-MM-DD format mein local time ke mutabiq)
+    const today = new Date();
+    const currentDate =
+      today.getFullYear() +
+      "-" +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(today.getDate()).padStart(2, "0");
+
+    if (from_date <= currentDate) {
+      return res.status(400).json({
+        status: false,
+        message: "from_date must be greater than current date",
+      });
+    }
+
+    // 📦 Get bookings from model
+    const bookings = await Model.getPreBookingForAccountPreInvoice({
+      subsidiary_id,
+      account_id,
+      from_date,
+      to_date,
+      department,
+      order_number,
+      ref_number,
+      datetime,
+      pickup,
+      dropoff,
+      customer,
+      vehicle,
+      journey_type,
+      fare,
+      parking_charges,
+      waiting_charges,
+      extra_drop_charges,
+      meet_and_greet,
+      congestion_charges,
+      total_charges,
     });
 
     // 🔢 totals calculate

@@ -1,6 +1,12 @@
 const pool = require("../db");
-const { generateInvoiceNumber } = require("./documentNumberHelper");
+const {
+  generateInvoiceNumber,
+  generatepreInvoiceNumber,
+} = require("./documentNumberHelper");
 
+// ---------------------------------------------------------
+// CREATE ACCOUNT INVOICE
+// ---------------------------------------------------------
 exports.create = async (data) => {
   try {
     let {
@@ -35,9 +41,6 @@ exports.create = async (data) => {
     }
 
     await pool.query("BEGIN");
-
-    // 🔐 Generate invoice number
-    await generateInvoiceNumber(subsidiary_id);
 
     // 📄 Insert invoice
     const invoiceRes = await pool.query(
@@ -99,6 +102,13 @@ exports.create = async (data) => {
         );
       }
     }
+    // 🔐 Generate invoice number
+    if (invoice_type === "pre" || invoice_type === "PRE") {
+      invoice_number = await generatepreInvoiceNumber(company_id);
+    }
+    if (invoice_type === "post" || invoice_type === "POST") {
+      invoice_number = await generateInvoiceNumber(company_id);
+    }
 
     await pool.query("COMMIT");
 
@@ -130,7 +140,9 @@ exports.create = async (data) => {
   }
 };
 
-// ACCOUNT INVOICE MODEL
+// ---------------------------------------------------------
+// GET ALL ACCOUNT INVOICES
+// ---------------------------------------------------------
 exports.getAll = async ({
   page = 1,
   limit = 100,
@@ -146,6 +158,7 @@ exports.getAll = async ({
   invoice_date,
   invoice_due_date,
   company_id,
+  invoice_type,
 }) => {
   try {
     const conditions = [];
@@ -216,6 +229,12 @@ exports.getAll = async ({
     if (status && status.trim() !== "" && status.toLowerCase() !== "all") {
       conditions.push(`LOWER(ai.status) = LOWER($${idx++})`);
       values.push(status.trim());
+    }
+
+    // 📌 Invoice Type Filter
+    if (invoice_type && invoice_type.trim() !== "") {
+      conditions.push(`LOWER(ai.invoice_type) = LOWER($${idx++})`);
+      values.push(invoice_type.trim());
     }
 
     const whereClause =
@@ -291,6 +310,9 @@ exports.getAll = async ({
   }
 };
 
+// ---------------------------------------------------------
+// GET ACCOUNT INVOICES BY ID
+// ---------------------------------------------------------
 exports.getById = async (id) => {
   try {
     const query = `
@@ -439,6 +461,9 @@ exports.getById = async (id) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE ACCOUNT INVOICE BY ID
+// ---------------------------------------------------------
 exports.update = async (id, data) => {
   try {
     await pool.query("BEGIN");
@@ -570,6 +595,9 @@ exports.update = async (id, data) => {
   }
 };
 
+// ---------------------------------------------------------
+// DELETE ACCOUNT INVOICE BY ID
+// ---------------------------------------------------------
 exports.delete = async (id) => {
   try {
     await pool.query("BEGIN");

@@ -1,4 +1,8 @@
 const pool = require("../db");
+const {
+  generateCustomerInvoiceNumber,
+  generateCustomerPreInvoiceNumber,
+} = require("./documentNumberHelper");
 
 const ENRICHED_SELECT_GETBYID = `
 SELECT
@@ -126,6 +130,18 @@ exports.createCustomerInvoice = async (payload) => {
   `,
       [invoiceId],
     );
+
+    // 🔐 Generate invoice number
+    if (payload.invoice_type === "pre" || payload.invoice_type === "PRE") {
+      payload.invoice_number = await generateCustomerPreInvoiceNumber(
+        payload.company_id,
+      );
+    }
+    if (payload.invoice_type === "post" || payload.invoice_type === "POST") {
+      payload.invoice_number = await generateCustomerInvoiceNumber(
+        payload.company_id,
+      );
+    }
     await pool.query("COMMIT");
 
     return {

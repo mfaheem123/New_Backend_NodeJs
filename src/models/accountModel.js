@@ -528,8 +528,9 @@ exports.deleteAccountWithRelations = async (id) => {
 exports.getAccountsBySubsidiary = async (subsidiary_id, company_id) => {
   const query = `
     SELECT
-      a.id,a.subsidiary_id,a.account_type,a.name,a.email,a.mobile,a.payment_types,a.information,a.background_color,a.foreground_color,a.has_escort,
+      a.*,
       json_agg(DISTINCT jsonb_build_object('id', d.id, 'name', d.name)) AS departments,
+      json_agg(DISTINCT jsonb_build_object('id', o.id, 'order_number', o.order_number)) AS order_numbers,
       jsonb_build_object(
         'id', s.id,
         'name', s.name,
@@ -538,6 +539,7 @@ exports.getAccountsBySubsidiary = async (subsidiary_id, company_id) => {
       ) AS subsidiary
     FROM accounts a
     LEFT JOIN departments d ON a.id = d.account_id
+    LEFT JOIN order_numbers o ON a.id = o.account_id
     LEFT JOIN subsidiaries s ON a.subsidiary_id = s.id
     WHERE a.subsidiary_id = $1 AND a.company_id = $2
     GROUP BY a.id, s.id

@@ -209,7 +209,7 @@ exports.getBulkPreview = async (req, res) => {
       const cashJobsTotal = Number(row.cash_jobs_total);
       const accountJobsTotal = Number(row.account_jobs_total);
       const parkingCongestionTotal = Number(row.parking_congestion_total);
-      
+
       const commissionRate = Number(row.driver_commission); // e.g., 20%
 
       // Total Commission: Sum of all rows' CommissionTotal ((driverCommission / 100) * Without Commission)
@@ -226,7 +226,11 @@ exports.getBulkPreview = async (req, res) => {
       const jobsTotal = Number((cashJobsTotal + accountJobsTotal).toFixed(2));
 
       // Owed: Total Commission - Account Jobs Total - Parking/Congestion Total
-      const owed = Number((commissionTotal - accountJobsTotal - parkingCongestionTotal).toFixed(2));
+      const owed = Number(
+        (commissionTotal - accountJobsTotal - parkingCongestionTotal).toFixed(
+          2,
+        ),
+      );
 
       // Current Balance: Old Balance + Owed
       const oldBalance = Number(row.old_balance);

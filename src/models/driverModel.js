@@ -1223,8 +1223,6 @@ const Driver = {
         UPDATE drivers
         SET
           session_status = 'logged_in',
-          driver_status = 'Available',
-          booking_status = 'Available',
           last_login_at = NOW(),
           latitude = $1,
           longitude = $2,
@@ -1681,153 +1679,99 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   },
 
   // ---------------------------------------------------------
-  // GET LOGGED IN DRIVERS BY COMPANY ID
+  // GET LOGGED IN DRIVERS BY COMPANY ID (+ OPTIONAL SUBSIDIARY ID)
   // ---------------------------------------------------------
-  async getLoginDrivers(company_id) {
+  async getLoginDrivers(company_id, subsidiary_id = null) {
+    const params = [company_id];
+    let subsidiaryFilter = "";
+
+    if (subsidiary_id && subsidiary_id !== "all" && subsidiary_id !== "null") {
+      params.push(Number(subsidiary_id));
+      subsidiaryFilter = ` AND d.subsidiary_id = $${params.length}`;
+    }
+
     const query = `
-    SELECT 
-      d.id,
-      d.name,
-      d.username,
-      d.zone,
-      d.latitude,
-      d.longitude,
-      d.booking_status,
-      d.session_status,
-      d.driver_status,
-      d.last_login_at,
-      d.has_pda,
-      
-      -- Vehicle Type (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN vt_cv.name
-        ELSE vt_v.name
-      END AS vehicle_type,
+      SELECT 
+        d.id,
+        d.name,
+        d.username,
+        d.zone,
+        d.latitude,
+        d.longitude,
+        d.booking_status,
+        d.session_status,
+        d.driver_status,
+        d.last_login_at,
+        d.has_pda,
+        d.subsidiary_id,
+        
+        CASE WHEN d.use_company_vehicle = true THEN vt_cv.name ELSE vt_v.name END AS vehicle_type,
+        CASE WHEN d.use_company_vehicle = true THEN cv.vehicle_number ELSE v.vehicle_number END AS vehicle_no,
+        CASE WHEN d.use_company_vehicle = true THEN cv.make ELSE v.make END AS make,
+        CASE WHEN d.use_company_vehicle = true THEN cv.model ELSE v.model END AS model,
+        CASE WHEN d.use_company_vehicle = true THEN cv.color ELSE v.color END AS color
+      FROM drivers d
+      LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
+      LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
+      LEFT JOIN vehicles v ON v.id = d.vehicle_id
+      LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
+      WHERE 
+        d.session_status = 'logged_in'
+        AND d.driver_status IN ('Available', 'SinBin', 'On Break')
+        AND d.company_id = $1
+        ${subsidiaryFilter}
+    `;
 
-      -- Vehicle Number (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
-        ELSE v.vehicle_number
-      END AS vehicle_no,
-
-      -- Vehicle Make (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.make
-        ELSE v.make
-      END AS make,
-
-      -- Vehicle Model (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.model
-        ELSE v.model
-      END AS model,
-
-      -- Vehicle Color (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.color
-        ELSE v.color
-      END AS color
-
-    FROM drivers d
-
-    -- Company vehicle joins
-    LEFT JOIN company_vehicles cv 
-      ON cv.id = d.company_vehicle_id
-
-    LEFT JOIN vehicle_types vt_cv 
-      ON vt_cv.id = cv.vehicle_type_id
-
-    -- Personal vehicle joins
-    LEFT JOIN vehicles v 
-      ON v.id = d.vehicle_id
-
-    LEFT JOIN vehicle_types vt_v 
-      ON vt_v.id = v.vehicle_type_id
-
-    WHERE 
-      d.session_status = 'logged_in'
-      AND d.driver_status IN ('Available', 'SinBin', 'On Break')
-      AND d.booking_status = 'Available'
-      AND d.company_id = $1
-  `;
-
-    const result = await db.query(query, [company_id]);
+    const result = await db.query(query, params);
     return result.rows;
   },
 
   // ---------------------------------------------------------
-  // GET BUSY LOGGED IN DRIVERS BY COMPANY ID
+  // GET BUSY LOGGED IN DRIVERS BY COMPANY ID (+ OPTIONAL SUBSIDIARY ID)
   // ---------------------------------------------------------
-  async getBusyDrivers(company_id) {
+  async getBusyDrivers(company_id, subsidiary_id = null) {
+    const params = [company_id];
+    let subsidiaryFilter = "";
+
+    if (subsidiary_id && subsidiary_id !== "all" && subsidiary_id !== "null") {
+      params.push(Number(subsidiary_id));
+      subsidiaryFilter = ` AND d.subsidiary_id = $${params.length}`;
+    }
+
     const query = `
-    SELECT 
-      d.id,
-      d.name,
-      d.username,
-      d.zone,
-      d.latitude,
-      d.longitude,
-      d.booking_status,
-      d.session_status,
-      d.driver_status,
-      d.last_login_at,
-      d.has_pda,
-      
-      -- Vehicle Type (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN vt_cv.name
-        ELSE vt_v.name
-      END AS vehicle_type,
+      SELECT 
+        d.id,
+        d.name,
+        d.username,
+        d.zone,
+        d.latitude,
+        d.longitude,
+        d.booking_status,
+        d.session_status,
+        d.driver_status,
+        d.last_login_at,
+        d.has_pda,
+        d.subsidiary_id,
+        
+        CASE WHEN d.use_company_vehicle = true THEN vt_cv.name ELSE vt_v.name END AS vehicle_type,
+        CASE WHEN d.use_company_vehicle = true THEN cv.vehicle_number ELSE v.vehicle_number END AS vehicle_no,
+        CASE WHEN d.use_company_vehicle = true THEN cv.make ELSE v.make END AS make,
+        CASE WHEN d.use_company_vehicle = true THEN cv.model ELSE v.model END AS model,
+        CASE WHEN d.use_company_vehicle = true THEN cv.color ELSE v.color END AS color
+      FROM drivers d
+      LEFT JOIN company_vehicles cv ON cv.id = d.company_vehicle_id
+      LEFT JOIN vehicle_types vt_cv ON vt_cv.id = cv.vehicle_type_id
+      LEFT JOIN vehicles v ON v.id = d.vehicle_id
+      LEFT JOIN vehicle_types vt_v ON vt_v.id = v.vehicle_type_id
+      WHERE 
+        d.session_status = 'logged_in'
+        AND d.driver_status = 'Unavailable'
+        AND d.booking_status IN ('Accepted', 'On Route', 'Arrived', 'POB', 'STC')
+        AND d.company_id = $1
+        ${subsidiaryFilter}
+    `;
 
-      -- Vehicle Number (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.vehicle_number
-        ELSE v.vehicle_number
-      END AS vehicle_no,
-
-      -- Vehicle Make (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.make
-        ELSE v.make
-      END AS make,
-
-      -- Vehicle Model (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.model
-        ELSE v.model
-      END AS model,
-
-      -- Vehicle Color (Dynamic)
-      CASE 
-        WHEN d.use_company_vehicle = true THEN cv.color
-        ELSE v.color
-      END AS color
-
-    FROM drivers d
-
-    -- Company vehicle joins
-    LEFT JOIN company_vehicles cv 
-      ON cv.id = d.company_vehicle_id
-
-    LEFT JOIN vehicle_types vt_cv 
-      ON vt_cv.id = cv.vehicle_type_id
-
-    -- Personal vehicle joins
-    LEFT JOIN vehicles v 
-      ON v.id = d.vehicle_id
-
-    LEFT JOIN vehicle_types vt_v 
-      ON vt_v.id = v.vehicle_type_id
-
-    WHERE 
-      d.session_status = 'logged_in'
-      AND d.driver_status = 'Unavailable'
-      AND d.booking_status IS DISTINCT FROM 'Available'
-      AND d.company_id = $1
-
-  `;
-
-    const result = await db.query(query, [company_id]);
+    const result = await db.query(query, params);
     return result.rows;
   },
 
@@ -2071,6 +2015,19 @@ LIMIT $${params.length - 1} OFFSET $${params.length};
   `;
     await db.query(query, [bookingId, driverId]);
     return true;
+  },
+
+  // ---------------------------------------------------------
+  // UPDATE DRIVER BALANCE
+  // ---------------------------------------------------------
+  async updateDriverBalance(driverId, balance) {
+    const query = `
+        UPDATE drivers
+        SET
+          balance = $1
+        WHERE id = $2
+      `;
+    return db.query(query, [balance, driverId]);
   },
 };
 

@@ -303,7 +303,6 @@ const updateBooking = async (id, updates) => {
 // LEFT JOIN employees e
 //   ON b.employee_id = e.id
 
-
 // -- PICKUP LOCATION
 // -- Select only the most specific matching location
 // LEFT JOIN LATERAL (
@@ -315,7 +314,6 @@ const updateBooking = async (id, updates) => {
 //   LIMIT 1
 // ) lp ON true
 
-
 // -- DROPOFF LOCATION
 // -- Select only the most specific matching location
 // LEFT JOIN LATERAL (
@@ -326,7 +324,6 @@ const updateBooking = async (id, updates) => {
 //   ORDER BY LENGTH(l.name) DESC, l.id ASC
 //   LIMIT 1
 // ) ld ON true
-
 
 // LEFT JOIN location_types ltp
 //   ON lp.location_type_id = ltp.id
@@ -988,13 +985,28 @@ const updateBookingStatus = async (id, statusId) => {
 // ---------------------------------------------------------
 // UPDATE BOOKING ON ROUTE STATUS
 // ---------------------------------------------------------
-const updateBookingonRoute = async (id, on_route, completed, arrived) => {
+const updateBookingonRoute = async (
+  id,
+  on_route,
+  completed,
+  arrived,
+  passenger_on_board,
+) => {
   const query = `
     UPDATE bookings
-    SET on_route = $1, completed = $2, arrived = $3
-    WHERE id = $4
+    SET on_route = $1,
+        completed = $2, 
+        arrived = $3, 
+        passenger_on_board = $4
+    WHERE id = $5
   `;
-  return pool.query(query, [on_route, completed, arrived, id]);
+  return pool.query(query, [
+    on_route,
+    completed,
+    arrived,
+    passenger_on_board,
+    id,
+  ]);
 };
 
 // ---------------------------------------------------------
@@ -1165,13 +1177,41 @@ const getBookingByDriverIdAndStatus = async (driver_id, booking_status_id) => {
 // ---------------------------------------------------------
 // CHECK ACTIVE BOOKING TODAY
 // ---------------------------------------------------------
+// const hasActiveBookingToday = async (driverId) => {
+//   const query = `
+//     SELECT id
+//     FROM bookings
+//     WHERE driver_id = $1
+//       AND booking_status_id IN (3,6,9,10,13,14,15)
+//       AND TO_DATE(pickup_date, 'YYYY-FMMM-FMDD') = CURRENT_DATE
+//     LIMIT 1;
+//   `;
+
+//   const result = await pool.query(query, [driverId]);
+
+//   if (result.rows.length > 0) {
+//     return {
+//       has_active: true,
+//       booking_id: result.rows[0].id,
+//     };
+//   }
+
+//   return {
+//     has_active: false,
+//     booking_id: null,
+//   };
+// };
+
+// ---------------------------------------------------------
+// CHECK ACTIVE BOOKING (TODAY & YESTERDAY FOR MIDNIGHT RIDES)
+// ---------------------------------------------------------
 const hasActiveBookingToday = async (driverId) => {
   const query = `
     SELECT id
     FROM bookings
     WHERE driver_id = $1
-      AND booking_status_id IN (2,3,6,10,14,15)
-      AND TO_DATE(pickup_date, 'YYYY-FMMM-FMDD') = CURRENT_DATE
+      AND booking_status_id IN (3, 6, 9, 10, 13, 14, 15)
+      AND TO_DATE(pickup_date, 'YYYY-FMMM-FMDD') BETWEEN (CURRENT_DATE - INTERVAL '1 day')::date AND CURRENT_DATE
     LIMIT 1;
   `;
 
@@ -1371,7 +1411,7 @@ const checkDriverFobBooking = async (driver_id) => {
   const values = [driver_id];
 
   const res = await pool.query(sql, values);
-  return res.rows[0]; // 👈 only one booking
+  return res.rows[0] || null; // 👈 only one booking
 };
 
 // ---------------------------------------------------------
@@ -2568,30 +2608,124 @@ const getDriverTodayEarning = async (driver_id) => {
 // ---------------------------------------------------------
 // GET BOOKINGS FOR CUSTOMER INVOICE
 // ---------------------------------------------------------
-const getBookingsForCustomerInvoice = async (
-  customer_id,
-  from_date,
-  to_date,
-  payment_type_ids,
-) => {
-  const sql = `
-    ${ENRICHED_SELECT}
-
-    WHERE b.customer_id = $1
-    AND b.pickup_date::date BETWEEN $2 AND $3
-    AND b.payment_type_id = ANY($4::int[])
-    AND b.booking_status_id = 11
-
-    ORDER BY b.pickup_date ASC
-  `;
-
-  const { rows } = await pool.query(sql, [
+const getBookingsForCustomerInvoice = async (filters) => {
+  const {
     customer_id,
     from_date,
     to_date,
     payment_type_ids,
-  ]);
+    ref_number,
+    datetime,
+    pickup,
+    dropoff,
+    customer,
+    vehicle,
+    journey_type,
+    fare,
+    parking_charges,
+    waiting_charges,
+    extra_drop_charges,
+    meet_and_greet,
+    congestion_charges,
+    total_charges,
+  } = filters;
 
+  const conditions = [];
+  const values = [];
+  let idx = 1;
+
+  // 1. Mandatory / Base Filters (Dynamic Indexing ke sath)
+  conditions.push(`b.customer_id = $${idx++}`);
+  values.push(customer_id);
+
+  conditions.push(`b.pickup_date::date BETWEEN $${idx++} AND $${idx++}`);
+  values.push(from_date, to_date);
+
+  conditions.push(`b.payment_type_id = ANY($${idx++}::int[])`);
+  values.push(payment_type_ids);
+
+  conditions.push(`b.booking_status_id = 11`);
+
+  // 2. Search Filters
+  if (ref_number) {
+    conditions.push(`b.reference_number ILIKE $${idx++}`);
+    values.push(`%${ref_number}%`);
+  }
+
+  if (pickup) {
+    conditions.push(`b.pickup ILIKE $${idx++}`);
+    values.push(`%${pickup}%`);
+  }
+
+  if (dropoff) {
+    conditions.push(`b.dropoff ILIKE $${idx++}`);
+    values.push(`%${dropoff}%`);
+  }
+
+  if (customer) {
+    conditions.push(`b.name ILIKE $${idx++}`);
+    values.push(`%${customer}%`);
+  }
+
+  if (vehicle) {
+    conditions.push(`vt.name ILIKE $${idx++}`);
+    values.push(`%${vehicle}%`);
+  }
+
+  if (journey_type) {
+    conditions.push(`jt.journey_type ILIKE $${idx++}`);
+    values.push(`%${journey_type}%`);
+  }
+
+  if (datetime) {
+    conditions.push(
+      `(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`,
+    );
+    values.push(`%${datetime}%`);
+  }
+
+  if (fare) {
+    conditions.push(`b.fares::text ILIKE $${idx++}`);
+    values.push(`%${fare}%`);
+  }
+
+  if (parking_charges) {
+    conditions.push(`b.parking_charges::text ILIKE $${idx++}`);
+    values.push(`%${parking_charges}%`);
+  }
+
+  if (waiting_charges) {
+    conditions.push(`b.waiting_charges::text ILIKE $${idx++}`);
+    values.push(`%${waiting_charges}%`);
+  }
+
+  if (extra_drop_charges) {
+    conditions.push(`b.extra_drop_charges::text ILIKE $${idx++}`);
+    values.push(`%${extra_drop_charges}%`);
+  }
+
+  if (meet_and_greet) {
+    conditions.push(`b.meet_and_greet::text ILIKE $${idx++}`);
+    values.push(`%${meet_and_greet}%`);
+  }
+
+  if (congestion_charges) {
+    conditions.push(`b.congestion_charges::text ILIKE $${idx++}`);
+    values.push(`%${congestion_charges}%`);
+  }
+
+  if (total_charges) {
+    conditions.push(`b.total_charges::text ILIKE $${idx++}`);
+    values.push(`%${total_charges}%`);
+  }
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    WHERE ${conditions.join(" AND ")}
+    ORDER BY b.pickup_date ASC, b.pickup_time ASC
+  `;
+
+  const { rows } = await pool.query(sql, values);
   return rows;
 };
 
@@ -2812,7 +2946,7 @@ const getDriverEarningsBookings = async ({
 };
 
 // ---------------------------------------------------------
-// RECOVER DASHBOARD BOOKING
+// NO PICKUP DASHBOARD BOOKING
 // ---------------------------------------------------------
 const noPickupDashboardBooking = async (id) => {
   const query = `
@@ -3429,10 +3563,6 @@ const getBookingDriverCustomerById = async (id) => {
 // ---------------------------------------------------------
 // GET CUSTOMER BOOKINGS BY CATEGORY & COUNTS
 // ---------------------------------------------------------
-
-/**
- * Fetch categorized customer bookings (Current, Past, Quoted) & Total Stats
- */
 const getCustomerBookingsAndStats = async (customerId) => {
   // 1️⃣ Get categorized bookings query
   // Note: Adjust status IDs according to your database scheme:
@@ -3449,9 +3579,9 @@ const getCustomerBookingsAndStats = async (customerId) => {
   return allBookings;
 };
 
-/**
- * Fetch booking counts summary for bottom stats cards
- */
+// ---------------------------------------------------------
+// GET CUSTOMER BOOKINGS STATS (TOTAL, CURRENT, COMPLETED, CANCELLED, QUOTED)
+// ---------------------------------------------------------
 const getCustomerBookingStats = async (customerId) => {
   const sql = `
     SELECT 
@@ -3501,7 +3631,9 @@ const getAllMultiBookings = async ({
   limit = 20,
   filters = {},
 }) => {
-  let whereClauses = ["b.multi_booking_id IS NOT NULL"];
+  let whereClauses = [
+    "b.multi_booking_id IS NOT NULL AND b.trash = false AND b.booking_type_id = 2",
+  ];
   let queryParams = [];
 
   if (filters.reference_number) {
@@ -3584,15 +3716,390 @@ const getCompanyIdByBookingId = async (bookingId) => {
 // ---------------------------------------------------------
 // FETCH ALL BOOKINGS BY SPECIFIC MULTI BOOKING ID MODEL
 // ---------------------------------------------------------
-const fetchBookingsByMultiBookingId = async (multiBookingId) => {
+// const fetchBookingsByMultiBookingId = async (multiBookingId) => {
+//   const sql = `
+//     ${ENRICHED_SELECT}
+//     WHERE b.multi_booking_id = $1
+//     ORDER BY b.pickup_date ASC, b.pickup_time ASC
+//   `;
+
+//   const { rows } = await pool.query(sql, [multiBookingId]);
+//   return rows;
+// };
+
+// ---------------------------------------------------------
+// FETCH ALL BOOKINGS BY SPECIFIC MULTI BOOKING ID WITH FILTERS MODEL
+// ---------------------------------------------------------
+const fetchBookingsByMultiBookingId = async (multiBookingId, filters = {}) => {
+  let queryParams = [multiBookingId];
+  let conditions = ["b.multi_booking_id = $1"];
+
+  // 1. Reference Number Filter (Partial match ke liye ILIKE use kar sakte hain)
+  if (filters.reference_number) {
+    queryParams.push(`%${filters.reference_number}%`);
+    conditions.push(`b.reference_number ILIKE $${queryParams.length}`);
+  }
+
+  // 2. Pickup Date Filter
+  if (filters.pickup_date) {
+    queryParams.push(filters.pickup_date);
+    conditions.push(`b.pickup_date = $${queryParams.length}`);
+  }
+
+  // 3. Journey Type Filter
+  if (filters.journey_type_id) {
+    queryParams.push(`%${filters.journey_type_id}%`);
+    conditions.push(`jt.journey_type ILIKE $${queryParams.length}`);
+  }
+
+  const whereClause = conditions.join(" AND ");
+
   const sql = `
     ${ENRICHED_SELECT}
-    WHERE b.multi_booking_id = $1
+    WHERE ${whereClause}
     ORDER BY b.pickup_date ASC, b.pickup_time ASC
   `;
 
-  const { rows } = await pool.query(sql, [multiBookingId]);
+  const { rows } = await pool.query(sql, queryParams);
   return rows;
+};
+
+// ---------------------------------------------------------
+// GET BOOKINGS FOR CUSTOMER PRE INVOICE
+// ---------------------------------------------------------
+const getBookingsForCustomerPreInvoice = async (filters) => {
+  const {
+    customer_id,
+    from_date,
+    to_date,
+    payment_type_ids,
+    ref_number,
+    datetime,
+    pickup,
+    dropoff,
+    customer,
+    vehicle,
+    journey_type,
+    fare,
+    parking_charges,
+    waiting_charges,
+    extra_drop_charges,
+    meet_and_greet,
+    congestion_charges,
+    total_charges,
+  } = filters;
+
+  const conditions = [];
+  const values = [];
+  let idx = 1;
+
+  // 1. Mandatory / Base Filters (Dynamic Indexing ke sath)
+  conditions.push(`b.customer_id = $${idx++}`);
+  values.push(customer_id);
+
+  conditions.push(`b.pickup_date::date BETWEEN $${idx++} AND $${idx++}`);
+  values.push(from_date, to_date);
+
+  conditions.push(`b.payment_type_id = ANY($${idx++}::int[])`);
+  values.push(payment_type_ids);
+
+  conditions.push(`b.booking_status_id = 1`);
+
+  // 2. Search Filters
+  if (ref_number) {
+    conditions.push(`b.reference_number ILIKE $${idx++}`);
+    values.push(`%${ref_number}%`);
+  }
+
+  if (pickup) {
+    conditions.push(`b.pickup ILIKE $${idx++}`);
+    values.push(`%${pickup}%`);
+  }
+
+  if (dropoff) {
+    conditions.push(`b.dropoff ILIKE $${idx++}`);
+    values.push(`%${dropoff}%`);
+  }
+
+  if (customer) {
+    conditions.push(`b.name ILIKE $${idx++}`);
+    values.push(`%${customer}%`);
+  }
+
+  if (vehicle) {
+    conditions.push(`vt.name ILIKE $${idx++}`);
+    values.push(`%${vehicle}%`);
+  }
+
+  if (journey_type) {
+    conditions.push(`jt.journey_type ILIKE $${idx++}`);
+    values.push(`%${journey_type}%`);
+  }
+
+  if (datetime) {
+    conditions.push(
+      `(b.pickup_date::text || ' ' || b.pickup_time) ILIKE $${idx++}`,
+    );
+    values.push(`%${datetime}%`);
+  }
+
+  if (fare) {
+    conditions.push(`b.fares::text ILIKE $${idx++}`);
+    values.push(`%${fare}%`);
+  }
+
+  if (parking_charges) {
+    conditions.push(`b.parking_charges::text ILIKE $${idx++}`);
+    values.push(`%${parking_charges}%`);
+  }
+
+  if (waiting_charges) {
+    conditions.push(`b.waiting_charges::text ILIKE $${idx++}`);
+    values.push(`%${waiting_charges}%`);
+  }
+
+  if (extra_drop_charges) {
+    conditions.push(`b.extra_drop_charges::text ILIKE $${idx++}`);
+    values.push(`%${extra_drop_charges}%`);
+  }
+
+  if (meet_and_greet) {
+    conditions.push(`b.meet_and_greet::text ILIKE $${idx++}`);
+    values.push(`%${meet_and_greet}%`);
+  }
+
+  if (congestion_charges) {
+    conditions.push(`b.congestion_charges::text ILIKE $${idx++}`);
+    values.push(`%${congestion_charges}%`);
+  }
+
+  if (total_charges) {
+    conditions.push(`b.total_charges::text ILIKE $${idx++}`);
+    values.push(`%${total_charges}%`);
+  }
+
+  const sql = `
+    ${ENRICHED_SELECT}
+    WHERE ${conditions.join(" AND ")}
+    ORDER BY b.pickup_date ASC, b.pickup_time ASC
+  `;
+
+  const { rows } = await pool.query(sql, values);
+  return rows;
+};
+
+// ---------------------------------------------------------
+// GET DRIVER PCO REPORT
+// ---------------------------------------------------------
+const getDriverPcoReport = async ({
+  from_date,
+  to_date,
+  subsidiary_id,
+  booking_status_ids,
+  company_id,
+}) => {
+  const conditions = [
+    "b.trash = false",
+    "b.driver_id IS NOT NULL",
+    "b.booking_status_id = ANY($1::int[])",
+  ];
+  const params = [booking_status_ids];
+  let idx = 2;
+
+  if (from_date) {
+    conditions.push(`b.pickup_date::date >= $${idx++}::date`);
+    params.push(from_date);
+  }
+
+  if (to_date) {
+    conditions.push(`b.pickup_date::date <= $${idx++}::date`);
+    params.push(to_date);
+  }
+
+  if (subsidiary_id) {
+    conditions.push(`b.subsidiary_id = $${idx++}`);
+    params.push(Number(subsidiary_id));
+  }
+  if (company_id) {
+    conditions.push(`b.company_id = $${idx++}`);
+    params.push(Number(company_id));
+  }
+
+  const sql = `
+    SELECT
+      d.id AS driver_id,
+      d.username,
+      d.phc_driver_number,
+      SPLIT_PART(TRIM(COALESCE(d.name, '')), ' ', 1) AS first_name,
+      CASE
+        WHEN POSITION(' ' IN TRIM(COALESCE(d.name, ''))) > 0
+          THEN SUBSTRING(TRIM(COALESCE(d.name, '')) FROM POSITION(' ' IN TRIM(COALESCE(d.name, ''))) + 1)
+        ELSE ''
+      END AS last_name,
+      COALESCE(d.name, '') AS driver_name,
+      COALESCE(v.vehicle_number, d.phc_vehicle_number, '') AS vehicle_number,
+      COALESCE(vt.name, '') AS vehicle_type,
+      COUNT(b.id)::text AS count
+    FROM bookings b
+    INNER JOIN drivers d
+      ON b.driver_id = d.id
+    LEFT JOIN vehicles v
+      ON COALESCE(b.vehicle_id, d.vehicle_id) = v.id
+    LEFT JOIN vehicle_types vt
+      ON COALESCE(b.vehicle_type_id, v.vehicle_type_id) = vt.id
+    WHERE ${conditions.join(" AND ")}
+    GROUP BY
+      d.id,
+      d.username,
+      d.phc_driver_number,
+      d.name,
+      v.vehicle_number,
+      d.phc_vehicle_number,
+      vt.name
+    ORDER BY d.id ASC
+  `;
+
+  const { rows } = await pool.query(sql, params);
+  return rows;
+};
+
+// ---------------------------------------------------------
+// GET VEHICLE PCO REPORT
+// ---------------------------------------------------------
+const getVehiclePcoReport = async ({
+  from_date,
+  to_date,
+  subsidiary_id,
+  booking_status_ids,
+  company_id,
+}) => {
+  const conditions = [
+    "b.trash = false",
+    "b.booking_status_id = ANY($1::int[])",
+    "v.id IS NOT NULL",
+  ];
+  const params = [booking_status_ids];
+  let idx = 2;
+
+  if (from_date) {
+    conditions.push(`b.pickup_date::date >= $${idx++}::date`);
+    params.push(from_date);
+  }
+
+  if (to_date) {
+    conditions.push(`b.pickup_date::date <= $${idx++}::date`);
+    params.push(to_date);
+  }
+
+  if (subsidiary_id) {
+    conditions.push(`b.subsidiary_id = $${idx++}`);
+    params.push(Number(subsidiary_id));
+  }
+
+  if (company_id) {
+    conditions.push(`b.company_id = $${idx++}`);
+    params.push(Number(company_id));
+  }
+
+  const sql = `
+    SELECT
+      v.id AS vehicle_id,
+      COALESCE(v.vehicle_number, '') AS vehicle_number,
+      COALESCE(v.make, '') AS vehicle_make,
+      COALESCE(vt.name, '') AS vehicle_type,
+      COALESCE(v.phc_vehicle_number, d.phc_vehicle_number, '') AS phc_vehicle_number,
+      COUNT(b.id)::text AS count
+    FROM bookings b
+    LEFT JOIN drivers d
+      ON b.driver_id = d.id
+    INNER JOIN vehicles v
+      ON COALESCE(b.vehicle_id, d.vehicle_id) = v.id
+    LEFT JOIN vehicle_types vt
+      ON COALESCE(v.vehicle_type_id, b.vehicle_type_id) = vt.id
+    WHERE ${conditions.join(" AND ")}
+    GROUP BY
+      v.id,
+      v.vehicle_number,
+      v.make,
+      vt.name,
+      v.phc_vehicle_number,
+      d.phc_vehicle_number
+    ORDER BY v.id ASC
+  `;
+
+  const { rows } = await pool.query(sql, params);
+  return rows;
+};
+
+// Checkout start hote hi customer ID attach karne ke liye (optional pre-link)
+// ---------------------------------------------------------
+// ATTACH STRIPE CUSTOMER
+// ---------------------------------------------------------
+const attachStripeCustomer = async (bookingId, companyId, stripeCustomerId) => {
+  const query = `
+    UPDATE bookings
+    SET
+      stripe_customer_id = COALESCE($1, stripe_customer_id),
+      updated_at = NOW()
+    WHERE id = $2
+      AND company_id = $3
+    RETURNING id, reference_number, driver_id, stripe_customer_id, payment_type_id
+  `;
+  const { rows } = await pool.query(query, [stripeCustomerId, bookingId, companyId]);
+  return rows[0] || null;
+};
+
+// Webhook par payment confirm hone ke baad invoice_status + Stripe IDs update karne ke liye
+// ---------------------------------------------------------
+// MARK STRIPE BOOKING AS PAID
+// ---------------------------------------------------------
+const markBookingAsPaid = async ({
+  bookingId,
+  companyId,
+  stripeCustomerId,
+  stripePaymentId,
+  paidPaymentTypeId = 4, // "credit card paid"
+}) => {
+  const query = `
+    UPDATE bookings
+    SET
+      stripe_customer_id = COALESCE($1, stripe_customer_id),
+      stripe_payment_id  = $2,
+      payment_type_id    = $3,
+      updated_at         = NOW()
+    WHERE id = $4
+      AND company_id = $5
+      AND COALESCE(stripe_payment_id, '') <> $2
+    RETURNING
+      id,
+      reference_number,
+      company_id,
+      subsidiary_id,
+      driver_id,
+      customer_id,
+      name AS passenger_name,
+      pickup,
+      dropoff,
+      pickup_date,
+      pickup_time,
+      fares,
+      total_charges,
+      booking_status_id,
+      payment_type_id,
+      invoice_status,
+      stripe_customer_id,
+      stripe_payment_id
+  `;
+
+  const { rows } = await pool.query(query, [
+    stripeCustomerId || null,
+    stripePaymentId,
+    paidPaymentTypeId,
+    bookingId,
+    companyId,
+  ]);
+
+  return rows[0] || null;
 };
 
 module.exports = {
@@ -3664,4 +4171,9 @@ module.exports = {
   getAllMultiBookings,
   getCompanyIdByBookingId,
   fetchBookingsByMultiBookingId,
+  getBookingsForCustomerPreInvoice,
+  getDriverPcoReport,
+  getVehiclePcoReport,
+  attachStripeCustomer,
+  markBookingAsPaid
 };

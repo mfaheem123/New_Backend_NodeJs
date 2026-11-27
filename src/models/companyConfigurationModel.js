@@ -1,5 +1,8 @@
 const pool = require("../db");
 
+// ---------------------------------------------------------
+// CREATE COMPANY CONFIGURATION
+// ---------------------------------------------------------
 exports.create = async (data) => {
   const checkQuery = `
     SELECT id
@@ -30,6 +33,9 @@ exports.create = async (data) => {
   return rows[0];
 };
 
+// ---------------------------------------------------------
+// GET ALL COMPANY CONFIGURATIONS BY COMPANY ID
+// ---------------------------------------------------------
 exports.getAll = async (company_id) => {
   const query = `
     SELECT cc.*,
@@ -46,6 +52,9 @@ exports.getAll = async (company_id) => {
   return rows;
 };
 
+// ---------------------------------------------------------
+// GET COMPANY CONFIGURATION BY SUBSIDIARY ID
+// ---------------------------------------------------------
 exports.getById = async (subsidiaryId) => {
   const query = `
       SELECT
@@ -62,6 +71,9 @@ exports.getById = async (subsidiaryId) => {
   return rows[0];
 };
 
+// ---------------------------------------------------------
+// UPDATE COMPANY CONFIGURATION BY SUBSIDIARY ID
+// ---------------------------------------------------------
 exports.update = async (subsidiaryId, data) => {
   const exists = await pool.query(
     `SELECT id
@@ -104,6 +116,9 @@ exports.update = async (subsidiaryId, data) => {
   return rows[0];
 };
 
+// ---------------------------------------------------------
+// DELETE COMPANY CONFIGURATION BY SUBSIDIARY ID
+// ---------------------------------------------------------
 exports.delete = async (subsidiaryId) => {
   await pool.query(
     `DELETE FROM company_configurations
@@ -114,6 +129,9 @@ exports.delete = async (subsidiaryId) => {
   return true;
 };
 
+// ---------------------------------------------------------
+// CREATE OR UPDATE COMPANY CONFIGURATION
+// ---------------------------------------------------------
 exports.createOrUpdate = async (data) => {
   const { subsidiary_id } = data;
 
@@ -194,6 +212,9 @@ exports.createOrUpdate = async (data) => {
   };
 };
 
+// ---------------------------------------------------------
+// GET FIRST SUBSIDIARY BY COMPANY ID
+// ---------------------------------------------------------
 exports.getFirstSubsidiaryByCompanyId = async (companyId) => {
   const query = `
       SELECT id FROM subsidiaries 
@@ -204,3 +225,40 @@ exports.getFirstSubsidiaryByCompanyId = async (companyId) => {
   const { rows } = await pool.query(query, [companyId]);
   return rows[0]?.id || null;
 };
+
+// ---------------------------------------------------------
+// GET COMPANY CONFIGURATION BY COMPANY ID
+// ---------------------------------------------------------
+exports.getByCompanyId = async (companyId) => {
+  const query = `
+    SELECT * FROM company_configurations 
+    WHERE company_id = $1 
+    LIMIT 1;
+  `;
+  const { rows } = await pool.query(query, [companyId]);
+  return rows[0] || null;
+};
+
+ // ---------------------------------------------------------
+ // GET STRIPE CONFIGURATION BY COMPANY ID
+ // ---------------------------------------------------------
+ exports.getStripeConfigByCompanyId = async (companyId) => {
+   const query = `
+    SELECT
+      id,
+      company_id,
+      subsidiary_id,
+      stripe_public_key,
+      stripe_secret_key,
+      endpoint_key,
+      invoice_endpoint_key,
+      credit_card_charges
+    FROM company_configurations
+    WHERE company_id = $1
+    ORDER BY id ASC
+    LIMIT 1
+  `;
+   const { rows } = await pool.query(query, [companyId]);
+    return rows[0] || null;
+ };
+ 

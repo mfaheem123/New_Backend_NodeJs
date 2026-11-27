@@ -196,7 +196,7 @@ exports.getBulkPreview = async (req, res) => {
     const formattedData = reportData.map((row) => {
       const cashJobsTotal = Number(row.cash_jobs_total); // Cash Total (fare + wc + edc)
       const accountJobsTotal = Number(row.account_jobs_total); // Account Total (fare + wc + edc)
-      
+
       // Total: Cash Jobs Total + Account Jobs Total
       const jobsTotal = Number((cashJobsTotal + accountJobsTotal).toFixed(2));
 
@@ -206,7 +206,10 @@ exports.getBulkPreview = async (req, res) => {
       let rentTotal = 0;
       if (row.bookings && Array.isArray(row.bookings)) {
         row.bookings.forEach((item) => {
-          const itemWithoutComm = Number(item.fares || 0) + Number(item.waiting_charges || 0) + Number(item.extra_drop_charges || 0);
+          const itemWithoutComm =
+            Number(item.fares || 0) +
+            Number(item.waiting_charges || 0) +
+            Number(item.extra_drop_charges || 0);
           rentTotal += itemWithoutComm * (rentRate / 100);
         });
       }

@@ -6,6 +6,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const upload = multer();
+const paymentController = require("./controllers/paymentController");
 // const { globalRateLimiter } = require("./middlewares/rateLimiter");
 
 // Routes
@@ -69,6 +70,11 @@ const driverAttributeRoutes = require("./routes/driverAttributeRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const emailRoutes = require("./routes/emailRoutes");
 const matrixRoutes = require("./routes/matrixRoutes");
+const driverCommissionPayRoutes = require("./routes/driverCommissionPayRoutes");
+const auditRoutes = require("./routes/auditRoutes");
+const searchCustomerAccountDriverRoutes = require("./routes/searchCustomerAccountDriverRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+
 
 const app = express();
 
@@ -98,6 +104,13 @@ if (!fs.existsSync(uploadDir)) {
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 console.log("Serving uploads from:", path.join(__dirname, "..", "uploads"));
 
+// ✅ Stripe Webhook Route (MUST be before express.json() so req.body stays raw Buffer)
+app.post(
+  "/webhook/stripe/:companyId",
+  express.raw({ type: "application/json" }),
+  paymentController.handleStripeWebhook,
+);
+
 // ✅ Increase JSON and URL-encoded body size limits (Fixes "PayloadTooLargeError")
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -107,6 +120,7 @@ loadLocationTypes();
 
 // ✅ Allow form-data for all routes EXCEPT those that handle file uploads
 const skipFileUploadRoutes = [
+  "/webhook/stripe",
   "/api/vehicle-type",
   "/api/company-vehicles",
   "/api/escorts",
@@ -194,6 +208,11 @@ app.use("/api/driver-attributes", driverAttributeRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/emails", emailRoutes);
 app.use("/api/driver-zones", matrixRoutes);
+app.use("/api/driver-pay", driverCommissionPayRoutes);
+app.use("/api/audits", auditRoutes);
+app.use("/api/sms-email", searchCustomerAccountDriverRoutes);
+app.use("/api/service", paymentRoutes)
+
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {
@@ -205,7 +224,7 @@ function printRoutes(stack, prefix = "") {
       printRoutes(
         r.handle.stack,
         prefix +
-          r.regexp.source.replace("^\\", "").replace("\\/?(?=\\/|$)", ""),
+        r.regexp.source.replace("^\\", "").replace("\\/?(?=\\/|$)", ""),
       );
     }
   });

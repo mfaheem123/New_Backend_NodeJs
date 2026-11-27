@@ -1,4 +1,5 @@
 const Driver = require("../models/driverModel");
+const bookingModel = require("../models/bookingModel")
 const {
   notifyDriverLogin,
   notifyDriverLogout,
@@ -13,6 +14,8 @@ const notification = require("../services/notificationService");
 const DriverShiftHistory = require("../models/driverShiftHistoryModel");
 const { panicDriverClients } = require("../sockets/panicSocket");
 const { breakDriverClients } = require("../sockets/breakSocket");
+const { syncDriverState } = require("../services/driverStateService"); // Path apni directory ke mutabiq adjust karein
+const AuditModel = require("../models/auditModel");
 
 // const io = getIO();
 
@@ -30,6 +33,152 @@ function cleanEmptyToNull(obj) {
     return cleaned;
   }
   return obj;
+}
+
+// Helper: Compare Old & New Driver + Vehicle Data for Audit Logs
+function buildDriverAuditDiff(oldDriver, newDriver) {
+  const previous = [];
+  const next = [];
+
+  const driverTrackFields = [
+    "name",
+    "username",
+    "email",
+    "mobile",
+    "telephone",
+    "address",
+    "dob",
+    "driver_type",
+    "driver_commission",
+    "rent_limit",
+    "rent_paid",
+    "balance",
+    "has_pda",
+    "use_company_vehicle",
+    "company_vehicle_id",
+    "active",
+    "start_date",
+    "end_date",
+    "ni",
+    "subsidiary_id",
+    "image", // ✅ Driver profile image added
+    "licence_number",
+    "licence_expiry",
+    "licence_expiry_time",
+    "phc_driver_number",
+    "phc_driver_expiry",
+    "phc_driver_expiry_time",
+    "insurance_number",
+    "insurance_expiry",
+    "insurance_expiry_time",
+    "rental_agreement_number",
+    "rental_agreement_expiry",
+    "rental_agreement_expiry_time",
+    "road_tax_number",
+    "road_tax_expiry",
+    "road_tax_expiry_time",
+    "v5_registration_number",
+    "v5_registration_expiry",
+    "v5_registration_expiry_time",
+    "mot_number",
+    "mot_expiry",
+    "mot_expiry_time",
+    "mot2_number",
+    "mot2_expiry",
+    "mot2_expiry_time",
+    "phc_vehicle_number",
+    "phc_vehicle_expiry",
+    "phc_vehicle_expiry_time",
+  ];
+
+  const formatVal = (val) => {
+    if (val === null || val === undefined || String(val).trim() === "") {
+      return "-";
+    }
+    return String(val).trim();
+  };
+
+  for (const field of driverTrackFields) {
+    const oldStr = formatVal(oldDriver?.[field]);
+    const newStr = formatVal(newDriver?.[field]);
+
+    if (oldStr !== newStr) {
+      previous.push(`${field}: ${oldStr}`);
+      next.push(`${field}: ${newStr}`);
+    }
+  }
+
+  // Vehicle fields
+  const vehicleTrackFields = [
+    "vehicle_type_id",
+    "vehicle_number",
+    "make",
+    "model",
+    "color",
+    "owner",
+    "start_date",
+    "end_date",
+  ];
+
+  const oldVeh = oldDriver?.vehicle || {};
+  const newVeh = newDriver?.vehicle || {};
+
+  for (const field of vehicleTrackFields) {
+    const oldStr = formatVal(oldVeh[field]);
+    const newStr = formatVal(newVeh[field]);
+
+    if (oldStr !== newStr) {
+      previous.push(`${field}: ${oldStr}`);
+      next.push(`${field}: ${newStr}`);
+    }
+  }
+
+  // ✅ Log book number & document check
+  const oldLogBook = formatVal(oldVeh?.log_book?.log_book_number);
+  const newLogBook = formatVal(newVeh?.log_book?.log_book_number);
+  if (oldLogBook !== newLogBook) {
+    previous.push(`log_book_number: ${oldLogBook}`);
+    next.push(`log_book_number: ${newLogBook}`);
+  }
+
+  const oldLogBookDoc = formatVal(oldVeh?.log_book?.log_book_document);
+  const newLogBookDoc = formatVal(newVeh?.log_book?.log_book_document);
+  if (oldLogBookDoc !== newLogBookDoc) {
+    previous.push(`log_book_document: ${oldLogBookDoc}`);
+    next.push(`log_book_document: ${newLogBookDoc}`);
+  }
+
+  // ✅ Other document files inside vehicle object (MOT, PHC, Insurance, etc.)
+  const docKeys = [
+    ["mot", "mot_document"],
+    ["mot2", "mot2_document"],
+    ["insurance", "insurance_document"],
+    ["phc_vehicle", "phc_vehicle_document"],
+    ["road_tax", "road_tax_document"],
+    ["rental_agreement", "rental_agreement_document"],
+    ["v5_registration", "v5_registration_document"],
+    ["licence", "licence_document"],
+    ["phc_driver", "phc_driver_document"],
+  ];
+
+  for (const [section, docField] of docKeys) {
+    const oldDoc = formatVal(oldVeh?.[section]?.[docField]);
+    const newDoc = formatVal(newVeh?.[section]?.[docField]);
+    if (oldDoc !== newDoc) {
+      previous.push(`${docField}: ${oldDoc}`);
+      next.push(`${docField}: ${newDoc}`);
+    }
+  }
+
+  // Attributes JSON comparison
+  const oldAttr = JSON.stringify(oldDriver?.attributes || []);
+  const newAttr = JSON.stringify(newDriver?.attributes || []);
+  if (oldAttr !== newAttr) {
+    previous.push(`attributes: ${oldAttr}`);
+    next.push(`attributes: ${newAttr}`);
+  }
+
+  return { previous, next };
 }
 
 function normalizeDateFields(obj) {
@@ -272,6 +421,22 @@ exports.create = async (req, res) => {
     const result = await Driver.create(driverData);
 
     const fullDriver = await Driver.getById(result.id);
+
+    // 🔥 DRIVER CREATE AUDIT LOG
+    try {
+      await AuditModel.createAuditLog({
+        type: "driver",
+        operation: "activity",
+        previous: [],
+        next: ["driver created"],
+        employee_id: req.user?.id || req.body.employee_id || null,
+        booking_id: null,
+        driver_id: fullDriver.id,
+        company_id: fullDriver.company_id || req.body.company_id || 1,
+      });
+    } catch (auditErr) {
+      console.error("❌ Driver Create Audit Error:", auditErr.message);
+    }
 
     res.status(200).json({
       status: true,
@@ -595,11 +760,44 @@ exports.update = async (req, res) => {
       }
     }
 
-    // ✅ Update driver in DB
+    // ✅ 1. Update se PEHLE purana driver snapshot lein
+    const existingDriver = await Driver.getById(driverId);
+    if (!existingDriver) {
+      return res.status(404).json({
+        status: false,
+        message: "Driver not found",
+      });
+    }
+
+   // ✅ 2. Update driver in DB
     const driverData = cleanEmptyToNull(req.body);
     await Driver.update(driverId, driverData);
 
+    // ✅ 3. Update ke BAAD naya driver snapshot lein
     const updatedDriver = await Driver.getById(driverId);
+
+
+    // 🔥 4. COMPARE & SAVE DRIVER UPDATE AUDIT LOG
+    const { previous, next } = buildDriverAuditDiff(existingDriver, updatedDriver);
+
+    if (next.length > 0) {
+      try {
+        await AuditModel.createAuditLog({
+          type: "driver",
+          operation: "update",
+          previous,
+          next,
+          employee_id: req.user?.id || req.body.employee_id || null,
+          booking_id: null,
+          driver_id: Number(driverId),
+          company_id: updatedDriver.company_id || companyId || 1,
+        });
+      } catch (auditErr) {
+        console.error("❌ Driver Update Audit Error:", auditErr.message);
+      }
+    }
+
+
 
     res.status(200).json({
       status: true,
@@ -686,6 +884,8 @@ exports.driverLogin = async (req, res) => {
     const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
+
+    // 1. Session aur location update karein
     await Driver.updateDriverLoginStatus(driver.id, latitude, longitude, zone);
 
     // INSERT SHIFT HISTORY LOGIN
@@ -694,11 +894,17 @@ exports.driverLogin = async (req, res) => {
     if (fcm_token) {
       await Driver.updateDriverFcmToken(driver.id, fcm_token);
     }
-    // ONLY IMPORTANT FIX
-    const updatedDriver = await Driver.getLoginDriverById(driver.id);
-    const updatedDriverSocket = await Driver.getById(driver.id);
 
-    notifyDriverLogin(updatedDriverSocket);
+    // 2. Exact status sync karein (SinBin / Today's Future Booking / Available)
+    // Ye automatically Busy/Available WebSockets bhi update kar dega
+    const syncedDriver = await syncDriverState(driver.id);
+
+    // 3. Available list socket ko notify karein (agar driver Available/SinBin mein hai)
+    notifyDriverLogin(syncedDriver);
+
+    // 4. Fresh driverInfo app response ke liye fetch karein
+    const updatedDriver = await Driver.getLoginDriverById(driver.id);
+
     return res.status(200).json({
       message: "Login successful",
       driverInfo: updatedDriver,
@@ -1028,9 +1234,12 @@ exports.onPanicDriver = async (req, res) => {
 // ---------------------------------------------------------
 exports.getLoginDrivers = async (req, res) => {
   try {
-    const { company_id } = req.query;
-    const login_drivers = await Driver.getLoginDrivers(company_id);
-    const busy_drivers = await Driver.getBusyDrivers(company_id);
+    const { company_id, subsidiary_id } = req.query;
+    const login_drivers = await Driver.getLoginDrivers(
+      company_id,
+      subsidiary_id,
+    );
+    const busy_drivers = await Driver.getBusyDrivers(company_id, subsidiary_id);
 
     res.status(200).json({
       status: true,
@@ -1435,9 +1644,11 @@ exports.driverForcedLogin = async (req, res) => {
     const token = jwt.sign({ driverId: driver.id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-    await Driver.updateDriverLoginStatus(driver.id, 0.0, 0.0);
 
-    //Update FCM Token if provided
+    // 1. Session aur location update karein
+    await Driver.updateDriverLoginStatus(driver.id, 0.0, 0.0, null);
+
+    // Update FCM Token if provided
     if (fcmToken) {
       await Driver.updateDriverFcmToken(driver.id, fcmToken);
     }
@@ -1445,11 +1656,15 @@ exports.driverForcedLogin = async (req, res) => {
     // INSERT SHIFT HISTORY LOGIN
     await DriverShiftHistory.createLoginShift(driver.id, 0.0, 0.0);
 
-    // ONLY IMPORTANT FIX
-    const updatedDriver = await Driver.getLoginDriverById(driver.id);
-    const updatedDriverSocket = await Driver.getById(driver.id);
+    // 2. Exact status sync karein (SinBin / Today's Future Booking / Available)
+    const syncedDriver = await syncDriverState(driver.id);
 
-    notifyDriverLogin(updatedDriverSocket);
+    // 3. Available list socket ko notify karein
+    notifyDriverLogin(syncedDriver);
+
+    // 4. Fresh driverInfo app response ke liye fetch karein
+    const updatedDriver = await Driver.getLoginDriverById(driver.id);
+
     const messages =
       "You have been forcibly logged in by the admin. Please contact support if you have any questions.";
     // Send Forced Login Notification to Driver
@@ -1484,12 +1699,21 @@ exports.driverForcedLogout = async (req, res) => {
       return res.status(404).json({ message: "Driver not found" });
     }
 
-    // UPDATE DRIVER STATUS
-    await Driver.updateDriverLogoutStatus(driverId);
+    //Check Active Booking
+    const checkActiveBooking = await bookingModel.hasActiveBookingToday(driverId)
+
+    if(checkActiveBooking.has_active === true){
+      return res.status(400).json({ message: "Driver Has Active Booking You Cannot Logged Out Driver" });
+    }
 
     // Send Forced Logout Notification to Driver
     const messages = "You have been forcibly logged out by the Controller.";
     await notification.sendForcedLoggedOutNotification(driverId, messages);
+
+    // UPDATE DRIVER STATUS
+    await Driver.updateDriverLogoutStatus(driverId);
+
+    
 
     // CLEAR FCM TOKEN
     await Driver.clearDriverFcmToken(driverId);

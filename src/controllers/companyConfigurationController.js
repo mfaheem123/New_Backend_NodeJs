@@ -1,5 +1,8 @@
 const companyConfigurationModel = require("../models/companyConfigurationModel");
 
+// ---------------------------------------------------------
+// CREATE COMPANY CONFIGURATION
+// ---------------------------------------------------------
 exports.create = async (req, res) => {
   try {
     console.log(
@@ -27,6 +30,9 @@ exports.create = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET ALL COMPANY CONFIGURATIONS BY COMPANY ID
+// ---------------------------------------------------------
 exports.getAll = async (req, res) => {
   try {
     const { company_id } = req.query;
@@ -44,6 +50,9 @@ exports.getAll = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// GET COMPANY CONFIGURATION BY SUBSIDIARY ID
+// ---------------------------------------------------------
 exports.getById = async (req, res) => {
   try {
     const data = await companyConfigurationModel.getById(
@@ -62,6 +71,9 @@ exports.getById = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// UPDATE COMPANY CONFIGURATION BY SUBSIDIARY ID
+// ---------------------------------------------------------
 exports.update = async (req, res) => {
   try {
     const result = await companyConfigurationModel.update(
@@ -89,6 +101,9 @@ exports.update = async (req, res) => {
   }
 };
 
+// ---------------------------------------------------------
+// DELETE COMPANY CONFIGURATION BY SUBSIDIARY ID
+// ---------------------------------------------------------
 exports.delete = async (req, res) => {
   try {
     await companyConfigurationModel.delete(req.params.subsidiary_id);
