@@ -195,8 +195,6 @@ function resolvePcoQuery(req) {
     }
   }
 
-
-
   let statusIds;
 
   // Support explicit job_type ("all" | "completed" | "cancelled") alongside booking_status_id
@@ -475,8 +473,7 @@ exports.getBookingByTabs = async (req, res) => {
         DATE(b.pickup_date) > CURRENT_DATE 
         AND b.booking_status_id NOT IN (11) 
         AND b.trash = false 
-        AND b.quotation = false`
-        ;
+        AND b.quotation = false`;
         orderBy = `(b.pickup_date::date + TRIM(b.pickup_time)::time) ASC`;
         break;
 
@@ -3894,4 +3891,3 @@ exports.getVehiclePcoReport = async (req, res) => {
     });
   }
 };
-

@@ -1,5 +1,5 @@
 const Driver = require("../models/driverModel");
-const bookingModel = require("../models/bookingModel")
+const bookingModel = require("../models/bookingModel");
 const {
   notifyDriverLogin,
   notifyDriverLogout,
@@ -769,16 +769,18 @@ exports.update = async (req, res) => {
       });
     }
 
-   // ✅ 2. Update driver in DB
+    // ✅ 2. Update driver in DB
     const driverData = cleanEmptyToNull(req.body);
     await Driver.update(driverId, driverData);
 
     // ✅ 3. Update ke BAAD naya driver snapshot lein
     const updatedDriver = await Driver.getById(driverId);
 
-
     // 🔥 4. COMPARE & SAVE DRIVER UPDATE AUDIT LOG
-    const { previous, next } = buildDriverAuditDiff(existingDriver, updatedDriver);
+    const { previous, next } = buildDriverAuditDiff(
+      existingDriver,
+      updatedDriver,
+    );
 
     if (next.length > 0) {
       try {
@@ -796,8 +798,6 @@ exports.update = async (req, res) => {
         console.error("❌ Driver Update Audit Error:", auditErr.message);
       }
     }
-
-
 
     res.status(200).json({
       status: true,
@@ -1700,10 +1700,15 @@ exports.driverForcedLogout = async (req, res) => {
     }
 
     //Check Active Booking
-    const checkActiveBooking = await bookingModel.hasActiveBookingToday(driverId)
+    const checkActiveBooking =
+      await bookingModel.hasActiveBookingToday(driverId);
 
-    if(checkActiveBooking.has_active === true){
-      return res.status(400).json({ message: "Driver Has Active Booking You Cannot Logged Out Driver" });
+    if (checkActiveBooking.has_active === true) {
+      return res
+        .status(400)
+        .json({
+          message: "Driver Has Active Booking You Cannot Logged Out Driver",
+        });
     }
 
     // Send Forced Logout Notification to Driver
@@ -1712,8 +1717,6 @@ exports.driverForcedLogout = async (req, res) => {
 
     // UPDATE DRIVER STATUS
     await Driver.updateDriverLogoutStatus(driverId);
-
-    
 
     // CLEAR FCM TOKEN
     await Driver.clearDriverFcmToken(driverId);

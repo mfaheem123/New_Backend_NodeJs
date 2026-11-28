@@ -66,7 +66,6 @@ const getEmailLogs = async (req, res) => {
   }
 };
 
-
 // Helper: stringified array, array, ya comma-separated string ko clean email array mein badalta hai
 const parseEmailList = (to) => {
   if (Array.isArray(to)) {
@@ -92,7 +91,7 @@ const sendCustomEmail = async (req, res) => {
 
     console.log(
       "🚀 INCOMING SEND CUSTOM EMAIL BODY:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
 
     if (!company_id || !subsidiary_id || !to || !subject) {

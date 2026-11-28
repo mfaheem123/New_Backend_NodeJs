@@ -75,7 +75,6 @@ const auditRoutes = require("./routes/auditRoutes");
 const searchCustomerAccountDriverRoutes = require("./routes/searchCustomerAccountDriverRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 
-
 const app = express();
 
 // ✅ CORS configuration
@@ -211,8 +210,7 @@ app.use("/api/driver-zones", matrixRoutes);
 app.use("/api/driver-pay", driverCommissionPayRoutes);
 app.use("/api/audits", auditRoutes);
 app.use("/api/sms-email", searchCustomerAccountDriverRoutes);
-app.use("/api/service", paymentRoutes)
-
+app.use("/api/service", paymentRoutes);
 
 // ✅ Print all routes in console (for debugging)
 function printRoutes(stack, prefix = "") {
@@ -224,7 +222,7 @@ function printRoutes(stack, prefix = "") {
       printRoutes(
         r.handle.stack,
         prefix +
-        r.regexp.source.replace("^\\", "").replace("\\/?(?=\\/|$)", ""),
+          r.regexp.source.replace("^\\", "").replace("\\/?(?=\\/|$)", ""),
       );
     }
   });

@@ -25,7 +25,7 @@ const getMultiReservationDateRange = (clean) => {
     }
   }
 
-const activeSlots = Array.isArray(multiRes)
+  const activeSlots = Array.isArray(multiRes)
     ? multiRes.filter((item) => item && !item.exclude && item.pickup_date)
     : [];
 
@@ -42,7 +42,7 @@ const activeSlots = Array.isArray(multiRes)
     from: fallbackDate,
     to: fallbackDate,
   };
-};  
+};
 
 const sendDriverAssignedSMS = async (clean, companyId) => {
   if (!clean.driver_id) return;
@@ -91,8 +91,8 @@ const sendBookingSMS = async (clean) => {
     const isType2 =
       clean.booking_type_id === 2 || clean.booking_type_id === "2";
 
-  // ✅ First & Last active pickup_date from multi_reservation
-  const { from: fromDate, to: toDate } = getMultiReservationDateRange(clean);
+    // ✅ First & Last active pickup_date from multi_reservation
+    const { from: fromDate, to: toDate } = getMultiReservationDateRange(clean);
 
     const baseBookingData = {
       pickup_door_number: clean.pickup_door_number
@@ -166,7 +166,8 @@ const sendBookingSMS = async (clean) => {
         mobile: clean.mobile,
         port: 5,
         data: {
-          vehicle_type: clean.vehicle_type_name ?? clean.vehicle_type?.name ?? "",
+          vehicle_type:
+            clean.vehicle_type_name ?? clean.vehicle_type?.name ?? "",
         },
       });
     }

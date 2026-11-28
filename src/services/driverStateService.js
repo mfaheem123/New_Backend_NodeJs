@@ -32,8 +32,8 @@ async function syncDriverState(driverId) {
   // 1️⃣ Check Active Booking for TODAY (Accepted=15, On Route=3, Arrived=6, POB=9, STC=10)
   // Note: Future booking bhi agar aaj ki date ki hai aur accepted hai toh busy hogi
   // driverStateService.js ke andar activeBookingRes query:
-const activeBookingRes = await db.query(
-  `
+  const activeBookingRes = await db.query(
+    `
   SELECT id, booking_status_id
   FROM bookings
   WHERE driver_id = $1
@@ -50,8 +50,8 @@ const activeBookingRes = await db.query(
     dispatched_at ASC
   LIMIT 1
   `,
-  [driverId]
-);
+    [driverId],
+  );
 
   let nextDriverStatus = "Available";
   let nextBookingStatus = "Available";
@@ -111,6 +111,6 @@ const activeBookingRes = await db.query(
   return freshDriver;
 }
 
-module.exports = { 
-  syncDriverState 
+module.exports = {
+  syncDriverState,
 };

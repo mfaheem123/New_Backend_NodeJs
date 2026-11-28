@@ -106,8 +106,6 @@ class AuditModel {
     const { rows } = await pool.query(query, [driverId, type || null]);
     return rows;
   }
-
-
 }
 
 module.exports = AuditModel;

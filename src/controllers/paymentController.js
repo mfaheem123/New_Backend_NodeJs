@@ -72,6 +72,7 @@ exports.createServicePayment = async (req, res) => {
       }
     }
 
+
     const unitAmount = Math.round(numericFare * 100);
 
     const session = await stripe.checkout.sessions.create({
@@ -107,6 +108,7 @@ exports.createServicePayment = async (req, res) => {
       cancel_url: "https://nexustechgroupz.co.uk/",
     });
 
+
     return res.status(200).json({
       status: true,
       url: session.url,
@@ -134,6 +136,7 @@ exports.handleStripeWebhook = async (req, res) => {
     return res.status(400).json({ status: false, message: "Invalid companyId in webhook URL." });
   }
 
+
   try {
     const config = await CompanyConfig.getStripeConfigByCompanyId(companyId);
     if (!config || !config.stripe_secret_key || !config.endpoint_key) {
@@ -152,6 +155,7 @@ exports.handleStripeWebhook = async (req, res) => {
       console.error("Webhook signature verification failed:", err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
     }
+
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
@@ -175,23 +179,26 @@ exports.handleStripeWebhook = async (req, res) => {
           if (updatedBooking && updatedBooking.driver_id) {
             const payload = {
               type: "BOOKING_PAYMENT_RECEIVED",
-              booking_id: updatedBooking.id,
+            booking_id: updatedBooking.id,
               reference_number: updatedBooking.reference_number,
-              driver_id: updatedBooking.driver_id,
+            driver_id: updatedBooking.driver_id,
               amount: updatedBooking.total_charges || updatedBooking.fares,
-              payment_type_id: updatedBooking.payment_type_id,
+            payment_type_id: updatedBooking.payment_type_id,
               stripe_customer_id: updatedBooking.stripe_customer_id,
-              stripe_payment_id: updatedBooking.stripe_payment_id,
-              message: `Payment received for Booking #${updatedBooking.reference_number || updatedBooking.id}`,
-            };
+            stripe_payment_id: updatedBooking.stripe_payment_id,
+            message: `Payment received for Booking #${updatedBooking.reference_number || updatedBooking.id}`,
+          };
 
-            await Promise.allSettled([
-              sendPaymentDoneNotification(updatedBooking.driver_id, payload),
+          await Promise.allSettled([
+            sendPaymentDoneNotification(updatedBooking.driver_id, payload),
             ]);
           }
+
         }
+
       }
     }
+
 
     return res.status(200).json({ received: true });
   } catch (error) {
@@ -199,3 +206,6 @@ exports.handleStripeWebhook = async (req, res) => {
     return res.status(500).json({ status: false, message: "Internal webhook error" });
   }
 };
+
+
+

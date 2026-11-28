@@ -23,7 +23,7 @@ async function getCompanyTemplateByName(companyId, templateName) {
       `SELECT * FROM public.templates 
        WHERE company_id = $1 AND LOWER(name) = LOWER($2) 
        ORDER BY id ASC LIMIT 1`,
-      [companyId, templateName]
+      [companyId, templateName],
     );
     if (res.rows && res.rows.length > 0) {
       return res.rows[0];
@@ -35,15 +35,13 @@ async function getCompanyTemplateByName(companyId, templateName) {
     `SELECT * FROM public.templates 
      WHERE company_id = 3 AND LOWER(name) = LOWER($1) 
      ORDER BY id ASC LIMIT 1`,
-    [templateName]
+    [templateName],
   );
 
   return fallbackRes.rows?.[0] || null;
 }
 
-module.exports = { 
-  getTemplateById, 
-  getCompanyTemplateByName 
+module.exports = {
+  getTemplateById,
+  getCompanyTemplateByName,
 };
-
-

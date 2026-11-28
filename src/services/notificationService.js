@@ -1573,8 +1573,7 @@ async function sendPaymentDoneNotification(driverId, payload) {
     return;
   }
 
-    console.log("Notification Payload Data: ", payload)
-
+  console.log("Notification Payload Data: ", payload);
 
   // 2️⃣ Notification payload
   const message = {
@@ -1585,7 +1584,7 @@ async function sendPaymentDoneNotification(driverId, payload) {
     },
     data: {
       type: payload.type,
-      booking_id: String(payload.booking_id)
+      booking_id: String(payload.booking_id),
     },
   };
 
@@ -1628,5 +1627,5 @@ module.exports = {
   sendNoShowBookingNotification,
   sendCompleteBookingFromWebNotification,
   sendBookingUpdateNotification,
-  sendPaymentDoneNotification
+  sendPaymentDoneNotification,
 };

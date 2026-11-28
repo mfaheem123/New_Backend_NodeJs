@@ -84,7 +84,7 @@
 //   // --- Data query ---
 //   params.push(limit, offset);
 //   const dataQuery = `
-//   SELECT 
+//   SELECT
 //     s.id,
 //     s.logo,
 //     s.background_color,
@@ -171,7 +171,7 @@
 //   company_id,
 // } = {}) => {
 //   const q = `
-//     SELECT 
+//     SELECT
 //       s.*,
 //       jsonb_build_object(
 //         'id', b.id,
@@ -186,7 +186,7 @@
 //         'updated_at', b.updated_at
 //       ) AS subsidiary_bank_details
 //     FROM subsidiaries s
-//     LEFT JOIN subsidiary_bank_details b 
+//     LEFT JOIN subsidiary_bank_details b
 //     ON s.id = b.subsidiary_id
 //     WHERE company_id = $3
 //     ORDER BY s.id
@@ -382,7 +382,11 @@ const remove = async (id) => {
 };
 
 // Optimized & fixed parameter sequence for joining bank details
-const getAllWithBankDetails = async ({ limit = 100, offset = 0, company_id } = {}) => {
+const getAllWithBankDetails = async ({
+  limit = 100,
+  offset = 0,
+  company_id,
+} = {}) => {
   const conditions = [];
   const params = [];
   let idx = 1;
@@ -392,7 +396,9 @@ const getAllWithBankDetails = async ({ limit = 100, offset = 0, company_id } = {
     params.push(company_id);
   }
 
-  const whereClause = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const whereClause = conditions.length
+    ? `WHERE ${conditions.join(" AND ")}`
+    : "";
 
   const limitIdx = idx++;
   const offsetIdx = idx++;

@@ -18,7 +18,7 @@ class AuditController {
 
         const audits = await AuditModel.getAuditsByDriverId(
           driverId,
-          type || "driver"
+          type || "driver",
         );
 
         return res.status(200).json({

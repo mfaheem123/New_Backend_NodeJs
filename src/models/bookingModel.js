@@ -4045,7 +4045,11 @@ const attachStripeCustomer = async (bookingId, companyId, stripeCustomerId) => {
       AND company_id = $3
     RETURNING id, reference_number, driver_id, stripe_customer_id, payment_type_id
   `;
-  const { rows } = await pool.query(query, [stripeCustomerId, bookingId, companyId]);
+  const { rows } = await pool.query(query, [
+    stripeCustomerId,
+    bookingId,
+    companyId,
+  ]);
   return rows[0] || null;
 };
 
@@ -4175,5 +4179,5 @@ module.exports = {
   getDriverPcoReport,
   getVehiclePcoReport,
   attachStripeCustomer,
-  markBookingAsPaid
+  markBookingAsPaid,
 };

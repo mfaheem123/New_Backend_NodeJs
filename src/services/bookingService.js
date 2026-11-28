@@ -1029,11 +1029,9 @@ async function createMultiReservationBooking(payload) {
       enrichedBookings.push(parseJSONFields(res));
     }
 
-    
-
     await pool.query("COMMIT");
 
-// ✅ Poore multi-reservation ke liye sirf ek SMS bhejein
+    // ✅ Poore multi-reservation ke liye sirf ek SMS bhejein
     try {
       if (enrichedBookings.length > 0) {
         const firstBookingWithRange = {
@@ -1056,7 +1054,6 @@ async function createMultiReservationBooking(payload) {
         notifErr,
       );
     }
-
 
     return {
       status: true,
@@ -1182,12 +1179,12 @@ async function updateBookingService(bookingId, payload) {
   // -----------------------------------------------------
 
   const returnBooking =
-  bookingPair.find(
-    (booking) =>
-      Number(booking.associated_booking) === Number(primaryBooking.id),
-  ) || null;
+    bookingPair.find(
+      (booking) =>
+        Number(booking.associated_booking) === Number(primaryBooking.id),
+    ) || null;
 
-const oldReturnDriverId = returnBooking ? returnBooking.driver_id : null;
+  const oldReturnDriverId = returnBooking ? returnBooking.driver_id : null;
 
   console.log("==========================================");
   console.log("EDIT BOOKING ID:", bookingId);
@@ -1307,9 +1304,6 @@ const oldReturnDriverId = returnBooking ? returnBooking.driver_id : null;
     "company_id",
   ];
 
-
-
-
   // =====================================================
   // 4. CREATE NORMAL/OUTBOUND UPDATES
   // =====================================================
@@ -1376,8 +1370,6 @@ const oldReturnDriverId = returnBooking ? returnBooking.driver_id : null;
 
   if (Number(payload.journey_type_id) === 3 && returnBooking) {
     console.log("🔄 RETURN WAY EDIT DETECTED");
-
-   
 
     // ===================================================
     // RETURN BOOKING UPDATES
@@ -1540,11 +1532,6 @@ const oldReturnDriverId = returnBooking ? returnBooking.driver_id : null;
       returnUpdates.waiting_charges = payload.return_waiting_charges;
     }
 
-
-
-
-
-
     if (payload.return_parking_charges !== undefined) {
       returnUpdates.parking_charges = payload.return_parking_charges;
     }
@@ -1604,11 +1591,6 @@ const oldReturnDriverId = returnBooking ? returnBooking.driver_id : null;
       returnUpdates.lead_time = payload.return_lead_time;
     }
 
-
-
-
-
-
     // ---------------------------------------------------
     // RETURN JOURNEY TYPE
     // ---------------------------------------------------
@@ -1667,10 +1649,6 @@ const oldReturnDriverId = returnBooking ? returnBooking.driver_id : null;
       }
     }
 
-
-
-
-
     // ---------------------------------------------------
     // GET FRESH PRIMARY BOOKING
     // ---------------------------------------------------
@@ -1681,75 +1659,90 @@ const oldReturnDriverId = returnBooking ? returnBooking.driver_id : null;
 
     const primaryClean = parseJSONFields(primaryEnriched);
 
-// ---------------------------------------------------
-// DRIVER NOTIFICATION - PRIMARY
-// ---------------------------------------------------
-const currentPrimaryDriverId = updates.driver_id ?? oldDriverId;
-const isPrimaryDriverChanged =
-updates.driver_id !== undefined &&
-Number(updates.driver_id) !== Number(oldDriverId);
+    // ---------------------------------------------------
+    // DRIVER NOTIFICATION - PRIMARY
+    // ---------------------------------------------------
+    const currentPrimaryDriverId = updates.driver_id ?? oldDriverId;
+    const isPrimaryDriverChanged =
+      updates.driver_id !== undefined &&
+      Number(updates.driver_id) !== Number(oldDriverId);
 
-if (currentPrimaryDriverId) {
-if (isPrimaryDriverChanged) {
-  // Naya driver assign hua hai
-  if (
-    payload.booking_status_id &&
-    (Number(payload.booking_status_id) === 1 ||
-    Number(payload.booking_status_id) === 2)
-  ) {
-  await sendBookingNotification(currentPrimaryDriverId, primaryClean);
-  } else {
-    console.log("BOOKING UPDATE NOTIFICATION SENT")
-  await sendBookingUpdateNotification(currentPrimaryDriverId, primaryClean);
-  }
-  } else if (changesNext.length > 0) {
-  // Driver pehle se assign tha aur booking mein kuch update hua hai
-  console.log("📢 BOOKING UPDATE NOTIFICATION SENT TO:", currentPrimaryDriverId);
-  await sendBookingUpdateNotification(currentPrimaryDriverId, primaryClean);
-}
-}
+    if (currentPrimaryDriverId) {
+      if (isPrimaryDriverChanged) {
+        // Naya driver assign hua hai
+        if (
+          payload.booking_status_id &&
+          (Number(payload.booking_status_id) === 1 ||
+            Number(payload.booking_status_id) === 2)
+        ) {
+          await sendBookingNotification(currentPrimaryDriverId, primaryClean);
+        } else {
+          console.log("BOOKING UPDATE NOTIFICATION SENT");
+          await sendBookingUpdateNotification(
+            currentPrimaryDriverId,
+            primaryClean,
+          );
+        }
+      } else if (changesNext.length > 0) {
+        // Driver pehle se assign tha aur booking mein kuch update hua hai
+        console.log(
+          "📢 BOOKING UPDATE NOTIFICATION SENT TO:",
+          currentPrimaryDriverId,
+        );
+        await sendBookingUpdateNotification(
+          currentPrimaryDriverId,
+          primaryClean,
+        );
+      }
+    }
 
     // ===================================================
     // RETURN WAY
     // ===================================================
 
-  if (Number(payload.journey_type_id) === 3 && returnBooking) {
-  const returnEnriched = await getBookingDriverCustomerById(
-    returnBooking.id,
-  );
+    if (Number(payload.journey_type_id) === 3 && returnBooking) {
+      const returnEnriched = await getBookingDriverCustomerById(
+        returnBooking.id,
+      );
 
-  const returnClean = parseJSONFields(returnEnriched);
+      const returnClean = parseJSONFields(returnEnriched);
 
+      // -------------------------------------------------
+      // DRIVER NOTIFICATION - RETURN
+      // -------------------------------------------------
+      const currentReturnDriverId =
+        payload.return_driver_id ?? oldReturnDriverId;
+      const isReturnDriverChanged =
+        payload.return_driver_id !== undefined &&
+        Number(payload.return_driver_id) !== Number(oldReturnDriverId);
 
-
-// -------------------------------------------------
-// DRIVER NOTIFICATION - RETURN
-// -------------------------------------------------
-const currentReturnDriverId =
-payload.return_driver_id ?? oldReturnDriverId;
-const isReturnDriverChanged =
-  payload.return_driver_id !== undefined &&
-  Number(payload.return_driver_id) !== Number(oldReturnDriverId);
-
-if (currentReturnDriverId) {
-  if (isReturnDriverChanged) {
-    // Return par naya driver assign hua hai
-    if (
-      payload.booking_status_id &&
-      (Number(payload.booking_status_id) === 1 ||
-        Number(payload.booking_status_id) === 2)
-    ) {
-      await sendBookingNotification(currentReturnDriverId, returnClean);
-    } else {
-      await sendBookingUpdateNotification(currentReturnDriverId, returnClean);
-    }
-  } else {
-    // Return par driver pehle se assign tha aur return booking update hui hai
-    console.log("📢 RETURN BOOKING UPDATE NOTIFICATION SENT TO:", currentReturnDriverId);
-    await sendBookingUpdateNotification(currentReturnDriverId, returnClean);
-  }
-}
-
+      if (currentReturnDriverId) {
+        if (isReturnDriverChanged) {
+          // Return par naya driver assign hua hai
+          if (
+            payload.booking_status_id &&
+            (Number(payload.booking_status_id) === 1 ||
+              Number(payload.booking_status_id) === 2)
+          ) {
+            await sendBookingNotification(currentReturnDriverId, returnClean);
+          } else {
+            await sendBookingUpdateNotification(
+              currentReturnDriverId,
+              returnClean,
+            );
+          }
+        } else {
+          // Return par driver pehle se assign tha aur return booking update hui hai
+          console.log(
+            "📢 RETURN BOOKING UPDATE NOTIFICATION SENT TO:",
+            currentReturnDriverId,
+          );
+          await sendBookingUpdateNotification(
+            currentReturnDriverId,
+            returnClean,
+          );
+        }
+      }
 
       return {
         booking: primaryClean,
@@ -1810,7 +1803,6 @@ if (currentReturnDriverId) {
 
   return clean;
 }
-
 
 // ---------------------------------------------------------
 // CREATE CLI BOOKING
@@ -2244,5 +2236,5 @@ module.exports = {
   assignFOBDriverService,
   cloneOneWayBookingService,
   assignFutureBookingDriverService,
-  updateMultiBookingsService
+  updateMultiBookingsService,
 };

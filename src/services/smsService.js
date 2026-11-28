@@ -1,4 +1,7 @@
-const { getTemplateById, getCompanyTemplateByName } = require("./templateService");
+const {
+  getTemplateById,
+  getCompanyTemplateByName,
+} = require("./templateService");
 const { parseTemplate } = require("../utils/templateParser");
 const { formatMobile } = require("../utils/formatMobile");
 const { sendViaDinstar } = require("./dinstarService");
@@ -65,23 +68,23 @@ async function sendSMSWithTemplate(payload) {
     const template = await getCompanyTemplateByName(company_id, template_name);
     if (!template) {
       throw new Error(
-        `Template "${template_name}" not found for company_id: ${company_id}`
+        `Template "${template_name}" not found for company_id: ${company_id}`,
       );
     }
     resolvedTemplateId = template.id;
     message = parseTemplate(template.content, data);
   } else {
     throw new Error(
-      "Either template_id, template_name, or custom_message is required"
+      "Either template_id, template_name, or custom_message is required",
     );
   }
 
   console.log(
-    "--------------------------------------------------------------------------------"
+    "--------------------------------------------------------------------------------",
   );
   console.log("MESSAGE TO SEND: ", message);
   console.log(
-    "--------------------------------------------------------------------------------"
+    "--------------------------------------------------------------------------------",
   );
 
   const results = [];
@@ -100,7 +103,7 @@ async function sendSMSWithTemplate(payload) {
       // );
 
       // const isSent = Boolean(gatewayResponse && gatewayResponse.success);
-      const isSent = true
+      const isSent = true;
 
       await createSMSLog({
         company_id,
@@ -191,9 +194,7 @@ async function fetchSMSLogsService(query) {
   };
 }
 
-module.exports = { 
-  sendSMSWithTemplate, 
-  fetchSMSLogsService 
+module.exports = {
+  sendSMSWithTemplate,
+  fetchSMSLogsService,
 };
-
-
